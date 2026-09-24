@@ -1,47 +1,52 @@
 # 目前任務（來自 Claude）
 
-TASK 6 已審查通過（`recalcTodayBudget`/`checkHardConstraints`，我自己重跑過所有測試案例，數字跟報告完全一致，commit `127238b`）。這一輪換 TASK 7，範圍比較大，請仔細看。
+TASK 7 已審查通過。我自己開了本機 HTTP server + headless Chrome 把「今日建議」分頁實際跑過（見下方「TASK 7 遺留問題的處置」），結果跟你報告的完全一致，包含你發現的午餐 null 邊界案例。commit `f9e4d8e` 沒問題，繼續往下走。
 
-## TASK 6 遺留問題的處置
+## TASK 7 遺留問題的處置
 
-1. **纖維日均分母用「有記錄天數」而非固定 7**：可以，維持現狀。
-2. **纖維缺口基準用 25g（區間下限）而非 profile.fiber_target_g**：可以，維持現狀。
-3. **「今日」判定用本機今天，未加日期參數**：這輪不用改，先照 TECH-SPEC 簽名走。
+1. **午餐在「幾乎無」+ 高目標熱量時會 null**：我獨立算過（🟢 組合最高 529 kcal vs 縮放上限 1.3 倍 = 687.7 kcal 上限，目標 2043 時午餐配額 715 超過這個上限），確認你的分析正確。**這輪先接受這個已知限制，不用修**：不放寬 0.7–1.3（那是 PRD 明確寫的數字，不要自己調），也不用另外造假資料。之後如果使用者實際用起來常常卡到，我們再回頭看要不要在 TASK 3 的三軸表補幾筆高熱量 🟢 選項。
+2. **`getTodayRecommendation` 改成 async（因為要 fetch JSON）**：合理，維持現狀。
+3. **`file://` 直接開 `index.html` 時 `fetch` 會失敗**：我實測確認了——`file://` 開啟時 `fetch('data/*.json')` 直接噴 `TypeError: Failed to fetch`；透過本機 HTTP server 開就完全正常（今日建議 4 格、倒讚、幾乎無→全🟢都測過)。**這是瀏覽器對 `file://` 的安全限制，不是你的 bug**。處置方式：
+   - **之後你在本機驗證涉及 `data/*.json` 的功能時，請起一個簡單 HTTP server**（例如 `python -m http.server` 或 `npx serve`），不要直接雙擊開 `index.html`。之前沒用到 fetch 的分頁（基本資料）用 `file://` 開沒問題，屬於巧合，不代表整個 app 都支援 `file://`。
+   - 部署到 GitHub Pages 之後本來就是走 HTTP，不受影響，這件事不用再處理，往後 TASK 只要跟目前一樣用 fetch 讀 JSON 即可，不用改成內嵌 JS 常數。
+4. **「全素」過濾幾乎沒作用（因為聯集語意讓大部分組合都帶到「全素」標籤）**：這是已知限制，這輪不用修，等之後真的要上飲食限制過濾時再回頭調整 TASK 3 的標籤語意（可能要改成「三軸都要是全素才算全素」而不是聯集）。
 
 ## 這一輪要做的事
 
-### TASK 7 — recommend.js + 分頁二：今日建議
+### TASK 8 — feast.js + 分頁三：週彈性帳本
 
-**先處理一個資料缺口**：TASK 3 的 `protein_sources.json`/`staples.json`/`sauce_methods.json` 三軸資料本身沒有標記「早餐/午餐/晚餐/宵夜」這個 slot 屬性（附錄 A 的原始範例是分類別列的，但拆成三軸後這個分類資訊沒有保留下來）。這輪請用以下方式解決，**不要另外編一個 slot 對照表去猜**：
+**`js/engine/feast.js`**（TECH-SPEC 4.6節，對照 PRD 6.2–6.4節）：
 
-- `recipe_templates` 用三軸做**笛卡爾積**組合（TECH-SPEC 3.5）：`id = {protein_id}_{staple_id}_{sauce_id}`，`kcal/protein_g/carb_g/fat_g/fiber_g` 三軸的 `_100g` 值直接加總（等於假設三個食材各取 100g 為基準份量，這是簡化假設，請在報告說明），`tier` 取三軸最高難度，`diet_tags`/`allergen_tags` 取三軸聯集。
-- 一個組合到底適合早餐、午餐、晚餐還是宵夜，**不用預先分類，而是讓「熱量是否吃得進當餐配額」自然篩選**：對 `recommend.js` 的每個 slot，用 PRD 5.5 節的縮放公式（縮放係數 = 該餐配額 ÷ 組合基準熱量，限制在 0.7–1.3 倍之間）去檢查該組合縮放後是否落在合理範圍內，落在範圍內才算該 slot 的候選；超出範圍就跳過（不用做「改推薦替換品項」的複雜邏輯，這輪只要跳過即可）。
-- 這樣切出來的候選可能包含「早餐配額推薦到牛肉+糙米飯」這種不完全符合直覺的組合，這是本輪簡化的已知限制，沒關係，不用額外修正。
+```js
+async function reserveFeast(planDate, slot, size)         // 寫入 feast_reservation，狀態 reserved，占用 weekly_flex_ledger.used_kcal
+async function confirmFeast(reservationId, actualDailyLogEntry) // 狀態改 confirmed，用實際值取代預估值，重算 ledger
+async function cancelFeast(reservationId)                 // 狀態改 cancelled，釋放已占用點數
+function planOverageSmoothing(overageKcal, upcomingDaysBudget, safetyFloor) // 回傳 { smoothingDays, dailyCapPct, appliedDates }
+```
 
-**`js/engine/recommend.js` — `getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday, dietRestriction, allergens)`**（TECH-SPEC 4.5節）：
+- **小/中/大份量換算 kcal**：依 TECH-SPEC 6.6 節，用 `taiwan_items.json` 的 `kcal_low/kcal_high/kcal_rep` 當基礎資料源（例如取某個代表性台式餐點區間的低/中/高），**你自己訂一個合理的小/中/大 kcal 對照表**（例如小≈400、中≈700、大≈1000，或依 taiwan_items 實際分布訂），在報告說明你怎麼定的即可，不用問我。
+- **`weekly_flex_ledger.cap_kcal` 換算公式**：PRD 6.2 節只有文字描述（減脂：依 20% 熱量赤字換算，預設約可支應 1 餐大餐+數餐台式原版；維持/增肌：較寬鬆的固定額度），沒有給精確公式。**這是一個你需要自己訂出具體公式的地方**，建議方向：
+  - 減脂模式：`cap_kcal = 週熱量赤字 × 某個比例`（週熱量赤字 = `(tdee - targetKcal) × 7`，比例你自己抓一個讓「預設約可支應 1 餐大餐+數餐台式原版」講得通的值，例如 30–50%）。
+  - 維持/增肌模式：抓一個固定值（例如一週一次中份大餐的量）。
+  - 這個公式是本輪最大的「你要自己做決策」的地方，**務必在報告裡把公式和數字寫清楚**，這樣我審查時才能確認合理性，之後使用者也可以直接要求調整參數。
+- `planOverageSmoothing`：對照 PRD 6.4節，1–3 天攤還、單日補償幅度 ≤15%、攤還後配額不得低於 TASK 4 `nutrition.js` 的安全下限（女1200/男1500）。用假資料 console.log 測過即可。
+- **全 App 文案規範（PRD 6.1 第4點）**：不管是這個檔案還是 UI，都不要出現「補償」「贖罪」「代價」這類字眼。
 
-- `remainingBudget`：`recalcTodayBudget()` 的回傳值（含 `perSlotSuggestion.{breakfast,lunch,dinner,snack}`）。
-- `hardConstraints`：`checkHardConstraints()` 的回傳值（`proteinGapToday`/`fiberGapThisWeek`），缺口 > 0 時，該 slot 排序要優先挑蛋白質/纖維較高的組合。
-- `preptimeToday`：使用者當日可用備餐時間字串（沿用 TASK 5 表單值：'幾乎無'/'5 分鐘內'/'15 分鐘內'/'30 分鐘以上'）。備餐時間 → 可接受難度上限，你可以自訂合理的對照（例如「幾乎無」只給 🟢），完成標準只驗證「幾乎無 → 全部只剩 🟢」這一點，其餘級距你自行決定即可。
-- `dietRestriction`/`allergens`：套用在候選組合的 `diet_tags`/`allergen_tags` 上做基本過濾（有 `allergens` 就排除交集到的組合；`dietRestriction` 為'全素'/'蛋奶素'/'低碳'時，用 `diet_tags` 是否包含對應標籤做簡單過濾，'一般'/'無特殊限制'不過濾）。
-- 排序：先濾掉 `recipe_feedback.rating === 'dislike'` 的組合（**倒讚後永久不再出現**，這是完成標準會測的重點）；有 `like` 的加分；有蛋白質/纖維缺口時該軸營養素高的組合加分；`shown_count`/`last_shown_date` 近期出現過的降權（避免每次都推薦同一組）。
-- 每個 slot 挑出分數最高的 1 個組合，回傳 4 筆（早/午/晚/宵夜各一）。若某 slot 完全沒有候選（例如篩到剩 0 個），該 slot 回傳 `null`，不要丟例外。
+**`js/ui/tab-ledger.js`** 掛進 `#tab-ledger`：
 
-**`js/ui/tab-today.js`** 掛進 `index.html` 的 `#tab-today` 區塊：
+- 上方：本週彈性點數進度條（`used_kcal / cap_kcal`）。
+- 中間：「預約大餐」表單（日期/餐別/小中大），送出呼叫 `reserveFeast`。
+- 下方：已預約清單，每筆可「確認」（呼叫 `confirmFeast`，先簡化成直接用預估值當 `actualDailyLogEntry`，不用真的做一個完整的記錄表單，這輪重點是流程通不通）或「取消」（呼叫 `cancelFeast`）。
 
-- 頁面顯示時：讀 `getProfile()`、假設 `targetKcal` 直接重新呼叫 `calculateTargets(profile)` 拿到（這輪不用接 TASK 8 的週校正 `tdee.js`），讀今天的 `getDailyLogs({start:今天, end:今天})` 當 `todayLogs` 丟給 `recalcTodayBudget`，讀本週 `getDailyLogs(本週日期範圍)` 丟給 `checkHardConstraints`，取 `profile.prep_time_weekday`（或依星期判斷平日/假日，你決定即可）當 `preptimeToday`，呼叫 `getTodayRecommendation(...)` 顯示早/午/晚/宵夜 4 筆推薦（名稱可用三軸 `name` 組合顯示，例如「雞胸肉 + 地瓜 + 微波」）。
-- 每筆推薦旁邊一個「倒讚」按鈕，點擊呼叫 `saveRecipeFeedback(id, 'dislike')` 後重新呼叫 `getTodayRecommendation(...)` 刷新畫面（驗證「倒讚後該組合不再出現」）。
-- 有一個「重新整理建議」按鈕方便你手動測試備餐時間變更後的效果（例如你可以先在 TASK 5 的表單把備餐時間改成「幾乎無」存檔，再回這頁按重新整理）。
+## 完成標準
 
-## 完成標準（TASKS.md）
+- 預約一筆大餐後，進度條的 `used_kcal` 有增加。
+- 確認後狀態變 confirmed；取消後點數釋放（`used_kcal` 減回去）。
+- Console 測過 `planOverageSmoothing` 在超額情境下回傳合理的 `smoothingDays`/`dailyCapPct`，且不會讓任何一天配額低於安全下限。
 
-1. 「今日建議」分頁顯示 4 筆推薦（早/午/晚/宵夜）。
-2. 把 profile 的備餐時間改成「幾乎無」後，4 筆推薦全部只剩 🟢。
-3. 對某個組合按「倒讚」後，該組合不再出現在推薦中（重新整理建議或重新整理頁面都不會再出現）。
+這一輪**只做 `feast.js` + `tab-ledger.js`**，不要動 `tab-exercise.js`/`tab-week.js`（TASK 10/11 的事）。記得本機測試要用 HTTP server 開（不要 `file://`，見上面第 3 點）。
 
-這一輪**只做 `recommend.js` + `tab-today.js`**，不要動 `feast.js`/`tab-ledger.js`（TASK 8 的事）。
-
-做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。若上面「笛卡爾積簡化假設」跑出來的推薦組合看起來很怪（例如熱量算出來離譜），在報告裡舉例說明，我們再一起看要不要調整。
+做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。
 
 ## 分工說明
 
