@@ -8,8 +8,8 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
     "Microsoft JhengHei", sans-serif;
-  color: #2b2b2b;
-  background-color: #fafafa;
+  color: #3A2E22;
+  background-color: #FBF5ED;
   line-height: 1.6;
 }
 
@@ -23,32 +23,49 @@ body {
   font-size: 1.5rem;
 }
 
+/* 標題字體（美食風：標題用襯線字，正文維持系統字型堆疊） */
+.app-header h1,
+.tab-panel h2,
+.targets-result h3,
+.weight-widget h3,
+.rec-card h3,
+.ledger-progress h3,
+.ledger-form h3,
+.ledger-list h3,
+.exercise-streak h3,
+.exercise-form h3,
+.exercise-list h3,
+.week-summary h3,
+.week-days h3 {
+  font-family: "Noto Serif TC", serif;
+}
+
 .tab-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #EFE3D2;
 }
 
 .tab-btn {
   padding: 0.5rem 1rem;
   font-size: 1rem;
-  border: 1px solid #d0d0d0;
+  border: 1px solid #EFE3D2;
   border-radius: 999px;
   background-color: #ffffff;
-  color: #555555;
+  color: #8A7A63;
   cursor: pointer;
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .tab-btn:hover {
-  background-color: #f0f0f0;
+  background-color: #F3E4D0;
 }
 
 .tab-btn.is-active {
-  background-color: #4a7d5a;
-  border-color: #4a7d5a;
+  background-color: #C1652F;
+  border-color: #C1652F;
   color: #ffffff;
 }
 
@@ -62,8 +79,8 @@ body {
 
 /* 基本資料分頁：表單 */
 .profile-form fieldset {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
   margin: 0 0 1rem;
   padding: 0.75rem 0.9rem;
 }
@@ -71,7 +88,7 @@ body {
 .profile-form legend {
   font-weight: 600;
   padding: 0 0.4rem;
-  color: #3a3a3a;
+  color: #3A2E22;
 }
 
 .form-row {
@@ -91,17 +108,17 @@ body {
   flex-direction: column;
   gap: 0.3rem;
   font-size: 0.9rem;
-  color: #444;
+  color: #8A7A63;
 }
 
 .form-field input,
 .form-field select {
   padding: 0.55rem 0.6rem;
-  border: 1px solid #ccc;
+  border: 1px solid #EFE3D2;
   border-radius: 6px;
   font-size: 1rem;
   background-color: #fff;
-  color: #2b2b2b;
+  color: #3A2E22;
   width: 100%;
 }
 
@@ -114,22 +131,23 @@ body {
   font-size: 1rem;
   border: none;
   border-radius: 8px;
-  background-color: #4a7d5a;
+  background-color: #C1652F;
   color: #ffffff;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .primary-btn:hover {
-  background-color: #3d684b;
+  background-color: #9E4F24;
 }
 
 .targets-result {
   margin: 1rem 0;
   padding: 0.9rem 1rem;
-  border: 1px solid #d7e6dc;
-  border-radius: 8px;
-  background-color: #f3f9f5;
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
+  background-color: #F3E4D0;
+  box-shadow: 0 4px 14px rgba(120, 85, 40, 0.08);
 }
 
 .targets-result h3 {
@@ -153,16 +171,16 @@ body {
 .calibrated-row {
   margin: 0.6rem 0 0;
   padding: 0.4rem 0.6rem;
-  border-left: 3px solid #4a7d5a;
-  background-color: #eef5f0;
-  color: #2b2b2b;
+  border-left: 3px solid #C1652F;
+  background-color: #F3E4D0;
+  color: #3A2E22;
   font-weight: 600;
 }
 
 .weight-widget {
   margin-top: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid #EFE3D2;
 }
 
 .weight-widget h3 {
@@ -170,7 +188,7 @@ body {
 }
 
 .status-text {
-  color: #4a7d5a;
+  color: #C1652F;
   min-height: 1.2em;
 }
 
@@ -182,16 +200,16 @@ body {
 .secondary-btn {
   padding: 0.5rem 1.1rem;
   font-size: 0.95rem;
-  border: 1px solid #4a7d5a;
+  border: 1px solid #C1652F;
   border-radius: 8px;
   background-color: #ffffff;
-  color: #4a7d5a;
+  color: #C1652F;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
 
 .secondary-btn:hover {
-  background-color: #eef5f0;
+  background-color: #F3E4D0;
 }
 
 .rec-grid {
@@ -201,10 +219,11 @@ body {
 }
 
 .rec-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
   padding: 0.8rem 0.9rem;
   background-color: #ffffff;
+  box-shadow: 0 4px 14px rgba(120, 85, 40, 0.08);
 }
 
 .rec-card h3 {
@@ -223,17 +242,17 @@ body {
 
 .rec-meta {
   font-size: 0.85rem;
-  color: #666;
+  color: #8A7A63;
   margin-bottom: 0.5rem;
 }
 
 .rec-base {
-  color: #999;
+  color: #8A7A63;
   margin-left: 0.3rem;
 }
 
 .rec-empty {
-  color: #999;
+  color: #8A7A63;
   margin: 0;
 }
 
@@ -266,7 +285,7 @@ body {
 .progress-bar {
   height: 14px;
   border-radius: 999px;
-  background-color: #eaeaea;
+  background-color: #EFE3D2;
   overflow: hidden;
   margin-top: 0.4rem;
 }
@@ -274,7 +293,7 @@ body {
 .progress-fill {
   height: 100%;
   width: 0;
-  background-color: #4a7d5a;
+  background-color: #C1652F;
   transition: width 0.2s ease;
 }
 
@@ -292,7 +311,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #EFE3D2;
 }
 
 .ledger-item-info {
@@ -307,7 +326,7 @@ body {
 
 .ledger-item-status {
   font-size: 0.85rem;
-  color: #777;
+  color: #8A7A63;
 }
 
 .ledger-item-actions {
@@ -325,13 +344,13 @@ body {
 }
 
 .feast-confirm {
-  border: 1px solid #4a7d5a;
+  border: 1px solid #C1652F;
   background-color: #fff;
-  color: #4a7d5a;
+  color: #C1652F;
 }
 
 .feast-confirm:hover {
-  background-color: #eef5f0;
+  background-color: #F3E4D0;
 }
 
 .feast-cancel {
@@ -348,9 +367,10 @@ body {
 .exercise-streak {
   margin-bottom: 1.2rem;
   padding: 0.9rem 1rem;
-  border: 1px solid #d7e6dc;
-  border-radius: 8px;
-  background-color: #f3f9f5;
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
+  background-color: #F3E4D0;
+  box-shadow: 0 4px 14px rgba(120, 85, 40, 0.08);
 }
 
 .exercise-streak h3,
@@ -364,7 +384,7 @@ body {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 700;
-  color: #4a7d5a;
+  color: #C1652F;
 }
 
 .exercise-form {
@@ -381,7 +401,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.6rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #EFE3D2;
 }
 
 .exercise-item-info {
@@ -396,16 +416,17 @@ body {
 
 .exercise-item-meta {
   font-size: 0.85rem;
-  color: #777;
+  color: #8A7A63;
 }
 
 /* 本週總覽分頁 */
 .week-summary {
   margin-bottom: 1.2rem;
   padding: 0.9rem 1rem;
-  border: 1px solid #d7e6dc;
-  border-radius: 8px;
-  background-color: #f3f9f5;
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
+  background-color: #F3E4D0;
+  box-shadow: 0 4px 14px rgba(120, 85, 40, 0.08);
 }
 
 .week-summary h3,
@@ -428,7 +449,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.45rem 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #EFE3D2;
 }
 
 .week-day-label {
@@ -436,11 +457,11 @@ body {
 }
 
 .week-day-value {
-  color: #2b2b2b;
+  color: #3A2E22;
 }
 
 .week-day-empty {
-  color: #999;
+  color: #8A7A63;
 }
 
 /* ===== 響應式：小螢幕（手機） ===== */
