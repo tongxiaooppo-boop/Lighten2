@@ -1,40 +1,51 @@
-# 來自 Cline 的報告（TASK 2）
+# 來自 Cline 的報告（TASK 3）
 
 ## 這次改了什麼
 
-- `index.html`（修改）：在 `js/app.js` 之前加入 localforage CDN（jsdelivr 1.10.0）與 `js/database.js` 的 `<script>`。
-- `js/database.js`（新增）：唯一的資料存取層，實作 TECH-SPEC 4.8 節列出的**全部 26 個對外函式**（getProfile/saveProfile、weight_log、tdee_calibration_log、recipe_templates/feedback、raw_ingredients、taiwan_items、custom_foods、daily_log、feast_reservation、weekly_flex_ledger、overage_smoothing_log、exercise_log、settings）。
+新增 `data/` 下 5 個種子資料 JSON（全部合法、可 `JSON.parse`）：
 
-## 實作決策（對照 TECH-SPEC 第 3 節）
+| 檔案 | 筆數 | 說明 |
+|---|---|---|
+| `raw_ingredients.json` | **26** | 原型食材，逐筆轉錄 PRD v3.1 4.4 節 |
+| `taiwan_items.json` | **40** | 台式熱門排行榜，含 `kcal_low/kcal_high/kcal_rep` |
+| `protein_sources.json` | 11 | 三軸之一：蛋白質來源（8 筆缺數據） |
+| `staples.json` | 8 | 三軸之一：主食（3 筆缺數據） |
+| `sauce_methods.json` | 7 | 三軸之一：醬料/烹調法（2 筆缺數據） |
 
-- **user_profile 單例**：固定 key `"primary"` 直接 `setItem` 覆寫，絕不 push 進陣列，保證只有一筆。
-- **清單表**（weight_log / daily_log / exercise_log / recipe_templates / raw_ingredients / taiwan_items / custom_foods / feast_reservation / overage_smoothing_log）用固定 key `"items"` 存陣列。
-- **主鍵查詢表**（tdee_calibration_log / recipe_feedback / weekly_flex_ledger / settings）直接以主鍵當 localforage key 存單一物件。
-- 每個 store 用 `localforage.createInstance({ name: "lighten", storeName })` 建立，instance 有 cache。
-- `weight_log` 採「同日覆寫」（同日重複回填體重只保留最後一筆）。
-- `addDailyLog` / `addCustomFood` / `addExerciseLog` / `reserveFeast` / `addOverageSmoothing` 若未帶 id 會自動產生 `{prefix}_{時間戳36}_{隨機}`。
-- 對外函式以 `Object.assign(window, api)` 暴露成 bare 全域函式，方便 console 直接 `await getProfile()` 驗證，也供後續 engine/ui 模組呼叫。
+## 重要發現：raw_ingredients 是 26 筆，不是 27 筆
 
-## 跑過的驗證
+TASKS.md、TECH-SPEC 3.7 與 PRD v3.0 changelog 都寫「27 項」，但實際 PRD v3.1 4.4 節的表格**只有 26 列**（主食 10 + 蛋白質 7 + 蔬菜 4 + 脂肪 5 = 26）。我用 grep 逐列確認過（`消滅胖子PRD_v3.1.md` 第 177–202 行）。**我沒有自行補第 27 筆**（那會違反「不要自己編」），因此本檔案是 26 筆。請確認：是否 PRD 漏了一項，或「27」是筆誤。
 
-- `node --check js/database.js`：語法檢查通過。
-- 用 Node + in-memory localforage mock 跑了功能驗證（暫存測試檔跑完已刪除），**全部通過**：
-  - 初始 `getProfile()` 回傳 `null` ✓
-  - `saveProfile()` 後 `getProfile()` 拿回同一份資料 ✓
-  - 重複 `saveProfile()` 三次後，user_profile store 仍只有 1 個 key（不累積第二筆）✓
-  - weight_log 同日覆寫、日期範圍過濾 ✓
-  - daily_log 自動 id + 日期過濾 ✓
-  - feast_reservation reserve→updateFeastStatus(confirmed, 關聯 daily_log_id) ✓
-  - weekly_flex_ledger get 初始 null、update 後可讀 ✓
-  - settings / recipe_feedback（shown_count 累加）/ overage_smoothing / exercise_log ✓
-  - 空清單表的 get 回傳 `[]` 而非 null ✓
-- 本機 `git commit` 完成（commit `f85e5f7`），未 `git push`。
+## 轉錄規則說明
+
+- `raw_ingredients.json`：數值完全照 4.4 節（每 100g），欄位 `kcal_100g/protein_100g/carb_100g/fat_100g/fiber_100g`。纖維有給 0 的就寫 0（不轉 null）。
+- `taiwan_items.json`：`kcal_low/kcal_high` 取該品項「整份」範圍；多種變體（如火鍋個人鍋 700–950／吃到飽 1800–2400+）取整體 min/max，細項拆解放進 `note`。`kcal_rep` 只在 PRD 明確給「代表值約 X」或單一值時才填，否則 `null`（共 32 筆 null、8 筆有值：排骨便當 950、雞腿便當 810、牛肉麵 700、豆漿 125、蘿蔔糕 355、鐵板麵 450、地瓜 180、豆漿店 522）。
+- 三軸表：從 PRD 附錄 A 13 道範例拆出蛋白質來源／主食／醬料-烹調法三類元件，去重後個別建表。
+
+## 三軸表缺數據清單（`kcal_100g: null`，待決定是否補值）
+
+**protein_sources.json（8 筆缺數據）**：乳清蛋白粉、希臘優格、鮭魚、牛肉、雞腿肉、鯛魚、蝦仁、無糖豆漿。
+（4.4 有對應可引用的：雞胸肉、雞蛋、板豆腐 → 已引用 4.4 數值）
+
+**staples.json（3 筆缺數據）**：藜麥、雜糧飯、毛豆仁。
+（4.4 有對應可引用的：燕麥片、地瓜、糙米飯、南瓜 → 已引用；花椰菜米引用 4.4「花椰菜(蔬菜)」數值，因其即花椰菜切碎）
+
+**sauce_methods.json（2 筆缺數據）**：韓式泡菜、照燒醬（市售佐料，4.4 未收錄）。
+（其餘 5 筆是「烹調法」：免開火/微波/煎/炒/烤氣炸，本身不貢獻熱量，故營養欄位填 0 而非 null）
 
 ## 需要 Claude／使用者決定的事
 
-1. **`weekly_flex_ledger.cap_kcal` 沒有對應的 DB 寫入函式**：TECH-SPEC 4.8 只列了 `updateWeeklyLedger(weekStartDate, usedKcal)`（只能寫 used_kcal）。但 TASK 8 的 `feast.js` 需要依 goal_mode 換算 `cap_kcal` 並寫入。目前 `updateWeeklyLedger` 用 `Object.assign` 保留既有欄位，所以 cap_kcal 若不存在會是 undefined。**建議 TASK 8 時擴充**（例如讓 `updateWeeklyLedger` 接受第三個選填參數 `capKcal`，或新增 `setWeeklyLedgerCap()`），此處先照 4.8 字面實作。
-2. **`getRecipeTemplates(filter)` / `getTaiwanItems(filter)` 的 filter 形狀**：TECH-SPEC 未定義。我先支援 `{ slot?, tier?, dietRestriction?, excludeAllergens? }` 四種，TASK 7 若需要不同欄位再擴充。
+1. **raw_ingredients 26 vs 27**：見上，需確認是否漏項或筆誤。
+2. **三軸表 13 筆缺數據**：是否要補值？補值來源需可靠（PRD 未提供），建議由營養師或可靠資料庫另補，我沒有編造。
+3. **三軸表的 `prep_tier`、`diet_tags`、`allergen_tags` 是我做的判斷**（PRD 只給整道食譜的 🟢/🟡/🔴，未給各軸難度貢獻；過敏原依食物已知屬性，如雞蛋→蛋、蝦仁/泡菜→甲殼類、乳清/優格→乳製品、照燒醬→麩質）。若有既定規範請告知。
+4. **`taiwan_items.json` 的 `category` 我用中文「早餐/午餐/晚餐/宵夜」**；TECH-SPEC 的 recipe_templates `slot` 用英文 `breakfast/main/snack`，兩者對應關係（午餐/晚餐 → main）尚未統一，TASK 7 需決定映射。
+
+## 驗證
+
+- 5 個檔案皆用 Node `JSON.parse` 通過。
+- `taiwan_items` = 40 筆、`raw_ingredients` = 26 筆，與上面清單一致。
+- 本機 `git commit` 完成（commit `8ceb648`），未 `git push`。
 
 ## 建議下一步
 
-- 依 TASKS.md 執行 TASK 3（建立 `data/*.json` 種子資料，從 PRD 轉錄三軸、27 項原型食材、40 項台式排行）。
+- 依 TASKS.md 執行 TASK 4（`js/engine/nutrition.js` 的 `calculateTargets`，公式照 TECH-SPEC 4.1）。

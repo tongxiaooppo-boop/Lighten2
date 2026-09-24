@@ -1,36 +1,42 @@
 # 目前任務（來自 Claude）
 
-TASK 2 已審查通過（`database.js` 全部函式行為正確，commit `f85e5f7`）。這一輪換 TASK 3。
+TASK 3 已審查通過（`data/*.json` 5 個種子檔案，commit `8ceb648`）。這一輪換 TASK 4。
+
+## TASK 3 遺留問題的處置（先看這段再開始）
+
+你在 TASK 3 報告裡提的 4 個待決事項，處置如下：
+
+1. **raw_ingredients 26 vs 27**：我對照 `消滅胖子PRD_v3.1.md` 第 177–202 行親自數過，確實只有 26 列。「27」是 PRD/TECH-SPEC 的筆誤，**26 筆是對的，不用補第 27 筆**，也不用改 JSON。
+2. **三軸表 13 筆缺數據（`kcal_100g: null`）**：先保留 null，之後 TASK 7（`recommend.js`）真的需要組合完整食譜熱量時，再由使用者決定要不要另外查證補值。這輪不用處理。
+3. **`prep_tier`/`diet_tags`/`allergen_tags` 是你自行判斷的**：合理，先維持現狀，之後有問題再個別調整即可。
+4. **`taiwan_items.category`（中文）vs `recipe_templates.slot`（英文）對應**：這個等 TASK 7 實際要合併資料時再處理，這輪不用動。
 
 ## 這一輪要做的事
 
-### TASK 3 — 種子資料 JSON
+### TASK 4 — nutrition.js（起點值）
 
-建立以下 5 個檔案（放 `data/` 目錄）：
-- `data/raw_ingredients.json`
-- `data/taiwan_items.json`
-- `data/protein_sources.json`
-- `data/staples.json`
-- `data/sauce_methods.json`
+實作 `js/engine/nutrition.js` 的 `calculateTargets(profile)`，公式對照 PRD `輕盈計畫PRD_v4.0.md` 第 3 節第 1–6 項：
 
-**資料來源與轉錄規則（不要自己編數值）：**
+1. **BMR**（Mifflin-St Jeor）：
+   - 男 = 10×體重(kg) + 6.25×身高(cm) − 5×年齡 + 5
+   - 女 = 10×體重(kg) + 6.25×身高(cm) − 5×年齡 − 161
+2. **TDEE** = BMR × 活動係數（久坐1.2／輕量1.375／中度1.55／高度1.725）+ 特殊活動 METs 消耗（若 profile 沒帶這項就先當 0，不用自己編算法）。
+3. **目標熱量**：減脂 TDEE×0.8／維持 TDEE×1.0／增肌 TDEE×1.1。
+4. **安全下限**：女性 < 1200 kcal 或男性 < 1500 kcal 時，自動上調至門檻值，回傳值要能標示「有觸發下限」（TECH-SPEC 4.1 的 `flooredWarning`）。
+5. **巨量營養素**：蛋白質 1.6–2.0 g/kg（先取中間值或讓 profile 指定，你可以自行決定預設值，但要在報告說明取哪個值）；脂肪佔總熱量 20–25%；碳水 = 剩餘熱量換算。
+6. **膳食纖維**：預設 30g/日（可調整範圍 25–35g，這裡先固定用預設值即可，週日均值邏輯是之後 TASK 才要做的事，這輪不用實作）；額外算 `netCarb_g = carb_g − fiber_g`。
 
-1. `raw_ingredients.json` ← PRD `輕盈計畫PRD_v4.0.md` 第 4.4 節，共 27 項。欄位對照 TECH-SPEC 3.7。
-2. `taiwan_items.json` ← PRD 第 4.3 節，共 40 項，含 `kcal_low`/`kcal_high`/`kcal_rep` 三個熱量欄位（TECH-SPEC 3.8）。
-3. `protein_sources.json` / `staples.json` / `sauce_methods.json` ← 這三個是新的三軸拆解表（TECH-SPEC 3.4），**PRD 沒有現成的三軸清單**，只有附錄 A 的「組合完成品」範例（例如「舒肥雞胸地瓜餐」= 蛋白質來源:舒肥雞胸 + 主食:地瓜 + 烹調法:免開火）。請這樣處理：
-   - 讀 PRD 附錄 A 的每一道範例，拆出裡面出現的蛋白質來源／主食／醬料或烹調法三種元件。
-   - 每個元件如果在 `raw_ingredients.json`（PRD 4.4 節）已經有對應的原型食材及其營養數值，就直接引用那份數值，**不要自己重新估算**。
-   - 如果附錄 A 出現的元件在 4.4 節找不到對應（例如「照燒醬」「韓式泡菜」這類醬料/佐料，原型食材資料庫可能沒收錄），**不要編造數值**——先在該筆資料標記 `"kcal_100g": null` 之類的欄位並在報告裡列出「哪些元件缺數據」，交給我或使用者決定要不要之後另外補值。
-   - 欄位結構依 TECH-SPEC 3.4：`id`、`name`、`kcal_100g`/`protein_100g`/`carb_100g`/`fat_100g`/`fiber_100g`、`diet_tags`、`allergen_tags`、`prep_tier`（🟢/🟡/🔴）。
-   - `fiber_g`／`fiber_100g` 若 PRD 未提供數值，寫 `null`，不要自己估算。
+回傳格式照 TECH-SPEC 4.1：`{ bmr, tdee, targetKcal, flooredWarning, protein_g, fat_g, carb_g, fiber_g, netCarb_g }`。
+
+**這一輪只做起點值公式，不要做 TDEE 動態校正（PRD 3.7節、TECH-SPEC 4.2 `tdee.js`）**，那是後面 TASK 6 的事。
 
 ## 完成標準
 
-- 5 個 JSON 檔案格式合法（可以直接 `JSON.parse`）。
-- `raw_ingredients.json` 剛好 27 筆，`taiwan_items.json` 剛好 40 筆。
-- 報告裡列出各檔案轉錄筆數，以及 `protein_sources`/`staples`/`sauce_methods` 裡有多少筆缺數據（`kcal_100g: null`）。
+用 `console.log` 跑 3 組測試案例，誤差在 ±5kcal 內：
 
-這一輪**只做這 5 個 JSON 檔案**，不要順手寫 `recipe_templates` 的組合邏輯或任何 `engine/*.js`（那是 TASK 4 以後的事）。
+1. 175cm / 70kg / 30歲 / 男 / 中度活動(1.55) / 減脂 → TDEE 應約 2554、目標約 2043
+2. 同上但改「維持」→ 目標應約等於 TDEE
+3. 160cm / 50kg / 25歲 / 女 / 久坐(1.2) / 減脂 → 檢查是否觸發 1200kcal 安全下限（`flooredWarning` 應為 true）
 
 做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。
 
