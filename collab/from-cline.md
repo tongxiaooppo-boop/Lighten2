@@ -1,39 +1,35 @@
-# 來自 Cline 的報告（TASK 4）
+# 來自 Cline 的報告（TASK 5）
 
 ## 這次改了什麼
 
-- `js/engine/nutrition.js`（新增）：實作 `calculateTargets(profile)` 起點值公式，對照 PRD v4.0 第 3 節第 1–6 項與 TECH-SPEC 4.1。
-- 對外以 `window.calculateTargets` 暴露成 bare 全域函式（與 database.js 相同模式），供 console 驗證與後續 `ui/tab-profile.js` 呼叫。
+- `index.html`（修改）：`#tab-profile` 區塊填入完整表單 + 計算結果區 + 今日體重回填小元件；並在 script 區加入 `js/engine/nutrition.js` 與 `js/ui/tab-profile.js`（載入順序：localforage → database.js → nutrition.js → tab-profile.js → app.js）。
+- `js/ui/tab-profile.js`（新增）：分頁一邏輯（載入回填、計算+存檔、體重回填）。
+- `css/style.css`（修改）：新增表單/結果卡/體重回填的樣式（fieldset、form-row、form-field、primary-btn、targets-result、weight-widget）。
 
-## 公式與預設值（含我自行決定的預設）
+## 表單欄位（與 nutrition.js/database.js 對齊，已定案不再變體）
 
-1. **BMR**（Mifflin-St Jeor）：男 `10W + 6.25H − 5A + 5`、女 `10W + 6.25H − 5A − 161`。
-2. **TDEE** = BMR × 活動係數 + 特殊活動消耗。活動係數：優先取 `activity_value`（數值 PAL），否則查 `activity_mode` 對照表（久坐1.2／輕度1.375／中度1.55／高度1.725，支援中英文 key），都缺時 fallback 1.2。`special_activity_kcal` 沒帶就當 0（未自己編 METs 算法）。
-3. **目標熱量**：減脂 ×0.8／維持 ×1.0／增肌 ×1.1。
-4. **安全下限**：女 < 1200、男 < 1500 自動上調至門檻值，`flooredWarning = true`。
-5. **蛋白質預設**（範圍 1.6–2.0 g/kg，我自訂的預設值，**請確認**）：增肌 2.0（取上限）、維持 1.8（取中間值）、減脂 1.8（取中間值；PRD 未明說減脂取何值，故比照維持）。可用 `profile.protein_g_per_kg` 覆寫。
-6. **脂肪預設**：佔目標熱量 **25%**（PRD 範圍 20–25%，取上限），可用 `profile.fat_pct`（0–1）覆寫。碳水 = 剩餘熱量換算（不會變負數）。**膳食纖維** 預設 30g（可用 `profile.fiber_target_g` 覆寫），`netCarb_g = carb_g − fiber_g`。
+`age`、`gender`（'男'/'女'）、`height_cm`、`weight_kg`、`body_fat_pct`（選填，留空存 null）、`activity_mode`（'久坐'/'輕度'/'中度'/'高度'）、`special_activity_kcal`（選填，留空存 null）、`diet_restriction`（select：一般/蛋奶素/全素/低碳/無特殊限制）、`allergens`（文字輸入）、`prep_time_weekday`、`prep_time_weekend`（select：幾乎無/5分鐘內/15分鐘內/30分鐘以上）、`goal_mode`（'減脂'/'維持'/'增肌'）。
 
-回傳格式照 TECH-SPEC 4.1：`{ bmr, tdee, targetKcal, flooredWarning, protein_g, fat_g, carb_g, fiber_g, netCarb_g }`，數值四捨五入到小數 1 位。
+## 行為
 
-## 跑過的驗證（console.log 3 組 + 1 組額外）
+1. 載入時 `getProfile()` → 有資料就回填表單（重新整理資料還在）。
+2. 「計算」按鈕：讀表單 → 組 `profile` → `calculateTargets(profile)` → 顯示 BMR/TDEE/目標熱量/蛋白質/脂肪/碳水/纖維/淨碳水（`flooredWarning` 為 true 時另顯示安全下限提示）→ `saveProfile(profile)` 存檔。
+3. 「今日體重回填」：日期（預設今天）+ 體重 → `addWeightLog({ log_date, weight_kg })`，送出後顯示「已記錄 …」。
 
-| 案例 | 結果 | 判定 |
-|---|---|---|
-| 1. 175cm/70kg/30歲/男/1.55/減脂 | BMR 1648.8、TDEE **2555.6**、目標 **2044.5**、無下限 | TDEE 約2554、目標約2043，±5 內 ✓ |
-| 2. 同上改維持 | 目標 2555.6 = TDEE | ✓ |
-| 3. 160cm/50kg/25歲/女/1.2/減脂 | 目標 **1200**、`flooredWarning=true` | 觸發 1200 下限 ✓ |
-| 4.（額外）增肌 | protein_g = 140（2.0 g/kg × 70kg） | 取上限 ✓ |
+## 驗證
 
-- `node --check` 語法通過；暫存測試檔跑完已刪除。
-- 本機 `git commit` 完成（commit `74daf2f`），未 `git push`。
+- `node --check js/ui/tab-profile.js` 語法通過（exit 0）。
+- 用 grep 確認表單 12 個 profile 欄位 + weight 表單 2 個欄位的 `name` 全部到位，且與 `readProfileForm()`／`nutrition.js` 讀取的欄位名一致。
+- 手動追蹤「計算」流程：`gender='男'`→male、`activity_mode='中度'`→1.55、`goal_mode='減脂'`→0.8 等對應正確。
+- **未做真實瀏覽器端到端驗證**（本機無 headless 瀏覽器/jsdom）。完成標準的「畫面顯示數字」「重新整理資料還在」需在瀏覽器實測；邏輯上已透過上面的欄位對齊與語法檢查。
 
 ## 需要 Claude／使用者決定的事
 
-1. **蛋白質 g/kg 預設值**：減脂我比照維持取 1.8（PRD 只寫「增肌取上限、維持取中間值」，未寫減脂）。若要減脂取上限 2.0（保留肌肉較常見的建議），請告知，我一行即可改。
-2. **脂肪佔比預設取 25%**（範圍上限）。若要用中間值 22.5% 或下限 20%，請告知。
-3. **`activity_value` / `activity_mode` / `special_activity_kcal` 的欄位名**是我依 PRD 2.2 與 TECH-SPEC 3.1 推定的；TASK 5 做表單時會實際定案 input name，屆時以表單欄位為準。
+- 無重大事項。以下幾點屬實作選擇，供參考：
+  1. 表單用了 `novalidate`，所以年齡/身高/體重改由 JS 手動檢查（空值會 alert 提示），HTML 的 `min/max` 僅作輸入提示。
+  2. `body_fat_pct` / `special_activity_kcal` 留空時存 `null`（`calculateTargets` 對 `special_activity_kcal` 會當 0；`body_fat_pct` 本輪不參與計算，PRD 2.1 的 Deurenberg 推估未實作）。
+  3. 過敏原用「文字輸入（逗號分隔）」存字串，未做 checkbox 多選（PRD 2.3 說「先做選項/文字輸入」，故取最簡的文字輸入）。
 
 ## 建議下一步
 
-- 依 TASKS.md 執行 TASK 5（`js/ui/tab-profile.js`：基本資料表單 + 計算 + weight_log 回填）。
+- 依 TASKS.md 執行 TASK 6（`js/engine/budget.js` 的 `recalcTodayBudget` + `js/engine/matcher.js` 的 `checkHardConstraints`）。

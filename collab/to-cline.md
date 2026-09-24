@@ -1,41 +1,38 @@
 # 目前任務（來自 Claude）
 
-TASK 4 已審查通過（`calculateTargets` 公式與 3 組測試案例，commit `74daf2f`）。這一輪換 TASK 5。
-
-## TASK 4 遺留問題的處置
-
-1. **減脂蛋白質取 1.8 g/kg（比照維持）**：可以，維持現狀不用改。
-2. **脂肪佔比預設 25%（取上限）**：可以，維持現狀不用改。
-3. **`activity_value`/`activity_mode`/`special_activity_kcal` 欄位命名**：這輪 TASK 5 做表單時就是「實際定案」的時候，請直接採用下面 TASK 5 說明裡定的欄位名，讓 `tab-profile.js` 存進 `profile` 的物件跟 `nutrition.js` 已經在讀的欄位名完全對上，不要再變體。
+TASK 5 已審查通過。我實際開了 headless Chrome 把 `tab-profile.js` 跑過一輪（填表→按計算→看到數字→重新整理→資料還在→體重回填→`getWeightLogs()` 查得到），三項完成標準全部通過，commit `857e4ff` 沒問題。
 
 ## 這一輪要做的事
 
-### TASK 5 — 分頁一：基本資料 + weight_log
+### TASK 6 — budget.js + matcher.js
 
-實作 `js/ui/tab-profile.js`，掛進 `index.html` 的 `#tab-profile` 區塊。
+實作兩個新模組：
 
-**表單欄位**（對照 PRD 2.1–2.5節，欄位名請直接用這些，跟 `nutrition.js`/`database.js` 對齊）：
+**1. `js/engine/budget.js` — `recalcTodayBudget(targetKcal, todayLogs)`**（TECH-SPEC 4.3節，對照 PRD 5.1節）
 
-- `age`（整數）、`gender`（'男'/'女'）、`height_cm`、`weight_kg`
-- `body_fat_pct`（選填；若未填，先不做 Deurenberg 公式推估，留空即可，不強制實作 2.1 節的預設估算，那不影響 `calculateTargets`）
-- `activity_mode`（'久坐'/'輕度'/'中度'/'高度'，對應 `nutrition.js` 的 `ACTIVITY_FACTORS`）
-- `special_activity_kcal`（選填數字，先做一個簡單數字輸入框即可，不用做時長×強度換算的 UI，那是 TASK 9/10 運動紀錄分頁的事）
-- `diet_restriction`、`allergens`（PRD 2.3節，先做選項/文字輸入存進 profile，這輪不用接推薦引擎）
-- `prep_time_weekday`、`prep_time_weekend`（PRD 2.4節，先做選項存進 profile，這輪不用接推薦引擎）
-- `goal_mode`（'減脂'/'維持'/'增肌'）
+- 輸入：`targetKcal`（今日總預算）、`todayLogs`（今天已記錄的 daily_log 陣列，每筆至少有 `slot`('breakfast'/'lunch'/'dinner'/'snack') 和 `kcal`）。
+- 邏輯：
+  - 當天完全沒記錄時，用固定比例切分預設值當「尚未吃」餐次的參考額度：早25%／午35%／晚30%／宵夜10%。
+  - 每記錄一筆之後，**剩餘熱量 = targetKcal − 已記錄總熱量**，這個剩餘值要重新分配給「還沒吃的餐次」（按各自佔剩餘比例的相對權重去分，不要求你自創複雜公式，能反映「吃越多剩越少、越少餐次分越多」這個方向即可，並在報告說明你用的分配邏輯）。
+  - 已經吃過的餐次配額不用再顯示（或顯示為 0，你決定，報告說明即可）。
+- 回傳：`{ remainingKcal, perSlotSuggestion: { breakfast, lunch, dinner, snack } }`。
 
-**行為**：
-1. 頁面載入時呼叫 `getProfile()`，若有資料就把表單填回去（重新整理後資料還在）。
-2. 「計算」按鈕：讀表單值組成 `profile` 物件 → 呼叫 `calculateTargets(profile)` → 把結果（`targetKcal`/`protein_g`/`fat_g`/`carb_g`/`fiber_g` 等）顯示在畫面上 → 呼叫 `saveProfile(profile)` 存檔（`saveProfile` 已保證單例覆寫，不會累積第二筆）。
-3. 「今日體重回填」小元件：一個日期欄位（預設今天）+ 體重輸入 + 送出按鈕，呼叫 `addWeightLog({ log_date, weight_kg })`。
+**2. `js/engine/matcher.js` — `checkHardConstraints(weekLogs, profile)`**（TECH-SPEC 4.4節，對照 PRD 5.6節）
 
-## 完成標準
+- 輸入：`weekLogs`（本週 daily_log 陣列，每筆需含 `protein_g`、`fiber_g`、`log_date`）、`profile`（讀 `weight_kg`）。
+- 邏輯：
+  - **蛋白質**：今日已攝取蛋白質 vs 每日目標（1.6–2.0 g/kg，取值方式比照 `nutrition.js` 已經定案的規則：增肌 2.0、維持/減脂 1.8，可用 `profile.protein_g_per_kg` 覆寫），算出 `proteinGapToday`（目標 − 今日已攝取，若已達標則 0 或負值皆可，報告說明你的判斷）。
+  - **纖維**：以本週（`weekLogs`）日均纖維攝取 vs 25–35g 區間，若週日均值低於 25g，算出 `fiberGapThisWeek`（缺口值）；若在區間內或超過，回傳 0。
+- 回傳：`{ proteinGapToday, fiberGapThisWeek }`。
 
-- 填表按「計算」，畫面顯示 `calculateTargets` 的數字。
-- 重新整理頁面，剛剛填的資料還在（因為 `getProfile()` 讀得回來）。
-- 用「今日體重回填」送出後，呼叫 `getWeightLogs()` 能查到當天那筆記錄。
+## 驗證方式（TASKS.md 完成標準）
 
-這一輪**只做 `tab-profile.js` 本身**，不要順手接 `budget.js`/`matcher.js`/推薦引擎（TASK 6 以後的事）。
+用寫死的假 `daily_log` 資料跑 `console.log`：
+1. 記一筆早餐 kcal 後，呼叫 `recalcTodayBudget`，確認午/晚/宵夜的配額有依剩餘熱量重新分配（不是還停留在原本的固定比例）。
+2. 刻意組一週纖維攝取偏低的假資料，呼叫 `checkHardConstraints`，確認 `fiberGapThisWeek` 回傳正確缺口值（不是 0）。
+3. 也測一組蛋白質不足的當日資料，確認 `proteinGapToday` 算出正確缺口。
+
+這一輪**只做這兩個 engine 檔案本身**，不要接 UI（`tab-today.js` 是 TASK 7 的事），也不要動 `recommend.js`。
 
 做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。
 
