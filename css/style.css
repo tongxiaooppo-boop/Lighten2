@@ -150,6 +150,15 @@ body {
   color: #9a5b00;
 }
 
+.calibrated-row {
+  margin: 0.6rem 0 0;
+  padding: 0.4rem 0.6rem;
+  border-left: 3px solid #4a7d5a;
+  background-color: #eef5f0;
+  color: #2b2b2b;
+  font-weight: 600;
+}
+
 .weight-widget {
   margin-top: 1.5rem;
   padding-top: 1rem;

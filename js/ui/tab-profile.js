@@ -36,6 +36,27 @@
     return y + "-" + m + "-" + day;
   }
 
+  function fmt(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function mondayOfThisWeek() {
+    const d = new Date();
+    const day = d.getDay();
+    const diff = day === 0 ? 6 : day - 1;
+    d.setDate(d.getDate() - diff);
+    return fmt(d);
+  }
+
+  function dateAddDays(dateStr, days) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return fmt(d);
+  }
+
   function readProfileForm() {
     const form = document.getElementById("profile-form");
     const fd = new FormData(form);
@@ -89,6 +110,31 @@
     $("#targets-result").hidden = false;
   }
 
+  function showCalibration(targetKcal) {
+    const row = $("#calibrated-target-row");
+    if (row) {
+      $("#calibrated-target").textContent = targetKcal;
+      row.hidden = false;
+    }
+  }
+
+  function hideCalibration() {
+    const row = $("#calibrated-target-row");
+    if (row) row.hidden = true;
+  }
+
+  async function refreshCalibration(profile) {
+    try {
+      const eightWeeksAgo = dateAddDays(mondayOfThisWeek(), -7 * 8);
+      const weightLogs = await getWeightLogs({ start: eightWeeksAgo });
+      const dailyLogs = await getDailyLogs({ start: eightWeeksAgo });
+      const cal = await calibrateWeeklyTdee(weightLogs, dailyLogs, profile);
+      showCalibration(cal.targetKcal);
+    } catch (err) {
+      console.error("calibrateWeeklyTdee 失敗", err);
+    }
+  }
+
   async function onCalculate(e) {
     e.preventDefault();
     const profile = readProfileForm();
@@ -111,6 +157,7 @@
     } catch (err) {
       console.error("saveProfile 失敗", err);
     }
+    await refreshCalibration(profile);
   }
 
   async function onWeightSubmit(e) {
@@ -143,6 +190,14 @@
     try {
       const profile = await getProfile();
       fillProfileForm(profile);
+      if (profile) {
+        const cal = await getTdeeCalibration(mondayOfThisWeek());
+        if (cal && cal.target_kcal != null) {
+          showCalibration(cal.target_kcal);
+        } else {
+          hideCalibration();
+        }
+      }
     } catch (err) {
       console.error("載入 profile 失敗", err);
     }
