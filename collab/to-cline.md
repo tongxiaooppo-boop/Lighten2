@@ -17,4 +17,8 @@
 
 瀏覽器打開 `index.html` 能看到6個tab，點擊能切換內容區塊，其他功能都還沒做也沒關係。
 
-做完後照協作規則：commit，並把報告寫進 `collab/from-cline.md`。
+做完後照協作規則：commit（**只要本機commit，不要`git push`**），並把報告寫進 `collab/from-cline.md`。
+
+## 分工說明
+
+這個專案的GitHub push與未來的雲端部署（GitHub Pages/Netlify等）由Claude負責，Cline只需要寫程式、本機commit，不用處理remote，也不用管部署。

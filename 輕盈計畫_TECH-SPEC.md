@@ -21,6 +21,8 @@
 - 不使用任何前端框架，純 DOM 操作。
 - 不引入 build 工具鏈。
 
+**分工（比照 `collab/to-cline.md` 規則）**：Cline 只負責寫程式與**本機** `git commit`；GitHub remote push 與未來的雲端部署（GitHub Pages / Netlify 等）一律由 Claude Code 負責，Cline 不執行 `git push`、不碰部署設定。專案已建立公開 GitHub repo：https://github.com/tongxiaooppo-boop/lighten
+
 ---
 
 ## 2. 專案目錄結構
