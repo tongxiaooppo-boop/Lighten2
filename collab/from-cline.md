@@ -1,51 +1,39 @@
-# 來自 Cline 的報告（TASK 3）
+# 來自 Cline 的報告（TASK 4）
 
 ## 這次改了什麼
 
-新增 `data/` 下 5 個種子資料 JSON（全部合法、可 `JSON.parse`）：
+- `js/engine/nutrition.js`（新增）：實作 `calculateTargets(profile)` 起點值公式，對照 PRD v4.0 第 3 節第 1–6 項與 TECH-SPEC 4.1。
+- 對外以 `window.calculateTargets` 暴露成 bare 全域函式（與 database.js 相同模式），供 console 驗證與後續 `ui/tab-profile.js` 呼叫。
 
-| 檔案 | 筆數 | 說明 |
+## 公式與預設值（含我自行決定的預設）
+
+1. **BMR**（Mifflin-St Jeor）：男 `10W + 6.25H − 5A + 5`、女 `10W + 6.25H − 5A − 161`。
+2. **TDEE** = BMR × 活動係數 + 特殊活動消耗。活動係數：優先取 `activity_value`（數值 PAL），否則查 `activity_mode` 對照表（久坐1.2／輕度1.375／中度1.55／高度1.725，支援中英文 key），都缺時 fallback 1.2。`special_activity_kcal` 沒帶就當 0（未自己編 METs 算法）。
+3. **目標熱量**：減脂 ×0.8／維持 ×1.0／增肌 ×1.1。
+4. **安全下限**：女 < 1200、男 < 1500 自動上調至門檻值，`flooredWarning = true`。
+5. **蛋白質預設**（範圍 1.6–2.0 g/kg，我自訂的預設值，**請確認**）：增肌 2.0（取上限）、維持 1.8（取中間值）、減脂 1.8（取中間值；PRD 未明說減脂取何值，故比照維持）。可用 `profile.protein_g_per_kg` 覆寫。
+6. **脂肪預設**：佔目標熱量 **25%**（PRD 範圍 20–25%，取上限），可用 `profile.fat_pct`（0–1）覆寫。碳水 = 剩餘熱量換算（不會變負數）。**膳食纖維** 預設 30g（可用 `profile.fiber_target_g` 覆寫），`netCarb_g = carb_g − fiber_g`。
+
+回傳格式照 TECH-SPEC 4.1：`{ bmr, tdee, targetKcal, flooredWarning, protein_g, fat_g, carb_g, fiber_g, netCarb_g }`，數值四捨五入到小數 1 位。
+
+## 跑過的驗證（console.log 3 組 + 1 組額外）
+
+| 案例 | 結果 | 判定 |
 |---|---|---|
-| `raw_ingredients.json` | **26** | 原型食材，逐筆轉錄 PRD v3.1 4.4 節 |
-| `taiwan_items.json` | **40** | 台式熱門排行榜，含 `kcal_low/kcal_high/kcal_rep` |
-| `protein_sources.json` | 11 | 三軸之一：蛋白質來源（8 筆缺數據） |
-| `staples.json` | 8 | 三軸之一：主食（3 筆缺數據） |
-| `sauce_methods.json` | 7 | 三軸之一：醬料/烹調法（2 筆缺數據） |
+| 1. 175cm/70kg/30歲/男/1.55/減脂 | BMR 1648.8、TDEE **2555.6**、目標 **2044.5**、無下限 | TDEE 約2554、目標約2043，±5 內 ✓ |
+| 2. 同上改維持 | 目標 2555.6 = TDEE | ✓ |
+| 3. 160cm/50kg/25歲/女/1.2/減脂 | 目標 **1200**、`flooredWarning=true` | 觸發 1200 下限 ✓ |
+| 4.（額外）增肌 | protein_g = 140（2.0 g/kg × 70kg） | 取上限 ✓ |
 
-## 重要發現：raw_ingredients 是 26 筆，不是 27 筆
-
-TASKS.md、TECH-SPEC 3.7 與 PRD v3.0 changelog 都寫「27 項」，但實際 PRD v3.1 4.4 節的表格**只有 26 列**（主食 10 + 蛋白質 7 + 蔬菜 4 + 脂肪 5 = 26）。我用 grep 逐列確認過（`消滅胖子PRD_v3.1.md` 第 177–202 行）。**我沒有自行補第 27 筆**（那會違反「不要自己編」），因此本檔案是 26 筆。請確認：是否 PRD 漏了一項，或「27」是筆誤。
-
-## 轉錄規則說明
-
-- `raw_ingredients.json`：數值完全照 4.4 節（每 100g），欄位 `kcal_100g/protein_100g/carb_100g/fat_100g/fiber_100g`。纖維有給 0 的就寫 0（不轉 null）。
-- `taiwan_items.json`：`kcal_low/kcal_high` 取該品項「整份」範圍；多種變體（如火鍋個人鍋 700–950／吃到飽 1800–2400+）取整體 min/max，細項拆解放進 `note`。`kcal_rep` 只在 PRD 明確給「代表值約 X」或單一值時才填，否則 `null`（共 32 筆 null、8 筆有值：排骨便當 950、雞腿便當 810、牛肉麵 700、豆漿 125、蘿蔔糕 355、鐵板麵 450、地瓜 180、豆漿店 522）。
-- 三軸表：從 PRD 附錄 A 13 道範例拆出蛋白質來源／主食／醬料-烹調法三類元件，去重後個別建表。
-
-## 三軸表缺數據清單（`kcal_100g: null`，待決定是否補值）
-
-**protein_sources.json（8 筆缺數據）**：乳清蛋白粉、希臘優格、鮭魚、牛肉、雞腿肉、鯛魚、蝦仁、無糖豆漿。
-（4.4 有對應可引用的：雞胸肉、雞蛋、板豆腐 → 已引用 4.4 數值）
-
-**staples.json（3 筆缺數據）**：藜麥、雜糧飯、毛豆仁。
-（4.4 有對應可引用的：燕麥片、地瓜、糙米飯、南瓜 → 已引用；花椰菜米引用 4.4「花椰菜(蔬菜)」數值，因其即花椰菜切碎）
-
-**sauce_methods.json（2 筆缺數據）**：韓式泡菜、照燒醬（市售佐料，4.4 未收錄）。
-（其餘 5 筆是「烹調法」：免開火/微波/煎/炒/烤氣炸，本身不貢獻熱量，故營養欄位填 0 而非 null）
+- `node --check` 語法通過；暫存測試檔跑完已刪除。
+- 本機 `git commit` 完成（commit `74daf2f`），未 `git push`。
 
 ## 需要 Claude／使用者決定的事
 
-1. **raw_ingredients 26 vs 27**：見上，需確認是否漏項或筆誤。
-2. **三軸表 13 筆缺數據**：是否要補值？補值來源需可靠（PRD 未提供），建議由營養師或可靠資料庫另補，我沒有編造。
-3. **三軸表的 `prep_tier`、`diet_tags`、`allergen_tags` 是我做的判斷**（PRD 只給整道食譜的 🟢/🟡/🔴，未給各軸難度貢獻；過敏原依食物已知屬性，如雞蛋→蛋、蝦仁/泡菜→甲殼類、乳清/優格→乳製品、照燒醬→麩質）。若有既定規範請告知。
-4. **`taiwan_items.json` 的 `category` 我用中文「早餐/午餐/晚餐/宵夜」**；TECH-SPEC 的 recipe_templates `slot` 用英文 `breakfast/main/snack`，兩者對應關係（午餐/晚餐 → main）尚未統一，TASK 7 需決定映射。
-
-## 驗證
-
-- 5 個檔案皆用 Node `JSON.parse` 通過。
-- `taiwan_items` = 40 筆、`raw_ingredients` = 26 筆，與上面清單一致。
-- 本機 `git commit` 完成（commit `8ceb648`），未 `git push`。
+1. **蛋白質 g/kg 預設值**：減脂我比照維持取 1.8（PRD 只寫「增肌取上限、維持取中間值」，未寫減脂）。若要減脂取上限 2.0（保留肌肉較常見的建議），請告知，我一行即可改。
+2. **脂肪佔比預設取 25%**（範圍上限）。若要用中間值 22.5% 或下限 20%，請告知。
+3. **`activity_value` / `activity_mode` / `special_activity_kcal` 的欄位名**是我依 PRD 2.2 與 TECH-SPEC 3.1 推定的；TASK 5 做表單時會實際定案 input name，屆時以表單欄位為準。
 
 ## 建議下一步
 
-- 依 TASKS.md 執行 TASK 4（`js/engine/nutrition.js` 的 `calculateTargets`，公式照 TECH-SPEC 4.1）。
+- 依 TASKS.md 執行 TASK 5（`js/ui/tab-profile.js`：基本資料表單 + 計算 + weight_log 回填）。
