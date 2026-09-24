@@ -343,3 +343,58 @@ body {
 .feast-cancel:hover {
   background-color: #fbf0f0;
 }
+
+/* 運動紀錄分頁 */
+.exercise-streak {
+  margin-bottom: 1.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d7e6dc;
+  border-radius: 8px;
+  background-color: #f3f9f5;
+}
+
+.exercise-streak h3,
+.exercise-form h3,
+.exercise-list h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.streak-text {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #4a7d5a;
+}
+
+.exercise-form {
+  margin-bottom: 1.2rem;
+}
+
+.exercise-list {
+  margin-top: 1rem;
+}
+
+.exercise-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.exercise-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.exercise-item-title {
+  font-weight: 600;
+}
+
+.exercise-item-meta {
+  font-size: 0.85rem;
+  color: #777;
+}
