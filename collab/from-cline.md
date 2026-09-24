@@ -1,35 +1,40 @@
-# 來自 Cline 的報告（TASK 5）
+# 來自 Cline 的報告（TASK 6）
 
 ## 這次改了什麼
 
-- `index.html`（修改）：`#tab-profile` 區塊填入完整表單 + 計算結果區 + 今日體重回填小元件；並在 script 區加入 `js/engine/nutrition.js` 與 `js/ui/tab-profile.js`（載入順序：localforage → database.js → nutrition.js → tab-profile.js → app.js）。
-- `js/ui/tab-profile.js`（新增）：分頁一邏輯（載入回填、計算+存檔、體重回填）。
-- `css/style.css`（修改）：新增表單/結果卡/體重回填的樣式（fieldset、form-row、form-field、primary-btn、targets-result、weight-widget）。
+- `js/engine/budget.js`（新增）：`recalcTodayBudget(targetKcal, todayLogs)`，對照 TECH-SPEC 4.3 / PRD 5.1。
+- `js/engine/matcher.js`（新增）：`checkHardConstraints(weekLogs, profile)`，對照 TECH-SPEC 4.4 / PRD 5.6。
+- 兩者都以 `window.xxx` 暴露成 bare 全域函式（與其他模組一致），未接任何 UI（tab-today.js 是 TASK 7）。
 
-## 表單欄位（與 nutrition.js/database.js 對齊，已定案不再變體）
+## budget.js 的分配邏輯（我在報告說明的部分）
 
-`age`、`gender`（'男'/'女'）、`height_cm`、`weight_kg`、`body_fat_pct`（選填，留空存 null）、`activity_mode`（'久坐'/'輕度'/'中度'/'高度'）、`special_activity_kcal`（選填，留空存 null）、`diet_restriction`（select：一般/蛋奶素/全素/低碳/無特殊限制）、`allergens`（文字輸入）、`prep_time_weekday`、`prep_time_weekend`（select：幾乎無/5分鐘內/15分鐘內/30分鐘以上）、`goal_mode`（'減脂'/'維持'/'增肌'）。
+- 預設權重：早 0.25／午 0.35／晚 0.30／宵 0.10（PRD 5.1 固定比例，僅作為「無紀錄時」的起始值）。
+- **已吃餐次**：配額回傳 **0**（不顯示）。
+- **未吃餐次**：把 `remainingKcal = targetKcal − 已吃總熱量` 依各餐次「預設權重」在未吃餐次之間做**相對加權**分配（`剩餘 × 權重／未吃餐次權重總和`）。
+  - 例：targetKcal=2000、早餐吃 800 → 剩 1200，午/晚/宵按 0.35:0.30:0.10 相對分 → 560/480/160（不再是固定 700/600/200）。
+- 吃越多 → remaining 越小；未吃餐次越少 → 每餐分越多。超吃時 remaining 夾到 0。
 
-## 行為
+## matcher.js 的缺口邏輯（我的判斷，請確認）
 
-1. 載入時 `getProfile()` → 有資料就回填表單（重新整理資料還在）。
-2. 「計算」按鈕：讀表單 → 組 `profile` → `calculateTargets(profile)` → 顯示 BMR/TDEE/目標熱量/蛋白質/脂肪/碳水/纖維/淨碳水（`flooredWarning` 為 true 時另顯示安全下限提示）→ `saveProfile(profile)` 存檔。
-3. 「今日體重回填」：日期（預設今天）+ 體重 → `addWeightLog({ log_date, weight_kg })`，送出後顯示「已記錄 …」。
+- **蛋白質**：目標 g/kg 比照 nutrition.js 定案規則（增肌 2.0、維持/減脂 1.8，可用 `profile.protein_g_per_kg` 覆寫）。`proteinGapToday = 目標 − 今日已攝取`；**已達標回傳 0**（不做負缺口）。
+  - 「今日」的判定：取本機今天日期（`YYYY-MM-DD`），在 `weekLogs` 中挑 `log_date === 今天` 的筆加總蛋白質。
+- **纖維**：`週日均 = 本週每日纖維總量 ÷ 有記錄的天數`。低於 **25g**（25–35g 區間下限，我取 25 當硬約束下限）時，`fiberGapThisWeek = 25 − 日均`；否則回傳 0。
 
-## 驗證
+## 跑過的驗證（console.log）
 
-- `node --check js/ui/tab-profile.js` 語法通過（exit 0）。
-- 用 grep 確認表單 12 個 profile 欄位 + weight 表單 2 個欄位的 `name` 全部到位，且與 `readProfileForm()`／`nutrition.js` 讀取的欄位名一致。
-- 手動追蹤「計算」流程：`gender='男'`→male、`activity_mode='中度'`→1.55、`goal_mode='減脂'`→0.8 等對應正確。
-- **未做真實瀏覽器端到端驗證**（本機無 headless 瀏覽器/jsdom）。完成標準的「畫面顯示數字」「重新整理資料還在」需在瀏覽器實測；邏輯上已透過上面的欄位對齊與語法檢查。
+- budget：無記錄 → {500/700/600/200}；早餐 800 → 剩 1200、{0/560/480/160}（確認有依剩餘重新分配、已吃餐次歸 0）✓
+- matcher 蛋白質：70kg 維持（目標 126）今日吃 60 → 缺口 66 ✓；70kg 增肌（目標 140）今日 0 → 缺口 140 ✓
+- matcher 纖維：7 天各 10g → 日均 10 → 缺口 15 ✓；7 天各 30g → 日均 30 → 缺口 0 ✓
+
+- `node` 跑測試全數通過（暫存測試檔已刪除）；`node --check` 語法通過。
+- 本機 `git commit` 完成（commit `127238b`），未 `git push`。
 
 ## 需要 Claude／使用者決定的事
 
-- 無重大事項。以下幾點屬實作選擇，供參考：
-  1. 表單用了 `novalidate`，所以年齡/身高/體重改由 JS 手動檢查（空值會 alert 提示），HTML 的 `min/max` 僅作輸入提示。
-  2. `body_fat_pct` / `special_activity_kcal` 留空時存 `null`（`calculateTargets` 對 `special_activity_kcal` 會當 0；`body_fat_pct` 本輪不參與計算，PRD 2.1 的 Deurenberg 推估未實作）。
-  3. 過敏原用「文字輸入（逗號分隔）」存字串，未做 checkbox 多選（PRD 2.3 說「先做選項/文字輸入」，故取最簡的文字輸入）。
+1. **纖維「日均」的分母**：我用「有記錄的天數」取平均（`每日纖維 ÷ 有記錄天數`）。若你希望用「固定 7 天」當分母（總量 ÷ 7），請告知，我改一行。
+2. **纖維缺口的基準**：我用 25g（25–35g 區間下限）當缺口基準，不是 profile 的 `fiber_target_g`（預設 30）。若要改成「相對使用者目標（30g 或 profile.fiber_target_g）算缺口」，請告知。
+3. **「今日」的判定**：matcher.js 用「本機今天」挑今日蛋白質；若之後 `checkHardConstraints` 要支援指定日期（例如補看歷史某天），建議加選填參數，但本輪照 TECH-SPEC 4.4 的兩參數簽名未加。
 
 ## 建議下一步
 
-- 依 TASKS.md 執行 TASK 6（`js/engine/budget.js` 的 `recalcTodayBudget` + `js/engine/matcher.js` 的 `checkHardConstraints`）。
+- 依 TASKS.md 執行 TASK 7（`js/engine/recommend.js` + `js/ui/tab-today.js` 今日建議分頁）。

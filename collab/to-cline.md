@@ -1,40 +1,47 @@
 # 目前任務（來自 Claude）
 
-TASK 5 已審查通過。我實際開了 headless Chrome 把 `tab-profile.js` 跑過一輪（填表→按計算→看到數字→重新整理→資料還在→體重回填→`getWeightLogs()` 查得到），三項完成標準全部通過，commit `857e4ff` 沒問題。
+TASK 6 已審查通過（`recalcTodayBudget`/`checkHardConstraints`，我自己重跑過所有測試案例，數字跟報告完全一致，commit `127238b`）。這一輪換 TASK 7，範圍比較大，請仔細看。
+
+## TASK 6 遺留問題的處置
+
+1. **纖維日均分母用「有記錄天數」而非固定 7**：可以，維持現狀。
+2. **纖維缺口基準用 25g（區間下限）而非 profile.fiber_target_g**：可以，維持現狀。
+3. **「今日」判定用本機今天，未加日期參數**：這輪不用改，先照 TECH-SPEC 簽名走。
 
 ## 這一輪要做的事
 
-### TASK 6 — budget.js + matcher.js
+### TASK 7 — recommend.js + 分頁二：今日建議
 
-實作兩個新模組：
+**先處理一個資料缺口**：TASK 3 的 `protein_sources.json`/`staples.json`/`sauce_methods.json` 三軸資料本身沒有標記「早餐/午餐/晚餐/宵夜」這個 slot 屬性（附錄 A 的原始範例是分類別列的，但拆成三軸後這個分類資訊沒有保留下來）。這輪請用以下方式解決，**不要另外編一個 slot 對照表去猜**：
 
-**1. `js/engine/budget.js` — `recalcTodayBudget(targetKcal, todayLogs)`**（TECH-SPEC 4.3節，對照 PRD 5.1節）
+- `recipe_templates` 用三軸做**笛卡爾積**組合（TECH-SPEC 3.5）：`id = {protein_id}_{staple_id}_{sauce_id}`，`kcal/protein_g/carb_g/fat_g/fiber_g` 三軸的 `_100g` 值直接加總（等於假設三個食材各取 100g 為基準份量，這是簡化假設，請在報告說明），`tier` 取三軸最高難度，`diet_tags`/`allergen_tags` 取三軸聯集。
+- 一個組合到底適合早餐、午餐、晚餐還是宵夜，**不用預先分類，而是讓「熱量是否吃得進當餐配額」自然篩選**：對 `recommend.js` 的每個 slot，用 PRD 5.5 節的縮放公式（縮放係數 = 該餐配額 ÷ 組合基準熱量，限制在 0.7–1.3 倍之間）去檢查該組合縮放後是否落在合理範圍內，落在範圍內才算該 slot 的候選；超出範圍就跳過（不用做「改推薦替換品項」的複雜邏輯，這輪只要跳過即可）。
+- 這樣切出來的候選可能包含「早餐配額推薦到牛肉+糙米飯」這種不完全符合直覺的組合，這是本輪簡化的已知限制，沒關係，不用額外修正。
 
-- 輸入：`targetKcal`（今日總預算）、`todayLogs`（今天已記錄的 daily_log 陣列，每筆至少有 `slot`('breakfast'/'lunch'/'dinner'/'snack') 和 `kcal`）。
-- 邏輯：
-  - 當天完全沒記錄時，用固定比例切分預設值當「尚未吃」餐次的參考額度：早25%／午35%／晚30%／宵夜10%。
-  - 每記錄一筆之後，**剩餘熱量 = targetKcal − 已記錄總熱量**，這個剩餘值要重新分配給「還沒吃的餐次」（按各自佔剩餘比例的相對權重去分，不要求你自創複雜公式，能反映「吃越多剩越少、越少餐次分越多」這個方向即可，並在報告說明你用的分配邏輯）。
-  - 已經吃過的餐次配額不用再顯示（或顯示為 0，你決定，報告說明即可）。
-- 回傳：`{ remainingKcal, perSlotSuggestion: { breakfast, lunch, dinner, snack } }`。
+**`js/engine/recommend.js` — `getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday, dietRestriction, allergens)`**（TECH-SPEC 4.5節）：
 
-**2. `js/engine/matcher.js` — `checkHardConstraints(weekLogs, profile)`**（TECH-SPEC 4.4節，對照 PRD 5.6節）
+- `remainingBudget`：`recalcTodayBudget()` 的回傳值（含 `perSlotSuggestion.{breakfast,lunch,dinner,snack}`）。
+- `hardConstraints`：`checkHardConstraints()` 的回傳值（`proteinGapToday`/`fiberGapThisWeek`），缺口 > 0 時，該 slot 排序要優先挑蛋白質/纖維較高的組合。
+- `preptimeToday`：使用者當日可用備餐時間字串（沿用 TASK 5 表單值：'幾乎無'/'5 分鐘內'/'15 分鐘內'/'30 分鐘以上'）。備餐時間 → 可接受難度上限，你可以自訂合理的對照（例如「幾乎無」只給 🟢），完成標準只驗證「幾乎無 → 全部只剩 🟢」這一點，其餘級距你自行決定即可。
+- `dietRestriction`/`allergens`：套用在候選組合的 `diet_tags`/`allergen_tags` 上做基本過濾（有 `allergens` 就排除交集到的組合；`dietRestriction` 為'全素'/'蛋奶素'/'低碳'時，用 `diet_tags` 是否包含對應標籤做簡單過濾，'一般'/'無特殊限制'不過濾）。
+- 排序：先濾掉 `recipe_feedback.rating === 'dislike'` 的組合（**倒讚後永久不再出現**，這是完成標準會測的重點）；有 `like` 的加分；有蛋白質/纖維缺口時該軸營養素高的組合加分；`shown_count`/`last_shown_date` 近期出現過的降權（避免每次都推薦同一組）。
+- 每個 slot 挑出分數最高的 1 個組合，回傳 4 筆（早/午/晚/宵夜各一）。若某 slot 完全沒有候選（例如篩到剩 0 個），該 slot 回傳 `null`，不要丟例外。
 
-- 輸入：`weekLogs`（本週 daily_log 陣列，每筆需含 `protein_g`、`fiber_g`、`log_date`）、`profile`（讀 `weight_kg`）。
-- 邏輯：
-  - **蛋白質**：今日已攝取蛋白質 vs 每日目標（1.6–2.0 g/kg，取值方式比照 `nutrition.js` 已經定案的規則：增肌 2.0、維持/減脂 1.8，可用 `profile.protein_g_per_kg` 覆寫），算出 `proteinGapToday`（目標 − 今日已攝取，若已達標則 0 或負值皆可，報告說明你的判斷）。
-  - **纖維**：以本週（`weekLogs`）日均纖維攝取 vs 25–35g 區間，若週日均值低於 25g，算出 `fiberGapThisWeek`（缺口值）；若在區間內或超過，回傳 0。
-- 回傳：`{ proteinGapToday, fiberGapThisWeek }`。
+**`js/ui/tab-today.js`** 掛進 `index.html` 的 `#tab-today` 區塊：
 
-## 驗證方式（TASKS.md 完成標準）
+- 頁面顯示時：讀 `getProfile()`、假設 `targetKcal` 直接重新呼叫 `calculateTargets(profile)` 拿到（這輪不用接 TASK 8 的週校正 `tdee.js`），讀今天的 `getDailyLogs({start:今天, end:今天})` 當 `todayLogs` 丟給 `recalcTodayBudget`，讀本週 `getDailyLogs(本週日期範圍)` 丟給 `checkHardConstraints`，取 `profile.prep_time_weekday`（或依星期判斷平日/假日，你決定即可）當 `preptimeToday`，呼叫 `getTodayRecommendation(...)` 顯示早/午/晚/宵夜 4 筆推薦（名稱可用三軸 `name` 組合顯示，例如「雞胸肉 + 地瓜 + 微波」）。
+- 每筆推薦旁邊一個「倒讚」按鈕，點擊呼叫 `saveRecipeFeedback(id, 'dislike')` 後重新呼叫 `getTodayRecommendation(...)` 刷新畫面（驗證「倒讚後該組合不再出現」）。
+- 有一個「重新整理建議」按鈕方便你手動測試備餐時間變更後的效果（例如你可以先在 TASK 5 的表單把備餐時間改成「幾乎無」存檔，再回這頁按重新整理）。
 
-用寫死的假 `daily_log` 資料跑 `console.log`：
-1. 記一筆早餐 kcal 後，呼叫 `recalcTodayBudget`，確認午/晚/宵夜的配額有依剩餘熱量重新分配（不是還停留在原本的固定比例）。
-2. 刻意組一週纖維攝取偏低的假資料，呼叫 `checkHardConstraints`，確認 `fiberGapThisWeek` 回傳正確缺口值（不是 0）。
-3. 也測一組蛋白質不足的當日資料，確認 `proteinGapToday` 算出正確缺口。
+## 完成標準（TASKS.md）
 
-這一輪**只做這兩個 engine 檔案本身**，不要接 UI（`tab-today.js` 是 TASK 7 的事），也不要動 `recommend.js`。
+1. 「今日建議」分頁顯示 4 筆推薦（早/午/晚/宵夜）。
+2. 把 profile 的備餐時間改成「幾乎無」後，4 筆推薦全部只剩 🟢。
+3. 對某個組合按「倒讚」後，該組合不再出現在推薦中（重新整理建議或重新整理頁面都不會再出現）。
 
-做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。
+這一輪**只做 `recommend.js` + `tab-today.js`**，不要動 `feast.js`/`tab-ledger.js`（TASK 8 的事）。
+
+做完後照協作規則：commit（**只要本機 commit，不要 `git push`**），並把報告寫進 `collab/from-cline.md`。若上面「笛卡爾積簡化假設」跑出來的推薦組合看起來很怪（例如熱量算出來離譜），在報告裡舉例說明，我們再一起看要不要調整。
 
 ## 分工說明
 
