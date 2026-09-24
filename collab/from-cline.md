@@ -1,46 +1,59 @@
-# 來自 Cline 的報告（TASK 7）
+# 來自 Cline 的報告（TASK 8）
 
 ## 這次改了什麼
 
-- `js/engine/recommend.js`（新增）：`getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday, dietRestriction, allergens)`，三軸笛卡爾積推薦引擎。
-- `js/ui/tab-today.js`（新增）：分頁二「今日建議」顯示邏輯（讀資料→算推薦→顯示 4 筆＋倒讚＋重新整理）。
-- `index.html`（修改）：`#tab-today` 區塊填入推薦網格與按鈕；script 順序補上 `budget.js`/`matcher.js`/`recommend.js`/`tab-today.js`。
-- `css/style.css`（修改）：新增推薦卡片/倒讚/重新整理樣式。
+- `js/engine/feast.js`（新增）：`reserveFeast`/`confirmFeast`/`cancelFeast`/`planOverageSmoothing` + 輔助 `computeWeeklyCapKcal`。
+- `js/ui/tab-ledger.js`（新增）：分頁三「週彈性帳本」——進度條、預約表單、已預約清單（確認/取消）。
+- `js/database.js`（小幅修改，必要支撐）：見下「database.js 變更」。
+- `index.html`（修改）：`#tab-ledger` 區塊 + script 補 `feast.js`/`tab-ledger.js`。
+- `css/style.css`（修改）：進度條/預約清單/按鈕樣式。
 
-## 實作決策
+## 我自行訂的兩組參數（請審查，之後可直接要求改）
 
-1. **笛卡爾積 + 100g 假設**：`id = {protein_id}_{staple_id}_{sauce_id}`，`kcal/protein/carb/fat/fiber` 三軸 `_100g` 直接加總（= 三個食材各取 100g 為基準份量）。**任一軸 `kcal_100g` 為 null 就跳過**（無法算熱量就無法判斷份量）。因此三軸 13 筆缺數據（牛肉/鮭魚/藜麥…）的組合這輪都不會出現在推薦裡——這跟 TASK 3 保留 null 的決定連動。
-2. **slot 不預先分類**，靠「熱量吃得進配額」篩選：`縮放係數 = 配額 ÷ 基準熱量`，落在 **0.7–1.3** 內才算該 slot 候選，否則跳過（回傳 null 不丟例外）。
-3. **備餐時間 → 難度上限**（自訂）：幾乎無→🟢(0)、5 分鐘內→🟡(1)、15 分鐘內→🔴(2)、30 分鐘以上→🔴(2)。組合難度 = 三軸難度取 max。
-4. **過濾順序**：難度 > 上限 排除 → 過敏原交集排除 → 飲食型態（全素/蛋奶素/低碳檢查 diet_tags 是否含該標籤，一般/無限制不過濾）→ **倒讚永久排除**。
-5. **排序**：`like` +100；`shown_count` 每筆 −5；`last_shown_date` 3 天內再降權；蛋白質缺口>0 時 protein_g×0.5 加分、纖維缺口>0 時 fiber_g×2 加分；scale 越接近 1 加分。每個 slot 取最高分 1 筆。
-6. `getTodayRecommendation` 因需 `fetch` 種子 JSON 與 `getRecipeFeedback`（都 async），**改為回傳 Promise**（TECH-SPEC 4.5 簽名是同步，這是我做的必要偏離，報告說明）。
+### 1. 小/中/大 → kcal（`FEAST_SIZE_KCAL`）
 
-## ⚠️ 跑出來的一個已知問題（請一起決定）
+`S=400 / M=700 / L=1200`。直接採用 TECH-SPEC 3.11 的範例值（該節原文就是「例如 S=400/M=700/L=1200」），沒另外從 taiwan_items 分佈重新推（因為 taiwan_items 的 kcal_rep 大半是 null，且「大餐」本質上高於一般台式餐，1200 當大份合理）。
 
-「幾乎無」+ 較高目標熱量時，**午餐會是 null**。原因：三軸裡「非 null 熱量且 🟢」的組合，最大只有 **529 kcal**（雞胸120 + 燕麥409 + 微波0）。而目標 2000 的午餐配額是 700，配額下限 700/1.3 = **538**，529 < 538 → 午餐沒有候選 → null。
+### 2. `cap_kcal` 換算公式（`computeWeeklyCapKcal`）
 
-- 目標 **≤ 約 1963**（例如女 160/50/25 減脂觸發 1200 下限）：幾乎無 → **4 筆全 🟢** ✓。
-- 目標 **> 約 1963**（例如男 175/70/30 減脂 ≈ 2043）：幾乎無 → 早餐/晚餐/宵夜 🟢，**午餐 null**。
+- **減脂 (cut)**：`cap_kcal = round((tdee − targetKcal) × 7 × 0.4)`，即「週熱量赤字 × 40%」。
+  - 例：男 175/70/30 減脂，tdee 2555.6、target 2044.5 → 週赤字 3577 → cap **1431**。
+- **維持 (maintain) / 增肌 (bulk)**：固定 **1400** kcal（約 1 餐大份大餐 + 小彈性）。
+- 兩個參數 `CUT_CAP_RATIO=0.4`、`FLEX_CAP_FIXED=1400` 都抽成常數，之後好調。公式只讀 goal_mode + tdee/targetKcal，**不碰任何運動資料**。
 
-這是「100g 各取一份」+「0.7–1.3 縮放上限」+「🟢 高熱量資料不足」三者疊加的結果。可選解法：a) 把縮放上限放寬到 ~1.35（PRD 5.5 的 0.7–1.3 其實是 open question）；b) 補幾筆 🟢 高熱量食材；c) 接受午餐偶爾顯示「暫無適合組合」。我目前**照 0.7–1.3 走，沒擅自放寬**。
+### 3. `planOverageSmoothing`（PRD 6.4）
 
-## 跑過的驗證（mock fetch + getRecipeFeedback）
+- 1–3 天攤還；`dailyCapPct=0.15`（單日攤還 ≤15%）；每筆 `reduce_kcal = min(budget×0.15, budget−safetyFloor)`，保證攤還後 `new_budget ≥ safetyFloor`。
+- 回傳 `{ smoothingDays, dailyCapPct, appliedDates, remainingKcal }`（`remainingKcal` 是 3 天內攤不完的餘額，方便 debug；前三個欄位照 TECH-SPEC 4.6）。
 
-- 目標 2000、「30 分鐘以上」：早/午/晚/宵夜 **4 筆非 null** ✓
-- 目標 2000、「幾乎無」：非 null 槽位全部 🟢（午餐 null，見上）✓
-- 目標 1200、「幾乎無」：**4 筆全 🟢** ✓
-- 倒讚：把早餐推薦組合 dislike 後，重跑該組合不再出現、改推下一名 ✓
+## database.js 變更（這輪的必要支撐，非新增業務）
 
-- `node --check` recommend.js / tab-today.js 皆通過；暫存測試檔已刪除。
-- 本機 `git commit` 完成（commit `f9e4d8e`），未 `git push`。
+1. `reserveFeast(entry)` **改名** `addFeastReservation(entry)`——因為 TECH-SPEC 4.6 的 `feast.js` 也要一個 `reserveFeast(planDate, slot, size)`，兩者同名會蓋掉。DB 層改成 `addXxx` 也跟其他函式命名一致。
+2. 新增 `getFeastReservations(filter)`——TASK 2 的 4.8 清單沒有「列出預約」的函式，但清單 UI 需要。
+3. `updateWeeklyLedger(weekStartDate, usedKcal, capKcal)` 增加選填第三參數 `capKcal`——這正是 TASK 2 報告裡我 flag 的「cap_kcal 沒有寫入函式」缺口，本輪一併補上。
+
+## 文案規範
+
+`feast.js`/`tab-ledger.js` 全檔沒有「補償」「贖罪」「代價」字眼（攤還相關註解用「攤還幅度」，不用「補償幅度」）。UI 也只有「已用/上限」「預約/確認/取消」等中性字。
+
+## 跑過的驗證（mock DB，console.log）
+
+- `computeWeeklyCapKcal`（男減脂）→ **1431** ✓
+- 預約 M（700）→ used 700；再預約 L（1200）→ used 1900 ✓（進度條 used 有增加）
+- 取消 M → used 1200 ✓（點數釋放）
+- 確認 L（實際 1500）→ used 1500（用實際值取代預估值重算，1500 = 1200−1200+1500）✓；並寫入 daily_log ✓
+- `planOverageSmoothing(500, [1800,1800,1800], 1200)` → 2 天、15%、每天 270/230 ✓
+- `planOverageSmoothing(200, [1250,1250,1250], 1200)` → 每天只攤 50（受安全下限 1200 限制）、3 天、剩 50 未攤完 ✓
+
+- `node --check` database.js / feast.js / tab-ledger.js 皆通過；暫存測試檔已刪除。
+- 本機 `git commit` 完成（commit `7065dc7`），未 `git push`。
 
 ## 需要 Claude／使用者決定的事
 
-1. **午餐 null 問題**（詳見上）：是否放寬縮放上限、補 🟢 資料、或接受 null？
-2. **`getTodayRecommendation` 變 async**（需 fetch 種子 JSON）——這代表種子資料用 `fetch("data/*.json")` 載入，**需透過 HTTP 伺服器開啟**（`file://` 直接開 index.html 時，瀏覽器可能因 CORS 擋掉 fetch）。部署到 GitHub Pages/Netlify 沒問題；本機測試要起個 http server。若要支援 file://，得把種子資料改成 JS 檔（內嵌為全域變數），請告知要不要這樣做。
-3. **飲食型態過濾**用「diet_tags 是否含該標籤」做簡單過濾（TASK 3 把主食都標了「全素」），所以「全素」過濾目前幾乎不擋肉類組合（聯集後每個組合都帶「全素」）。這是 TASK 3 標籤 + 聯集語意的已知限制，本輪未深修。
+1. **cap_kcal 公式的兩個參數**（減脂取 40%、維持/增肌固定 1400）是我自己抓的，數字合理但可再校準——若你想改成「減脂 50%」或「維持固定 1000」等，改 `feast.js` 頂端兩個常數即可。
+2. **`confirmFeast` 目前簡化**：UI 直接用預估值當實際記錄（`confirmFeast(id)` 不帶 `actualDailyLogEntry`，內部 fallback 用 estimated_kcal）。要做「真的輸入實際熱量」的完整表單，等 TASK 後續接實際攝取記錄時再補。
+3. **database.js 改了 3 處**（rename/add/get+cap），這超出「只做 feast.js+tab-ledger.js」的字面範圍，但都是為了解決命名衝突與補 TASK 2 缺口，請知悉。
 
 ## 建議下一步
 
-- 依 TASKS.md 執行 TASK 8（`js/engine/feast.js` + `js/ui/tab-ledger.js` 週彈性帳本與大餐預約）。
+- 依 TASKS.md 執行 TASK 9（`js/engine/tdee.js` 的 `calibrateWeeklyTdee` 週校正）。
