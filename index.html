@@ -169,6 +169,28 @@
     </section>
     <section id="tab-today" class="tab-panel" data-panel="today" hidden>
       <h2>今日建議</h2>
+      <p id="today-status" class="status-text" aria-live="polite"></p>
+      <div class="today-toolbar">
+        <button type="button" id="today-refresh" class="secondary-btn">重新整理建議</button>
+      </div>
+      <div id="today-recs" class="rec-grid">
+        <article class="rec-card">
+          <h3>早餐</h3>
+          <div id="rec-breakfast" class="rec-body"></div>
+        </article>
+        <article class="rec-card">
+          <h3>午餐</h3>
+          <div id="rec-lunch" class="rec-body"></div>
+        </article>
+        <article class="rec-card">
+          <h3>晚餐</h3>
+          <div id="rec-dinner" class="rec-body"></div>
+        </article>
+        <article class="rec-card">
+          <h3>宵夜</h3>
+          <div id="rec-snack" class="rec-body"></div>
+        </article>
+      </div>
     </section>
     <section id="tab-ledger" class="tab-panel" data-panel="ledger" hidden>
       <h2>週彈性帳本</h2>
@@ -187,7 +209,11 @@
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="js/database.js"></script>
   <script src="js/engine/nutrition.js"></script>
+  <script src="js/engine/budget.js"></script>
+  <script src="js/engine/matcher.js"></script>
+  <script src="js/engine/recommend.js"></script>
   <script src="js/ui/tab-profile.js"></script>
+  <script src="js/ui/tab-today.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

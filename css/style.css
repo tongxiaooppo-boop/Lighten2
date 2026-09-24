@@ -164,3 +164,80 @@ body {
   color: #4a7d5a;
   min-height: 1.2em;
 }
+
+/* 今日建議分頁 */
+.today-toolbar {
+  margin: 0.5rem 0 1rem;
+}
+
+.secondary-btn {
+  padding: 0.5rem 1.1rem;
+  font-size: 0.95rem;
+  border: 1px solid #4a7d5a;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #4a7d5a;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.secondary-btn:hover {
+  background-color: #eef5f0;
+}
+
+.rec-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.9rem;
+}
+
+.rec-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.8rem 0.9rem;
+  background-color: #ffffff;
+}
+
+.rec-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.rec-body {
+  min-height: 3.5em;
+}
+
+.rec-name {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+}
+
+.rec-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.rec-base {
+  color: #999;
+  margin-left: 0.3rem;
+}
+
+.rec-empty {
+  color: #999;
+  margin: 0;
+}
+
+.dislike-btn {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  border: 1px solid #d0a0a0;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #a33;
+  cursor: pointer;
+}
+
+.dislike-btn:hover {
+  background-color: #fbf0f0;
+}
