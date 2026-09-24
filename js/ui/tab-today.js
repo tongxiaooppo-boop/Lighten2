@@ -12,6 +12,21 @@
     snack: "宵夜",
   };
 
+  // 蛋白質來源 → 食材縮圖（對照 data/protein_sources.json 的 name；查不到就不顯示圖片，正常降級）
+  const PROTEIN_IMAGE = {
+    "乳清蛋白粉": "images/food/whey-protein.jpg",
+    "雞胸肉": "images/food/chicken-breast.jpg",
+    "雞蛋": "images/food/egg.jpg",
+    "希臘優格": "images/food/greek-yogurt.jpg",
+    "鮭魚": "images/food/salmon.jpg",
+    "牛肉": "images/food/beef.jpg",
+    "雞腿肉": "images/food/chicken-thigh.jpg",
+    "鯛魚": "images/food/tilapia.jpg",
+    "板豆腐": "images/food/tofu.jpg",
+    "蝦仁": "images/food/shrimp.jpg",
+    "無糖豆漿": "images/food/soy-milk.jpg",
+  };
+
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
     else fn();
@@ -67,7 +82,12 @@
         body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>';
         return;
       }
+      const imgSrc = PROTEIN_IMAGE[rec.protein_name];
+      const imgHtml = imgSrc
+        ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name) + '" loading="lazy">'
+        : "";
       body.innerHTML =
+        imgHtml +
         '<div class="rec-name">' + escapeHtml(rec.name) + "</div>" +
         '<div class="rec-meta">' +
         escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
