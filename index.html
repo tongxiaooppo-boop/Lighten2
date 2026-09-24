@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>輕盈計畫 (Lighten Plan)</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>輕盈計畫</h1>
+  </header>
+
+  <nav class="tab-nav" aria-label="主要分頁">
+    <button class="tab-btn is-active" data-tab="profile">基本資料</button>
+    <button class="tab-btn" data-tab="today">今日建議</button>
+    <button class="tab-btn" data-tab="ledger">週彈性帳本</button>
+    <button class="tab-btn" data-tab="week">本週總覽</button>
+    <button class="tab-btn" data-tab="exercise">運動紀錄</button>
+    <button class="tab-btn" data-tab="shopping">採買清單</button>
+  </nav>
+
+  <main class="tab-content">
+    <section id="tab-profile" class="tab-panel is-active" data-panel="profile">
+      <h2>基本資料</h2>
+    </section>
+    <section id="tab-today" class="tab-panel" data-panel="today" hidden>
+      <h2>今日建議</h2>
+    </section>
+    <section id="tab-ledger" class="tab-panel" data-panel="ledger" hidden>
+      <h2>週彈性帳本</h2>
+    </section>
+    <section id="tab-week" class="tab-panel" data-panel="week" hidden>
+      <h2>本週總覽</h2>
+    </section>
+    <section id="tab-exercise" class="tab-panel" data-panel="exercise" hidden>
+      <h2>運動紀錄</h2>
+    </section>
+    <section id="tab-shopping" class="tab-panel" data-panel="shopping" hidden>
+      <h2>採買清單</h2>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
