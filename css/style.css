@@ -442,3 +442,101 @@ body {
 .week-day-empty {
   color: #999;
 }
+
+/* ===== 響應式：小螢幕（手機） ===== */
+@media (max-width: 600px) {
+  /* 分頁按鈕列：單列可橫向捲動，避免換行錯位／文字截斷 */
+  .tab-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0.5rem 0.75rem;
+    gap: 0.4rem;
+  }
+
+  .tab-btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    min-height: 44px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  /* 表單：欄位改直排單欄，避免橫向擠壓 */
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.7rem;
+  }
+
+  .form-field {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .form-field-btn {
+    width: 100%;
+  }
+
+  .form-field-btn .primary-btn {
+    width: 100%;
+  }
+
+  /* 觸控區塊：主要互動元素 ≥ 44px */
+  .primary-btn,
+  .secondary-btn,
+  .dislike-btn,
+  .feast-confirm,
+  .feast-cancel {
+    min-height: 44px;
+  }
+
+  .dislike-btn,
+  .feast-confirm,
+  .feast-cancel {
+    padding: 0.5rem 0.9rem;
+  }
+
+  .form-field input,
+  .form-field select {
+    min-height: 44px;
+    font-size: 1rem;
+  }
+
+  /* 字級可讀性：小字至少 14px（0.9rem） */
+  .rec-meta,
+  .exercise-item-meta,
+  .ledger-item-status,
+  .dislike-btn,
+  .feast-confirm,
+  .feast-cancel {
+    font-size: 0.9rem;
+  }
+
+  /* 列表項：避免長文字造成橫向溢出 */
+  .ledger-item,
+  .exercise-item,
+  .week-day-item {
+    align-items: flex-start;
+  }
+
+  .ledger-item-info,
+  .exercise-item-info,
+  .week-day-label,
+  .week-day-value {
+    min-width: 0;
+    overflow-wrap: break-word;
+  }
+
+  /* 卡片網格：單欄排列 */
+  .rec-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* 避免整頁橫向捲動 */
+  main,
+  .tab-panel {
+    max-width: 100%;
+  }
+}
