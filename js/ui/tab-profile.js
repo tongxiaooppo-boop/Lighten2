@@ -1,0 +1,156 @@
+// 輕盈計畫 (Lighten Plan) — 分頁一：基本資料 + 體重回填
+// 依賴：database.js（getProfile/saveProfile/addWeightLog）、nutrition.js（calculateTargets）
+
+(function () {
+  "use strict";
+
+  function ready(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  function $(sel) {
+    return document.querySelector(sel);
+  }
+
+  function toIntOrNull(v) {
+    if (v === "" || v === null || v === undefined) return null;
+    const n = parseInt(v, 10);
+    return isFinite(n) ? n : null;
+  }
+
+  function toFloatOrNull(v) {
+    if (v === "" || v === null || v === undefined) return null;
+    const n = parseFloat(v);
+    return isFinite(n) ? n : null;
+  }
+
+  function getLocalDateStr() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function readProfileForm() {
+    const form = document.getElementById("profile-form");
+    const fd = new FormData(form);
+    return {
+      age: toIntOrNull(fd.get("age")),
+      gender: fd.get("gender"),
+      height_cm: toFloatOrNull(fd.get("height_cm")),
+      weight_kg: toFloatOrNull(fd.get("weight_kg")),
+      body_fat_pct: toFloatOrNull(fd.get("body_fat_pct")),
+      activity_mode: fd.get("activity_mode"),
+      special_activity_kcal: toFloatOrNull(fd.get("special_activity_kcal")),
+      diet_restriction: fd.get("diet_restriction"),
+      allergens: (fd.get("allergens") || "").trim(),
+      prep_time_weekday: fd.get("prep_time_weekday"),
+      prep_time_weekend: fd.get("prep_time_weekend"),
+      goal_mode: fd.get("goal_mode"),
+    };
+  }
+
+  function fillProfileForm(profile) {
+    if (!profile) return;
+    const form = document.getElementById("profile-form");
+    const set = function (name, value) {
+      const el = form.elements[name];
+      if (el && value !== null && value !== undefined) el.value = value;
+    };
+    set("age", profile.age);
+    set("gender", profile.gender);
+    set("height_cm", profile.height_cm);
+    set("weight_kg", profile.weight_kg);
+    set("body_fat_pct", profile.body_fat_pct);
+    set("activity_mode", profile.activity_mode);
+    set("special_activity_kcal", profile.special_activity_kcal);
+    set("diet_restriction", profile.diet_restriction);
+    set("allergens", profile.allergens);
+    set("prep_time_weekday", profile.prep_time_weekday);
+    set("prep_time_weekend", profile.prep_time_weekend);
+    set("goal_mode", profile.goal_mode);
+  }
+
+  function showTargets(result) {
+    $("#target-bmr").textContent = result.bmr;
+    $("#target-tdee").textContent = result.tdee;
+    $("#target-kcal").textContent = result.targetKcal;
+    $("#target-protein").textContent = result.protein_g;
+    $("#target-fat").textContent = result.fat_g;
+    $("#target-carb").textContent = result.carb_g;
+    $("#target-fiber").textContent = result.fiber_g;
+    $("#target-netcarb").textContent = result.netCarb_g;
+    $("#target-warning").hidden = !result.flooredWarning;
+    $("#targets-result").hidden = false;
+  }
+
+  async function onCalculate(e) {
+    e.preventDefault();
+    const profile = readProfileForm();
+    if (profile.age === null || profile.height_cm === null || profile.weight_kg === null) {
+      alert("請填寫年齡、身高、體重後再計算。");
+      return;
+    }
+
+    let result;
+    try {
+      result = calculateTargets(profile);
+    } catch (err) {
+      alert(err && err.message ? err.message : "計算失敗。");
+      return;
+    }
+
+    showTargets(result);
+    try {
+      await saveProfile(profile);
+    } catch (err) {
+      console.error("saveProfile 失敗", err);
+    }
+  }
+
+  async function onWeightSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById("weight-form");
+    const fd = new FormData(form);
+    const log_date = fd.get("log_date");
+    const weight_kg = toFloatOrNull(fd.get("weight_kg"));
+
+    if (!log_date || weight_kg === null) {
+      alert("請填寫日期與體重。");
+      return;
+    }
+
+    try {
+      await addWeightLog({ log_date: log_date, weight_kg: weight_kg });
+      $("#weight-log-status").textContent =
+        "已記錄 " + log_date + " 體重 " + weight_kg + " kg";
+      form.elements["weight_kg"].value = "";
+    } catch (err) {
+      console.error("addWeightLog 失敗", err);
+      $("#weight-log-status").textContent = "記錄失敗，請重試。";
+    }
+  }
+
+  ready(async function () {
+    const dateInput = document.querySelector("#weight-form input[name='log_date']");
+    if (dateInput) dateInput.value = getLocalDateStr();
+
+    try {
+      const profile = await getProfile();
+      fillProfileForm(profile);
+    } catch (err) {
+      console.error("載入 profile 失敗", err);
+    }
+
+    const profileForm = document.getElementById("profile-form");
+    if (profileForm) profileForm.addEventListener("submit", onCalculate);
+
+    const weightForm = document.getElementById("weight-form");
+    if (weightForm) weightForm.addEventListener("submit", onWeightSubmit);
+  });
+})();

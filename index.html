@@ -23,6 +23,149 @@
   <main class="tab-content">
     <section id="tab-profile" class="tab-panel is-active" data-panel="profile">
       <h2>基本資料</h2>
+
+      <form id="profile-form" class="profile-form" autocomplete="off" novalidate>
+        <fieldset>
+          <legend>生理數據</legend>
+          <div class="form-row">
+            <div class="form-field">
+              <label>年齡<input type="number" name="age" min="1" max="120" inputmode="numeric" /></label>
+            </div>
+            <div class="form-field">
+              <label>性別
+                <select name="gender">
+                  <option value="男">男</option>
+                  <option value="女">女</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>身高 (cm)<input type="number" name="height_cm" min="50" max="250" step="0.1" inputmode="decimal" /></label>
+            </div>
+            <div class="form-field">
+              <label>體重 (kg)<input type="number" name="weight_kg" min="20" max="400" step="0.1" inputmode="decimal" /></label>
+            </div>
+            <div class="form-field">
+              <label>體脂率 (%) 選填<input type="number" name="body_fat_pct" min="1" max="70" step="0.1" inputmode="decimal" /></label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>活動量</legend>
+          <div class="form-row">
+            <div class="form-field">
+              <label>日常活動等級
+                <select name="activity_mode">
+                  <option value="久坐">久坐</option>
+                  <option value="輕度">輕度活動</option>
+                  <option value="中度">中度活動</option>
+                  <option value="高度">高度活動</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>當天特殊活動消耗 (kcal) 選填<input type="number" name="special_activity_kcal" min="0" step="1" inputmode="numeric" /></label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>飲食限制與過敏原</legend>
+          <div class="form-row">
+            <div class="form-field">
+              <label>飲食型態
+                <select name="diet_restriction">
+                  <option value="一般">一般</option>
+                  <option value="蛋奶素">蛋奶素</option>
+                  <option value="全素">全素</option>
+                  <option value="低碳">低碳</option>
+                  <option value="無特殊限制">無特殊限制</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>過敏原／不耐 (逗號分隔)<input type="text" name="allergens" placeholder="例如：甲殼類、乳製品" /></label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>備餐時間</legend>
+          <div class="form-row">
+            <div class="form-field">
+              <label>平日可用備餐時間
+                <select name="prep_time_weekday">
+                  <option value="幾乎無">幾乎無</option>
+                  <option value="5 分鐘內">5 分鐘內</option>
+                  <option value="15 分鐘內">15 分鐘內</option>
+                  <option value="30 分鐘以上">30 分鐘以上</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>假日可用備餐時間
+                <select name="prep_time_weekend">
+                  <option value="幾乎無">幾乎無</option>
+                  <option value="5 分鐘內">5 分鐘內</option>
+                  <option value="15 分鐘內">15 分鐘內</option>
+                  <option value="30 分鐘以上">30 分鐘以上</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>目標</legend>
+          <div class="form-row">
+            <div class="form-field">
+              <label>目標模式
+                <select name="goal_mode">
+                  <option value="減脂">減脂</option>
+                  <option value="維持">維持</option>
+                  <option value="增肌">增肌</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="primary-btn">計算</button>
+      </form>
+
+      <div id="targets-result" class="targets-result" hidden>
+        <h3>計算結果</h3>
+        <ul class="targets-list">
+          <li>基礎代謝 BMR：<span id="target-bmr"></span> kcal</li>
+          <li>每日消耗 TDEE（起點值）：<span id="target-tdee"></span> kcal</li>
+          <li>目標熱量：<span id="target-kcal"></span> kcal</li>
+          <li>蛋白質：<span id="target-protein"></span> g</li>
+          <li>脂肪：<span id="target-fat"></span> g</li>
+          <li>碳水化合物：<span id="target-carb"></span> g</li>
+          <li>膳食纖維：<span id="target-fiber"></span> g</li>
+          <li>淨碳水：<span id="target-netcarb"></span> g</li>
+        </ul>
+        <p id="target-warning" class="target-warning" hidden>⚠️ 已套用熱量安全下限（女性 1200 kcal／男性 1500 kcal），請留意熱量攝取不宜過低。</p>
+      </div>
+
+      <section class="weight-widget">
+        <h3>今日體重回填</h3>
+        <form id="weight-form" class="weight-form" autocomplete="off" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label>日期<input type="date" name="log_date" /></label>
+            </div>
+            <div class="form-field">
+              <label>體重 (kg)<input type="number" name="weight_kg" min="20" max="400" step="0.1" inputmode="decimal" /></label>
+            </div>
+            <div class="form-field form-field-btn">
+              <button type="submit" class="primary-btn">送出</button>
+            </div>
+          </div>
+        </form>
+        <p id="weight-log-status" class="status-text" aria-live="polite"></p>
+      </section>
     </section>
     <section id="tab-today" class="tab-panel" data-panel="today" hidden>
       <h2>今日建議</h2>
@@ -43,6 +186,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
   <script src="js/database.js"></script>
+  <script src="js/engine/nutrition.js"></script>
+  <script src="js/ui/tab-profile.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

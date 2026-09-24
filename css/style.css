@@ -59,3 +59,108 @@ body {
 .tab-panel h2 {
   margin-top: 0.5rem;
 }
+
+/* 基本資料分頁：表單 */
+.profile-form fieldset {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.profile-form legend {
+  font-weight: 600;
+  padding: 0 0.4rem;
+  color: #3a3a3a;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: flex-end;
+}
+
+.form-field {
+  min-width: 140px;
+  flex: 1 1 160px;
+}
+
+.form-field label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.form-field input,
+.form-field select {
+  padding: 0.55rem 0.6rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #2b2b2b;
+  width: 100%;
+}
+
+.form-field-btn {
+  flex: 0 0 auto;
+}
+
+.primary-btn {
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #4a7d5a;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.primary-btn:hover {
+  background-color: #3d684b;
+}
+
+.targets-result {
+  margin: 1rem 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d7e6dc;
+  border-radius: 8px;
+  background-color: #f3f9f5;
+}
+
+.targets-result h3 {
+  margin-top: 0;
+}
+
+.targets-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.4rem 1rem;
+}
+
+.target-warning {
+  margin: 0.6rem 0 0;
+  color: #9a5b00;
+}
+
+.weight-widget {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+.weight-widget h3 {
+  margin-top: 0;
+}
+
+.status-text {
+  color: #4a7d5a;
+  min-height: 1.2em;
+}
