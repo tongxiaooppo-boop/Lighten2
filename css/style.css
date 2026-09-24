@@ -241,3 +241,96 @@ body {
 .dislike-btn:hover {
   background-color: #fbf0f0;
 }
+
+/* 週彈性帳本分頁 */
+.ledger-progress {
+  margin-bottom: 1.2rem;
+}
+
+.ledger-progress h3,
+.ledger-form h3,
+.ledger-list h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.progress-bar {
+  height: 14px;
+  border-radius: 999px;
+  background-color: #eaeaea;
+  overflow: hidden;
+  margin-top: 0.4rem;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background-color: #4a7d5a;
+  transition: width 0.2s ease;
+}
+
+.ledger-form {
+  margin-bottom: 1.2rem;
+}
+
+.ledger-list {
+  margin-top: 1rem;
+}
+
+.ledger-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.ledger-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.ledger-item-title {
+  font-weight: 600;
+}
+
+.ledger-item-status {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.ledger-item-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.feast-confirm,
+.feast-cancel {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.feast-confirm {
+  border: 1px solid #4a7d5a;
+  background-color: #fff;
+  color: #4a7d5a;
+}
+
+.feast-confirm:hover {
+  background-color: #eef5f0;
+}
+
+.feast-cancel {
+  border: 1px solid #d0a0a0;
+  background-color: #fff;
+  color: #a33;
+}
+
+.feast-cancel:hover {
+  background-color: #fbf0f0;
+}

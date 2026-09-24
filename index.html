@@ -194,6 +194,51 @@
     </section>
     <section id="tab-ledger" class="tab-panel" data-panel="ledger" hidden>
       <h2>週彈性帳本</h2>
+      <p id="ledger-status" class="status-text" aria-live="polite"></p>
+
+      <section class="ledger-progress">
+        <h3>本週彈性點數</h3>
+        <p>已用 <span id="ledger-used">0</span> / 上限 <span id="ledger-cap">0</span> kcal</p>
+        <div class="progress-bar"><div id="ledger-bar-fill" class="progress-fill"></div></div>
+      </section>
+
+      <section class="ledger-form">
+        <h3>預約大餐</h3>
+        <form id="feast-form" autocomplete="off" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label>日期<input type="date" name="plan_date" /></label>
+            </div>
+            <div class="form-field">
+              <label>餐別
+                <select name="slot">
+                  <option value="lunch">午餐</option>
+                  <option value="dinner">晚餐</option>
+                  <option value="breakfast">早餐</option>
+                  <option value="snack">宵夜</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>份量
+                <select name="size">
+                  <option value="S">小</option>
+                  <option value="M">中</option>
+                  <option value="L">大</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field form-field-btn">
+              <button type="submit" class="primary-btn">預約</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section class="ledger-list">
+        <h3>已預約清單</h3>
+        <div id="ledger-reservations"></div>
+      </section>
     </section>
     <section id="tab-week" class="tab-panel" data-panel="week" hidden>
       <h2>本週總覽</h2>
@@ -212,8 +257,10 @@
   <script src="js/engine/budget.js"></script>
   <script src="js/engine/matcher.js"></script>
   <script src="js/engine/recommend.js"></script>
+  <script src="js/engine/feast.js"></script>
   <script src="js/ui/tab-profile.js"></script>
   <script src="js/ui/tab-today.js"></script>
+  <script src="js/ui/tab-ledger.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

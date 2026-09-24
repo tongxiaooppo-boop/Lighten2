@@ -219,13 +219,24 @@
 
   // ---------- 7. feast_reservation ----------
 
-  async function reserveFeast(entry) {
+  async function addFeastReservation(entry) {
     const list = await readList(STORE.feastReservation);
     if (!entry.id) entry.id = generateId("feast");
     if (!entry.status) entry.status = "reserved";
     list.push(entry);
     await writeList(STORE.feastReservation, list);
     return entry;
+  }
+
+  async function getFeastReservations(filter) {
+    const list = await readList(STORE.feastReservation);
+    if (!filter) return list;
+    return list.filter(function (e) {
+      if (filter.status && e.status !== filter.status) return false;
+      if (filter.start && e.plan_date < filter.start) return false;
+      if (filter.end && e.plan_date > filter.end) return false;
+      return true;
+    });
   }
 
   async function updateFeastStatus(id, status, daylogId) {
@@ -246,12 +257,13 @@
     return await db(STORE.weeklyFlexLedger).getItem(weekStartDate);
   }
 
-  async function updateWeeklyLedger(weekStartDate, usedKcal) {
+  async function updateWeeklyLedger(weekStartDate, usedKcal, capKcal) {
     const existing = (await getWeeklyLedger(weekStartDate)) || {};
     const updated = Object.assign({}, existing, {
       week_start_date: weekStartDate,
       used_kcal: usedKcal,
     });
+    if (capKcal !== undefined && capKcal !== null) updated.cap_kcal = capKcal;
     await db(STORE.weeklyFlexLedger).setItem(weekStartDate, updated);
     return updated;
   }
@@ -319,7 +331,8 @@
     addCustomFood: addCustomFood,
     addDailyLog: addDailyLog,
     getDailyLogs: getDailyLogs,
-    reserveFeast: reserveFeast,
+    addFeastReservation: addFeastReservation,
+    getFeastReservations: getFeastReservations,
     updateFeastStatus: updateFeastStatus,
     getWeeklyLedger: getWeeklyLedger,
     updateWeeklyLedger: updateWeeklyLedger,
