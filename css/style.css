@@ -398,3 +398,47 @@ body {
   font-size: 0.85rem;
   color: #777;
 }
+
+/* 本週總覽分頁 */
+.week-summary {
+  margin-bottom: 1.2rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d7e6dc;
+  border-radius: 8px;
+  background-color: #f3f9f5;
+}
+
+.week-summary h3,
+.week-days h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.week-summary-line {
+  margin: 0.2rem 0;
+}
+
+.week-days {
+  margin-top: 1rem;
+}
+
+.week-day-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.week-day-label {
+  font-weight: 600;
+}
+
+.week-day-value {
+  color: #2b2b2b;
+}
+
+.week-day-empty {
+  color: #999;
+}
