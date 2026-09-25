@@ -232,6 +232,60 @@ body {
   background-color: #F3E4D0;
 }
 
+/* 今日建議：頂部「今日剩餘預算」彙總卡（大數字＋蛋白質/纖維/週彈性三欄） */
+.today-hero {
+  background-color: #ffffff;
+  border: 1px solid #EFE3D2;
+  border-radius: 20px;
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 16px rgba(150, 110, 60, 0.08);
+}
+
+.today-hero-label {
+  color: #8A7A63;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.today-hero-kcal {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0.7rem;
+}
+
+.today-hero-kcal-value {
+  font-family: "Noto Serif TC", serif;
+  color: #C1652F;
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.today-hero-kcal-unit {
+  color: #8A7A63;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.today-hero-stats {
+  display: flex;
+  gap: 1.4rem;
+  flex-wrap: wrap;
+}
+
+.today-hero-stat-label {
+  color: #8A7A63;
+  font-size: 0.75rem;
+}
+
+.today-hero-stat-value {
+  color: #3A2E22;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 .rec-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -253,6 +307,26 @@ body {
   object-fit: cover;
   border-radius: 10px;
   margin-bottom: 0.5rem;
+}
+
+/* 找不到食物照片時的色塊墊底（依來源分三種色調，取代整塊留白） */
+.rec-card-placeholder {
+  width: 100%;
+  height: 110px;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+
+.rec-placeholder-cooked {
+  background: linear-gradient(135deg, #E8B978, #C1652F);
+}
+
+.rec-placeholder-convenience {
+  background: linear-gradient(135deg, #9CB68A, #4B6043);
+}
+
+.rec-placeholder-delivery {
+  background: linear-gradient(135deg, #D9A6A0, #A8574F);
 }
 
 .rec-card h3 {

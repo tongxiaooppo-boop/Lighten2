@@ -214,6 +214,24 @@
     <section id="tab-today" class="tab-panel is-active" data-panel="today">
       <h2>今日建議</h2>
       <p id="today-status" class="status-text" aria-live="polite"></p>
+      <section class="today-hero" id="today-hero" hidden>
+        <div class="today-hero-label">今日剩餘預算</div>
+        <div class="today-hero-kcal"><span id="today-hero-kcal-value">0</span><span class="today-hero-kcal-unit">kcal</span></div>
+        <div class="today-hero-stats">
+          <div class="today-hero-stat">
+            <div class="today-hero-stat-label">蛋白質</div>
+            <div class="today-hero-stat-value" id="today-hero-protein">0 / 0g</div>
+          </div>
+          <div class="today-hero-stat">
+            <div class="today-hero-stat-label">纖維</div>
+            <div class="today-hero-stat-value" id="today-hero-fiber">0 / 0g</div>
+          </div>
+          <div class="today-hero-stat">
+            <div class="today-hero-stat-label">週彈性</div>
+            <div class="today-hero-stat-value" id="today-hero-flex">剩 0 kcal</div>
+          </div>
+        </div>
+      </section>
       <div class="today-toolbar">
         <button type="button" id="today-refresh" class="secondary-btn">重新整理建議</button>
       </div>

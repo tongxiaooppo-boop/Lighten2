@@ -94,7 +94,9 @@
       const imgSrc = PROTEIN_IMAGE[rec.protein_name];
       const imgHtml = imgSrc
         ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name) + '" loading="lazy">'
-        : "";
+        // 沒有對應照片時（超商/台式外送品項、或還沒建檔縮圖的食材）用色塊墊底取代整塊留白，
+        // 依來源分三種色調（自組食譜/超商/台式外送），視覺上仍看得出這是哪一類建議。
+        : '<div class="rec-card-placeholder ' + (rec.is_convenience ? "rec-placeholder-convenience" : rec.is_delivery ? "rec-placeholder-delivery" : "rec-placeholder-cooked") + '" aria-hidden="true"></div>';
       const fallbackNote = rec.fallback_to_auto
         ? '<p class="rec-fallback-note">今日這個來源沒有符合配額的選擇，已改為一般推薦</p>'
         : "";
@@ -115,6 +117,29 @@
     });
   }
 
+  // 頂部「今日剩餘預算」彙總卡：剩餘熱量（recalcTodayBudget 已算好）+ 今天蛋白質/纖維攝取量
+  // vs 目標 + 本週彈性點數剩餘。跟主推薦邏輯無關，獨立 fetch 週彈性帳本，失敗不影響主流程。
+  async function renderHero(remainingBudget, targets, todayLogs, profile) {
+    const hero = $("#today-hero");
+    if (!hero) return;
+    const eatenProtein = todayLogs.reduce(function (s, l) { return s + (Number(l.protein_g) || 0); }, 0);
+    const eatenFiber = todayLogs.reduce(function (s, l) { return s + (Number(l.fiber_g) || 0); }, 0);
+    $("#today-hero-kcal-value").textContent = Math.round(remainingBudget.remainingKcal);
+    $("#today-hero-protein").textContent = Math.round(eatenProtein) + " / " + Math.round(targets.protein_g) + "g";
+    $("#today-hero-fiber").textContent = Math.round(eatenFiber) + " / " + Math.round(targets.fiber_g) + "g";
+
+    const weekStart = mondayOfThisWeek();
+    let ledger = await getWeeklyLedger(weekStart);
+    if (!ledger || ledger.cap_kcal == null) {
+      const cap = computeWeeklyCapKcal(profile);
+      ledger = await updateWeeklyLedger(weekStart, (ledger && ledger.used_kcal) || 0, cap);
+    }
+    const flexRemaining = Math.max(0, (ledger.cap_kcal || 0) - (ledger.used_kcal || 0));
+    $("#today-hero-flex").textContent = "剩 " + Math.round(flexRemaining) + " kcal";
+
+    hero.hidden = false;
+  }
+
   async function buildRecommendation() {
     setStatus("載入中…");
     let profile;
@@ -133,6 +158,8 @@
         const body = $("#rec-" + slot);
         if (body) body.innerHTML = "";
       });
+      const hero = $("#today-hero");
+      if (hero) hero.hidden = true;
       return;
     }
 
@@ -158,6 +185,8 @@
     const hardConstraints = checkHardConstraints(weekLogs, profile);
     // 彈性帳本改成逐日結算（見 feast.js），每次進這個分頁順便結算一次「昨天以前」還沒結算的日子。
     settleWeeklyLedger(profile).catch(function (err) { console.error(err); });
+
+    renderHero(remainingBudget, targets, todayLogs, profile).catch(function (err) { console.error(err); });
 
     const recs = await getTodayRecommendation(
       remainingBudget,
