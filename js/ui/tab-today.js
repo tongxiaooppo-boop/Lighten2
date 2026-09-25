@@ -27,6 +27,9 @@
     "無糖豆漿": "images/food/soy-milk.jpg",
   };
 
+  // 記錄「最近一次」的推薦結果，供「記錄這餐」按鈕點擊時找到對應 slot 的 rec
+  let currentRecs = {};
+
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
     else fn();
@@ -91,14 +94,19 @@
       const imgHtml = imgSrc
         ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name) + '" loading="lazy">'
         : "";
+      const fallbackNote = rec.fallback_to_auto
+        ? '<p class="rec-fallback-note">今日這個來源沒有符合配額的選擇，已改為一般推薦</p>'
+        : "";
       body.innerHTML =
         imgHtml +
+        fallbackNote +
         '<div class="rec-name">' + escapeHtml(rec.name) + "</div>" +
         '<div class="rec-meta">' +
         escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
         '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>" +
         "</div>" +
-        '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>';
+        '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
+        '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>';
     });
   }
 
@@ -115,6 +123,7 @@
 
     if (!profile) {
       setStatus("請先到「基本資料」分頁填寫並按「計算」後，再回來看今日建議。");
+      currentRecs = {};
       SLOTS.forEach(function (slot) {
         const body = $("#rec-" + slot);
         if (body) body.innerHTML = "";
@@ -133,18 +142,67 @@
 
     const remainingBudget = recalcTodayBudget(targets.targetKcal, todayLogs, profile.enabled_slots);
     const hardConstraints = checkHardConstraints(weekLogs, profile);
-    const preptimeToday = isWeekend() ? profile.prep_time_weekend : profile.prep_time_weekday;
+    const ledger = await getWeeklyLedger(monday);
 
     const recs = await getTodayRecommendation(
       remainingBudget,
       hardConstraints,
-      preptimeToday,
+      profile.meal_prefs,
       profile.diet_restriction,
-      profile.allergens
+      profile.allergens,
+      ledger
     );
+    currentRecs = recs;
 
     renderRecs(recs, profile);
     setStatus("");
+  }
+
+  async function onLogRecClick(slot, rec, btnEl) {
+    btnEl.disabled = true; // 防連點
+    try {
+      const today = localDateStr();
+      let savedId;
+      if (rec.is_delivery) {
+        // source_id 是 recommend.js 給的原始 taiwan_items id（拿掉 tw_ 前綴後的那個）
+        const saved = await logFeastDirectly(today, slot, null, rec.source_id);
+        savedId = saved.id;
+      } else {
+        const saved = await addDailyLog({
+          log_date: today,
+          slot: slot,
+          source_type: rec.is_convenience ? "custom" : "recipe_template",
+          item_id: null,
+          item_name: rec.name,
+          kcal: rec.scaled_kcal,
+          protein_g: rec.protein_g,
+          carb_g: rec.carb_g,
+          fat_g: rec.fat_g,
+          fiber_g: rec.fiber_g,
+          is_feast: 0,
+          feast_reservation_id: null,
+        });
+        savedId = saved.id;
+      }
+      btnEl.textContent = "已記錄";
+      const undoBtn = document.createElement("button");
+      undoBtn.type = "button";
+      undoBtn.className = "feast-cancel rec-undo-btn";
+      undoBtn.textContent = "撤銷";
+      undoBtn.addEventListener("click", async function () {
+        await undoDailyLog(savedId);
+        undoBtn.remove();
+        btnEl.disabled = false;
+        btnEl.textContent = "記錄這餐";
+        await buildRecommendation();
+      });
+      btnEl.insertAdjacentElement("afterend", undoBtn);
+      await buildRecommendation();
+    } catch (err) {
+      console.error(err);
+      alert("記錄失敗，請重試。");
+      btnEl.disabled = false;
+    }
   }
 
   function onDislikeClick(id) {
@@ -167,9 +225,16 @@
     const grid = $("#today-recs");
     if (grid) {
       grid.addEventListener("click", function (e) {
-        const btn = e.target.closest(".dislike-btn");
-        if (btn && btn.getAttribute("data-id")) {
-          onDislikeClick(btn.getAttribute("data-id"));
+        const dislikeBtn = e.target.closest(".dislike-btn");
+        if (dislikeBtn && dislikeBtn.getAttribute("data-id")) {
+          onDislikeClick(dislikeBtn.getAttribute("data-id"));
+          return;
+        }
+        const logBtn = e.target.closest(".rec-log-btn");
+        if (logBtn && logBtn.getAttribute("data-slot")) {
+          const slot = logBtn.getAttribute("data-slot");
+          const rec = currentRecs[slot];
+          if (rec) onLogRecClick(slot, rec, logBtn);
         }
       });
     }
