@@ -12,7 +12,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟢",
-    "note": "出自「高蛋白燕麥碗」「希臘優格莓果碗」；引用 4.4 燕麥片"
+    "requires_cooking": false,
+    "nutrient_basis": "dry",
+    "serving_g": 40,
+    "serving_label": "半碗乾燕麥（約40g）",
+    "note": "出自「高蛋白燕麥碗」「希臘優格莓果碗」；引用 4.4 燕麥片；requires_cooking=false（燕麥片可冷泡/隔夜燕麥免加熱）；補 serving_g"
   },
   {
     "id": "st_sweet_potato",
@@ -27,7 +31,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟢",
-    "note": "出自「舒肥雞胸地瓜餐」；引用 4.4 地瓜"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 150,
+    "serving_label": "1條地瓜（熟重約150g）",
+    "note": "出自「舒肥雞胸地瓜餐」；引用 4.4 地瓜；requires_cooking=true（生地瓜不可食用）；補 serving_g"
   },
   {
     "id": "st_brown_rice",
@@ -42,7 +50,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
-    "note": "出自「義式香草烤鮭魚藜麥飯(糙米)」「微波即食雞胸糙米便當」；引用 4.4 糙米飯"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 150,
+    "serving_label": "3/4碗糙米飯（熟重約150g）",
+    "note": "出自「義式香草烤鮭魚藜麥飯(糙米)」「微波即食雞胸糙米便當」；引用 4.4 糙米飯；requires_cooking=true（生米不可食用）；補 serving_g"
   },
   {
     "id": "st_quinoa",
@@ -57,7 +69,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
-    "note": "出自「義式香草烤鮭魚藜麥飯」；4.4 未收錄，2026-09-25 依煮熟藜麥公開營養資料補上"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 150,
+    "serving_label": "3/4碗藜麥（熟重約150g）",
+    "note": "出自「義式香草烤鮭魚藜麥飯」；4.4 未收錄，2026-09-25 依煮熟藜麥公開營養資料補上；requires_cooking=true（生藜麥含皂苷，需煮熟）；補 serving_g"
   },
   {
     "id": "st_mixed_grain",
@@ -72,7 +88,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
-    "note": "出自「日式照燒豆腐鯛魚飯」；4.4 未收錄（複合主食），2026-09-25 依糙米飯與常見雜糧飯（紅豆/燕麥/薏仁等混合）公開營養資料折衷估算補上，實際依配方比例會有差異"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 150,
+    "serving_label": "3/4碗雜糧飯（熟重約150g）",
+    "note": "出自「日式照燒豆腐鯛魚飯」；4.4 未收錄（複合主食），2026-09-25 依糙米飯與常見雜糧飯（紅豆/燕麥/薏仁等混合）公開營養資料折衷估算補上，實際依配方比例會有差異；requires_cooking=true；補 serving_g"
   },
   {
     "id": "st_pumpkin",
@@ -87,7 +107,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟢",
-    "note": "出自「蒜香嫩煎雞腿肉溫沙拉(蒸南瓜)」；引用 4.4 南瓜"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 150,
+    "serving_label": "1份蒸南瓜（熟重約150g）",
+    "note": "出自「蒜香嫩煎雞腿肉溫沙拉(蒸南瓜)」；引用 4.4 南瓜；requires_cooking=true（生南瓜不易消化，一般食用前需蒸煮）；補 serving_g"
   },
   {
     "id": "st_cauliflower_rice",
@@ -103,7 +127,11 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
-    "note": "出自「韓式泡菜炒牛肉花椰菜米」；引用 4.4 花椰菜（蔬菜）數值，因花椰菜米即花椰菜切碎"
+    "requires_cooking": false,
+    "nutrient_basis": "raw",
+    "serving_g": 150,
+    "serving_label": "1份花椰菜米（約150g）",
+    "note": "出自「韓式泡菜炒牛肉花椰菜米」；引用 4.4 花椰菜（蔬菜）數值，因花椰菜米即花椰菜切碎；requires_cooking=false（生花椰菜米可食用，同生花椰菜）；補 serving_g（取代白飯份量較大，符合減醣替代邏輯）"
   },
   {
     "id": "st_edamame",
@@ -121,6 +149,10 @@
       "黃豆"
     ],
     "prep_tier": "🟢",
-    "note": "出自「清煎蝦仁毛豆炒蛋」；4.4 未收錄，2026-09-25 依熟毛豆仁公開營養資料補上"
+    "requires_cooking": true,
+    "nutrient_basis": "cooked",
+    "serving_g": 100,
+    "serving_label": "1份毛豆仁（熟重約100g）",
+    "note": "出自「清煎蝦仁毛豆炒蛋」；4.4 未收錄，2026-09-25 依熟毛豆仁公開營養資料補上；requires_cooking=true（生毛豆/黃豆含胰蛋白酶抑制劑，需煮熟）；補 serving_g"
   }
 ]

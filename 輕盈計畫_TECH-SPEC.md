@@ -239,9 +239,22 @@ function getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday,
 }
 ```
 
-**份量換算（2026-09-25 修正）**：`protein_sources.json`/`staples.json`/`sauce_methods.json`/`raw_ingredients.json`（蔬菜軸）存的是「每 100g」營養值，組合四軸時不能直接把 100g 值相加（那等於假設每種食材只吃 100g，會嚴重低估總熱量，導致熱量配額較高的時段永遠配不到組合）。`recommend.js` 內部依「蛋白質來源 130g／主食 150g／蔬菜 100g／醬料或烹調法 20g」的假設份量換算後再加總（`PROTEIN_SERVING_G`/`STAPLE_SERVING_G`/`VEGETABLE_SERVING_G`/`SAUCE_SERVING_G` 常數），`protein_g`/`carb_g`/`fat_g`/`fiber_g` 一併用同樣比例換算，維持營養素之間的一致性。這是簡化假設（固定份量，不因個人食量調整），未來若要做「份量自訂」才需要再擴充。
+**份量換算（2026-09-25 初版，已於同日二輪重構取代，見下方「餐型骨架」）**：原本 `recommend.js` 內部依「蛋白質來源 130g／主食 150g／蔬菜 100g／醬料或烹調法 20g」全軸統一的假設份量換算（`PROTEIN_SERVING_G`/`STAPLE_SERVING_G`/`VEGETABLE_SERVING_G`/`SAUCE_SERVING_G` 常數）。這組常數已完全移除——不分生熟/乾濕重、不分食材種類的統一份量，會導致「130g乳清蛋白粉＋150g乾燕麥」這種單筆早餐就超過1000kcal的離譜結果。
 
-**蔬菜軸（2026-09-25 新增）**：原本三軸（蛋白質×主食×醬料）組出來的餐點永遠沒有實際蔬菜份量，跟 PRD 附錄範例食譜（每道都有一份蔬菜）不一致，畫面上也顯得單調不吸引人。新增第4軸取自 `raw_ingredients.json` 的 `category=蔬菜`（花椰菜/菠菜/芹菜/春筍），組合數從 11×8×7=616 增為 11×8×4×7=2464，`combo.name`/`combo.id` 都改成四段（例如「雞胸肉 + 糙米飯 + 花椰菜 + 微波」），`tab-today.js` 的卡片渲染不用改（`rec.name` 直接顯示字串，長度變長但邏輯不變）。
+**蔬菜軸（2026-09-25 新增，四軸笛卡爾積架構下）**：原本三軸（蛋白質×主食×醬料）組出來的餐點永遠沒有實際蔬菜份量。新增第4軸取自 `raw_ingredients.json` 的 `category=蔬菜`（花椰菜/菠菜/芹菜/春筍）。**這個「四軸無條件笛卡爾積」的架構已於同日二輪重構整個取代，見下方「餐型骨架」小節。**
+
+**餐型骨架 `data/dish_archetypes.json`（2026-09-25 二輪重構，取代上面「四軸無條件笛卡爾積」的架構）**：
+
+使用者實測抓到系統推薦「乳清蛋白粉＋燕麥片＋菠菜＋韓式泡菜」這種組合，追查後發現根因是四軸笛卡爾積本身不管「食材搭不搭」，只看數字湊配額——`protein_sources.json`/`staples.json`/`raw_ingredients.json`（蔬菜軸）/`sauce_methods.json` 這 4 個檔案的品項原本是從約 10 道具名種子食譜（附錄 A）拆解出來的，每個品項只在「它出自的那道食譜」裡驗證過合理性，笛卡爾積把它們重新自由排列組合後就會產生這種問題。經與 Opus 兩輪磋商（引用美國 MyPlate、台灣「我的餐盤」、日本食事バランスガイド的份量與搭配原則）後改版：
+
+- **`dish_archetypes.json` 結構**：陣列，每筆一個餐型，`{id, name, protein:{allow:[ids]}, staple:{allow:[ids]}, vegetable:{allow:[ids]}, seasoning:{allow:[ids]}, methods:[ids], note}`。`allow` 是白名單（對照 id），空陣列代表這個餐型沒有這個槽位（例如 `bowl_oat` 早餐碗沒有 `vegetable`/`seasoning` 槽）。目前 5 個餐型：`bowl_oat`（早餐碗）/`egg_pan`（煎蛋類）/`protein_stir_fry`（炒類）/`grain_bowl_baked`（烤／舒肥定食）/`warm_salad`（溫沙拉），對照附錄 A 原本約 10 道種子食譜歸納而成。
+- **組合只在餐型內部展開**：`recommend.js` 改成先 `axes.archetypes.forEach`，再對每個餐型分別做「該餐型允許的蛋白質 × 主食 × 蔬菜(含不加) × 醬料(含不加) × 烹調法」的巢狀迴圈，取代原本對全部 proteins/staples/vegetables/sauces 陣列做無條件笛卡爾積。蔬菜/醬料槽即使白名單非空，也一律多一個「不加」的選項（本來就是加分項不是必要項）。
+- **`serving_g`/`nutrient_basis`/`serving_label`**：`protein_sources.json`（11筆）/`staples.json`（8筆）/`raw_ingredients.json` 蔬菜軸（4筆）/`sauce_methods.json` 的 `sm_kimchi`/`sm_teriyaki`（2筆）都補上這三個欄位，逐筆依真實食物份量人工填寫（例如雞胸肉生重130g、燕麥片乾重40g、糙米飯熟重150g），`nutrient_basis` 標示 `kcal_100g` 對應的狀態（`raw`/`cooked`/`dry`/`as_is`），避免生熟重混算。取代原本全軸統一的份量常數。
+- **`sauce_methods.json` 加 `kind` 欄位**：`"method"`（純烹調法，免開火/微波/煎/炒/烤氣炸，`kcal_100g` 恆為0）vs `"seasoning"`（真的有熱量的醬料，韓式泡菜/照燒醬）——原本這兩種角色不同的東西混在同一軸，餐型骨架的 `methods` 只填 method 的 id，`seasoning.allow` 只填 seasoning 的 id，兩者不再互相干擾。
+- **份量縮放邏輯（取代原本整餐等比縮放 0.7–1.3 倍）**：每個餐型指定一個「主要槽位」（有主食槽的用主食、沒有的用蛋白質，例如 `egg_pan` 沒有主食槽就用蛋白質當主要槽位），`achievableNutrition(combo, budget)` 只縮放這個槽位去貼近熱量配額，範圍限制在 `PRIMARY_SLOT_SCALE_RANGE = {min:0.5, max:2.0}`（約半份到兩份）；蔬菜與非主要蛋白質維持天然份量（`serving_g`）不縮放。`score()` 的熱量貼近度評分也改用縮放後的「可達成熱量」而非天然份量的基準熱量，避免評分跟實際會顯示的熱量脫節。原本的候選前置篩選 `SCALE_MIN/MAX=0.7/1.3`（篩選前的硬性排除）已完全移除，改成全部交給縮放+評分處理，避免「篩選」與「縮放」兩套機制各自為政、互相打架。
+- **乳清蛋白粉移出正餐候選池**：`protein_sources.json` 的 `ps_whey` 新增 `item_class: "supplement"`，且不出現在任何餐型的 `protein.allow` 白名單裡——不是資料庫刪除，是候選池生成階段直接不會被選中。這輪**不提供任何開關讓乳清出現**（例如綁 `profile.goal_mode`），因為 `goal_mode` 的列舉值本身中英文混用（`matcher.js` 判斷 `"bulk"`、`nutrition.js` 轉小寫查 `"maintain"`），且「目標是減脂/增肌」跟「有沒有在喝乳清」是意圖與行為兩件不能劃等號的事；之後若使用者反映需求，再另外設計 opt-in 欄位。
+- **同一天各時段不重複主蛋白質/餐型**：`getTodayRecommendation()` 內用兩個物件 `usedProteinNames`/`usedArchetypeIds` 依 `SLOTS` 處理順序（早→午→下午茶→晚→宵夜）累積，後面時段的候選池會排除已出現過的 `protein_name`/`archetype_id`（只影響自組食譜，`is_composed` 為 true 才檢查；超商/台式外送不受影響）。這條規則可能讓後面的時段因為候選池被排除到只剩 0 筆而回報「暫無適合的組合」，這是刻意的取捨（不為了硬湊而犧牲多樣性）。
+- **已知限制/延後項目**：水果軸未納入（不影響一餐是否合理，優先度較低）；`sm_microwave` 微波整塊生肉的中心溫度風險未處理（P0 這輪只擋「免開火」配生鮮/需煮熟食材）；`raw_ingredients.json` 跟 `protein_sources.json`/`staples.json` 部分品項（雞胸肉/雞蛋/板豆腐/糙米飯/燕麥片/地瓜/南瓜）數值重複存在兩處，尚未收斂成單一權威來源，之後修改其中一份營養值時要記得同步。
 
 **超商即食品項（2026-09-25 新增，2026-09-25 second pass 改版，`data/convenience_items.json`）**：欄位 `id`/`name`/`category`/`kcal`/`protein_g`/`carb_g`/`fat_g`/`fiber_g`/`tier`/`diet_tags`/`allergen_tags`/`note`，**跟四軸組合不同，是固定套裝值，不套用 `PROTEIN_SERVING_G` 等份量換算**。`recommend.js` 的 `loadAxes()` 多讀這個檔案，組合完四軸笛卡爾積後，直接把這些品項也 push 進同一個 `combos` 陣列（`is_convenience: true`，四軸組合是 `is_convenience: false`），一起進入後面的 tier/過敏原/飲食限制篩選與 `score()` 評分——不是另開分支或另一個推薦來源。目前 35 筆，分 10 類（`category`：飲品/沙拉/健身餐盒/蔬食餐盒/減醣餐盒/蛋白質單品/原型主食/連鎖健康餐盒/宅配健身餐/蛋白飲點心棒；2026-09-25 分三批資料陸續補上：超商即食單品→健身餐盒/蔬食/減醣主食→連鎖健康餐盒品牌與宅配健身餐），**改用真實市售品牌與產品名稱**（統一陽光/義美/光泉/OATLY/萬歲牌/全家健身G肉餐盒等）——這是使用者提供的實測營養數據（2026-09-25），比先前版本的通用估算值精確，尤其纖維量差異很大（例如高纖豆漿纖維量普遍在9–10g，遠高於先前估算的4g）。跟 `taiwan_items.json` 手搖飲/速食類「刻意不寫品牌」的原則不同：這裡是個人自用資料、且數據來源是使用者自己提供的實測值，直接沿用品牌名稱以利辨識實際商品，不算前述原則的例外違反（那條原則是針對「找不到來源、怕誤導」的估算值）。部分品項的 `carb_g`/`fat_g` 未提供（原始資料只給熱量/蛋白質/纖維），存 `null`，不要自己估算填入。
 
@@ -269,40 +282,57 @@ function getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday,
 - **彈性點數額度檢查**：`flexRemaining = flexLedger.cap_kcal - flexLedger.used_kcal`（沒有 `flexLedger` 資料時視為無限制，例如尚未計算過目標的新使用者）；候選是 `is_delivery && uses_flex` 且 `kcal > flexRemaining` 時直接排除，不會推薦使用者已經沒有額度負擔的大餐類外送。
 - **id 前綴**：combo 的 `id` 是 `"tw_" + taiwan_items.id`（例如 `tw_ln01`），額外存 `source_id`（原始 id）供之後呼叫 `logFeastDirectly(planDate, slot, null, source_id)` 記錄用，避免跟其他候選池的 id 撞號。
 - **`protein_sources.json`/`staples.json` 過敏原補正**：Opus 審查也發現既有三軸資料裡「毛豆仁」「無糖豆漿」「板豆腐」缺「黃豆」標籤、「鮭魚」「鯛魚」缺「魚」標籤（`unionTags` 遇到缺過敏原標記的原始食材不會主動補上，這幾筆是標記時的疏漏），已一併修正。
-- **效能**：`getAllRecipeFeedback()`（`database.js` 新增，用 localforage `iterate` 一次撈全部 `recipe_feedback`）取代原本逐一 `getRecipeFeedback(id)`，避免候選池變大後（四軸2464＋超商約1445＋台式約45＝約3950筆）逐筆讀取 IndexedDB 的效能問題。Node 模擬測試 5 種情境（含硬性篩選/fallback/過敏原/彈性點數額度不足）都符合預期，單次呼叫約 40ms。
+- **效能**：`getAllRecipeFeedback()`（`database.js` 新增，用 localforage `iterate` 一次撈全部 `recipe_feedback`）取代原本逐一 `getRecipeFeedback(id)`，避免逐筆讀取 IndexedDB 的效能問題。**（2026-09-25 二輪重構後更新）** 改用餐型骨架後候選池規模大幅縮小（組合只在每個餐型內部展開，不再是全域自由笛卡爾積），Node 模擬測試 3 種情境（無偏好/cook_full/cook_quick，含硬性篩選/fallback/過敏原/彈性點數額度不足/食安免開火過濾/同日多樣性）都符合預期，單次呼叫約 40ms，效能無虞。
 ```
 
-### 4.6 `engine/feast.js`（新增，取代舊 flex.js 的運動換算函式；2026-09-25 大幅擴充）
+### 4.6 `engine/feast.js`（新增，取代舊 flex.js 的運動換算函式；2026-09-25 大幅擴充；2026-09-25 二輪重構）
 ```js
-// resolveFeastItem(itemId, size)：共用的品項解析函式，reserveFeast/logFeastDirectly 都呼叫它，
-// 回傳 { kcal, name, sourceType, protein_g, carb_g, fat_g, fiber_g, usesFlex }。
-// 2026-09-25 修正：taiwan_item 來源現在也回傳 protein_g/fiber_g（原本只有 custom 食物有，
-// 導致台式品項寫進 daily_log 後 checkHardConstraints 算出的蛋白質/纖維缺口失真）；
-// usesFlex 依來源決定——taiwan_item 讀 taiwan_items.uses_flex；custom食物固定true；純size估算固定true。
+// resolveFeastItem(itemId, size)：共用的品項解析函式，reserveFeast/logFeastDirectly/confirmFeast 都呼叫它，
+// 回傳 { kcal, name, sourceType, protein_g, carb_g, fat_g, fiber_g }。
+// 2026-09-25 修正：taiwan_item 來源現在也回傳 protein_g/fiber_g（原本只有 custom 食物有）。
+// 2026-09-25 二輪重構：移除回傳值裡的 usesFlex——彈性帳本改成逐日結算，不用再幫食物分「會不會扣點數」。
 async function resolveFeastItem(itemId, size) { /* ... */ }
 
 async function reserveFeast(planDate, slot, size, itemId) {
-  /* 寫入 feast_reservation，狀態 reserved；只有 resolved.usesFlex===true 才占用 weekly_flex_ledger.used_kcal */
+  /* 寫入 feast_reservation，狀態 reserved。2026-09-25 二輪重構：不再占用 weekly_flex_ledger
+     （帳本已經是逐日結算算出來的），tab-today.js 的 buildRecommendation() 會把當天「reserved」
+     狀態的預約當成暫時記錄餵給 recalcTodayBudget，讓其他時段配額提前反映 */
 }
 async function logFeastDirectly(planDate, slot, size, itemId) {
-  /* 2026-09-25 新增：不經過 feast_reservation，直接寫 daily_log（is_feast:1, feast_reservation_id:null），
-     只有 resolved.usesFlex===true 才更新 weekly_flex_ledger；用於「已經吃了，直接記錄」（PRD 6.3節）*/
+  /* 不經過 feast_reservation，直接寫 daily_log（is_feast:1, feast_reservation_id:null）。
+     2026-09-25 二輪重構：不再更新 weekly_flex_ledger，daily_log 寫進去之後隔天結算自然算得到 */
 }
 async function undoDailyLog(dailyLogId) {
-  /* 2026-09-25 新增：撤銷一筆 logFeastDirectly 產生的記錄——刪除該筆 daily_log，
-     若 entry.uses_flex 為真則把 kcal 退回當週 weekly_flex_ledger.used_kcal。
-     有 feast_reservation_id 的記錄（走預約→確認流程產生）不適用，要改用 cancelFeast。*/
+  /* 撤銷一筆 logFeastDirectly 產生的記錄——刪除該筆 daily_log。2026-09-25 二輪重構：不用再退點數。
+     已知限制：如果撤銷的是「已經結算過」的舊日期記錄，差額不會反映在過去已結算的週數字上
+     （結算游標只往前走，這輪不支援回溯重新結算，範圍外）*/
 }
-async function confirmFeast(reservationId, actualDailyLogEntry) { /* 狀態改 confirmed，用實際值取代預估值，重算 ledger */ }
-async function cancelFeast(reservationId) { /* 狀態改 cancelled，釋放已占用點數 */ }
+async function confirmFeast(reservationId, actualDailyLogEntry) {
+  /* 狀態改 confirmed，寫入實際 daily_log。2026-09-25 修正既有 bug：改用 resolveFeastItem 查回
+     protein_g/carb_g/fat_g/fiber_g 當預設值（原本 UI「確認」按鈕不帶 actualDailyLogEntry 時，
+     這幾個欄位全是 undefined，導致週總覽的蛋白質/纖維永遠是0）。2026-09-25 二輪重構：不再更新 ledger */
+}
+async function cancelFeast(reservationId) { /* 狀態改 cancelled。2026-09-25 二輪重構：不用再退點數（本來就沒扣過）*/ }
 
-// 輸入：週彈性點數超額量
-// 回傳：{ smoothingDays, dailyCapPct, appliedDates }
-function planOverageSmoothing(overageKcal, upcomingDaysBudget, safetyFloor) {
-  // 邏輯對照 PRD 6.4節：1-3天攤還、單日≤15%、不得低於3.4節安全下限
-  // （Opus 審查發現：全專案目前沒有任何地方呼叫這個函式，額度用罄後其實沒有攤還後果會發生；
-  //   這是既有缺口，超出這輪範圍，記錄在此供之後排入任務）
-}
+// 2026-09-25 二輪重構新增：逐日結算彈性帳本，取代舊的「食物標籤即時扣款」設計（PRD 6.2節）。
+// safetyFloorFor(profile)：女1200/男1500，同 nutrition.js calculateTargets() 的安全下限。
+function safetyFloorFor(profile) { /* ... */ }
+
+// 結算「一天」：目標 vs 實際攝取。當天開啟的時段全部有記錄 → 用真實總量；
+// 只要有時段沒記錄 → 假設沒記錄的部分照計畫吃（=目標），已記錄部分若已超標則如實反映。
+// 回傳 { deposit, overage }：deposit 是可以存回額度的量（已套用15%單日上限+安全下限保護），
+// overage 是超標量；兩者恰好一個非零（同一天不可能又存款又超標）。
+async function computeDaySettlement(dateStr, profile, targetKcal) { /* ... */ }
+
+// 用 settings（key='ledger_last_settled_date'）存一個跨週的結算游標，每次呼叫從游標隔天
+// 補到「昨天」為止（今天還沒過完不結算）。第一次呼叫（沒有游標）直接把游標設到昨天，
+// 不會回頭清算使用者過去所有歷史資料。tab-today.js/tab-ledger.js 進分頁時都會呼叫一次，
+// 已經結算過的日子會被游標跳過，重複呼叫是安全的（idempotent）。
+async function settleWeeklyLedger(profile) { /* ... */ }
+
+// 2026-09-25 二輪重構：全專案目前沒有任何地方呼叫 planOverageSmoothing，維持既有狀態不變動——
+// 6.2節新的逐日存款規則已經涵蓋「超額緩慢消化、不強制單日補回」的核心精神，這個函式暫不啟用。
+function planOverageSmoothing(overageKcal, upcomingDaysBudget, safetyFloor) { /* ... */ }
 ```
 
 ### 4.7 `database.js` 相關修正（2026-09-25，Opus 審查發現的既有 bug）

@@ -14,8 +14,8 @@
   </header>
 
   <nav class="tab-nav" aria-label="主要分頁">
-    <button class="tab-btn is-active" data-tab="profile">基本資料</button>
-    <button class="tab-btn" data-tab="today">今日建議</button>
+    <button class="tab-btn" data-tab="profile">基本資料</button>
+    <button class="tab-btn is-active" data-tab="today">今日建議</button>
     <button class="tab-btn" data-tab="ledger">週彈性帳本</button>
     <button class="tab-btn" data-tab="week">本週總覽</button>
     <button class="tab-btn" data-tab="exercise">運動紀錄</button>
@@ -23,7 +23,7 @@
   </nav>
 
   <main class="tab-content">
-    <section id="tab-profile" class="tab-panel is-active" data-panel="profile">
+    <section id="tab-profile" class="tab-panel" data-panel="profile" hidden>
       <h2>基本資料</h2>
 
       <form id="profile-form" class="profile-form" autocomplete="off" novalidate>
@@ -216,7 +216,7 @@
         <p id="weight-log-status" class="status-text" aria-live="polite"></p>
       </section>
     </section>
-    <section id="tab-today" class="tab-panel" data-panel="today" hidden>
+    <section id="tab-today" class="tab-panel is-active" data-panel="today">
       <h2>今日建議</h2>
       <p id="today-status" class="status-text" aria-live="polite"></p>
       <div class="today-toolbar">
@@ -253,6 +253,7 @@
         <h3>本週彈性點數</h3>
         <p>已用 <span id="ledger-used">0</span> / 上限 <span id="ledger-cap">0</span> kcal</p>
         <div class="progress-bar"><div id="ledger-bar-fill" class="progress-fill"></div></div>
+        <p class="taiwan-ref-note">每天自動結算：實際吃的比目標多，記進「已用」；比目標少一點，退回一些額度（有上限，且不會因為吃太少而多退）。不是靠特定食物才會扣點數。</p>
       </section>
 
       <section class="ledger-form">
@@ -281,6 +282,16 @@
                 </select>
               </label>
             </div>
+            <div class="form-field form-field-btn">
+              <button type="submit" class="primary-btn" id="feast-submit-btn">預約</button>
+            </div>
+          </div>
+          <div class="feast-item-picker-field">
+            <p class="feast-item-picker-label">點選實際品項（會跟著上面「餐別」變化）</p>
+            <input type="hidden" name="item_id" id="feast-item-select" value="" />
+            <div class="feast-item-picker" id="feast-item-picker"></div>
+          </div>
+          <div class="form-row" id="feast-custom-row">
             <div class="form-field">
               <label>份量
                 <select name="size">
@@ -291,23 +302,10 @@
               </label>
             </div>
             <div class="form-field">
-              <label>或選擇實際品項（選填）
-                <select name="item_id" id="feast-item-select">
-                  <option value="">不指定，用左邊份量估算</option>
-                  <option value="__custom_new__">自行輸入名稱與熱量…</option>
-                </select>
-              </label>
-            </div>
-            <div class="form-field form-field-btn">
-              <button type="submit" class="primary-btn" id="feast-submit-btn">預約</button>
-            </div>
-          </div>
-          <div class="form-row" id="feast-custom-food-row" hidden>
-            <div class="form-field">
-              <label>名稱<input type="text" name="custom_food_name" placeholder="例如：路邊攤水煎包" /></label>
+              <label>名稱（選填）<input type="text" name="custom_food_name" placeholder="例如：路邊攤水煎包" /></label>
             </div>
             <div class="form-field">
-              <label>熱量 (kcal)<input type="number" name="custom_food_kcal" min="0" step="1" inputmode="numeric" /></label>
+              <label>熱量 (kcal)（跟著份量自動帶出，可自行修改）<input type="number" name="custom_food_kcal" min="0" step="1" inputmode="numeric" /></label>
             </div>
             <div class="form-field">
               <label>蛋白質 (g) 選填<input type="number" name="custom_food_protein" min="0" step="0.1" inputmode="decimal" /></label>
@@ -324,11 +322,6 @@
         <div id="ledger-reservations"></div>
       </section>
 
-      <section class="taiwan-ref">
-        <h3>台式熱門品項參考</h3>
-        <p class="taiwan-ref-note">僅供參考，非記錄用</p>
-        <div id="taiwan-ref-list"></div>
-      </section>
     </section>
     <section id="tab-week" class="tab-panel" data-panel="week" hidden>
       <h2>本週總覽</h2>
@@ -394,8 +387,8 @@
             <div class="form-field">
               <label>強度
                 <select name="intensity">
-                  <option value="中" selected>中</option>
-                  <option value="低">低</option>
+                  <option value="低" selected>低</option>
+                  <option value="中">中</option>
                   <option value="高">高</option>
                 </select>
               </label>

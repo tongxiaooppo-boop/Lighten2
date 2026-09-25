@@ -1,0 +1,52 @@
+[
+  {
+    "id": "bowl_oat",
+    "name": "早餐碗",
+    "protein": { "allow": ["ps_soy_milk", "ps_greek_yogurt"] },
+    "staple": { "allow": ["st_oats"] },
+    "vegetable": { "allow": [] },
+    "seasoning": { "allow": [] },
+    "methods": ["sm_no_cook", "sm_microwave"],
+    "note": "出自「高蛋白燕麥碗」「希臘優格莓果碗」精神；免開火／燕麥＋乳品，沒有蔬菜／醬料槽"
+  },
+  {
+    "id": "egg_pan",
+    "name": "煎蛋類",
+    "protein": { "allow": ["ps_egg"] },
+    "staple": { "allow": [] },
+    "vegetable": { "allow": ["broccoli", "spinach", "celery", "tomato", "bell_pepper", "onion"] },
+    "seasoning": { "allow": [] },
+    "methods": ["sm_pan_fry", "sm_stir_fry"],
+    "note": "出自「菠菜起司蛋白歐姆蛋」；蛋＋蔬菜，沒有主食槽（原本歐姆蛋本來就不配飯）；2026-09-25 蔬菜擴充加番茄/甜椒/洋蔥（常見歐姆蛋配料）"
+  },
+  {
+    "id": "protein_stir_fry",
+    "name": "炒類",
+    "protein": { "allow": ["ps_beef", "ps_shrimp", "ps_chicken_thigh"] },
+    "staple": { "allow": ["st_cauliflower_rice", "st_brown_rice", "st_edamame"] },
+    "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "onion", "bell_pepper", "bean_sprout", "eggplant", "luffa", "wood_ear", "shiitake", "snap_pea", "okra", "baby_corn"] },
+    "seasoning": { "allow": ["sm_kimchi"] },
+    "methods": ["sm_stir_fry"],
+    "note": "出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」；一定要熱炒，蔬菜/泡菜都是選填加分項不是必要；2026-09-25 蔬菜擴充：熱炒是台式蔬菜使用量最大的餐型，加了大部分新增的需煮熟蔬菜"
+  },
+  {
+    "id": "grain_bowl_baked",
+    "name": "烤／舒肥定食",
+    "protein": { "allow": ["ps_chicken_breast", "ps_salmon", "ps_chicken_thigh", "ps_tilapia", "ps_firm_tofu"] },
+    "staple": { "allow": ["st_brown_rice", "st_quinoa", "st_mixed_grain", "st_sweet_potato"] },
+    "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "bell_pepper", "tomato", "onion", "snap_pea", "baby_corn", "okra"] },
+    "seasoning": { "allow": ["sm_teriyaki"] },
+    "methods": ["sm_air_fry", "sm_pan_fry", "sm_microwave"],
+    "note": "出自「舒肥雞胸地瓜餐」「義式香草烤鮭魚藜麥飯」「日式照燒豆腐鯛魚飯」；主食＋蛋白質＋菜的標準定食組合；2026-09-25 蔬菜擴充"
+  },
+  {
+    "id": "warm_salad",
+    "name": "溫沙拉",
+    "protein": { "allow": ["ps_chicken_thigh", "ps_chicken_breast", "ps_firm_tofu"] },
+    "staple": { "allow": ["st_pumpkin", "st_sweet_potato"] },
+    "vegetable": { "allow": ["broccoli", "spinach", "celery", "cabbage", "cucumber", "tomato", "bell_pepper", "daikon", "lettuce_a", "onion", "snap_pea"] },
+    "seasoning": { "allow": [] },
+    "methods": ["sm_pan_fry", "sm_air_fry"],
+    "note": "出自「蒜香嫩煎雞腿肉溫沙拉」；根莖類配蛋白質＋生菜，沒有鹹味醬料槽；2026-09-25 蔬菜擴充：溫沙拉多為生食類蔬菜，加了大部分新增的免煮熟蔬菜"
+  }
+]

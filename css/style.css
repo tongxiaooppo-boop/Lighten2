@@ -99,6 +99,12 @@ body {
   align-items: flex-end;
 }
 
+/* .form-row 的 display:flex 跟 [hidden] 的 UA 預設 display:none 優先度打平時，
+   樣式表裡宣告在後的 .form-row 會贏，導致 hidden 屬性關不掉畫面。用 id 選擇器強制蓋回去。 */
+#feast-custom-row[hidden] {
+  display: none;
+}
+
 .form-field {
   min-width: 140px;
   flex: 1 1 160px;
@@ -276,6 +282,12 @@ body {
 
 .rec-fallback-note {
   margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+
+.rec-content-note {
+  margin: 0.2rem 0 0.5rem;
   font-size: 0.85rem;
   color: #8A7A63;
 }
@@ -501,65 +513,82 @@ body {
   color: #8A7A63;
 }
 
-/* 台式熱門品項參考 */
-.taiwan-ref {
-  margin-top: 1.5rem;
-}
-
+/* 台式熱門品項參考（保留給運動頁等其他仍在用的地方） */
 .taiwan-ref-note {
   margin: 0 0 0.8rem;
   font-size: 0.85rem;
   color: #8A7A63;
 }
 
-.taiwan-ref-group {
-  margin-bottom: 1rem;
+/* 預約大餐：可點擊的品項圖卡選單（取代原本純參考、不能點的卡片＋看不到圖的下拉） */
+.feast-item-picker-field {
+  margin: 0.8rem 0;
 }
 
-.taiwan-ref-cat {
-  margin: 0 0 0.4rem;
-  font-size: 1rem;
-  font-family: "Noto Serif TC", serif;
+.feast-item-picker-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #5A4C3A;
 }
 
-.taiwan-ref-items {
+.feast-item-picker {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 0.6rem;
 }
 
-.taiwan-ref-item {
+.feast-item-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.3rem;
   padding: 0.5rem;
-  border: 1px solid #EFE3D2;
+  border: 2px solid #EFE3D2;
   border-radius: 12px;
   background-color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
 }
 
-.taiwan-ref-img {
-  flex: 0 0 60px;
-  width: 60px;
-  height: 60px;
+.feast-item-card:hover {
+  border-color: #E0B98C;
+}
+
+.feast-item-card.selected {
+  border-color: #C1652F;
+  background-color: #FBF0E6;
+}
+
+.feast-item-card-img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.taiwan-ref-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
+.feast-item-card-img-empty {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  background-color: #F3E4D0;
 }
 
-.taiwan-ref-name {
+.feast-item-card-custom .feast-item-card-img {
+  object-fit: contain;
+  background-color: #F3E4D0;
+  padding: 0.4rem;
+  box-sizing: border-box;
+}
+
+.feast-item-card-name {
   font-weight: 600;
+  font-size: 0.85rem;
   overflow-wrap: break-word;
 }
 
-.taiwan-ref-kcal {
-  font-size: 0.85rem;
+.feast-item-card-kcal {
+  font-size: 0.75rem;
   color: #8A7A63;
 }
 

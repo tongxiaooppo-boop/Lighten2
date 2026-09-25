@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="自行輸入品項">
+  <circle cx="60" cy="60" r="58" fill="#F3E4D0"/>
+  <circle cx="60" cy="60" r="34" fill="#ffffff" stroke="#EFE3D2" stroke-width="3"/>
+  <g stroke="#C1652F" stroke-width="7" stroke-linecap="round">
+    <line x1="60" y1="42" x2="60" y2="78"/>
+    <line x1="42" y1="60" x2="78" y2="60"/>
+  </g>
+</svg>

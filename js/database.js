@@ -193,6 +193,32 @@
     return updated;
   }
 
+  // 2026-09-25 二輪重構修正既有 bug（Opus 三輪磋商時查出）：`recommend.js` 的 score() 一直有讀
+  // shown_count/last_shown_date 做「近期出現過降權」，但全專案唯一會寫入這兩個欄位的地方是
+  // saveRecipeFeedback()，只在使用者按「倒讚」時才呼叫——單純把某個組合顯示給使用者看，從來沒有
+  // 被記錄過，導致這條降權邏輯從實作以來就是死碼（跟交接筆記裡「shown_count只在倒讚時更新」是
+  // 同一個問題，這次順便修）。新增這個函式，在畫面實際渲染出推薦卡片時呼叫，只累加 shown_count/
+  // 更新 last_shown_date，不動 rating；同一天重複渲染（例如記錄一餐後重新整理）不重複累加。
+  function todayStr() {
+    const d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+
+  async function markRecipesShown(ids) {
+    const today = todayStr();
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const existing = (await getRecipeFeedback(id)) || {};
+      if (existing.last_shown_date === today) continue;
+      const updated = Object.assign({}, existing, {
+        recipe_template_id: id,
+        shown_count: (existing.shown_count || 0) + 1,
+        last_shown_date: today,
+      });
+      await db(STORE.recipeFeedback).setItem(id, updated);
+    }
+  }
+
   // ---------- 5. raw_ingredients / taiwan_items / custom_foods ----------
 
   async function getRawIngredients() {
@@ -360,6 +386,7 @@
     getRecipeFeedback: getRecipeFeedback,
     getAllRecipeFeedback: getAllRecipeFeedback,
     saveRecipeFeedback: saveRecipeFeedback,
+    markRecipesShown: markRecipesShown,
     getRawIngredients: getRawIngredients,
     getTaiwanItems: getTaiwanItems,
     getCustomFoods: getCustomFoods,

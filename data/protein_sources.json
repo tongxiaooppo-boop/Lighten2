@@ -14,7 +14,9 @@
       "乳製品"
     ],
     "prep_tier": "🟢",
-    "note": "出自「高蛋白燕麥碗」；4.4 未收錄，2026-09-25 依市售乳清蛋白濃縮物（whey concentrate）常見營養標示估算補上，各品牌差異可達±15%"
+    "requires_cooking": false,
+    "item_class": "supplement",
+    "note": "出自「高蛋白燕麥碗」；4.4 未收錄，2026-09-25 依市售乳清蛋白濃縮物（whey concentrate）常見營養標示估算補上，各品牌差異可達±15%；2026-09-25 二輪重構：改列 item_class=supplement，移出自組食譜正餐候選池，暫不提供使用者開關（見 PRD 5.5 節）"
   },
   {
     "id": "ps_chicken_breast",
@@ -29,7 +31,12 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟢",
-    "note": "出自「舒肥雞胸地瓜餐」「超商即食雞胸沙拉盒」「微波即食雞胸糙米便當」；引用 4.4 雞胸肉"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 130,
+    "serving_label": "1份雞胸肉（生重約130g，熟後約100g）",
+    "note": "出自「舒肥雞胸地瓜餐」「超商即食雞胸沙拉盒」「微波即食雞胸糙米便當」；引用 4.4 雞胸肉；2026-09-25 補 requires_cooking（生鮮雞胸，食安：中心溫度需達74°C）；補 serving_g（取代全軸統一130g的估算常數，此筆恰好一致純屬巧合）"
   },
   {
     "id": "ps_egg",
@@ -46,7 +53,12 @@
       "蛋"
     ],
     "prep_tier": "🟡",
-    "note": "出自「菠菜起司蛋白歐姆蛋」「舒肥雞胸地瓜餐(水煮蛋)」「清煎蝦仁毛豆炒蛋」；引用 4.4 雞蛋"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 100,
+    "serving_label": "2顆雞蛋（約100g）",
+    "note": "出自「菠菜起司蛋白歐姆蛋」「舒肥雞胸地瓜餐(水煮蛋)」「清煎蝦仁毛豆炒蛋」；引用 4.4 雞蛋；2026-09-25 補 requires_cooking（生蛋沙門氏菌風險）；補 serving_g"
   },
   {
     "id": "ps_greek_yogurt",
@@ -63,7 +75,12 @@
       "乳製品"
     ],
     "prep_tier": "🟢",
-    "note": "出自「希臘優格莓果碗」「高蛋白希臘優格碗」；4.4 未收錄，2026-09-25 依無糖脫脂希臘優格常見營養標示估算補上"
+    "requires_cooking": false,
+    "item_class": "ingredient",
+    "nutrient_basis": "as_is",
+    "serving_g": 150,
+    "serving_label": "1杯希臘優格（約150g）",
+    "note": "出自「希臘優格莓果碗」「高蛋白希臘優格碗」；4.4 未收錄，2026-09-25 依無糖脫脂希臘優格常見營養標示估算補上；補 serving_g"
   },
   {
     "id": "ps_salmon",
@@ -80,7 +97,12 @@
       "魚"
     ],
     "prep_tier": "🔴",
-    "note": "出自「義式香草烤鮭魚藜麥飯」；4.4 未收錄（4.4 只有草魚），2026-09-25 依生鮭魚（大西洋鮭）公開營養資料補上；allergen_tags 補「魚」（Opus審查發現遺漏）"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 120,
+    "serving_label": "1份鮭魚（生重約120g）",
+    "note": "出自「義式香草烤鮭魚藜麥飯」；4.4 未收錄（4.4 只有草魚），2026-09-25 依生鮭魚（大西洋鮭）公開營養資料補上；allergen_tags 補「魚」（Opus審查發現遺漏）；requires_cooking=true（一般市售生鮭魚需煮熟，非生魚片等級）；補 serving_g"
   },
   {
     "id": "ps_beef",
@@ -95,7 +117,12 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
-    "note": "出自「韓式泡菜炒牛肉花椰菜米」（低脂牛肉片）；4.4 未收錄（4.4 只有瘦豬肉），2026-09-25 依生瘦牛肉（後腿/沙朗瘦肉）公開營養資料補上"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 120,
+    "serving_label": "1份牛肉片（生重約120g）",
+    "note": "出自「韓式泡菜炒牛肉花椰菜米」（低脂牛肉片）；4.4 未收錄（4.4 只有瘦豬肉），2026-09-25 依生瘦牛肉（後腿/沙朗瘦肉）公開營養資料補上；requires_cooking=true（一般市售生牛肉需煮熟，非牛排/生食等級）；補 serving_g"
   },
   {
     "id": "ps_chicken_thigh",
@@ -110,7 +137,12 @@
     ],
     "allergen_tags": [],
     "prep_tier": "🔴",
-    "note": "出自「蒜香嫩煎雞腿肉溫沙拉」（去皮雞腿肉）；4.4 未收錄（4.4 只有雞胸肉），2026-09-25 依生去皮雞腿肉公開營養資料補上"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 130,
+    "serving_label": "1份去皮雞腿肉（生重約130g）",
+    "note": "出自「蒜香嫩煎雞腿肉溫沙拉」（去皮雞腿肉）；4.4 未收錄（4.4 只有雞胸肉），2026-09-25 依生去皮雞腿肉公開營養資料補上；requires_cooking=true（生鮮雞肉，食安：中心溫度需達74°C）；補 serving_g"
   },
   {
     "id": "ps_tilapia",
@@ -127,7 +159,12 @@
       "魚"
     ],
     "prep_tier": "🟡",
-    "note": "出自「日式照燒豆腐鯛魚飯」（台灣鯛魚片）；4.4 未收錄，2026-09-25 依生吳郭魚/台灣鯛魚片公開營養資料補上"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 120,
+    "serving_label": "1份鯛魚片（生重約120g）",
+    "note": "出自「日式照燒豆腐鯛魚飯」（台灣鯛魚片）；4.4 未收錄，2026-09-25 依生吳郭魚/台灣鯛魚片公開營養資料補上；requires_cooking=true（一般市售生魚片需煮熟，非生食等級）；補 serving_g"
   },
   {
     "id": "ps_firm_tofu",
@@ -145,7 +182,12 @@
       "黃豆"
     ],
     "prep_tier": "🟢",
-    "note": "出自「日式照燒豆腐鯛魚飯」；引用 4.4 板豆腐"
+    "requires_cooking": false,
+    "item_class": "ingredient",
+    "nutrient_basis": "as_is",
+    "serving_g": 150,
+    "serving_label": "1/2盒板豆腐（約150g）",
+    "note": "出自「日式照燒豆腐鯛魚飯」；引用 4.4 板豆腐；requires_cooking=false（板豆腐已是即食豆製品，可涼拌）；補 serving_g"
   },
   {
     "id": "ps_shrimp",
@@ -162,7 +204,12 @@
       "甲殼類"
     ],
     "prep_tier": "🟡",
-    "note": "出自「清煎蝦仁毛豆炒蛋」；4.4 未收錄，2026-09-25 依生蝦仁公開營養資料補上"
+    "requires_cooking": true,
+    "item_class": "ingredient",
+    "nutrient_basis": "raw",
+    "serving_g": 100,
+    "serving_label": "1份蝦仁（生重約100g）",
+    "note": "出自「清煎蝦仁毛豆炒蛋」；4.4 未收錄，2026-09-25 依生蝦仁公開營養資料補上；requires_cooking=true（生蝦仁需煮熟，非生食等級）；補 serving_g"
   },
   {
     "id": "ps_soy_milk",
@@ -180,6 +227,11 @@
       "黃豆"
     ],
     "prep_tier": "🟢",
-    "note": "出自「即食豆漿＋堅果包」「高蛋白燕麥碗」；4.4 未收錄（4.4 只有黃豆），2026-09-25 依市售無糖豆漿公開營養標示補上（每100ml約當100g）"
+    "requires_cooking": false,
+    "item_class": "ingredient",
+    "nutrient_basis": "as_is",
+    "serving_g": 300,
+    "serving_label": "1杯無糖豆漿（約300ml）",
+    "note": "出自「即食豆漿＋堅果包」「高蛋白燕麥碗」；4.4 未收錄（4.4 只有黃豆），2026-09-25 依市售無糖豆漿公開營養標示補上（每100ml約當100g）；補 serving_g"
   }
 ]

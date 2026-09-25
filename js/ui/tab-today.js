@@ -14,7 +14,8 @@
 
   // 蛋白質來源 → 食材縮圖（對照 data/protein_sources.json 的 name；查不到就不顯示圖片，正常降級）
   const PROTEIN_IMAGE = {
-    "乳清蛋白粉": "images/food/whey-protein.jpg",
+    // 2026-09-25 移除「乳清蛋白粉」：原圖是有品牌商標/廣告字樣的市售產品照，跟其他中性食材縮圖風格不一致，
+    // 也不適合代表整份組合餐點；查不到圖片會正常降級成不顯示（跟超商品項目前的處理方式一致）。
     "雞胸肉": "images/food/chicken-breast.jpg",
     "雞蛋": "images/food/egg.jpg",
     "希臘優格": "images/food/greek-yogurt.jpg",
@@ -97,10 +98,14 @@
       const fallbackNote = rec.fallback_to_auto
         ? '<p class="rec-fallback-note">今日這個來源沒有符合配額的選擇，已改為一般推薦</p>'
         : "";
+      const contentNote = rec.content_note
+        ? '<p class="rec-content-note">' + escapeHtml(rec.content_note) + "</p>"
+        : "";
       body.innerHTML =
         imgHtml +
         fallbackNote +
         '<div class="rec-name">' + escapeHtml(rec.name) + "</div>" +
+        contentNote +
         '<div class="rec-meta">' +
         escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
         '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>" +
@@ -135,26 +140,40 @@
     const today = localDateStr();
     const monday = mondayOfThisWeek();
 
-    const [todayLogs, weekLogs] = await Promise.all([
+    const [todayLogs, weekLogs, todayReservations] = await Promise.all([
       getDailyLogs({ start: today, end: today }),
       getDailyLogs({ start: monday, end: today }),
+      getFeastReservations({ status: "reserved", start: today, end: today }),
     ]);
 
-    const remainingBudget = recalcTodayBudget(targets.targetKcal, todayLogs, profile.enabled_slots);
+    // 2026-09-25 二輪重構：「預約大餐」不再直接扣彈性點數，改成「事先幫其他時段重新分配預算」——
+    // 把今天還「預約中」（還沒吃、還沒確認）的大餐當成暫時的紀錄餵給 recalcTodayBudget，
+    // 讓其他還沒吃的時段配額提前反映「等一下要吃大餐」這件事，不用等到真的記錄下去才看到配額變少。
+    const pseudoLogsForBudget = todayLogs.concat(
+      todayReservations.map(function (r) {
+        return { slot: r.slot, kcal: r.estimated_kcal };
+      })
+    );
+    const remainingBudget = recalcTodayBudget(targets.targetKcal, pseudoLogsForBudget, profile.enabled_slots);
     const hardConstraints = checkHardConstraints(weekLogs, profile);
-    const ledger = await getWeeklyLedger(monday);
+    // 彈性帳本改成逐日結算（見 feast.js），每次進這個分頁順便結算一次「昨天以前」還沒結算的日子。
+    settleWeeklyLedger(profile).catch(function (err) { console.error(err); });
 
     const recs = await getTodayRecommendation(
       remainingBudget,
       hardConstraints,
       profile.meal_prefs,
       profile.diet_restriction,
-      profile.allergens,
-      ledger
+      profile.allergens
     );
     currentRecs = recs;
 
     renderRecs(recs, profile);
+    // 修既有 bug：score() 的「近期出現過降權」一直讀 shown_count/last_shown_date，
+    // 但這兩個欄位過去只在使用者按「倒讚」時才寫入，單純顯示從沒被記錄過，降權形同死碼。
+    // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
+    const shownIds = Object.keys(recs).map(function (slot) { return recs[slot] && recs[slot].id; }).filter(Boolean);
+    if (shownIds.length > 0) markRecipesShown(shownIds).catch(function (err) { console.error(err); });
     setStatus("");
   }
 

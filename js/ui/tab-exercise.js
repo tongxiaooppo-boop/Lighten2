@@ -7,6 +7,20 @@
 
   const INTENSITY_LABELS = { 低: "低強度", 中: "中強度", 高: "高強度" };
 
+  // 每種運動項目的「一般典型強度」，選項目時自動帶出強度，避免使用者選出不合理組合
+  // （例如「散步」配「高強度」）。使用者仍可自行覆蓋（例如真的在爬坡快走）。
+  const ACTIVITY_DEFAULT_INTENSITY = {
+    "散步": "低",
+    "快走": "中",
+    "慢跑": "高",
+    "腳踏車": "中",
+    "游泳": "中",
+    "羽毛球": "中",
+    "籃球": "高",
+    "重訓": "中",
+    "瑜伽": "低",
+  };
+
   // 本週活動量參考：WHO/ACSM 一般性建議，跟飲食熱量完全脫鉤、跟 goal_mode 也無關。
   const WEEKLY_ACTIVITY_TARGET = { moderateMinutes: 150, strengthDays: 2 };
   const INTENSITY_MULTIPLIER = { "低": 0, "中": 1, "高": 2 }; // 低強度不計入 150 分鐘累計，另外顯示
@@ -69,6 +83,17 @@
     };
   }
 
+  let intensityManuallyEdited = false;
+
+  function syncIntensityFromActivity() {
+    if (intensityManuallyEdited) return;
+    const select = document.querySelector("#exercise-form select[name='activity_type_preset']");
+    const intensitySelect = document.querySelector("#exercise-form select[name='intensity']");
+    if (!select || !intensitySelect) return;
+    const def = ACTIVITY_DEFAULT_INTENSITY[select.value];
+    if (def) intensitySelect.value = def;
+  }
+
   function onPresetChange() {
     const select = document.querySelector("#exercise-form select[name='activity_type_preset']");
     const customField = $("#exercise-custom-activity-field");
@@ -80,6 +105,7 @@
       const customInput = document.querySelector("#exercise-form [name='activity_type_custom']");
       if (customInput) customInput.value = "";
     }
+    syncIntensityFromActivity();
   }
 
   // 連續紀錄天數：從今天往回算，每天都有至少一筆記錄。
@@ -191,6 +217,8 @@
       form.elements["duration_min"].value = "";
       const customField = $("#exercise-custom-activity-field");
       if (customField) customField.hidden = true;
+      intensityManuallyEdited = false;
+      syncIntensityFromActivity();
       await render();
     } catch (err) {
       console.error(err);
@@ -208,6 +236,10 @@
     const presetSelect = document.querySelector("#exercise-form select[name='activity_type_preset']");
     if (presetSelect) presetSelect.addEventListener("change", onPresetChange);
 
+    const intensitySelect = document.querySelector("#exercise-form select[name='intensity']");
+    if (intensitySelect) intensitySelect.addEventListener("change", function () { intensityManuallyEdited = true; });
+
+    syncIntensityFromActivity();
     render();
   });
 })();
