@@ -4,7 +4,7 @@
 (function () {
   "use strict";
 
-  const SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", snack: "宵夜" };
+  const SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", afternoon_tea: "下午茶", dinner: "晚餐", snack: "宵夜" };
   const SIZE_LABELS = { S: "小", M: "中", L: "大" };
 
   // 台式熱門品項 id → 縮圖（查不到就不顯示，正常降級）

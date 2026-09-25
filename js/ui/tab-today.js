@@ -73,10 +73,15 @@
     if (el) el.textContent = msg || "";
   }
 
-  function renderRecs(recs) {
+  function renderRecs(recs, profile) {
     SLOTS.forEach(function (slot) {
       const body = $("#rec-" + slot);
       if (!body) return;
+      const isEnabled = !profile || !profile.enabled_slots || profile.enabled_slots[slot] !== false;
+      if (!isEnabled) {
+        body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
+        return;
+      }
       const rec = recs[slot];
       if (!rec) {
         body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>';
@@ -126,7 +131,7 @@
       getDailyLogs({ start: monday, end: today }),
     ]);
 
-    const remainingBudget = recalcTodayBudget(targets.targetKcal, todayLogs);
+    const remainingBudget = recalcTodayBudget(targets.targetKcal, todayLogs, profile.enabled_slots);
     const hardConstraints = checkHardConstraints(weekLogs, profile);
     const preptimeToday = isWeekend() ? profile.prep_time_weekend : profile.prep_time_weekday;
 
@@ -138,7 +143,7 @@
       profile.allergens
     );
 
-    renderRecs(recs);
+    renderRecs(recs, profile);
     setStatus("");
   }
 

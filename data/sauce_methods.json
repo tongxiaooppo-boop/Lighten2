@@ -4,6 +4,6 @@
   {"id": "sm_pan_fry", "name": "煎", "kcal_100g": 0, "protein_100g": 0, "carb_100g": 0, "fat_100g": 0, "fiber_100g": 0, "diet_tags": [], "allergen_tags": [], "prep_tier": "🟡", "note": "煎至熟；出自「菠菜起司蛋白歐姆蛋」「蒜香嫩煎雞腿肉溫沙拉」「日式照燒豆腐鯛魚飯」"},
   {"id": "sm_stir_fry", "name": "炒", "kcal_100g": 0, "protein_100g": 0, "carb_100g": 0, "fat_100g": 0, "fiber_100g": 0, "diet_tags": [], "allergen_tags": [], "prep_tier": "🟡", "note": "熱鍋炒；出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」"},
   {"id": "sm_air_fry", "name": "烤／氣炸", "kcal_100g": 0, "protein_100g": 0, "carb_100g": 0, "fat_100g": 0, "fiber_100g": 0, "diet_tags": [], "allergen_tags": [], "prep_tier": "🔴", "note": "氣炸／烤箱；出自「義式香草烤鮭魚藜麥飯」"},
-  {"id": "sm_kimchi", "name": "韓式泡菜", "kcal_100g": null, "protein_100g": null, "carb_100g": null, "fat_100g": null, "fiber_100g": null, "diet_tags": [], "allergen_tags": ["甲殼類"], "prep_tier": "🟢", "note": "出自「韓式泡菜炒牛肉花椰菜米」；4.4 未收錄，熱量未知（傳統泡菜含蝦醬/魚露）"},
-  {"id": "sm_teriyaki", "name": "照燒醬", "kcal_100g": null, "protein_100g": null, "carb_100g": null, "fat_100g": null, "fiber_100g": null, "diet_tags": [], "allergen_tags": ["麩質"], "prep_tier": "🟢", "note": "出自「日式照燒豆腐鯛魚飯」；4.4 未收錄，熱量未知（含醬油/小麥）"}
+  {"id": "sm_kimchi", "name": "韓式泡菜", "kcal_100g": 15, "protein_100g": 1.1, "carb_100g": 2.4, "fat_100g": 0.5, "fiber_100g": 1.6, "diet_tags": [], "allergen_tags": ["甲殼類"], "prep_tier": "🟢", "note": "出自「韓式泡菜炒牛肉花椰菜米」；4.4 未收錄，2026-09-25 依市售韓式泡菜公開營養資料補上（傳統做法含蝦醬/魚露，過敏原標記保留）"},
+  {"id": "sm_teriyaki", "name": "照燒醬", "kcal_100g": 89, "protein_100g": 5.9, "carb_100g": 16.0, "fat_100g": 0, "fiber_100g": 0.3, "diet_tags": [], "allergen_tags": ["麩質"], "prep_tier": "🟢", "note": "出自「日式照燒豆腐鯛魚飯」；4.4 未收錄，2026-09-25 依市售照燒醬（醬油/糖基底）公開營養資料補上"}
 ]

@@ -4,14 +4,15 @@
 (function () {
   "use strict";
 
-  const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
+  const SLOTS = ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"];
 
-  // 無紀錄時的預設切分比例（PRD 5.1：早25%／午35%／晚30%／宵夜10%）
+  // 無紀錄時的預設切分比例（PRD 5.1：早20%／午30%／下午茶10%／晚30%／宵夜10%）
   const DEFAULT_WEIGHTS = {
-    breakfast: 0.25,
-    lunch: 0.35,
-    dinner: 0.3,
-    snack: 0.1,
+    breakfast: 0.20,
+    lunch: 0.30,
+    afternoon_tea: 0.10,
+    dinner: 0.30,
+    snack: 0.10,
   };
 
   // 分配邏輯（報告會說明）：
@@ -19,13 +20,19 @@
   // - 未吃餐次：把「剩餘熱量」依各餐次的「預設權重」在未吃餐次之間做相對加權分配。
   //   例：吃完早餐後，剩餘熱量按 午0.35/晚0.30/宵0.10 的相對比例分給這三餐。
   // - 吃越多 → remainingKcal 越小；未吃餐次越少 → 每餐分越多。
-  function recalcTodayBudget(targetKcal, todayLogs) {
+  function recalcTodayBudget(targetKcal, todayLogs, enabledSlots) {
+    const enabled = enabledSlots || {};
     const target = Number(targetKcal);
     const base = isFinite(target) && target > 0 ? target : 0;
     const logs = Array.isArray(todayLogs) ? todayLogs : [];
 
-    const eatenKcal = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+    const eatenKcal = { breakfast: 0, lunch: 0, afternoon_tea: 0, dinner: 0, snack: 0 };
     const eatenSlots = {};
+
+    // 被關閉的時段視同「已處理」，排除在未吃餐次的權重分配之外
+    SLOTS.forEach(function (s) {
+      if (enabled[s] === false) eatenSlots[s] = true;
+    });
 
     logs.forEach(function (log) {
       if (!log || !DEFAULT_WEIGHTS.hasOwnProperty(log.slot)) return;
@@ -45,7 +52,7 @@
       return sum + DEFAULT_WEIGHTS[s];
     }, 0);
 
-    const perSlotSuggestion = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+    const perSlotSuggestion = { breakfast: 0, lunch: 0, afternoon_tea: 0, dinner: 0, snack: 0 };
     if (totalWeight > 0) {
       uneatenSlots.forEach(function (s) {
         perSlotSuggestion[s] = remainingKcal * (DEFAULT_WEIGHTS[s] / totalWeight);
@@ -57,6 +64,7 @@
       perSlotSuggestion: {
         breakfast: round1(perSlotSuggestion.breakfast),
         lunch: round1(perSlotSuggestion.lunch),
+        afternoon_tea: round1(perSlotSuggestion.afternoon_tea),
         dinner: round1(perSlotSuggestion.dinner),
         snack: round1(perSlotSuggestion.snack),
       },

@@ -4,6 +4,9 @@
 (function () {
   "use strict";
 
+  // 今日建議時段的預設開關（早/午/晚預設開啟，下午茶/宵夜預設關閉）
+  const DEFAULT_ENABLED_SLOTS = { breakfast: true, lunch: true, afternoon_tea: false, dinner: true, snack: false };
+
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -73,6 +76,13 @@
       prep_time_weekday: fd.get("prep_time_weekday"),
       prep_time_weekend: fd.get("prep_time_weekend"),
       goal_mode: fd.get("goal_mode"),
+      enabled_slots: {
+        breakfast: fd.get("slot_breakfast") === "on",
+        lunch: fd.get("slot_lunch") === "on",
+        afternoon_tea: fd.get("slot_afternoon_tea") === "on",
+        dinner: fd.get("slot_dinner") === "on",
+        snack: fd.get("slot_snack") === "on",
+      },
     };
   }
 
@@ -95,6 +105,14 @@
     set("prep_time_weekday", profile.prep_time_weekday);
     set("prep_time_weekend", profile.prep_time_weekend);
     set("goal_mode", profile.goal_mode);
+
+    // 回填今日建議時段開關（只對「完全沒存過」的欄位套預設值，避免關掉的時段被預設值打回）
+    const slots = profile.enabled_slots || {};
+    ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"].forEach(function (slot) {
+      const el = form.elements["slot_" + slot];
+      if (!el) return;
+      el.checked = slots.hasOwnProperty(slot) ? slots[slot] !== false : DEFAULT_ENABLED_SLOTS[slot];
+    });
   }
 
   function showTargets(result) {

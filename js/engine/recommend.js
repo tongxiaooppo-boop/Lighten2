@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const SLOTS = ["breakfast", "lunch", "dinner", "snack"];
+  const SLOTS = ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"];
   const TIER_RANK = { "🟢": 0, "🟡": 1, "🔴": 2 };
   const RANK_TO_TIER = { 0: "🟢", 1: "🟡", 2: "🔴" };
   // 備餐時間 → 可接受難度上限（rank）。「幾乎無」只給 🟢；其餘級距自行訂定。
@@ -18,6 +18,15 @@
   };
   const SCALE_MIN = 0.7;
   const SCALE_MAX = 1.3;
+
+  // 份量換算（2026-09-25 修正）：三軸資料是「每 100g」營養值，實際一餐不會只吃 100g。
+  // 直接把三個 100g 值相加會嚴重低估總熱量（例如雞胸肉+燕麥片最高只有 529kcal，
+  // 導致熱量配額較高的午餐永遠配不到組合）。改用實際份量估算：
+  // 蛋白質來源約 130g、主食約 150g、醬料/烹調法屬調味用量約 20g（烹調技法本身
+  // kcal_100g 為 0，不受此換算影響）。
+  const PROTEIN_SERVING_G = 130;
+  const STAPLE_SERVING_G = 150;
+  const SAUCE_SERVING_G = 20;
 
   let _axesCache = null;
 
@@ -113,17 +122,21 @@
         axes.sauces.forEach(function (m) {
           if (p.kcal_100g == null || s.kcal_100g == null || m.kcal_100g == null) return;
           const rank = Math.max(tierRank(p.prep_tier), tierRank(s.prep_tier), tierRank(m.prep_tier));
+          // 份量比例（每 100g 營養值 × 實際份量／100）
+          const pr = PROTEIN_SERVING_G / 100;
+          const sr = STAPLE_SERVING_G / 100;
+          const mr = SAUCE_SERVING_G / 100;
           combos.push({
             id: p.id + "_" + s.id + "_" + m.id,
             name: p.name + " + " + s.name + " + " + m.name,
             protein_name: p.name,
             staple_name: s.name,
             sauce_name: m.name,
-            kcal: num(p.kcal_100g) + num(s.kcal_100g) + num(m.kcal_100g),
-            protein_g: num(p.protein_100g) + num(s.protein_100g) + num(m.protein_100g),
-            carb_g: num(p.carb_100g) + num(s.carb_100g) + num(m.carb_100g),
-            fat_g: num(p.fat_100g) + num(s.fat_100g) + num(m.fat_100g),
-            fiber_g: num(p.fiber_100g) + num(s.fiber_100g) + num(m.fiber_100g),
+            kcal: round1(num(p.kcal_100g) * pr + num(s.kcal_100g) * sr + num(m.kcal_100g) * mr),
+            protein_g: round1(num(p.protein_100g) * pr + num(s.protein_100g) * sr + num(m.protein_100g) * mr),
+            carb_g: round1(num(p.carb_100g) * pr + num(s.carb_100g) * sr + num(m.carb_100g) * mr),
+            fat_g: round1(num(p.fat_100g) * pr + num(s.fat_100g) * sr + num(m.fat_100g) * mr),
+            fiber_g: round1(num(p.fiber_100g) * pr + num(s.fiber_100g) * sr + num(m.fiber_100g) * mr),
             tier: RANK_TO_TIER[rank],
             tier_rank: rank,
             diet_tags: unionTags(p.diet_tags, s.diet_tags, m.diet_tags),
@@ -198,5 +211,5 @@
 
   window.getTodayRecommendation = getTodayRecommendation;
   window.RECOMMEND_SLOTS = SLOTS;
-  window.RECOMMEND_SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", snack: "宵夜" };
+  window.RECOMMEND_SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", afternoon_tea: "下午茶", dinner: "晚餐", snack: "宵夜" };
 })();

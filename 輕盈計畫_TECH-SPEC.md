@@ -139,9 +139,10 @@ lighten/
 | 欄位 | 型別 | 說明 |
 |---|---|---|
 | id | TEXT PK | |
-| plan_date / slot | — | |
-| size | TEXT | 'S'/'M'/'L'，對應概略估算 kcal（見 `settings` 內建對照表，例如 S=400/M=700/L=1200） |
-| estimated_kcal | REAL | 依 size 換算或使用者微調 |
+| plan_date / slot | — | slot 現支援 5 種：breakfast/lunch/afternoon_tea/dinner/snack（2026-09-25 新增 afternoon_tea） |
+| size | TEXT NULL | 'S'/'M'/'L'，對應概略估算 kcal（見 `FEAST_SIZE_KCAL` 常數，S=400/M=700/L=1200）。**2026-09-25 起改為選填**，選了 `taiwan_item_id` 就不需要 size |
+| taiwan_item_id | TEXT NULL | **（2026-09-25 新增）** 若使用者是從台式熱門品項清單挑選實際品項（而非小/中/大概略份量），存對應 `taiwan_items.id`；用來在畫面上顯示品項名稱 |
+| estimated_kcal | REAL | 有 `taiwan_item_id` 就用該品項的 `kcal_rep`（無則取 `kcal_low`/`kcal_high` 中間值）；否則依 size 換算或使用者微調 |
 | status | TEXT | 'reserved' / 'confirmed' / 'cancelled' |
 | daily_log_id | TEXT NULL | confirmed 後關聯 3.10 |
 
@@ -220,6 +221,9 @@ function getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday,
   // 過濾 recipe_templates，依 recipe_feedback 的評分+近期降權排序
   // 優先滿足 matcher.js 回傳的蛋白質/纖維缺口
 }
+```
+
+**份量換算（2026-09-25 修正）**：`protein_sources.json`/`staples.json`/`sauce_methods.json` 存的是「每 100g」營養值，組合三軸時不能直接把 100g 值相加（那等於假設每種食材只吃 100g，會嚴重低估總熱量，導致熱量配額較高的時段永遠配不到組合）。`recommend.js` 內部依「蛋白質來源 130g／主食 150g／醬料或烹調法 20g」的假設份量換算後再加總（`PROTEIN_SERVING_G`/`STAPLE_SERVING_G`/`SAUCE_SERVING_G` 常數），`protein_g`/`carb_g`/`fat_g`/`fiber_g` 一併用同樣比例換算，維持營養素之間的一致性。這是簡化假設（固定份量，不因個人食量調整），未來若要做「份量自訂」才需要再擴充。
 ```
 
 ### 4.6 `engine/feast.js`（新增，取代舊 flex.js 的運動換算函式）

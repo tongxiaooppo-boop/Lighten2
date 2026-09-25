@@ -133,6 +133,17 @@
           </div>
         </fieldset>
 
+        <fieldset>
+          <legend>今日建議時段</legend>
+          <div class="form-row">
+            <div class="form-field"><label><input type="checkbox" name="slot_breakfast" checked /> 早餐</label></div>
+            <div class="form-field"><label><input type="checkbox" name="slot_lunch" checked /> 午餐</label></div>
+            <div class="form-field"><label><input type="checkbox" name="slot_afternoon_tea" /> 下午茶</label></div>
+            <div class="form-field"><label><input type="checkbox" name="slot_dinner" checked /> 晚餐</label></div>
+            <div class="form-field"><label><input type="checkbox" name="slot_snack" /> 宵夜</label></div>
+          </div>
+        </fieldset>
+
         <button type="submit" class="primary-btn">計算</button>
       </form>
 
@@ -186,6 +197,10 @@
           <div id="rec-lunch" class="rec-body"></div>
         </article>
         <article class="rec-card">
+          <h3>下午茶</h3>
+          <div id="rec-afternoon_tea" class="rec-body"></div>
+        </article>
+        <article class="rec-card">
           <h3>晚餐</h3>
           <div id="rec-dinner" class="rec-body"></div>
         </article>
@@ -216,6 +231,7 @@
               <label>餐別
                 <select name="slot">
                   <option value="lunch">午餐</option>
+                  <option value="afternoon_tea">下午茶</option>
                   <option value="dinner">晚餐</option>
                   <option value="breakfast">早餐</option>
                   <option value="snack">宵夜</option>
