@@ -70,8 +70,13 @@
       special_activity_kcal: toFloatOrNull(fd.get("special_activity_kcal")),
       diet_restriction: fd.get("diet_restriction"),
       allergens: (fd.get("allergens") || "").trim(),
-      prep_time_weekday: fd.get("prep_time_weekday"),
-      prep_time_weekend: fd.get("prep_time_weekend"),
+      meal_prefs: {
+        breakfast: fd.get("meal_pref_breakfast"),
+        lunch: fd.get("meal_pref_lunch"),
+        afternoon_tea: fd.get("meal_pref_afternoon_tea"),
+        dinner: fd.get("meal_pref_dinner"),
+        snack: fd.get("meal_pref_snack"),
+      },
       goal_mode: fd.get("goal_mode"),
       enabled_slots: {
         breakfast: fd.get("slot_breakfast") === "on",
@@ -99,8 +104,15 @@
     set("special_activity_kcal", profile.special_activity_kcal);
     set("diet_restriction", profile.diet_restriction);
     set("allergens", profile.allergens);
-    set("prep_time_weekday", profile.prep_time_weekday);
-    set("prep_time_weekend", profile.prep_time_weekend);
+    const mealPrefs = profile.meal_prefs || {};
+    ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"].forEach(function (slot) {
+      const el = form.elements["meal_pref_" + slot];
+      if (!el) return;
+      const v = mealPrefs[slot];
+      el.value = (window.MEAL_SOURCE_OPTIONS && window.MEAL_SOURCE_OPTIONS.indexOf(v) !== -1)
+        ? v
+        : (window.DEFAULT_MEAL_PREFS ? window.DEFAULT_MEAL_PREFS[slot] : "auto");
+    });
     set("goal_mode", profile.goal_mode);
 
     // 回填今日建議時段開關（只對「完全沒存過」的欄位套預設值，避免關掉的時段被預設值打回）

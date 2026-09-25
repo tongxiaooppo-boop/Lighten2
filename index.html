@@ -93,25 +93,60 @@
         </fieldset>
 
         <fieldset>
-          <legend>備餐時間</legend>
+          <legend>今日建議來源</legend>
           <div class="form-row">
             <div class="form-field">
-              <label>平日可用備餐時間
-                <select name="prep_time_weekday">
-                  <option value="幾乎無">幾乎無</option>
-                  <option value="5 分鐘內">5 分鐘內</option>
-                  <option value="15 分鐘內">15 分鐘內</option>
-                  <option value="30 分鐘以上">30 分鐘以上</option>
+              <label>早餐
+                <select name="meal_pref_breakfast">
+                  <option value="auto">無偏好</option>
+                  <option value="convenience" selected>超商</option>
+                  <option value="delivery">外送</option>
+                  <option value="cook_quick">快煮（≤15分鐘）</option>
+                  <option value="cook_full">正常煮</option>
                 </select>
               </label>
             </div>
             <div class="form-field">
-              <label>假日可用備餐時間
-                <select name="prep_time_weekend">
-                  <option value="幾乎無">幾乎無</option>
-                  <option value="5 分鐘內">5 分鐘內</option>
-                  <option value="15 分鐘內">15 分鐘內</option>
-                  <option value="30 分鐘以上">30 分鐘以上</option>
+              <label>午餐
+                <select name="meal_pref_lunch">
+                  <option value="auto">無偏好</option>
+                  <option value="convenience" selected>超商</option>
+                  <option value="delivery">外送</option>
+                  <option value="cook_quick">快煮（≤15分鐘）</option>
+                  <option value="cook_full">正常煮</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>下午茶
+                <select name="meal_pref_afternoon_tea">
+                  <option value="auto" selected>無偏好</option>
+                  <option value="convenience">超商</option>
+                  <option value="delivery">外送</option>
+                  <option value="cook_quick">快煮（≤15分鐘）</option>
+                  <option value="cook_full">正常煮</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>晚餐
+                <select name="meal_pref_dinner">
+                  <option value="auto">無偏好</option>
+                  <option value="convenience">超商</option>
+                  <option value="delivery">外送</option>
+                  <option value="cook_quick">快煮（≤15分鐘）</option>
+                  <option value="cook_full" selected>正常煮</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field">
+              <label>宵夜
+                <select name="meal_pref_snack">
+                  <option value="auto" selected>無偏好</option>
+                  <option value="convenience">超商</option>
+                  <option value="delivery">外送</option>
+                  <option value="cook_quick">快煮（≤15分鐘）</option>
+                  <option value="cook_full">正常煮</option>
                 </select>
               </label>
             </div>
