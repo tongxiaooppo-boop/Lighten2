@@ -4,9 +4,6 @@
 (function () {
   "use strict";
 
-  // 今日建議時段的預設開關（早/午/晚預設開啟，下午茶/宵夜預設關閉）
-  const DEFAULT_ENABLED_SLOTS = { breakfast: true, lunch: true, afternoon_tea: false, dinner: true, snack: false };
-
   function ready(fn) {
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fn);
@@ -107,11 +104,10 @@
     set("goal_mode", profile.goal_mode);
 
     // 回填今日建議時段開關（只對「完全沒存過」的欄位套預設值，避免關掉的時段被預設值打回）
-    const slots = profile.enabled_slots || {};
     ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"].forEach(function (slot) {
       const el = form.elements["slot_" + slot];
       if (!el) return;
-      el.checked = slots.hasOwnProperty(slot) ? slots[slot] !== false : DEFAULT_ENABLED_SLOTS[slot];
+      el.checked = window.isSlotEnabled(profile.enabled_slots, slot);
     });
   }
 

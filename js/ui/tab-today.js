@@ -77,7 +77,7 @@
     SLOTS.forEach(function (slot) {
       const body = $("#rec-" + slot);
       if (!body) return;
-      const isEnabled = !profile || !profile.enabled_slots || profile.enabled_slots[slot] !== false;
+      const isEnabled = !profile || window.isSlotEnabled(profile.enabled_slots, slot);
       if (!isEnabled) {
         body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
         return;

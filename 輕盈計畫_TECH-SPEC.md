@@ -165,11 +165,19 @@ lighten/
 | applied_dates_json | TEXT | 已攤還到哪幾天，避免重複扣 |
 | resolved | INTEGER | 0/1 |
 
-### 3.14 `exercise_log`（獨立追蹤，v4.0，不含熱量換算欄位）
+### 3.14 `exercise_log`（獨立追蹤，v4.0；2026-09-25 修訂）
 | 欄位 | 型別 | 說明 |
 |---|---|---|
 | id | TEXT PK | |
-| log_date / activity_type / duration_min / intensity | — | 供成就系統與 `tdee.js` 週校正輸入，**不存 kcal 換算值**，不做逐筆熱量展示 |
+| log_date / activity_type / duration_min / intensity | — | 供成就系統與 `tdee.js` 週校正輸入 |
+
+**2026-09-25 修訂**：`activity_type` 改用常用項目下拉選單（散步/快走/慢跑/腳踏車/游泳/羽毛球/籃球/重訓/瑜伽/其他），對照固定的 MET 對照表（`activity_type` 是「其他」時，改依 `intensity` 給一個通用 MET 值）。**消耗估算值（`MET × 體重kg × 時長小時`）與每週累計消耗都不存進資料表**，每次顯示時用 `profile.weight_kg`／當週 `exercise_log` 即時算出來：
+- 單筆估算：顯示在該筆歷史紀錄旁邊。
+- 本週累計 vs. 每週運動消耗建議額度（依 `profile.goal_mode` 決定，常數放在 `js/ui/tab-exercise.js` 或未來如果多處要用再抽到 engine 層）：
+  ```js
+  const WEEKLY_EXERCISE_KCAL_TARGET = { "減脂": 1500, "維持": 1000, "增肌": 600 }; // 一般性建議值，僅供參考
+  ```
+- 這些數字**只在運動紀錄頁計算與顯示，不寫回 `daily_log`、不影響 `weekly_flex_ledger`／`budget.js`／`recommend.js`／`feast.js` 的任何計算**，架構上完全跟飲食/熱量預算隔離，避免以後被誤接進去。
 
 ### 3.15 `settings`（key-value）
 存放小設定，例如 feast size→kcal 對照表、資料版本號。

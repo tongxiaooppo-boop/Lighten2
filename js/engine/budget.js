@@ -15,13 +15,22 @@
     snack: 0.10,
   };
 
+  // 今日建議時段的預設開關（早/午/晚預設開啟，下午茶/宵夜預設關閉）。
+  // 這是唯一來源，tab-profile.js／tab-today.js 都引用 window.DEFAULT_ENABLED_SLOTS，
+  // 避免「勾選框顯示的預設值」跟「實際判斷用的預設值」兩邊各存一份、以後改一邊忘了改另一邊。
+  const DEFAULT_ENABLED_SLOTS = { breakfast: true, lunch: true, afternoon_tea: false, dinner: true, snack: false };
+
+  function isSlotEnabled(enabledSlots, slot) {
+    const slots = enabledSlots || {};
+    return slots.hasOwnProperty(slot) ? slots[slot] !== false : DEFAULT_ENABLED_SLOTS[slot];
+  }
+
   // 分配邏輯（報告會說明）：
   // - 已吃餐次：配額回傳 0（不再顯示）。
   // - 未吃餐次：把「剩餘熱量」依各餐次的「預設權重」在未吃餐次之間做相對加權分配。
   //   例：吃完早餐後，剩餘熱量按 午0.35/晚0.30/宵0.10 的相對比例分給這三餐。
   // - 吃越多 → remainingKcal 越小；未吃餐次越少 → 每餐分越多。
   function recalcTodayBudget(targetKcal, todayLogs, enabledSlots) {
-    const enabled = enabledSlots || {};
     const target = Number(targetKcal);
     const base = isFinite(target) && target > 0 ? target : 0;
     const logs = Array.isArray(todayLogs) ? todayLogs : [];
@@ -29,9 +38,10 @@
     const eatenKcal = { breakfast: 0, lunch: 0, afternoon_tea: 0, dinner: 0, snack: 0 };
     const eatenSlots = {};
 
-    // 被關閉的時段視同「已處理」，排除在未吃餐次的權重分配之外
+    // 被關閉的時段（含完全沒存過 enabled_slots 時套用 DEFAULT_ENABLED_SLOTS）視同「已處理」，
+    // 排除在未吃餐次的權重分配之外
     SLOTS.forEach(function (s) {
-      if (enabled[s] === false) eatenSlots[s] = true;
+      if (!isSlotEnabled(enabledSlots, s)) eatenSlots[s] = true;
     });
 
     logs.forEach(function (log) {
@@ -76,4 +86,6 @@
   }
 
   window.recalcTodayBudget = recalcTodayBudget;
+  window.DEFAULT_ENABLED_SLOTS = DEFAULT_ENABLED_SLOTS;
+  window.isSlotEnabled = isSlotEnabled;
 })();

@@ -321,6 +321,12 @@
         <p id="exercise-streak" class="streak-text">連續紀錄 0 天</p>
       </section>
 
+      <section class="exercise-weekly-kcal">
+        <h3>本週運動消耗參考</h3>
+        <p id="exercise-weekly-kcal-text" class="status-text">—</p>
+        <p class="taiwan-ref-note">僅供參考，不列入每日熱量預算，跟飲食/彈性點數無關</p>
+      </section>
+
       <section class="exercise-form">
         <h3>新增運動記錄</h3>
         <form id="exercise-form" autocomplete="off" novalidate>
@@ -329,7 +335,23 @@
               <label>日期<input type="date" name="log_date" /></label>
             </div>
             <div class="form-field">
-              <label>運動項目<input type="text" name="activity_type" placeholder="例如：慢跑、重訓、爬山" /></label>
+              <label>運動項目
+                <select name="activity_type_preset">
+                  <option value="散步">散步</option>
+                  <option value="快走">快走</option>
+                  <option value="慢跑">慢跑</option>
+                  <option value="腳踏車">腳踏車</option>
+                  <option value="游泳">游泳</option>
+                  <option value="羽毛球">羽毛球</option>
+                  <option value="籃球">籃球</option>
+                  <option value="重訓">重訓</option>
+                  <option value="瑜伽">瑜伽</option>
+                  <option value="其他">其他（自行輸入）</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-field" id="exercise-custom-activity-field" hidden>
+              <label>自訂運動項目<input type="text" name="activity_type_custom" placeholder="例如：爬山" /></label>
             </div>
             <div class="form-field">
               <label>時長 (分鐘)<input type="number" name="duration_min" min="1" step="1" inputmode="numeric" /></label>
