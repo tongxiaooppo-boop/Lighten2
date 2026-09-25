@@ -93,11 +93,13 @@
         </fieldset>
 
         <fieldset>
-          <legend>今日建議來源</legend>
+          <legend>今日建議時段與來源</legend>
+          <p class="taiwan-ref-note">選「不顯示建議」代表這個時段不需要建議；其他選項則是這個時段偏好的來源。</p>
           <div class="form-row">
             <div class="form-field">
               <label>早餐
                 <select name="meal_pref_breakfast">
+                  <option value="off">不顯示建議</option>
                   <option value="auto">無偏好</option>
                   <option value="convenience" selected>超商</option>
                   <option value="delivery">外送</option>
@@ -109,6 +111,7 @@
             <div class="form-field">
               <label>午餐
                 <select name="meal_pref_lunch">
+                  <option value="off">不顯示建議</option>
                   <option value="auto">無偏好</option>
                   <option value="convenience" selected>超商</option>
                   <option value="delivery">外送</option>
@@ -120,7 +123,8 @@
             <div class="form-field">
               <label>下午茶
                 <select name="meal_pref_afternoon_tea">
-                  <option value="auto" selected>無偏好</option>
+                  <option value="off" selected>不顯示建議</option>
+                  <option value="auto">無偏好</option>
                   <option value="convenience">超商</option>
                   <option value="delivery">外送</option>
                   <option value="cook_quick">快煮（≤15分鐘）</option>
@@ -131,6 +135,7 @@
             <div class="form-field">
               <label>晚餐
                 <select name="meal_pref_dinner">
+                  <option value="off">不顯示建議</option>
                   <option value="auto">無偏好</option>
                   <option value="convenience">超商</option>
                   <option value="delivery">外送</option>
@@ -142,7 +147,8 @@
             <div class="form-field">
               <label>宵夜
                 <select name="meal_pref_snack">
-                  <option value="auto" selected>無偏好</option>
+                  <option value="off" selected>不顯示建議</option>
+                  <option value="auto">無偏好</option>
                   <option value="convenience">超商</option>
                   <option value="delivery">外送</option>
                   <option value="cook_quick">快煮（≤15分鐘）</option>
@@ -165,17 +171,6 @@
                 </select>
               </label>
             </div>
-          </div>
-        </fieldset>
-
-        <fieldset>
-          <legend>今日建議時段</legend>
-          <div class="form-row">
-            <div class="form-field"><label><input type="checkbox" name="slot_breakfast" checked /> 早餐</label></div>
-            <div class="form-field"><label><input type="checkbox" name="slot_lunch" checked /> 午餐</label></div>
-            <div class="form-field"><label><input type="checkbox" name="slot_afternoon_tea" /> 下午茶</label></div>
-            <div class="form-field"><label><input type="checkbox" name="slot_dinner" checked /> 晚餐</label></div>
-            <div class="form-field"><label><input type="checkbox" name="slot_snack" /> 宵夜</label></div>
           </div>
         </fieldset>
 

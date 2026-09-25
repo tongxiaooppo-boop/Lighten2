@@ -70,6 +70,10 @@
       special_activity_kcal: toFloatOrNull(fd.get("special_activity_kcal")),
       diet_restriction: fd.get("diet_restriction"),
       allergens: (fd.get("allergens") || "").trim(),
+      // 「今日建議時段」與「今日建議來源」已合併成同一組下拉（選「不顯示建議」= off）。
+      // meal_prefs 照下拉原始值存（off 對 recommend.js 來說是無效值，會自動 fallback 成預設偏好，
+      // 但反正該時段會被 enabled_slots 擋住不顯示，fallback 值本身不影響使用者看到的結果）；
+      // enabled_slots 從同一個下拉值推導（!== "off"），取代原本獨立的 checkbox 群組。
       meal_prefs: {
         breakfast: fd.get("meal_pref_breakfast"),
         lunch: fd.get("meal_pref_lunch"),
@@ -79,11 +83,11 @@
       },
       goal_mode: fd.get("goal_mode"),
       enabled_slots: {
-        breakfast: fd.get("slot_breakfast") === "on",
-        lunch: fd.get("slot_lunch") === "on",
-        afternoon_tea: fd.get("slot_afternoon_tea") === "on",
-        dinner: fd.get("slot_dinner") === "on",
-        snack: fd.get("slot_snack") === "on",
+        breakfast: fd.get("meal_pref_breakfast") !== "off",
+        lunch: fd.get("meal_pref_lunch") !== "off",
+        afternoon_tea: fd.get("meal_pref_afternoon_tea") !== "off",
+        dinner: fd.get("meal_pref_dinner") !== "off",
+        snack: fd.get("meal_pref_snack") !== "off",
       },
     };
   }
@@ -104,23 +108,23 @@
     set("special_activity_kcal", profile.special_activity_kcal);
     set("diet_restriction", profile.diet_restriction);
     set("allergens", profile.allergens);
+    // 「今日建議時段」與「今日建議來源」合併後的下拉回填：時段被關閉（isSlotEnabled 為 false，
+    // 含舊資料只存過 enabled_slots、沒存過合併後 UI 的情況）就顯示「不顯示建議」(off)；
+    // 否則顯示驗證過的來源偏好，驗證不過（例如舊資料本來就沒存、或存的是 off）才套預設值。
     const mealPrefs = profile.meal_prefs || {};
     ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"].forEach(function (slot) {
       const el = form.elements["meal_pref_" + slot];
       if (!el) return;
+      if (!window.isSlotEnabled(profile.enabled_slots, slot)) {
+        el.value = "off";
+        return;
+      }
       const v = mealPrefs[slot];
       el.value = (window.MEAL_SOURCE_OPTIONS && window.MEAL_SOURCE_OPTIONS.indexOf(v) !== -1)
         ? v
         : (window.DEFAULT_MEAL_PREFS ? window.DEFAULT_MEAL_PREFS[slot] : "auto");
     });
     set("goal_mode", profile.goal_mode);
-
-    // 回填今日建議時段開關（只對「完全沒存過」的欄位套預設值，避免關掉的時段被預設值打回）
-    ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"].forEach(function (slot) {
-      const el = form.elements["slot_" + slot];
-      if (!el) return;
-      el.checked = window.isSlotEnabled(profile.enabled_slots, slot);
-    });
   }
 
   function showTargets(result) {
