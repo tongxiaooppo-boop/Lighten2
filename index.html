@@ -225,6 +225,14 @@
         <form id="feast-form" autocomplete="off" novalidate>
           <div class="form-row">
             <div class="form-field">
+              <label><input type="radio" name="feast_mode" value="reserve" checked /> 預約（還沒吃）</label>
+            </div>
+            <div class="form-field">
+              <label><input type="radio" name="feast_mode" value="log" /> 已經吃了，直接記錄</label>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
               <label>日期<input type="date" name="plan_date" /></label>
             </div>
             <div class="form-field">
@@ -256,7 +264,7 @@
               </label>
             </div>
             <div class="form-field form-field-btn">
-              <button type="submit" class="primary-btn">預約</button>
+              <button type="submit" class="primary-btn" id="feast-submit-btn">預約</button>
             </div>
           </div>
           <div class="form-row" id="feast-custom-food-row" hidden>

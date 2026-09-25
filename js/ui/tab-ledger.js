@@ -259,13 +259,14 @@
     if (status) status.textContent = "";
   }
 
-  async function onReserve(e) {
+  async function onSubmitFeastForm(e) {
     e.preventDefault();
     const form = document.getElementById("feast-form");
     const fd = new FormData(form);
     const planDate = fd.get("plan_date");
     const slot = fd.get("slot");
     const size = fd.get("size");
+    const mode = fd.get("feast_mode") || "reserve";
     if (!planDate) {
       alert("請選擇日期。");
       return;
@@ -289,7 +290,12 @@
       itemId = saved.id;
     }
     try {
-      await reserveFeast(planDate, slot, size, itemId);
+      let logEntry = null;
+      if (mode === "log") {
+        logEntry = await logFeastDirectly(planDate, slot, size, itemId);
+      } else {
+        await reserveFeast(planDate, slot, size, itemId);
+      }
       form.elements["plan_date"].value = localDateStr();
       form.elements["item_id"].value = "";
       const customRow = $("#feast-custom-food-row");
@@ -300,9 +306,13 @@
       });
       await refreshFeastItemOptions();
       await render();
+      if (mode === "log" && logEntry) {
+        const status = $("#ledger-status");
+        if (status) status.textContent = "已記錄：" + (logEntry.item_name || "大餐") + " 約 " + logEntry.kcal + " kcal";
+      }
     } catch (err) {
       console.error(err);
-      alert("預約失敗，請重試。");
+      alert(mode === "log" ? "記錄失敗，請重試。" : "預約失敗，請重試。");
     }
   }
 
@@ -329,7 +339,15 @@
     if (dateInput) dateInput.value = localDateStr();
 
     const form = document.getElementById("feast-form");
-    if (form) form.addEventListener("submit", onReserve);
+    if (form) form.addEventListener("submit", onSubmitFeastForm);
+
+    const feastModeRadios = document.querySelectorAll("#feast-form input[name='feast_mode']");
+    feastModeRadios.forEach(function (radio) {
+      radio.addEventListener("change", function () {
+        const btn = $("#feast-submit-btn");
+        if (btn) btn.textContent = radio.value === "log" ? "直接記錄" : "預約";
+      });
+    });
 
     const slotSelect = document.querySelector("#feast-form select[name='slot']");
     if (slotSelect) {

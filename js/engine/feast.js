@@ -37,10 +37,12 @@
     return FLEX_CAP_FIXED;
   }
 
-  async function reserveFeast(planDate, slot, size, itemId) {
-    const profile = await getProfile();
+  async function resolveFeastItem(itemId, size) {
     let estimatedKcal = null;
     let itemName = null;
+    let sourceType = null; // 'taiwan_item' | 'custom' | null
+    let proteinG = null;
+    let fiberG = null;
 
     if (itemId) {
       const taiwanItems = await getTaiwanItems();
@@ -48,26 +50,36 @@
       if (taiwanItem) {
         estimatedKcal = taiwanItem.kcal_rep != null ? taiwanItem.kcal_rep : round1((taiwanItem.kcal_low + taiwanItem.kcal_high) / 2);
         itemName = taiwanItem.name;
+        sourceType = "taiwan_item";
       } else {
         const customFoods = await getCustomFoods();
         const customFood = customFoods.find(function (f) { return f.id === itemId; });
         if (customFood) {
           estimatedKcal = customFood.kcal;
           itemName = customFood.name;
+          sourceType = "custom";
+          proteinG = customFood.protein_g != null ? customFood.protein_g : null;
+          fiberG = customFood.fiber_g != null ? customFood.fiber_g : null;
         }
       }
     }
     if (estimatedKcal == null) {
       estimatedKcal = FEAST_SIZE_KCAL.hasOwnProperty(size) ? FEAST_SIZE_KCAL[size] : FEAST_SIZE_KCAL.M;
     }
+    return { kcal: estimatedKcal, name: itemName, sourceType: sourceType, protein_g: proteinG, fiber_g: fiberG };
+  }
+
+  async function reserveFeast(planDate, slot, size, itemId) {
+    const profile = await getProfile();
+    const resolved = await resolveFeastItem(itemId, size);
 
     const entry = {
       plan_date: planDate,
       slot: slot,
       size: itemId ? null : size,
       item_id: itemId || null,
-      item_name: itemName,
-      estimated_kcal: estimatedKcal,
+      item_name: resolved.name,
+      estimated_kcal: resolved.kcal,
       status: "reserved",
     };
     const saved = await addFeastReservation(entry);
@@ -76,7 +88,36 @@
     const ledger = await getWeeklyLedger(weekStart);
     const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
     const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
-    await updateWeeklyLedger(weekStart, prevUsed + estimatedKcal, cap);
+    await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
+
+    return saved;
+  }
+
+  async function logFeastDirectly(planDate, slot, size, itemId) {
+    const resolved = await resolveFeastItem(itemId, size);
+    const profile = await getProfile();
+
+    const entry = {
+      log_date: planDate,
+      slot: slot,
+      source_type: resolved.sourceType || "custom",
+      item_id: itemId || null,
+      item_name: resolved.name,
+      kcal: resolved.kcal,
+      protein_g: resolved.protein_g,
+      carb_g: null,
+      fat_g: null,
+      fiber_g: resolved.fiber_g,
+      is_feast: 1,
+      feast_reservation_id: null,
+    };
+    const saved = await addDailyLog(entry);
+
+    const weekStart = weekStartOf(planDate);
+    const ledger = await getWeeklyLedger(weekStart);
+    const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
+    const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
+    await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
 
     return saved;
   }
@@ -161,6 +202,7 @@
   }
 
   window.reserveFeast = reserveFeast;
+  window.logFeastDirectly = logFeastDirectly;
   window.confirmFeast = confirmFeast;
   window.cancelFeast = cancelFeast;
   window.planOverageSmoothing = planOverageSmoothing;
