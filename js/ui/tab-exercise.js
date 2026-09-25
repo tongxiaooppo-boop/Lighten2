@@ -7,13 +7,9 @@
 
   const INTENSITY_LABELS = { 低: "低強度", 中: "中強度", 高: "高強度" };
 
-  // 常見運動項目 → MET 值（供「僅供參考」的熱量估算，不寫回任何飲食資料）
-  const ACTIVITY_MET = {
-    "散步": 3.0, "快走": 4.3, "慢跑": 7.0, "腳踏車": 6.8, "游泳": 6.0,
-    "羽毛球": 5.5, "籃球": 6.5, "重訓": 3.5, "瑜伽": 2.5,
-  };
-  const INTENSITY_MET_FALLBACK = { "低": 3.0, "中": 5.0, "高": 7.5 }; // 給「其他」自訂項目用
-  const WEEKLY_EXERCISE_KCAL_TARGET = { "減脂": 1500, "維持": 1000, "增肌": 600 }; // 一般性建議值，僅供參考
+  // 本週活動量參考：WHO/ACSM 一般性建議，跟飲食熱量完全脫鉤、跟 goal_mode 也無關。
+  const WEEKLY_ACTIVITY_TARGET = { moderateMinutes: 150, strengthDays: 2 };
+  const INTENSITY_MULTIPLIER = { "低": 0, "中": 1, "高": 2 }; // 低強度不計入 150 分鐘累計，另外顯示
 
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
@@ -49,12 +45,28 @@
     return fmt(d);
   }
 
-  function estimateExerciseKcal(activityType, durationMin, intensity, weightKg) {
-    if (!weightKg || !durationMin) return null;
-    const met = ACTIVITY_MET.hasOwnProperty(activityType)
-      ? ACTIVITY_MET[activityType]
-      : (INTENSITY_MET_FALLBACK[intensity] || INTENSITY_MET_FALLBACK["中"]);
-    return Math.round(met * weightKg * (durationMin / 60));
+  function computeWeeklyActivity(logs) {
+    let moderateMinutes = 0;
+    let lightMinutes = 0;
+    const strengthDates = {};
+    logs.forEach(function (l) {
+      if (!l) return;
+      if (l.activity_type === "重訓") {
+        strengthDates[l.log_date] = true;
+        return;
+      }
+      const mult = INTENSITY_MULTIPLIER.hasOwnProperty(l.intensity) ? INTENSITY_MULTIPLIER[l.intensity] : 1;
+      if (mult === 0) {
+        lightMinutes += Number(l.duration_min) || 0;
+      } else {
+        moderateMinutes += (Number(l.duration_min) || 0) * mult;
+      }
+    });
+    return {
+      moderateMinutes: Math.round(moderateMinutes),
+      lightMinutes: Math.round(lightMinutes),
+      strengthDays: Object.keys(strengthDates).length,
+    };
   }
 
   function onPresetChange() {
@@ -95,10 +107,9 @@
     el.textContent = streak > 0 ? "連續紀錄 " + streak + " 天" : "尚未開始連續紀錄";
   }
 
-  function renderList(logs, profile) {
+  function renderList(logs) {
     const container = $("#exercise-history");
     if (!container) return;
-    const weightKg = profile && Number(profile.weight_kg);
     const sorted = logs.slice().sort(function (a, b) {
       const byDate = String(b.log_date).localeCompare(String(a.log_date));
       if (byDate !== 0) return byDate;
@@ -110,22 +121,17 @@
     }
     container.innerHTML = sorted.map(function (r) {
       const intensityLabel = INTENSITY_LABELS[r.intensity] || r.intensity || "";
-      const kcal = estimateExerciseKcal(r.activity_type, r.duration_min, r.intensity, weightKg);
-      const kcalHtml = kcal != null
-        ? '<span class="exercise-item-meta">約消耗 ' + kcal + " kcal（僅供參考）</span>"
-        : "";
       return '<div class="exercise-item">' +
         '<div class="exercise-item-info">' +
         '<span class="exercise-item-title">' + escapeHtml(r.activity_type || "") + "</span>" +
         '<span class="exercise-item-meta">' + escapeHtml(r.log_date) + " · " + escapeHtml(r.duration_min) + " 分鐘 · " + escapeHtml(intensityLabel) + "</span>" +
-        kcalHtml +
         "</div>" +
         "</div>";
     }).join("");
   }
 
-  async function renderWeeklyKcal(profile) {
-    const el = $("#exercise-weekly-kcal-text");
+  async function renderWeeklyActivity() {
+    const el = $("#exercise-weekly-activity-text");
     if (!el) return;
     const weekStart = mondayOfThisWeek();
     const today = localDateStr();
@@ -137,38 +143,21 @@
       el.textContent = "";
       return;
     }
-    const weightKg = profile && Number(profile.weight_kg);
-    const total = logs.reduce(function (sum, r) {
-      const kcal = estimateExerciseKcal(r.activity_type, r.duration_min, r.intensity, weightKg);
-      return sum + (kcal || 0);
-    }, 0);
-    const goal = profile && profile.goal_mode;
-    const target = WEEKLY_EXERCISE_KCAL_TARGET.hasOwnProperty(goal) ? WEEKLY_EXERCISE_KCAL_TARGET[goal] : null;
-
-    if (target != null) {
-      if (total >= target) {
-        el.textContent = "本週已運動消耗約 " + total + " kcal，已達成建議額度 " + target + " kcal";
-      } else {
-        el.textContent = "本週已運動消耗約 " + total + " kcal／建議額度 " + target + " kcal，還差 " + (target - total) + " kcal";
-      }
-    } else {
-      el.textContent = "本週已運動消耗約 " + total + " kcal";
+    const stats = computeWeeklyActivity(logs);
+    let text = "本週已活動 " + stats.moderateMinutes + " 分鐘（目標 " + WEEKLY_ACTIVITY_TARGET.moderateMinutes + " 分鐘）・肌力訓練 " + stats.strengthDays + " 天（目標 " + WEEKLY_ACTIVITY_TARGET.strengthDays + " 天）";
+    if (stats.lightMinutes > 0) {
+      text += "；另有輕度活動 " + stats.lightMinutes + " 分鐘";
     }
+    el.textContent = text;
   }
 
   async function render() {
     const status = $("#exercise-status");
     try {
       const logs = await getExerciseLogs();
-      let profile = null;
-      try {
-        profile = await getProfile();
-      } catch (err) {
-        console.error(err);
-      }
       renderStreak(logs);
-      renderList(logs, profile);
-      await renderWeeklyKcal(profile);
+      renderList(logs);
+      await renderWeeklyActivity();
       if (status) status.textContent = "";
     } catch (err) {
       console.error(err);
