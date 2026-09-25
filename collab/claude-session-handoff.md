@@ -1,66 +1,43 @@
-# Claude 交接筆記（2026-09-25 session，token 快用完，接續用）
+# Claude 交接筆記（更新於 2026-09-25 晚，週日 2026-09-27 接續用）
 
-這份是寫給下一個 Claude session（或 compact 之後的自己）看的，不是給 Cline 的。目的是不用重新爬一次整個對話就能接手。
+這份是寫給下一個 Claude session（或 compact 之後的自己）看的，不是給 Cline 的。上一版（TASK 1-12 那輪）的內容已經全部執行完並 commit/push 完畢，這版整個改寫，只留現在還沒解決的事。
 
-## 現在的狀態（最重要的先講）
+## 週日（2026-09-27）優先順序：先討論，再決定改什麼
 
-1. **`collab/to-cline.md` 已經寫好一份完整任務，等使用者貼給 Cline**。內容分三部分：
-   - 基本資料分頁：把「備餐時間」fieldset 換成「今日建議來源」（5個時段各自選 無偏好/超商/外送/快煮/正常煮）
-   - `tab-today.js`：接新的 `getTodayRecommendation` 簽名（多了 `mealPrefs`/`flexLedger` 參數）、加「記錄這餐」按鈕（含撤銷）、fallback 訊息顯示
-   - `tab-exercise.js`：**整個取代**上一輪 Cline 做的 kcal/MET 版本，改成 WHO/ACSM 的「本週活動分鐘＋肌力天數」制
-   - 這份文件裡有明確列出「這輪不要動」的檔案清單（我已經直接改完驗證過的），檢查完 Cline 回報後照那份文件的驗收條件審查即可。
+### 1. 週彈性帳本／週末大餐熱量處理——重新設計，還沒動手實作
 
-2. **這輪我（Claude）直接改過、已用 Node 模擬測試驗證、還沒進 git commit 的檔案**（等 Cline 下次 commit 時一起帶上，`to-cline.md` 底部有列清單）：
-   - `js/database.js`：修好 `getTaiwanItems()` 從未寫入 IndexedDB 的既有 bug（改成直接 fetch JSON + 快取）；修過敏原判斷漏洞；新增 `removeDailyLog`/`getAllRecipeFeedback`
-   - `js/engine/feast.js`：`resolveFeastItem` 回傳完整巨量營養素 + `usesFlex`；`reserveFeast`/`logFeastDirectly` 依 `usesFlex` 決定要不要動彈性點數；新增 `undoDailyLog`
-   - `js/engine/recommend.js`：整個重寫（見下方「這輪做了什麼」）
-   - `data/taiwan_items.json`：50筆補上 `allergen_tags`/`protein_g`/`fiber_g`/`uses_flex`
-   - `data/protein_sources.json`/`staples.json`：補過敏原漏標（魚/黃豆）
-   - `data/convenience_items.json`：這是新檔案（git status 顯示 `??`），35筆超商/連鎖品牌品項，使用者提供的三批真實市售資料
-   - `css/style.css`：radio 橫排樣式、運動頁新區塊標題字體
-   - PRD/TECH-SPEC 都同步更新過
+背景：使用者質疑「週彈性 1400kcal」這個固定值沒有依據，也質疑「預約大餐當下應該就削減當天或後兩天的額度」。我判斷這是大架構決策，找 Opus 做了**兩輪獨立審查**（`Agent` tool, `model: "opus"`，同一個 agent id，可用 `SendMessage` 繼續問），結論：
 
-3. **下次接手第一件事**：檢查 `git log --oneline -5` 看 Cline commit 了沒；如果 commit 了，照 `to-cline.md` 的驗收條件審查（`node --check` 語法、grep 評判性字眼、meal_prefs/flexLedger 參數對不對、記錄這餐按鈕邏輯）。
+- **否決**「大餐當下就往後扣未來 1-2 天額度」，也**否決**「接上現成但從沒被呼叫的 `planOverageSmoothing`」——兩者本質上都是「暴食後限制」循環，只是觸發時間點不同，違反 PRD 明文禁止的補償/贖罪框架。
+- **否決**「方案A：星期分配（週末目標調高、平日調低，一週總量不變）」——Opus 第二輪自己撤回，理由：使用者長期看到「平日就是比較少」會學成「省下來給週末花」的心態，跟他自己反對的跨週熱量銀行是同一種心理機制，只是週期比較短；而且固定的高週末目標會把大餐「常態化成義務」。
+- **建議做的方向**（Opus 給了可直接實作的規格，但**還沒寫進 PRD/TECH-SPEC，也還沒動一行程式碼**）：
+  1. 大餐當天：現有「當天重新分配熱量」保留，新增「同一天其他時段優先推薦補蛋白質/纖維」而非單純減熱量。
+  2. 長期熱量盈餘交給「體重趨勢自動校正」：重寫 `tdee.js` 的 `calibrateWeeklyTdee`——體重用 EWMA（α=0.1，半衰期約6.6天）平滑掉單次水腫雜訊，看 28 天線性回歸斜率，依 `goal_mode`（減脂/維持/增肌）各自不同觸發門檻，**維持模式的下修一定要使用者按確認**（避免跟增肌重訓的正常體重上升搞混），上修自動套用；offset 累積上限 ±300kcal、修正後 14 天冷卻期；隔天生效不中途改當天配額。
+  3. **週彈性帳本整個拔除**（`cap_kcal`/`used_kcal`/`computeWeeklyCapKcal`/`computeDaySettlement`/`settleWeeklyLedger`/`planOverageSmoothing`/`getWeeklyLedger`/`updateWeeklyLedger`，連同常數 `CUT_CAP_RATIO`/`FLEX_CAP_FIXED`/`DAILY_SAVE_CAP_RATIO`），**不是保留不顯示**——Opus 特別強調這個專案已經出現兩次「死碼等人接回去」，這次要真的刪乾淨。IndexedDB 裡已存在的 `weekly_flex_ledger`/`ledger_last_settled_date` 不用遷移，放著不讀即可。
+  4. 改用「近 7 天平均 vs 目標」的中性顯示取代進度條（今日建議彙總卡＋`tab-ledger.js`＋`tab-week.js`都要一起改），只用「完整記錄日」（該天所有開啟時段都有記錄）計算平均，不足 3 天就顯示「資料不足暫不計算」；文案禁用「額度/剩餘/超支/彈性點數/還/補/抵/存」這些字。
+  5. `tab-ledger.js` 的「預約大餐」表單＋清單（確認/取消）**維持不動**，跟熱量帳本機制無關。
 
-## 這輪從頭到尾做了什麼（時間順序，濃縮版）
+完整規格（EWMA 係數、各 goal_mode 門檻表、`tdee_state` 資料結構、各檔案要改的函式清單、驗收項目）在本次對話紀錄裡（跟 agent `a3e31f65680f15963` 的第二輪問答），週日要做的第一件事是**把這份規格轉述給使用者看過一輪、確認方向**，不要直接開始改——上次我問使用者「1.我直接做 2.寫成to-cline給Cline 3.你先看完整規格」三選一，還沒等到回覆就被切換去處理其他問題。
 
-這個 session 一開始是接續之前 TASK 1-12 的 Cline 協作開發（早就完成 Phase 1 六分頁），後面使用者開始**用瀏覽器實測**，抓出一連串真實 bug/缺口，逐一修：
+**這是會動到 `feast.js`／`database.js`／`nutrition.js`／`tdee.js`／`tab-today.js`／`tab-week.js`／`tab-ledger.js`／`index.html`／PRD／TECH-SPEC 的大改動，動手前務必先確認方向。**
 
-1. 午餐配不到組合、早晚重複建議 → 根因是三軸資料 13 筆 `kcal_100g` 是 null（跳過整個組合）+ 份量換算 bug（直接加總100g值嚴重低估熱量）。已修。
-2. 建議都沒蔬菜 → 三軸從沒有蔬菜這一軸，新增第4軸（取自 `raw_ingredients.json` 的 `category=蔬菜`）。
-3. 超商即食選項完全沒被推薦引擎考慮 → 新增 `convenience_items.json`（後來擴充到35筆真實品牌資料，使用者分三批貼上真實市售營養數據）。
-4. 早午餐應該預設當作沒空煮 → 一開始做成「早午餐自動加權超商」的軟性加分機制。
-5. 使用者質疑：備餐時間+來源偏好應該整合、應該能分時段選 → **這是觸發兩輪 Opus 審核的起點**。
-6. 使用者同時要求：運動紀錄加常用選項＋估算熱量消耗（明確說「跟吃什麼無關」但要「有估算」）。
-7. 使用者要求：轉給 Cline 前，先讓 Opus（用 `Agent` tool, `model: "opus"`）審核兩輪，並要我解釋清楚運動功能為什麼不違反 PRD。
-8. **Opus 第一輪**：時段偏好要合併成單一硬性篩選欄位（不要加分制）；`taiwan_items.json` 併入推薦池有嚴重資料坑（過敏原/tier/蛋白纖維缺失）；**運動功能判定駁回**（kcal是全App共用貨幣，架構隔離救不了心理層面的換算）。
-9. 使用者決定：運動改分鐘制／taiwan_items全部進池但用 `uses_flex` 分流／來源偏好改硬性篩選。
-10. **Opus 第二輪**：附條件核准，抓到 `taiwan_items` 從未寫入資料庫的既有 bug（我之前每輪審查都只驗證 JS 對照表跟 JSON 內容一致，沒驗證過資料真的有進資料庫——這是我的審查方法論漏洞，以後要記得連runtime資料管線一起查）。
-11. 依兩輪意見，我直接把 `recommend.js`/`feast.js`/`database.js`/三個資料檔改完，Node 模擬測試 5+ 種情境都過。
-12. 使用者：「你這串快滿token了，寫一份給claude自己的交接」→ 就是這份文件。
+### 2. Bug：今日建議仍然會把飲品/調製飲品湊在一起
 
-## 幾個容易忘記/踩雷的細節
-
-- **`meal_style_preference` 這個欄位從來沒有真正生效過**（Opus 抓到的，我原本設計但 `tab-today.js` 從沒真的傳這個參數）。現在已經整個移除，改成 `meal_prefs`（逐時段），**不用擔心舊資料裡有這個欄位要處理，因為沒有任何使用者資料存過它**。
-- **`prep_time_weekday`/`prep_time_weekend` 也整個廢除**，換成 `meal_prefs`。舊資料遷移策略是「不精細換算，直接套用 `DEFAULT_MEAL_PREFS` 新預設值」——這是刻意的簡化決定（Opus 建議做精細換算，但我們為了避免遷移邏輯本身出錯而簡化），PRD 裡有記錄這個取捨。
-- **`enabled_slots`（決定要不要顯示某時段建議）沒有被移除，跟 `meal_prefs`（決定該時段偏好哪個來源）是兩個獨立設定，都要留著**，不要搞混或誤刪其中一個。
-- **`taiwan_items.json` 的 id 在 `recommend.js` 組合時會加 `tw_` 前綴**（例如 `tw_ln01`），但 `logFeastDirectly`/`reserveFeast` 認的是原始 id（`ln01`），`recommend.js` 產生的 combo 上有一個 `source_id` 欄位存原始 id，`tab-today.js` 呼叫 `logFeastDirectly` 時要用 `rec.source_id` 不是 `rec.id`。
-- **`getTodayRecommendation` 的第 3 個參數從 `preptimeToday`（字串）變成 `mealPrefs`（物件）**，第 6 個參數是新增的 `flexLedger`。如果之後看到有地方還在傳字串當第3參數，那是還沒更新的舊呼叫點，要修。
-- **`window.MEAL_SOURCE_OPTIONS`/`window.DEFAULT_MEAL_PREFS` 是 `recommend.js` 匯出的常數**，`tab-profile.js` 要讀，注意 script 載入順序（`recommend.js` 要在 `tab-profile.js` 之前）。
-- **運動功能兩版都已經被使用者/Cline實作過一次（kcal版）**，這輪要求 Cline 整個刪掉重做，不是在舊版上疊加。
-- Opus 還提了幾個「不阻斷但值得之後處理」的問題，沒有寫進這輪 handoff，記在這裡免得忘記：
-  - `shown_count`/`last_shown_date`（食譜降權用）只在倒讚時更新，單純顯示推薦時不會更新，所以「近期出現過降權」那段邏輯其實從未真正發生效果。
-  - `planOverageSmoothing`（超額攤還）全專案沒有任何地方呼叫它，額度用罄目前沒有攤還後果。
-  - 過敏原是自由文字輸入，使用者打「大豆」比對不到資料裡標的「黃豆」（同義詞問題），沒做正規化。
-  - `meal_prefs` 目前沒有平日/假日的區分（Opus 建議保留但這輪為了控制範圍先跳過）。
+時間序：
+1. 使用者截圖回報「一餐叫我喝兩杯豆漿」（早餐同時出現「統一陽光高纖無糖豆漿」+「光泉燕麥高纖無糖豆漿」）。
+2. 我查到根因：`recommend.js` 的超商組合邏輯（`mains.forEach` 那段）原本對 `extras` 陣列（飲品+蛋白飲/點心棒兩類）做無條件兩兩配對，會湊出兩款飲品的組合。
+3. 我改成「最多一款飲品（`飲品`分類）+ 一款點心棒（`蛋白飲/點心棒`分類）」，commit `af2d7c6`，並用 850 個組合跑過一次確認沒有殘留雙飲品組合（用的是分類名稱去判斷，不是逐一看品項本身是不是液態）。
+4. **使用者事後表示週日還是要修「飲品或調製飲品放一起」的問題**——代表這個修正還不夠，懷疑根因：
+   - `convenience_items.json` 的「蛋白飲/點心棒」這個分類本身混了真正的液態飲品（例如「翰方御品 高蛋白飽飽纖搖飲」「Plenti／Oatly 濃縮燕麥奶」都是喝的）跟真正的固態點心棒（例如「Soyjoy 大豆營養棒」）。我的修正邏輯只保證「一款飲品分類 + 一款蛋白飲/點心棒分類」，如果從「蛋白飲/點心棒」挑到的剛好是液態品項（翰方御品、Plenti/Oatly），一樣會湊出兩杯飲料——**問題出在分類本身把液態跟固態混在一起，不是配對邏輯錯**。
+   - 也可能牽涉 `taiwan_items.json` 的「飲料」分類（手搖飲類）或 `dish_archetypes.json` 自組食譜的某個槽位，還沒逐一排查，週日要先問使用者拿到具體是哪一筆組合，再往回追是走哪個候選池的邏輯產生的。
+   - **修法方向（尚未實作，週日做）**：把 `convenience_items.json` 的「蛋白飲/點心棒」拆成兩個真正的分類（例如「蛋白飲」歸進飲品類一起算、「點心棒」獨立成不算飲品的分類），配對邏輯改成「全站最多一款液態飲品」而不是「每個分類各一款」。
 
 ## 記憶系統（auto-memory）目前狀態
 
-`C:\Users\Max\.claude\projects\d--ok-lighten\memory\` 裡已經有：
+`C:\Users\Max\.claude\projects\d--ok-lighten\memory\` 已有：
 - `feedback_autoproceed_handoff.md`：審查通過就直接寫下一輪交接，不用問
 - `project_cline_handoff_workflow.md`：使用者手動貼 `collab/to-cline.md` 給 Cline
 - `feedback_language_chinese.md`：一律中文回覆
-
-這輪沒有新增記憶，但如果下個 session 要存新記憶，值得考慮的候選：
-- 「審查 Cline 的資料驅動功能時，要連 runtime 資料管線（JSON→IndexedDB這種）一起查，不能只比對 JS 對照表跟 JSON 內容」（這輪 Opus 抓到的教訓）
-- 「這個專案遇到大架構決策時，使用者會要求用 Agent(model:opus) 做獨立審核，不是我自己說服自己就好」
+- `feedback_verify_runtime_pipeline.md`：審查要連 runtime 資料管線一起查
+- `project_opus_review_for_major_design.md`：大架構決策找 Opus 兩輪獨立審核
+- `project_weekly_flex_redesign.md`（新增，這輪存）：週彈性帳本重新設計的現況，見上方第 1 點
