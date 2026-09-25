@@ -87,12 +87,18 @@
       ) {
         return false;
       }
-      if (filter.excludeAllergens && item.allergen_tags) {
+      if (filter.excludeAllergens) {
         const exclude = Array.isArray(filter.excludeAllergens)
           ? filter.excludeAllergens
           : [filter.excludeAllergens];
-        for (let i = 0; i < exclude.length; i++) {
-          if (item.allergen_tags.indexOf(exclude[i]) !== -1) return false;
+        if (exclude.length > 0) {
+          // 2026-09-25 修正（Opus 審查發現的安全漏洞）：原本 `item.allergen_tags &&` 這個短路判斷，
+          // 會讓「完全沒有 allergen_tags 欄位」的品項在使用者設定過敏原時直接放行（因為條件式整個是 false，
+          // 不會進到過濾邏輯）。改成：只要使用者有過敏原限制，品項缺過敏原資料就保守排除，不能預設安全。
+          if (!Array.isArray(item.allergen_tags)) return false;
+          for (let i = 0; i < exclude.length; i++) {
+            if (item.allergen_tags.indexOf(exclude[i]) !== -1) return false;
+          }
         }
       }
       return true;
@@ -166,6 +172,16 @@
     return await db(STORE.recipeFeedback).getItem(id);
   }
 
+  // 2026-09-25 新增（Opus 審查建議）：候選池規模隨蔬菜軸/超商多品項組合/台式品項越來越大，
+  // 逐一 getRecipeFeedback() 對每個候選各呼叫一次 localforage 讀取效能不佳。改用 iterate 一次撈全部。
+  async function getAllRecipeFeedback() {
+    const map = {};
+    await db(STORE.recipeFeedback).iterate(function (value, key) {
+      map[key] = value;
+    });
+    return map;
+  }
+
   async function saveRecipeFeedback(id, rating) {
     const existing = (await getRecipeFeedback(id)) || {};
     const updated = Object.assign({}, existing, {
@@ -183,9 +199,19 @@
     return await readList(STORE.rawIngredients);
   }
 
+  // 2026-09-25 修正（Opus 審查發現的既有 bug）：taiwan_items 是靜態種子資料（data/taiwan_items.json），
+  // 不是使用者會寫入的清單，本來就不該經過 IndexedDB 的 STORE.taiwanItems（那個 store 從來沒有任何程式碼
+  // 寫入過，getTaiwanItems() 過去一直回傳空陣列，「台式熱門品項參考」畫面因此從未真的顯示過資料，
+  // feast.js 的品項查找也一直失敗回退成小/中/大估算）。改成跟 recommend.js 讀 protein_sources.json 等
+  // 種子檔一樣的做法：直接 fetch JSON、快取在記憶體，不進資料庫。
+  let _taiwanItemsCache = null;
   async function getTaiwanItems(filter) {
-    const list = await readList(STORE.taiwanItems);
-    return applyFilter(list, filter);
+    if (!_taiwanItemsCache) {
+      const res = await fetch("data/taiwan_items.json");
+      if (!res.ok) throw new Error("[database.js] 載入 taiwan_items.json 失敗");
+      _taiwanItemsCache = await res.json();
+    }
+    return applyFilter(_taiwanItemsCache, filter);
   }
 
   async function getCustomFoods() {
@@ -215,6 +241,14 @@
     return list.filter(function (e) {
       return inDateRange(e.log_date, dateRange);
     });
+  }
+
+  // 2026-09-25 新增（Opus 審查指出完全沒有刪除 daily_log 的函式，導致「直接記錄大餐」無法撤銷）
+  async function removeDailyLog(id) {
+    const list = await readList(STORE.dailyLog);
+    const filtered = list.filter(function (e) { return e.id !== id; });
+    await writeList(STORE.dailyLog, filtered);
+    return filtered.length !== list.length;
   }
 
   // ---------- 7. feast_reservation ----------
@@ -324,6 +358,7 @@
     saveTdeeCalibration: saveTdeeCalibration,
     getRecipeTemplates: getRecipeTemplates,
     getRecipeFeedback: getRecipeFeedback,
+    getAllRecipeFeedback: getAllRecipeFeedback,
     saveRecipeFeedback: saveRecipeFeedback,
     getRawIngredients: getRawIngredients,
     getTaiwanItems: getTaiwanItems,
@@ -331,6 +366,7 @@
     addCustomFood: addCustomFood,
     addDailyLog: addDailyLog,
     getDailyLogs: getDailyLogs,
+    removeDailyLog: removeDailyLog,
     addFeastReservation: addFeastReservation,
     getFeastReservations: getFeastReservations,
     updateFeastStatus: updateFeastStatus,

@@ -37,12 +37,20 @@
     return FLEX_CAP_FIXED;
   }
 
+  // 2026-09-25 修正（Opus 二輪審查）：
+  // - 台式品項現在也回傳 protein_g/carb_g/fat_g/fiber_g（原本只有自訂食物有），避免 checkHardConstraints
+  //   算出的蛋白質/纖維缺口失真。
+  // - 新增 usesFlex：只有「大餐類」（taiwan_items.uses_flex===true）才消耗週彈性點數；健康品項
+  //   （無糖豆漿、地瓜等）跟自訂食物、小/中/大估算，各自依規則決定要不要動用彈性點數，見下方三個分支。
   async function resolveFeastItem(itemId, size) {
     let estimatedKcal = null;
     let itemName = null;
     let sourceType = null; // 'taiwan_item' | 'custom' | null
     let proteinG = null;
+    let carbG = null;
+    let fatG = null;
     let fiberG = null;
+    let usesFlex = true; // 預設 true：小/中/大估算、自訂食物都視為使用者自己判斷要記的「額外」餐點
 
     if (itemId) {
       const taiwanItems = await getTaiwanItems();
@@ -51,6 +59,9 @@
         estimatedKcal = taiwanItem.kcal_rep != null ? taiwanItem.kcal_rep : round1((taiwanItem.kcal_low + taiwanItem.kcal_high) / 2);
         itemName = taiwanItem.name;
         sourceType = "taiwan_item";
+        proteinG = taiwanItem.protein_g != null ? taiwanItem.protein_g : null;
+        fiberG = taiwanItem.fiber_g != null ? taiwanItem.fiber_g : null;
+        usesFlex = taiwanItem.uses_flex !== false; // 台式品項依資料裡的 uses_flex 決定，缺欄位時保守當 true
       } else {
         const customFoods = await getCustomFoods();
         const customFood = customFoods.find(function (f) { return f.id === itemId; });
@@ -60,13 +71,24 @@
           sourceType = "custom";
           proteinG = customFood.protein_g != null ? customFood.protein_g : null;
           fiberG = customFood.fiber_g != null ? customFood.fiber_g : null;
+          usesFlex = true; // 使用者自己在「預約大餐/直接記錄」流程輸入，視為額外餐點
         }
       }
     }
     if (estimatedKcal == null) {
       estimatedKcal = FEAST_SIZE_KCAL.hasOwnProperty(size) ? FEAST_SIZE_KCAL[size] : FEAST_SIZE_KCAL.M;
+      usesFlex = true; // 小/中/大估算本來就是走大餐流程，一律消耗彈性點數
     }
-    return { kcal: estimatedKcal, name: itemName, sourceType: sourceType, protein_g: proteinG, fiber_g: fiberG };
+    return {
+      kcal: estimatedKcal,
+      name: itemName,
+      sourceType: sourceType,
+      protein_g: proteinG,
+      carb_g: carbG,
+      fat_g: fatG,
+      fiber_g: fiberG,
+      usesFlex: usesFlex,
+    };
   }
 
   async function reserveFeast(planDate, slot, size, itemId) {
@@ -80,15 +102,18 @@
       item_id: itemId || null,
       item_name: resolved.name,
       estimated_kcal: resolved.kcal,
+      uses_flex: resolved.usesFlex,
       status: "reserved",
     };
     const saved = await addFeastReservation(entry);
 
-    const weekStart = weekStartOf(planDate);
-    const ledger = await getWeeklyLedger(weekStart);
-    const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
-    const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
-    await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
+    if (resolved.usesFlex) {
+      const weekStart = weekStartOf(planDate);
+      const ledger = await getWeeklyLedger(weekStart);
+      const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
+      const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
+      await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
+    }
 
     return saved;
   }
@@ -105,21 +130,48 @@
       item_name: resolved.name,
       kcal: resolved.kcal,
       protein_g: resolved.protein_g,
-      carb_g: null,
-      fat_g: null,
+      carb_g: resolved.carb_g,
+      fat_g: resolved.fat_g,
       fiber_g: resolved.fiber_g,
       is_feast: 1,
       feast_reservation_id: null,
+      uses_flex: resolved.usesFlex,
     };
     const saved = await addDailyLog(entry);
 
-    const weekStart = weekStartOf(planDate);
-    const ledger = await getWeeklyLedger(weekStart);
-    const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
-    const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
-    await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
+    if (resolved.usesFlex) {
+      const weekStart = weekStartOf(planDate);
+      const ledger = await getWeeklyLedger(weekStart);
+      const cap = ledger && ledger.cap_kcal != null ? ledger.cap_kcal : computeWeeklyCapKcal(profile);
+      const prevUsed = ledger ? (ledger.used_kcal || 0) : 0;
+      await updateWeeklyLedger(weekStart, prevUsed + resolved.kcal, cap);
+    }
 
     return saved;
+  }
+
+  // 2026-09-25 新增（Opus 二輪審查指出完全沒有撤銷機制）：撤銷一筆用 logFeastDirectly 直接寫入的
+  // daily_log 記錄——刪掉這筆紀錄，如果當初有消耗彈性點數（uses_flex===true）就退回去。
+  // 只處理「直接記錄」（feast_reservation_id 為 null）的情況；有關聯預約的紀錄請走 cancelFeast。
+  async function undoDailyLog(dailyLogId) {
+    const logs = await getDailyLogs();
+    const entry = logs.find(function (l) { return l.id === dailyLogId; });
+    if (!entry) return null;
+    if (entry.feast_reservation_id) {
+      throw new Error("[feast.js] 這筆記錄關聯到一筆預約，請改用取消預約。");
+    }
+
+    await removeDailyLog(dailyLogId);
+
+    if (entry.is_feast && entry.uses_flex) {
+      const weekStart = weekStartOf(entry.log_date);
+      const ledger = await getWeeklyLedger(weekStart);
+      if (ledger) {
+        const newUsed = Math.max(0, (ledger.used_kcal || 0) - (Number(entry.kcal) || 0));
+        await updateWeeklyLedger(weekStart, newUsed, ledger.cap_kcal);
+      }
+    }
+    return entry;
   }
 
   async function confirmFeast(reservationId, actualDailyLogEntry) {
@@ -203,6 +255,7 @@
 
   window.reserveFeast = reserveFeast;
   window.logFeastDirectly = logFeastDirectly;
+  window.undoDailyLog = undoDailyLog;
   window.confirmFeast = confirmFeast;
   window.cancelFeast = cancelFeast;
   window.planOverageSmoothing = planOverageSmoothing;

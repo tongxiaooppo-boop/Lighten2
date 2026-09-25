@@ -35,6 +35,7 @@ body {
 .exercise-streak h3,
 .exercise-form h3,
 .exercise-list h3,
+.exercise-weekly-activity h3,
 .week-summary h3,
 .week-days h3 {
   font-family: "Noto Serif TC", serif;
@@ -111,13 +112,15 @@ body {
   color: #8A7A63;
 }
 
-/* checkbox 欄位：勾選框跟文字同列，不要跟其他 text/select 欄位一樣直排 */
-.form-field label:has(input[type="checkbox"]) {
+/* checkbox/radio 欄位：勾選框跟文字同列，不要跟其他 text/select 欄位一樣直排 */
+.form-field label:has(input[type="checkbox"]),
+.form-field label:has(input[type="radio"]) {
   flex-direction: row;
   align-items: center;
 }
 
-.form-field input[type="checkbox"] {
+.form-field input[type="checkbox"],
+.form-field input[type="radio"] {
   width: auto;
   flex: 0 0 auto;
 }
@@ -271,6 +274,12 @@ body {
   margin-left: 0.3rem;
 }
 
+.rec-fallback-note {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+
 .rec-empty {
   color: #8A7A63;
   margin: 0;
@@ -288,6 +297,14 @@ body {
 
 .dislike-btn:hover {
   background-color: #fbf0f0;
+}
+
+.rec-log-btn {
+  margin-left: 0.4rem;
+}
+
+.rec-undo-btn {
+  margin-left: 0.4rem;
 }
 
 /* 週彈性帳本分頁 */

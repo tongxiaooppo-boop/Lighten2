@@ -51,8 +51,9 @@ lighten/
 │   │   └── tab-shopping.js
 │   └── app.js
 ├── data/                   ← 種子資料
-│   ├── protein_sources.json / staples.json / sauce_methods.json  ← 食譜模板三軸（PRD 4.2節，取代舊recipes.json）
-│   ├── raw_ingredients.json← 原型食材資料庫（PRD 4.4節，27項）
+│   ├── protein_sources.json / staples.json / sauce_methods.json  ← 食譜模板前三軸（PRD 4.2節，取代舊recipes.json）
+│   ├── raw_ingredients.json← 原型食材資料庫（PRD 4.4節，27項；2026-09-25起其中4項「蔬菜」同時是食譜模板第4軸）
+│   ├── convenience_items.json← 超商/現成即食品項（2026-09-25新增，11項，跟四軸組合併入同一候選池）
 │   └── taiwan_items.json   ← 台式熱門排行榜（PRD 4.3節，50項含熱量估算，含早/午/晚/宵夜/飲料/西式速食6類）
 ├── manifest.json            ← （可選，Phase 1.5）PWA 設定，讓使用者可在手機「加入主畫面」
 ├── service-worker.js        ← （可選，Phase 1.5）離線快取
@@ -100,17 +101,17 @@ lighten/
 | target_kcal | REAL | 校正後每日預算，UI直接顯示這個數字 |
 | calibration_note | TEXT | 內部除錯用（例如「體重連續2週未如預期下降，下修200kcal」），**不對使用者展示逐項運動明細** |
 
-### 3.4 `protein_sources` / `staples` / `sauce_methods`（新增，v4.0，取代 `recipes`）
-三軸各自一張小表：`id`、`name`、`kcal_100g`/`protein_100g`/`carb_100g`/`fat_100g`/`fiber_100g`（或每份標準克數的營養值）、`diet_tags`、`allergen_tags`、`prep_tier`（🟢/🟡/🔴，該軸帶來的備餐難度貢獻）。
+### 3.4 `protein_sources` / `staples` / `sauce_methods`（新增，v4.0，取代 `recipes`；2026-09-25 新增第4軸「蔬菜」，取自 `raw_ingredients.json` 的 `category=蔬菜`）
+四軸各自一張小表：`id`、`name`、`kcal_100g`/`protein_100g`/`carb_100g`/`fat_100g`/`fiber_100g`（或每份標準克數的營養值）、`diet_tags`、`allergen_tags`、`prep_tier`（🟢/🟡/🔴，該軸帶來的備餐難度貢獻）。「蔬菜」軸沒有獨立的 JSON 檔，直接從 `raw_ingredients.json`（3.7節）篩 `category === "蔬菜"` 取得（目前 4 種：花椰菜/菠菜/芹菜/春筍）。
 
 ### 3.5 `recipe_templates`（模板組合，可即時生成或預先展開存表）
 | 欄位 | 型別 | 說明 |
 |---|---|---|
-| id | TEXT PK | `{protein_id}_{staple_id}_{sauce_id}` |
+| id | TEXT PK | `{protein_id}_{staple_id}_{vegetable_id}_{sauce_id}`（2026-09-25 新增 vegetable_id） |
 | slot | TEXT | 'breakfast'/'main'/'snack' |
-| tier | TEXT | 由三軸最高難度決定 |
-| kcal / protein_g / carb_g / fat_g / fiber_g | REAL | 三軸加總計算 |
-| diet_tags / allergen_tags | TEXT | 三軸聯集 |
+| tier | TEXT | 由四軸最高難度決定 |
+| kcal / protein_g / carb_g / fat_g / fiber_g | REAL | 四軸加總計算（依各軸假設份量換算，見 4.5 節） |
+| diet_tags / allergen_tags | TEXT | 四軸聯集 |
 
 ### 3.6 `recipe_feedback`（新增，v4.0，供 5.5節評分+降權排序）
 | 欄位 | 型別 | 說明 |
@@ -120,8 +121,8 @@ lighten/
 | last_shown_date | TEXT | 用於「近期出現降權」 |
 | shown_count | INTEGER | |
 
-### 3.7 `raw_ingredients`（原型食材，27項，同 v3.1）
-### 3.8 `taiwan_items`（台式熱門排行榜，50項，`kcal_low/kcal_high/kcal_rep`；原 v3.1 早/午/晚/宵夜 40 項，2026-09-25 新增飲料/西式速食類共 10 項，補上手搖飲料與連鎖速食的缺口，見 PRD「尚待解決問題」新增項）
+### 3.7 `raw_ingredients`（原型食材，27項，同 v3.1；2026-09-25 起其中 `category=蔬菜` 的 4 項（花椰菜/菠菜/芹菜/春筍）補上 `diet_tags`/`allergen_tags`/`prep_tier`，供 `recommend.js` 當第4軸使用）
+### 3.8 `taiwan_items`（台式熱門排行榜，50項，`kcal_low/kcal_high/kcal_rep`；原 v3.1 早/午/晚/宵夜 40 項，2026-09-25 新增飲料/西式速食類共 10 項，補上手搖飲料與連鎖速食的缺口，見 PRD「尚待解決問題」新增項）。**2026-09-25 再次修訂**：正式併入「今日建議」推薦候選池（4.5 節），新增 `allergen_tags`（過敏原）、`protein_g`/`fiber_g`（估算值）、`uses_flex`（是否消耗週彈性點數，15筆大餐類為`true`，其餘35筆日常品項為`false`）三種欄位；資料改由 `database.js` 的 `getTaiwanItems()` 直接 fetch `data/taiwan_items.json` 並快取（不再依賴從未被寫入過的 IndexedDB `taiwan_items` store，這是修正過去的既有 bug，見 4.6 節）。
 ### 3.9 `custom_foods`（個人自訂，同 v3.1；2026-09-25 起接上 UI，欄位：`id`/`name`/`kcal`/`protein_g`/`fiber_g`，讓使用者在「預約大餐」找不到對應台式品項時自行輸入）
 
 ### 3.10 `daily_log`（實際攝取記錄）
@@ -134,6 +135,7 @@ lighten/
 | kcal / protein_g / carb_g / fat_g / fiber_g | REAL | |
 | is_feast | INTEGER | 0/1 |
 | feast_reservation_id | TEXT NULL | 若由預約轉正式記錄，關聯 3.11 |
+| uses_flex | INTEGER NULL | **（2026-09-25 新增）** 0/1，這筆記錄當初是否消耗了週彈性點數（依來源的 `uses_flex` 判斷，見 3.8/3.9/4.6 節），`undoDailyLog()` 撤銷時要看這個欄位決定要不要把點數退回 `weekly_flex_ledger` |
 
 ### 3.11 `feast_reservation`（新增，v4.0，取代舊 flex_quota_log 的預約角色）
 | 欄位 | 型別 | 說明 |
@@ -144,6 +146,7 @@ lighten/
 | item_id | TEXT NULL | **（2026-09-25 新增，命名比照 3.10 `daily_log` 的 `item_id`）** 若使用者選了實際品項（而非小/中/大概略份量），存對應的 id——可能來自 `taiwan_items.id` 或 `custom_foods.id`（兩者 id 前綴不重疊，查詢時兩個 store 都查一次即可判斷來源，不用另存 `source_type`） |
 | item_name | TEXT NULL | **（2026-09-25 新增）** 對應品項的顯示名稱（`taiwan_items.name` 或 `custom_foods.name`），畫面上顯示用 |
 | estimated_kcal | REAL | 有 `item_id` 就用該品項的代表熱量（`taiwan_items.kcal_rep`，無則取 `kcal_low`/`kcal_high` 中間值；或 `custom_foods.kcal`）；否則依 size 換算或使用者微調 |
+| uses_flex | INTEGER | **（2026-09-25 新增）** 同 3.10，這筆預約是否消耗彈性點數：`taiwan_items` 依資料裡的 `uses_flex`；`custom_foods` 跟純 size 估算固定為 1（使用者主動走這個流程，視為額外餐點） |
 | status | TEXT | 'reserved' / 'confirmed' / 'cancelled' |
 | daily_log_id | TEXT NULL | confirmed 後關聯 3.10 |
 
@@ -171,13 +174,17 @@ lighten/
 | id | TEXT PK | |
 | log_date / activity_type / duration_min / intensity | — | 供成就系統與 `tdee.js` 週校正輸入 |
 
-**2026-09-25 修訂**：`activity_type` 改用常用項目下拉選單（散步/快走/慢跑/腳踏車/游泳/羽毛球/籃球/重訓/瑜伽/其他），對照固定的 MET 對照表（`activity_type` 是「其他」時，改依 `intensity` 給一個通用 MET 值）。**消耗估算值（`MET × 體重kg × 時長小時`）與每週累計消耗都不存進資料表**，每次顯示時用 `profile.weight_kg`／當週 `exercise_log` 即時算出來：
-- 單筆估算：顯示在該筆歷史紀錄旁邊。
-- 本週累計 vs. 每週運動消耗建議額度（依 `profile.goal_mode` 決定，常數放在 `js/ui/tab-exercise.js` 或未來如果多處要用再抽到 engine 層）：
-  ```js
-  const WEEKLY_EXERCISE_KCAL_TARGET = { "減脂": 1500, "維持": 1000, "增肌": 600 }; // 一般性建議值，僅供參考
-  ```
-- 這些數字**只在運動紀錄頁計算與顯示，不寫回 `daily_log`、不影響 `weekly_flex_ledger`／`budget.js`／`recommend.js`／`feast.js` 的任何計算**，架構上完全跟飲食/熱量預算隔離，避免以後被誤接進去。
+**2026-09-25 修訂**：`activity_type` 改用常用項目下拉選單（散步/快走/慢跑/腳踏車/游泳/羽毛球/籃球/重訓/瑜伽/其他）。
+
+**2026-09-25 第二版修訂（取代第一版的 MET×體重×時長 kcal 估算，理由見 PRD 2.2 節）**：完全不用 kcal 當單位，改用 WHO/ACSM 的時間與強度指標，**不存進資料表、不需要 `profile.weight_kg`**，每次顯示時用當週 `exercise_log` 即時算出來：
+```js
+const WEEKLY_ACTIVITY_TARGET = { moderateMinutes: 150, strengthDays: 2 }; // WHO/ACSM 一般性建議，跟 goal_mode 脫鉤
+const INTENSITY_MULTIPLIER = { "低": 0, "中": 1, "高": 2 }; // 低強度不計入累計分鐘，另外顯示「輕度活動」
+```
+- 每筆紀錄依 `intensity` 算入本週「等效中等強度分鐘數」（`duration_min × INTENSITY_MULTIPLIER[intensity]`），`activity_type === "重訓"` 的紀錄改成算「本週不重複的紀錄天數」，不併入分鐘數。
+- 運動紀錄頁顯示「本週已活動 X 分鐘・肌力訓練 Y 天」＋進度條，達標給正向文案；未達標**只顯示目前進度，不寫「還差 Z」這種缺口式文案**。
+- 低強度紀錄不計入 150 分鐘目標，但另外顯示「本週輕度活動 X 分鐘」，避免使用者覺得低強度活動「白做」。
+- 這些數字**完全不寫回 `daily_log`、不影響 `weekly_flex_ledger`／`budget.js`／`recommend.js`／`feast.js` 的任何計算**，架構上跟飲食/熱量預算隔離；因為徹底不使用 kcal 當單位，也杜絕了使用者拿運動頁的數字去對照飲食頁 kcal 做心算式換算的可能性（這是撤回第一版 kcal 設計的主因，純架構隔離不足以避免使用者心理層面的換算）。
 
 ### 3.15 `settings`（key-value）
 存放小設定，例如 feast size→kcal 對照表、資料版本號。
@@ -232,12 +239,60 @@ function getTodayRecommendation(remainingBudget, hardConstraints, preptimeToday,
 }
 ```
 
-**份量換算（2026-09-25 修正）**：`protein_sources.json`/`staples.json`/`sauce_methods.json` 存的是「每 100g」營養值，組合三軸時不能直接把 100g 值相加（那等於假設每種食材只吃 100g，會嚴重低估總熱量，導致熱量配額較高的時段永遠配不到組合）。`recommend.js` 內部依「蛋白質來源 130g／主食 150g／醬料或烹調法 20g」的假設份量換算後再加總（`PROTEIN_SERVING_G`/`STAPLE_SERVING_G`/`SAUCE_SERVING_G` 常數），`protein_g`/`carb_g`/`fat_g`/`fiber_g` 一併用同樣比例換算，維持營養素之間的一致性。這是簡化假設（固定份量，不因個人食量調整），未來若要做「份量自訂」才需要再擴充。
+**份量換算（2026-09-25 修正）**：`protein_sources.json`/`staples.json`/`sauce_methods.json`/`raw_ingredients.json`（蔬菜軸）存的是「每 100g」營養值，組合四軸時不能直接把 100g 值相加（那等於假設每種食材只吃 100g，會嚴重低估總熱量，導致熱量配額較高的時段永遠配不到組合）。`recommend.js` 內部依「蛋白質來源 130g／主食 150g／蔬菜 100g／醬料或烹調法 20g」的假設份量換算後再加總（`PROTEIN_SERVING_G`/`STAPLE_SERVING_G`/`VEGETABLE_SERVING_G`/`SAUCE_SERVING_G` 常數），`protein_g`/`carb_g`/`fat_g`/`fiber_g` 一併用同樣比例換算，維持營養素之間的一致性。這是簡化假設（固定份量，不因個人食量調整），未來若要做「份量自訂」才需要再擴充。
+
+**蔬菜軸（2026-09-25 新增）**：原本三軸（蛋白質×主食×醬料）組出來的餐點永遠沒有實際蔬菜份量，跟 PRD 附錄範例食譜（每道都有一份蔬菜）不一致，畫面上也顯得單調不吸引人。新增第4軸取自 `raw_ingredients.json` 的 `category=蔬菜`（花椰菜/菠菜/芹菜/春筍），組合數從 11×8×7=616 增為 11×8×4×7=2464，`combo.name`/`combo.id` 都改成四段（例如「雞胸肉 + 糙米飯 + 花椰菜 + 微波」），`tab-today.js` 的卡片渲染不用改（`rec.name` 直接顯示字串，長度變長但邏輯不變）。
+
+**超商即食品項（2026-09-25 新增，2026-09-25 second pass 改版，`data/convenience_items.json`）**：欄位 `id`/`name`/`category`/`kcal`/`protein_g`/`carb_g`/`fat_g`/`fiber_g`/`tier`/`diet_tags`/`allergen_tags`/`note`，**跟四軸組合不同，是固定套裝值，不套用 `PROTEIN_SERVING_G` 等份量換算**。`recommend.js` 的 `loadAxes()` 多讀這個檔案，組合完四軸笛卡爾積後，直接把這些品項也 push 進同一個 `combos` 陣列（`is_convenience: true`，四軸組合是 `is_convenience: false`），一起進入後面的 tier/過敏原/飲食限制篩選與 `score()` 評分——不是另開分支或另一個推薦來源。目前 35 筆，分 10 類（`category`：飲品/沙拉/健身餐盒/蔬食餐盒/減醣餐盒/蛋白質單品/原型主食/連鎖健康餐盒/宅配健身餐/蛋白飲點心棒；2026-09-25 分三批資料陸續補上：超商即食單品→健身餐盒/蔬食/減醣主食→連鎖健康餐盒品牌與宅配健身餐），**改用真實市售品牌與產品名稱**（統一陽光/義美/光泉/OATLY/萬歲牌/全家健身G肉餐盒等）——這是使用者提供的實測營養數據（2026-09-25），比先前版本的通用估算值精確，尤其纖維量差異很大（例如高纖豆漿纖維量普遍在9–10g，遠高於先前估算的4g）。跟 `taiwan_items.json` 手搖飲/速食類「刻意不寫品牌」的原則不同：這裡是個人自用資料、且數據來源是使用者自己提供的實測值，直接沿用品牌名稱以利辨識實際商品，不算前述原則的例外違反（那條原則是針對「找不到來源、怕誤導」的估算值）。部分品項的 `carb_g`/`fat_g` 未提供（原始資料只給熱量/蛋白質/纖維），存 `null`，不要自己估算填入。
+
+**超商品項多品項組合（2026-09-25 新增）**：單一超商即食品項最高熱量約 500kcal，湊不滿午/晚餐常見的 700+ kcal 熱量配額（份量比對規則要求候選熱量落在配額的 70%–130% 之間）。改成允許「主餐＋1～2 個飲品/點心棒」的組合一起進入候選池（例如「全家健身G肉餐盒 ＋ 統一陽光高纖無糖豆漿」）：
+- `convenience_items.json` 的 `category` 分成兩組：`EXTRA_CATEGORIES = {"飲品":true, "蛋白飲/點心棒":true}` 是「配角」，其餘（健身餐盒/連鎖健康餐盒/蔬食餐盒/減醣餐盒/沙拉/蛋白質單品/原型主食/宅配健身餐）是「主餐」。
+- 只生成「主餐＋1個配角」「主餐＋2個配角」的組合，**不生成「兩份主餐疊在一起」或「純配角湊兩三份」**，避免不合理的組合（兩個正餐盒、或三瓶飲料當一餐）。
+- `toConvenienceCombo(items)` 共用函式把多個品項的熱量/巨量營養素加總、`tier` 取最高難度、`diet_tags`/`allergen_tags` 取聯集，`id`/`name` 用 `+`／`＋` 串接，回傳的形狀跟單一品項、四軸組合完全一致，一樣進同一個 `combos` 陣列跟 `score()` 排序，不是另開分支。
+
+**時段來源偏好（2026-09-25 三輪修訂後最終版，取代前兩版的「早午餐超商加權」與「用餐風格偏好」）**：`getTodayRecommendation(remainingBudget, hardConstraints, mealPrefs, dietRestriction, allergens, flexLedger)` 的第 3、6 個參數是這版新增/改變的：
+- `mealPrefs`：`profile.meal_prefs`，物件 `{breakfast, lunch, afternoon_tea, dinner, snack}`，每個值是 `window.MEAL_SOURCE_OPTIONS = ["auto","convenience","delivery","cook_quick","cook_full"]` 其中之一。缺欄位或值不合法時，`getSourcePref()` 用 `window.DEFAULT_MEAL_PREFS`（`{breakfast:"convenience", lunch:"convenience", afternoon_tea:"auto", dinner:"cook_full", snack:"auto"}`）補上，取代原本 `preptimeToday`（全域一個值）的角色。
+- `flexLedger`：本週 `weekly_flex_ledger`（`{cap_kcal, used_kcal}`），用來算 `flexRemaining`，決定「大餐類」台式品項是否還有額度可推薦（見下方）。
+- **`filterBySource(candidates, sourcePref)`：硬性篩選，不是加分**——`convenience` 只留 `is_convenience`、`delivery` 只留 `is_delivery`、`cook_quick`/`cook_full` 只留自組食譜（差別在 `tier_rank` 上限）、`auto` 不篩。篩完是空的（但篩選前的候選池不是空的），才 fallback 回篩選前的候選池；**fallback 池會排除 `is_delivery` 的候選，除非使用者選的來源本來就是 `delivery` 或 `auto`**，避免使用者沒選外送卻被意外推薦、進而誤扣彈性點數。`result[slot].fallback_to_auto` 標記這個情況，UI 要顯示「{來源}中沒有符合今日配額的選擇，改為一般推薦」。
+- 已完全移除前兩版的 `CONVENIENCE_BIAS_SLOTS`/`BIAS_SCORE`/`MEAL_STYLE_OPTIONS`/`matchesBias`/`combo.is_whole_food_style`，`score()` 恢復成原本單純的「回饋+蛋白質/纖維缺口+熱量貼近度」，不再有任何加分邏輯跟來源綁定——來源篩選在 `score()` 之前就做完了。
+- **profile 舊資料遷移**：`prep_time_weekday`/`prep_time_weekend`/`meal_style_preference` 三個舊欄位廢除不再讀取（`meal_style_preference` 經確認從未真正接上引擎，沒有任何使用者資料用到它，不用特別遷移）。沒有 `meal_prefs` 的舊 profile，`getSourcePref()` 的預設值 fallback 邏輯會直接套用 `DEFAULT_MEAL_PREFS`，不做舊備餐時間值的精細換算（簡化的遷移策略：接受預設值可能跟使用者舊設定的下廚意願不完全一致，換取不用維護一套容易出錯的換算規則；使用者下次進基本資料分頁看到新的逐時段設定就能自行調整）。
+
+**台式熱門品項併入候選池，視為「外送」來源（2026-09-25 新增）**：
+- `loadAxes()` 呼叫全域 `getTaiwanItems()`（`database.js` 已修正為直接 fetch `data/taiwan_items.json` 並快取，見 3.8 節；`recommend.js`／`feast.js`／`tab-ledger.js` 現在共用同一份資料，不會有版本不同步的問題）。
+- **資料品質修正**（Opus 審查抓到的 3 個阻斷問題，已修正）：
+  1. 50 筆全部補上 `allergen_tags`（過敏原字彙擴充 `黃豆`/`魚`/`芝麻`，跟 `convenience_items.json` 一致）、`protein_g`/`fiber_g`（依常見營養資料估算）、`uses_flex`（詳下）。
+  2. 組成 combo 時 `tier` 統一指定 `"🟢"`（不讀 JSON 裡沒有的欄位，也不受 `prep_tier` 缺失影響）——外送品項對使用者來說零烹調成本，這是刻意的設計，不是 bug。
+  3. `database.js` 的 `applyFilter()` 過敏原判斷原本 `filter.excludeAllergens && item.allergen_tags` 這個短路寫法，會讓完全沒有 `allergen_tags` 欄位的品項在使用者設定過敏原時直接放行；已修正成「使用者有過敏限制、品項缺過敏原資料 → 保守排除」。
+- **`uses_flex`**：`taiwan_items.json` 新增欄位，`true` 的 15 筆是「大餐類」（鹹酥雞、串燒燒烤、派克炸雞排、甜湯豆花、火鍋、夜市小吃、珍珠奶茶、手搖水果茶、西式速食5項），選中/記錄這些品項才會消耗週彈性點數；其餘35筆（無糖豆漿、地瓜、健康餐盒等日常可接受品項）`uses_flex=false`，走一般每日熱量預算，不動彈性點數——維持 PRD 5.1 節「早餐都走健康模板」的精神。
+- **熱量太不精準的品項不進推薦池**：沒有 `kcal_rep`、且 `kcal_high/kcal_low ≥ 1.5` 倍的品項（`isTooWideRange()`），熱量區間太寬（例如「家常菜（熱炒）」200–1100kcal），當成「精準建議」推出來會嚴重誤導，排除在推薦候選外（仍可在「台式熱門品項參考」／預約大餐/直接記錄使用，那邊本來就是給使用者自己抓大概）。
+- **時段對照**：`TAIWAN_CATEGORY_SLOTS` 沿用 `tab-ledger.js` 的 `SLOT_TO_TAIWAN_CATEGORY` 精神（早餐→breakfast、午餐→lunch、晚餐→dinner、宵夜→snack、飲料→afternoon_tea），另外「西式速食」對照到 `[lunch, dinner]`（原本沒有對照，50筆裡的5筆西式速食會進不了推薦池，這輪一併補上）。
+- **彈性點數額度檢查**：`flexRemaining = flexLedger.cap_kcal - flexLedger.used_kcal`（沒有 `flexLedger` 資料時視為無限制，例如尚未計算過目標的新使用者）；候選是 `is_delivery && uses_flex` 且 `kcal > flexRemaining` 時直接排除，不會推薦使用者已經沒有額度負擔的大餐類外送。
+- **id 前綴**：combo 的 `id` 是 `"tw_" + taiwan_items.id`（例如 `tw_ln01`），額外存 `source_id`（原始 id）供之後呼叫 `logFeastDirectly(planDate, slot, null, source_id)` 記錄用，避免跟其他候選池的 id 撞號。
+- **`protein_sources.json`/`staples.json` 過敏原補正**：Opus 審查也發現既有三軸資料裡「毛豆仁」「無糖豆漿」「板豆腐」缺「黃豆」標籤、「鮭魚」「鯛魚」缺「魚」標籤（`unionTags` 遇到缺過敏原標記的原始食材不會主動補上，這幾筆是標記時的疏漏），已一併修正。
+- **效能**：`getAllRecipeFeedback()`（`database.js` 新增，用 localforage `iterate` 一次撈全部 `recipe_feedback`）取代原本逐一 `getRecipeFeedback(id)`，避免候選池變大後（四軸2464＋超商約1445＋台式約45＝約3950筆）逐筆讀取 IndexedDB 的效能問題。Node 模擬測試 5 種情境（含硬性篩選/fallback/過敏原/彈性點數額度不足）都符合預期，單次呼叫約 40ms。
 ```
 
-### 4.6 `engine/feast.js`（新增，取代舊 flex.js 的運動換算函式）
+### 4.6 `engine/feast.js`（新增，取代舊 flex.js 的運動換算函式；2026-09-25 大幅擴充）
 ```js
-async function reserveFeast(planDate, slot, size) { /* 寫入 feast_reservation，狀態 reserved，占用 weekly_flex_ledger.used_kcal */ }
+// resolveFeastItem(itemId, size)：共用的品項解析函式，reserveFeast/logFeastDirectly 都呼叫它，
+// 回傳 { kcal, name, sourceType, protein_g, carb_g, fat_g, fiber_g, usesFlex }。
+// 2026-09-25 修正：taiwan_item 來源現在也回傳 protein_g/fiber_g（原本只有 custom 食物有，
+// 導致台式品項寫進 daily_log 後 checkHardConstraints 算出的蛋白質/纖維缺口失真）；
+// usesFlex 依來源決定——taiwan_item 讀 taiwan_items.uses_flex；custom食物固定true；純size估算固定true。
+async function resolveFeastItem(itemId, size) { /* ... */ }
+
+async function reserveFeast(planDate, slot, size, itemId) {
+  /* 寫入 feast_reservation，狀態 reserved；只有 resolved.usesFlex===true 才占用 weekly_flex_ledger.used_kcal */
+}
+async function logFeastDirectly(planDate, slot, size, itemId) {
+  /* 2026-09-25 新增：不經過 feast_reservation，直接寫 daily_log（is_feast:1, feast_reservation_id:null），
+     只有 resolved.usesFlex===true 才更新 weekly_flex_ledger；用於「已經吃了，直接記錄」（PRD 6.3節）*/
+}
+async function undoDailyLog(dailyLogId) {
+  /* 2026-09-25 新增：撤銷一筆 logFeastDirectly 產生的記錄——刪除該筆 daily_log，
+     若 entry.uses_flex 為真則把 kcal 退回當週 weekly_flex_ledger.used_kcal。
+     有 feast_reservation_id 的記錄（走預約→確認流程產生）不適用，要改用 cancelFeast。*/
+}
 async function confirmFeast(reservationId, actualDailyLogEntry) { /* 狀態改 confirmed，用實際值取代預估值，重算 ledger */ }
 async function cancelFeast(reservationId) { /* 狀態改 cancelled，釋放已占用點數 */ }
 
@@ -245,8 +300,16 @@ async function cancelFeast(reservationId) { /* 狀態改 cancelled，釋放已�
 // 回傳：{ smoothingDays, dailyCapPct, appliedDates }
 function planOverageSmoothing(overageKcal, upcomingDaysBudget, safetyFloor) {
   // 邏輯對照 PRD 6.4節：1-3天攤還、單日≤15%、不得低於3.4節安全下限
+  // （Opus 審查發現：全專案目前沒有任何地方呼叫這個函式，額度用罄後其實沒有攤還後果會發生；
+  //   這是既有缺口，超出這輪範圍，記錄在此供之後排入任務）
 }
 ```
+
+### 4.7 `database.js` 相關修正（2026-09-25，Opus 審查發現的既有 bug）
+- **`getTaiwanItems()`**：原本讀 IndexedDB 的 `taiwan_items` store，但全專案從沒有任何程式碼寫入過這個 store，過去一直回傳空陣列——「台式熱門品項參考」畫面因此從未真的顯示過資料，`feast.js` 的品項查找也一直失敗、只能回退成小/中/大估算。改成直接 fetch `data/taiwan_items.json` 並在記憶體快取（跟 `recommend.js` 讀 `protein_sources.json` 等種子檔的做法一致），不再經過 IndexedDB。
+- **`applyFilter()` 過敏原判斷**：原本 `filter.excludeAllergens && item.allergen_tags` 的短路寫法，會讓完全沒有 `allergen_tags` 欄位的品項在使用者設定過敏原時直接放行（因為整個條件式是 `false`，根本不會執行過濾）。已修正成「使用者有過敏限制、品項缺過敏原資料 → 保守排除」。
+- **新增 `removeDailyLog(id)`**：原本整個專案沒有任何刪除 `daily_log` 的函式，`undoDailyLog()` 撤銷功能需要它。
+- **新增 `getAllRecipeFeedback()`**：用 localforage 的 `iterate()` 一次撈出全部 `recipe_feedback`，取代 `recommend.js` 原本逐一 `getRecipeFeedback(id)` 呼叫（候選池變大後效能考量，見 4.5 節）。
 
 ### 4.7 `engine/shopping.js`
 （同 v3.1，輸入來源改為 recipe_templates 展開後的食材清單）
@@ -283,7 +346,7 @@ async function getSetting(key) / setSetting(key, value)
 ## 6. 種子資料來源
 
 `data/*.json` 內容直接從 `輕盈計畫PRD_v4.0.md` 對應章節轉錄，不要自己編：
-- `protein_sources.json` / `staples.json` / `sauce_methods.json` ← PRD 附錄A 模板種子範例拆解出三軸
+- `protein_sources.json` / `staples.json` / `sauce_methods.json` ← PRD 附錄A 模板種子範例拆解出前三軸；第4軸「蔬菜」共用下面的 `raw_ingredients.json`，不用另建檔案
 - `raw_ingredients.json` ← PRD 4.4節（27項）
 - `taiwan_items.json` ← PRD 4.3節（50項，含飲料/西式速食新增類別）
 
