@@ -473,6 +473,68 @@ body {
   color: #8A7A63;
 }
 
+/* 台式熱門品項參考 */
+.taiwan-ref {
+  margin-top: 1.5rem;
+}
+
+.taiwan-ref-note {
+  margin: 0 0 0.8rem;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+
+.taiwan-ref-group {
+  margin-bottom: 1rem;
+}
+
+.taiwan-ref-cat {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-family: "Noto Serif TC", serif;
+}
+
+.taiwan-ref-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.6rem;
+}
+
+.taiwan-ref-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.taiwan-ref-img {
+  flex: 0 0 60px;
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.taiwan-ref-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.taiwan-ref-name {
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+.taiwan-ref-kcal {
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+
 /* ===== 響應式：小螢幕（手機） ===== */
 @media (max-width: 600px) {
   /* 分頁按鈕列：單列可橫向捲動，避免換行錯位／文字截斷 */

@@ -53,7 +53,7 @@ lighten/
 ├── data/                   ← 種子資料
 │   ├── protein_sources.json / staples.json / sauce_methods.json  ← 食譜模板三軸（PRD 4.2節，取代舊recipes.json）
 │   ├── raw_ingredients.json← 原型食材資料庫（PRD 4.4節，27項）
-│   └── taiwan_items.json   ← 台式熱門排行榜（PRD 4.3節，40項含熱量估算）
+│   └── taiwan_items.json   ← 台式熱門排行榜（PRD 4.3節，50項含熱量估算，含早/午/晚/宵夜/飲料/西式速食6類）
 ├── manifest.json            ← （可選，Phase 1.5）PWA 設定，讓使用者可在手機「加入主畫面」
 ├── service-worker.js        ← （可選，Phase 1.5）離線快取
 ├── 輕盈計畫PRD_v4.0.md          ← 業務邏輯規格（唯一真相來源）
@@ -121,7 +121,7 @@ lighten/
 | shown_count | INTEGER | |
 
 ### 3.7 `raw_ingredients`（原型食材，27項，同 v3.1）
-### 3.8 `taiwan_items`（台式熱門排行榜，40項，同 v3.1，`kcal_low/kcal_high/kcal_rep`）
+### 3.8 `taiwan_items`（台式熱門排行榜，50項，`kcal_low/kcal_high/kcal_rep`；原 v3.1 早/午/晚/宵夜 40 項，2026-09-25 新增飲料/西式速食類共 10 項，補上手搖飲料與連鎖速食的缺口，見 PRD「尚待解決問題」新增項）
 ### 3.9 `custom_foods`（個人自訂，同 v3.1）
 
 ### 3.10 `daily_log`（實際攝取記錄）
@@ -272,6 +272,6 @@ async function getSetting(key) / setSetting(key, value)
 `data/*.json` 內容直接從 `輕盈計畫PRD_v4.0.md` 對應章節轉錄，不要自己編：
 - `protein_sources.json` / `staples.json` / `sauce_methods.json` ← PRD 附錄A 模板種子範例拆解出三軸
 - `raw_ingredients.json` ← PRD 4.4節（27項）
-- `taiwan_items.json` ← PRD 4.3節（40項）
+- `taiwan_items.json` ← PRD 4.3節（50項，含飲料/西式速食新增類別）
 
 `fiber_g` 若 PRD 未提供數值，寫 `null`，不要自己估算填入。

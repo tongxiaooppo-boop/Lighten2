@@ -38,5 +38,15 @@
   {"id": "sn07", "name": "關東煮", "category": "宵夜", "kcal_low": 300, "kcal_high": 500, "kcal_rep": null, "note": "5–6樣+湯；原型食材低，加工丸類/米血糕較高"},
   {"id": "sn08", "name": "涼麵", "category": "宵夜", "kcal_low": 279, "kcal_high": 450, "kcal_rep": null, "note": ""},
   {"id": "sn09", "name": "甜湯／豆花", "category": "宵夜", "kcal_low": 120, "kcal_high": 350, "kcal_rep": null, "note": "不加糖水120；加糖水配料250–350"},
-  {"id": "sn10", "name": "鹽水雞", "category": "宵夜", "kcal_low": 350, "kcal_high": 450, "kcal_rep": null, "note": "雞肉+2–3樣蔬菜"}
+  {"id": "sn10", "name": "鹽水雞", "category": "宵夜", "kcal_low": 350, "kcal_high": 450, "kcal_rep": null, "note": "雞肉+2–3樣蔬菜"},
+  {"id": "dr01", "name": "珍珠奶茶（全糖）", "category": "飲料", "kcal_low": 620, "kcal_high": 850, "kcal_rep": 700, "note": "500cc全糖約700大卡（維基百科），700cc大杯或加料（椰果/布丁）取高值；代表值約700"},
+  {"id": "dr02", "name": "珍珠奶茶（半糖去冰）", "category": "飲料", "kcal_low": 500, "kcal_high": 650, "kcal_rep": null, "note": "估算值：半糖約可減少全糖版本15–20%糖量熱量，去冰不影響總糖量；珍珠本身熱量不隨甜度調整而變，各店做法差異大，僅供概略參考"},
+  {"id": "dr03", "name": "四季春／紅茶（無糖）", "category": "飲料", "kcal_low": 0, "kcal_high": 15, "kcal_rep": 5, "note": "純茶無糖，幾乎無熱量"},
+  {"id": "dr04", "name": "手搖水果茶（微糖）", "category": "飲料", "kcal_low": 150, "kcal_high": 300, "kcal_rep": null, "note": "依水果配料與糖量差異大，估算值"},
+  {"id": "dr05", "name": "拿鐵咖啡（大杯，全脂鮮奶）", "category": "飲料", "kcal_low": 180, "kcal_high": 250, "kcal_rep": null, "note": "估算值，依奶量與是否加糖而異"},
+  {"id": "fw01", "name": "大麥克餐（大麥克＋中薯＋中可樂）", "category": "西式速食", "kcal_low": 950, "kcal_high": 1100, "kcal_rep": 1020, "note": "大麥克單點480–580（依市場略有差異，維基百科）＋中薯約320–340＋中可樂約150–180，套餐總和估算，代表值約1020"},
+  {"id": "fw02", "name": "大麥克（單點，不含餐）", "category": "西式速食", "kcal_low": 480, "kcal_high": 580, "kcal_rep": 550, "note": "美國版580大卡（維基百科），各地版本略有差異"},
+  {"id": "fw03", "name": "炸雞（2塊）＋薯條（中）", "category": "西式速食", "kcal_low": 600, "kcal_high": 750, "kcal_rep": null, "note": "估算值，依連鎖品牌與部位（雞胸/雞腿）而異"},
+  {"id": "fw04", "name": "披薩（起司／總匯，2片）", "category": "西式速食", "kcal_low": 500, "kcal_high": 700, "kcal_rep": null, "note": "估算值，依餅皮厚度與配料差異大"},
+  {"id": "fw05", "name": "美式漢堡套餐（漢堡＋薯條＋飲料）", "category": "西式速食", "kcal_low": 800, "kcal_high": 1000, "kcal_rep": null, "note": "估算值，涵蓋摩斯漢堡等連鎖漢堡套餐"}
 ]

@@ -7,6 +7,60 @@
   const SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", snack: "宵夜" };
   const SIZE_LABELS = { S: "小", M: "中", L: "大" };
 
+  // 台式熱門品項 id → 縮圖（查不到就不顯示，正常降級）
+  const TAIWAN_ITEM_IMAGE = {
+    bf01: "images/food/egg-pancake.jpg",
+    bf02: "images/food/milk-glass.jpg",
+    bf03: "images/food/rice-ball.jpg",
+    bf04: "images/food/pork-egg-toast.jpg",
+    bf05: "images/food/soy-milk.jpg",
+    bf06: "images/food/radish-cake.jpg",
+    bf07: "images/food/teppan-noodles.jpg",
+    bf08: "images/food/sweet-potato.jpg",
+    bf09: "images/food/youtiao.jpg",
+    bf10: "images/food/scallion-pancake-egg.jpg",
+    ln01: "images/food/pork-chop-bento.jpg",
+    ln02: "images/food/chicken-leg-bento.jpg",
+    ln03: "images/food/dumplings.jpg",
+    ln04: "images/food/beef-noodle-soup.jpg",
+    ln05: "images/food/noodle-soup.jpg",
+    ln06: "images/food/buffet-rice.jpg",
+    ln07: "images/food/healthy-bento.jpg",
+    ln08: "images/food/braised-pork-rice.jpg",
+    ln09: "images/food/ham-fried-rice.jpg",
+    ln10: "images/food/conv-store-bento.jpg",
+    dn01: "images/food/hot-pot.jpg",
+    dn02: "images/food/popcorn-chicken.jpg",
+    dn03: "images/food/luwei.jpg",
+    dn04: "images/food/teppanyaki.jpg",
+    dn05: "images/food/sushi-set.jpg",
+    dn06: "images/food/oyster-omelet.jpg",
+    dn07: "images/food/boiled-healthy-meal.jpg",
+    dn08: "images/food/pasta.jpg",
+    dn09: "images/food/home-cooking.jpg",
+    dn10: "images/food/congee.jpg",
+    sn01: "images/food/popcorn-chicken.jpg",
+    sn02: "images/food/skewers-grill.jpg",
+    sn03: "images/food/instant-noodles.jpg",
+    sn04: "images/food/xiaolongbao.jpg",
+    sn05: "images/food/fried-chicken-cutlet.jpg",
+    sn06: "images/food/luwei.jpg",
+    sn07: "images/food/oden.jpg",
+    sn08: "images/food/cold-noodles.jpg",
+    sn09: "images/food/douhua.jpg",
+    sn10: "images/food/salt-water-chicken.jpg",
+    dr01: "images/food/bubble-tea-full-sugar.jpg",
+    dr02: "images/food/bubble-tea-half-sugar.jpg",
+    dr03: "images/food/black-tea-unsweetened.jpg",
+    dr04: "images/food/fruit-tea.jpg",
+    dr05: "images/food/latte.jpg",
+    fw01: "images/food/big-mac-meal.jpg",
+    fw02: "images/food/big-mac.jpg",
+    fw03: "images/food/fried-chicken-fries.jpg",
+    fw04: "images/food/pizza-slices.jpg",
+    fw05: "images/food/burger-meal.jpg",
+  };
+
   function ready(fn) {
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn);
     else fn();
@@ -69,6 +123,53 @@
         '<span class="ledger-item-status">' + statusText + "</span>" +
         "</div>" +
         '<div class="ledger-item-actions">' + actions + "</div>" +
+        "</div>";
+    }).join("");
+  }
+
+  function renderTaiwanItem(it) {
+    const imgSrc = TAIWAN_ITEM_IMAGE[it.id];
+    const imgHtml = imgSrc
+      ? '<img class="taiwan-ref-img" src="' + imgSrc + '" alt="' + escapeHtml(it.name) + '" loading="lazy">'
+      : "";
+    const kcalText = it.kcal_rep != null
+      ? "約 " + it.kcal_rep + " kcal"
+      : it.kcal_low + "–" + it.kcal_high + " kcal";
+    return '<div class="taiwan-ref-item">' +
+      imgHtml +
+      '<div class="taiwan-ref-info">' +
+      '<span class="taiwan-ref-name">' + escapeHtml(it.name) + "</span>" +
+      '<span class="taiwan-ref-kcal">' + escapeHtml(kcalText) + "</span>" +
+      "</div>" +
+      "</div>";
+  }
+
+  async function renderTaiwanRef() {
+    const container = $("#taiwan-ref-list");
+    if (!container) return;
+    let items;
+    try {
+      items = await getTaiwanItems();
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '<p class="rec-empty">載入品項參考失敗。</p>';
+      return;
+    }
+    const byCategory = {};
+    items.forEach(function (it) {
+      const c = it.category || "其他";
+      if (!byCategory[c]) byCategory[c] = [];
+      byCategory[c].push(it);
+    });
+    const order = ["早餐", "午餐", "晚餐", "宵夜", "飲料", "西式速食"];
+    container.innerHTML = order.map(function (cat) {
+      const list = byCategory[cat] || [];
+      if (list.length === 0) return "";
+      return '<div class="taiwan-ref-group">' +
+        '<h4 class="taiwan-ref-cat">' + escapeHtml(cat) + "</h4>" +
+        '<div class="taiwan-ref-items">' +
+        list.map(renderTaiwanItem).join("") +
+        "</div>" +
         "</div>";
     }).join("");
   }
@@ -151,5 +252,6 @@
     if (listEl) listEl.addEventListener("click", onAction);
 
     render();
+    renderTaiwanRef();
   });
 })();
