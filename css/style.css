@@ -111,6 +111,17 @@ body {
   color: #8A7A63;
 }
 
+/* checkbox 欄位：勾選框跟文字同列，不要跟其他 text/select 欄位一樣直排 */
+.form-field label:has(input[type="checkbox"]) {
+  flex-direction: row;
+  align-items: center;
+}
+
+.form-field input[type="checkbox"] {
+  width: auto;
+  flex: 0 0 auto;
+}
+
 .form-field input,
 .form-field select {
   padding: 0.55rem 0.6rem;

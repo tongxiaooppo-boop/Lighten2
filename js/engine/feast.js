@@ -37,11 +37,39 @@
     return FLEX_CAP_FIXED;
   }
 
-  async function reserveFeast(planDate, slot, size) {
+  async function reserveFeast(planDate, slot, size, itemId) {
     const profile = await getProfile();
-    const estimatedKcal = FEAST_SIZE_KCAL.hasOwnProperty(size) ? FEAST_SIZE_KCAL[size] : FEAST_SIZE_KCAL.M;
+    let estimatedKcal = null;
+    let itemName = null;
 
-    const entry = { plan_date: planDate, slot: slot, size: size, estimated_kcal: estimatedKcal, status: "reserved" };
+    if (itemId) {
+      const taiwanItems = await getTaiwanItems();
+      const taiwanItem = taiwanItems.find(function (it) { return it.id === itemId; });
+      if (taiwanItem) {
+        estimatedKcal = taiwanItem.kcal_rep != null ? taiwanItem.kcal_rep : round1((taiwanItem.kcal_low + taiwanItem.kcal_high) / 2);
+        itemName = taiwanItem.name;
+      } else {
+        const customFoods = await getCustomFoods();
+        const customFood = customFoods.find(function (f) { return f.id === itemId; });
+        if (customFood) {
+          estimatedKcal = customFood.kcal;
+          itemName = customFood.name;
+        }
+      }
+    }
+    if (estimatedKcal == null) {
+      estimatedKcal = FEAST_SIZE_KCAL.hasOwnProperty(size) ? FEAST_SIZE_KCAL[size] : FEAST_SIZE_KCAL.M;
+    }
+
+    const entry = {
+      plan_date: planDate,
+      slot: slot,
+      size: itemId ? null : size,
+      item_id: itemId || null,
+      item_name: itemName,
+      estimated_kcal: estimatedKcal,
+      status: "reserved",
+    };
     const saved = await addFeastReservation(entry);
 
     const weekStart = weekStartOf(planDate);

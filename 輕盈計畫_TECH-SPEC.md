@@ -122,7 +122,7 @@ lighten/
 
 ### 3.7 `raw_ingredients`（原型食材，27項，同 v3.1）
 ### 3.8 `taiwan_items`（台式熱門排行榜，50項，`kcal_low/kcal_high/kcal_rep`；原 v3.1 早/午/晚/宵夜 40 項，2026-09-25 新增飲料/西式速食類共 10 項，補上手搖飲料與連鎖速食的缺口，見 PRD「尚待解決問題」新增項）
-### 3.9 `custom_foods`（個人自訂，同 v3.1）
+### 3.9 `custom_foods`（個人自訂，同 v3.1；2026-09-25 起接上 UI，欄位：`id`/`name`/`kcal`/`protein_g`/`fiber_g`，讓使用者在「預約大餐」找不到對應台式品項時自行輸入）
 
 ### 3.10 `daily_log`（實際攝取記錄）
 | 欄位 | 型別 | 說明 |
@@ -140,9 +140,10 @@ lighten/
 |---|---|---|
 | id | TEXT PK | |
 | plan_date / slot | — | slot 現支援 5 種：breakfast/lunch/afternoon_tea/dinner/snack（2026-09-25 新增 afternoon_tea） |
-| size | TEXT NULL | 'S'/'M'/'L'，對應概略估算 kcal（見 `FEAST_SIZE_KCAL` 常數，S=400/M=700/L=1200）。**2026-09-25 起改為選填**，選了 `taiwan_item_id` 就不需要 size |
-| taiwan_item_id | TEXT NULL | **（2026-09-25 新增）** 若使用者是從台式熱門品項清單挑選實際品項（而非小/中/大概略份量），存對應 `taiwan_items.id`；用來在畫面上顯示品項名稱 |
-| estimated_kcal | REAL | 有 `taiwan_item_id` 就用該品項的 `kcal_rep`（無則取 `kcal_low`/`kcal_high` 中間值）；否則依 size 換算或使用者微調 |
+| size | TEXT NULL | 'S'/'M'/'L'，對應概略估算 kcal（見 `FEAST_SIZE_KCAL` 常數，S=400/M=700/L=1200）。**2026-09-25 起改為選填**，選了 `item_id` 就不需要 size |
+| item_id | TEXT NULL | **（2026-09-25 新增，命名比照 3.10 `daily_log` 的 `item_id`）** 若使用者選了實際品項（而非小/中/大概略份量），存對應的 id——可能來自 `taiwan_items.id` 或 `custom_foods.id`（兩者 id 前綴不重疊，查詢時兩個 store 都查一次即可判斷來源，不用另存 `source_type`） |
+| item_name | TEXT NULL | **（2026-09-25 新增）** 對應品項的顯示名稱（`taiwan_items.name` 或 `custom_foods.name`），畫面上顯示用 |
+| estimated_kcal | REAL | 有 `item_id` 就用該品項的代表熱量（`taiwan_items.kcal_rep`，無則取 `kcal_low`/`kcal_high` 中間值；或 `custom_foods.kcal`）；否則依 size 換算或使用者微調 |
 | status | TEXT | 'reserved' / 'confirmed' / 'cancelled' |
 | daily_log_id | TEXT NULL | confirmed 後關聯 3.10 |
 

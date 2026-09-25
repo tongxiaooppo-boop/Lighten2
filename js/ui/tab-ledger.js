@@ -7,6 +7,15 @@
   const SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", afternoon_tea: "下午茶", dinner: "晚餐", snack: "宵夜" };
   const SIZE_LABELS = { S: "小", M: "中", L: "大" };
 
+  // 餐別 → 台式熱門品項分類（下午茶暫用「飲料」分類頂替，西式速食先不納入）
+  const SLOT_TO_TAIWAN_CATEGORY = {
+    breakfast: "早餐",
+    lunch: "午餐",
+    dinner: "晚餐",
+    snack: "宵夜",
+    afternoon_tea: "飲料",
+  };
+
   // 台式熱門品項 id → 縮圖（查不到就不顯示，正常降級）
   const TAIWAN_ITEM_IMAGE = {
     bf01: "images/food/egg-pancake.jpg",
@@ -112,6 +121,7 @@
     container.innerHTML = sorted.map(function (r) {
       const slotLabel = SLOT_LABELS[r.slot] || r.slot || "";
       const sizeLabel = SIZE_LABELS[r.size] || r.size || "";
+      const itemLabel = r.item_name || sizeLabel;
       const statusText = r.status === "confirmed" ? "已確認" : r.status === "cancelled" ? "已取消" : "已預約";
       const actions = r.status === "reserved"
         ? '<button type="button" class="feast-confirm" data-id="' + escapeHtml(r.id) + '">確認</button>' +
@@ -119,7 +129,7 @@
         : "";
       return '<div class="ledger-item">' +
         '<div class="ledger-item-info">' +
-        '<span class="ledger-item-title">' + escapeHtml(r.plan_date) + " " + escapeHtml(slotLabel) + " · " + escapeHtml(sizeLabel) + "（約 " + escapeHtml(r.estimated_kcal) + " kcal）</span>" +
+        '<span class="ledger-item-title">' + escapeHtml(r.plan_date) + " " + escapeHtml(slotLabel) + " · " + escapeHtml(itemLabel) + "（約 " + escapeHtml(r.estimated_kcal) + " kcal）</span>" +
         '<span class="ledger-item-status">' + statusText + "</span>" +
         "</div>" +
         '<div class="ledger-item-actions">' + actions + "</div>" +
@@ -174,6 +184,53 @@
     }).join("");
   }
 
+  async function refreshFeastItemOptions() {
+    const slotSelect = document.querySelector("#feast-form select[name='slot']");
+    const itemSelect = $("#feast-item-select");
+    if (!slotSelect || !itemSelect) return;
+    const category = SLOT_TO_TAIWAN_CATEGORY[slotSelect.value];
+    if (!category) return;
+
+    const taiwanItems = await getTaiwanItems();
+    const matched = taiwanItems.filter(function (it) {
+      return it.category === category;
+    });
+    const taiwanHtml = matched.map(function (it) {
+      const kcal = it.kcal_rep != null ? it.kcal_rep : Math.round((it.kcal_low + it.kcal_high) / 2);
+      return '<option value="' + escapeHtml(it.id) + '">' + escapeHtml(it.name) + "（約 " + escapeHtml(kcal) + " kcal）</option>";
+    }).join("");
+
+    const customFoods = await getCustomFoods();
+    const customHtml = customFoods.length > 0
+      ? '<optgroup label="我的自訂食物">' +
+        customFoods.map(function (f) {
+          return '<option value="' + escapeHtml(f.id) + '">' + escapeHtml(f.name) + "（約 " + escapeHtml(f.kcal) + " kcal）</option>";
+        }).join("") +
+        "</optgroup>"
+      : "";
+
+    itemSelect.innerHTML =
+      '<option value="">不指定，用左邊份量估算</option>' +
+      taiwanHtml +
+      customHtml +
+      '<option value="__custom_new__">自行輸入名稱與熱量…</option>';
+  }
+
+  function onItemSelectChange() {
+    const itemSelect = $("#feast-item-select");
+    const customRow = $("#feast-custom-food-row");
+    if (!itemSelect || !customRow) return;
+    if (itemSelect.value === "__custom_new__") {
+      customRow.hidden = false;
+    } else {
+      customRow.hidden = true;
+      ["custom_food_name", "custom_food_kcal", "custom_food_protein", "custom_food_fiber"].forEach(function (name) {
+        const el = document.querySelector("#feast-form [name='" + name + "']");
+        if (el) el.value = "";
+      });
+    }
+  }
+
   async function render() {
     const status = $("#ledger-status");
     let profile;
@@ -213,9 +270,35 @@
       alert("請選擇日期。");
       return;
     }
+    let itemId = fd.get("item_id") || null;
+    if (itemId === "__custom_new__") {
+      const name = (fd.get("custom_food_name") || "").trim();
+      const kcal = parseFloat(fd.get("custom_food_kcal"));
+      if (!name || !isFinite(kcal) || kcal <= 0) {
+        alert("請填寫自訂食物的名稱與熱量。");
+        return;
+      }
+      const protein = parseFloat(fd.get("custom_food_protein"));
+      const fiber = parseFloat(fd.get("custom_food_fiber"));
+      const saved = await addCustomFood({
+        name: name,
+        kcal: kcal,
+        protein_g: isFinite(protein) ? protein : null,
+        fiber_g: isFinite(fiber) ? fiber : null,
+      });
+      itemId = saved.id;
+    }
     try {
-      await reserveFeast(planDate, slot, size);
+      await reserveFeast(planDate, slot, size, itemId);
       form.elements["plan_date"].value = localDateStr();
+      form.elements["item_id"].value = "";
+      const customRow = $("#feast-custom-food-row");
+      if (customRow) customRow.hidden = true;
+      ["custom_food_name", "custom_food_kcal", "custom_food_protein", "custom_food_fiber"].forEach(function (name) {
+        const el = document.querySelector("#feast-form [name='" + name + "']");
+        if (el) el.value = "";
+      });
+      await refreshFeastItemOptions();
       await render();
     } catch (err) {
       console.error(err);
@@ -248,10 +331,25 @@
     const form = document.getElementById("feast-form");
     if (form) form.addEventListener("submit", onReserve);
 
+    const slotSelect = document.querySelector("#feast-form select[name='slot']");
+    if (slotSelect) {
+      slotSelect.addEventListener("change", function () {
+        const itemSelect = $("#feast-item-select");
+        if (itemSelect) itemSelect.value = "";
+        const customRow = $("#feast-custom-food-row");
+        if (customRow) customRow.hidden = true;
+        refreshFeastItemOptions();
+      });
+    }
+
+    const itemSelect = $("#feast-item-select");
+    if (itemSelect) itemSelect.addEventListener("change", onItemSelectChange);
+
     const listEl = document.getElementById("ledger-reservations");
     if (listEl) listEl.addEventListener("click", onAction);
 
     render();
     renderTaiwanRef();
+    refreshFeastItemOptions();
   });
 })();
