@@ -1,5 +1,5 @@
 // 輕盈計畫 (Lighten Plan) — 分頁二：今日建議
-// 依賴：database.js、nutrition.js、budget.js、matcher.js、recommend.js
+// 依賴：database.js、nutrition.js、budget.js、matcher.js、recommend.js、feast.js、tdee.js
 
 (function () {
   "use strict";
@@ -57,6 +57,16 @@
     const diff = day === 0 ? 6 : day - 1;
     d.setDate(d.getDate() - diff);
     return fmt(d);
+  }
+
+  function dateAddDays(dateStr, days) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    return fmt(d);
+  }
+
+  function shortDate(dateStr) {
+    return dateStr ? dateStr.slice(5).replace("-", "/") : "";
   }
 
   function isWeekend() {
@@ -118,8 +128,8 @@
   }
 
   // 頂部「今日剩餘預算」彙總卡：剩餘熱量（recalcTodayBudget 已算好）+ 今天蛋白質/纖維攝取量
-  // vs 目標 + 本週彈性點數剩餘。跟主推薦邏輯無關，獨立 fetch 週彈性帳本，失敗不影響主流程。
-  async function renderHero(remainingBudget, targets, todayLogs, profile) {
+  // + 近7天平均 vs 目標 + 體重趨勢校正提示（pending / 自動調整告知）。
+  async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile) {
     const hero = $("#today-hero");
     if (!hero) return;
     const eatenProtein = todayLogs.reduce(function (s, l) { return s + (Number(l.protein_g) || 0); }, 0);
@@ -128,14 +138,38 @@
     $("#today-hero-protein").textContent = Math.round(eatenProtein) + " / " + Math.round(targets.protein_g) + "g";
     $("#today-hero-fiber").textContent = Math.round(eatenFiber) + " / " + Math.round(targets.fiber_g) + "g";
 
-    const weekStart = mondayOfThisWeek();
-    let ledger = await getWeeklyLedger(weekStart);
-    if (!ledger || ledger.cap_kcal == null) {
-      const cap = computeWeeklyCapKcal(profile);
-      ledger = await updateWeeklyLedger(weekStart, (ledger && ledger.used_kcal) || 0, cap);
+    const recent = computeRecentAvgVsTarget(recentLogs, targets.targetKcal, profile.enabled_slots, 7);
+    const avgEl = $("#today-hero-week-avg");
+    if (avgEl) {
+      avgEl.textContent = recent.status === "ok"
+        ? "近7天平均 " + Math.round(recent.avgKcal) + "／目標 " + Math.round(recent.targetKcal) + " kcal"
+        : "資料不足";
     }
-    const flexRemaining = Math.max(0, (ledger.cap_kcal || 0) - (ledger.used_kcal || 0));
-    $("#today-hero-flex").textContent = "剩 " + Math.round(flexRemaining) + " kcal";
+
+    // 校正提示：pending 或自動調整告知，只顯示其中一個。
+    const promptEl = $("#today-hero-calibration");
+    if (promptEl) {
+      let html = "";
+      try {
+        const state = await getTdeeState();
+        const today = localDateStr();
+        if (state.pending) {
+          html = '<button type="button" class="today-cal-link" id="today-cal-pending">基本資料有一項目標調整建議待你確認</button>';
+        } else if (state.announce_until && today <= state.announce_until && state.offset_kcal !== 0) {
+          html = '<p class="today-cal-announce">依近4週體重趨勢，每日目標從 ' + shortDate(state.effective_date) + ' 起調整為 ' + Math.round(targets.targetKcal) + ' kcal</p>';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      promptEl.innerHTML = html;
+      promptEl.hidden = html === "";
+      const pendingBtn = promptEl.querySelector("#today-cal-pending");
+      if (pendingBtn) {
+        pendingBtn.addEventListener("click", function () {
+          if (window.activateTab) window.activateTab("profile");
+        });
+      }
+    }
 
     hero.hidden = false;
   }
@@ -163,30 +197,37 @@
       return;
     }
 
-    const targets = calculateTargets(profile);
+    const targets = await getCalibratedTargets(profile);
     const today = localDateStr();
     const monday = mondayOfThisWeek();
+    const sevenAgo = dateAddDays(today, -6);
 
-    const [todayLogs, weekLogs, todayReservations] = await Promise.all([
+    const [todayLogs, weekLogs, recentLogs, todayReservations] = await Promise.all([
       getDailyLogs({ start: today, end: today }),
       getDailyLogs({ start: monday, end: today }),
+      getDailyLogs({ start: sevenAgo, end: today }),
       getFeastReservations({ status: "reserved", start: today, end: today }),
     ]);
 
-    // 2026-09-25 二輪重構：「預約大餐」不再直接扣彈性點數，改成「事先幫其他時段重新分配預算」——
-    // 把今天還「預約中」（還沒吃、還沒確認）的大餐當成暫時的紀錄餵給 recalcTodayBudget，
-    // 讓其他還沒吃的時段配額提前反映「等一下要吃大餐」這件事，不用等到真的記錄下去才看到配額變少。
+    // 大餐當天：「預約中」的大餐當成暫時紀錄餵給 recalcTodayBudget，讓其他還沒吃的時段配額提前反映。
     const pseudoLogsForBudget = todayLogs.concat(
       todayReservations.map(function (r) {
         return { slot: r.slot, kcal: r.estimated_kcal };
       })
     );
     const remainingBudget = recalcTodayBudget(targets.targetKcal, pseudoLogsForBudget, profile.enabled_slots);
-    const hardConstraints = checkHardConstraints(weekLogs, profile);
-    // 彈性帳本改成逐日結算（見 feast.js），每次進這個分頁順便結算一次「昨天以前」還沒結算的日子。
-    settleWeeklyLedger(profile).catch(function (err) { console.error(err); });
 
-    renderHero(remainingBudget, targets, todayLogs, profile).catch(function (err) { console.error(err); });
+    // Part 7：預約中的大餐也要影響蛋白質/纖維缺口。把每筆預約的巨量營養素解回後，
+    // 跟 weekLogs concat 傳給 checkHardConstraints（預約還沒寫進 daily_log，concat 不會重複計算）。
+    const reservationMacros = await Promise.all(
+      todayReservations.map(async function (r) {
+        const resolved = await resolveFeastItem(r.item_id, r.size);
+        return { log_date: today, slot: r.slot, protein_g: resolved.protein_g, fiber_g: resolved.fiber_g };
+      })
+    );
+    const hardConstraints = checkHardConstraints(weekLogs.concat(reservationMacros), profile);
+
+    renderHero(remainingBudget, targets, todayLogs, recentLogs, profile).catch(function (err) { console.error(err); });
 
     const recs = await getTodayRecommendation(
       remainingBudget,

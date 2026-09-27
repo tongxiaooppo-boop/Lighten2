@@ -189,7 +189,10 @@
           <li>膳食纖維：<span id="target-fiber"></span> g</li>
           <li>淨碳水：<span id="target-netcarb"></span> g</li>
         </ul>
-        <p id="calibrated-target-row" class="calibrated-row" hidden>本週校正後每日預算：<span id="calibrated-target"></span> kcal</p>
+        <section id="calibration-card" class="calibration-card" hidden>
+          <h4>體重趨勢校正</h4>
+          <div id="calibration-body"></div>
+        </section>
         <p id="target-warning" class="target-warning" hidden>⚠️ 已套用熱量安全下限（女性 1200 kcal／男性 1500 kcal），請留意熱量攝取不宜過低。</p>
       </div>
 
@@ -227,10 +230,11 @@
             <div class="today-hero-stat-value" id="today-hero-fiber">0 / 0g</div>
           </div>
           <div class="today-hero-stat">
-            <div class="today-hero-stat-label">週彈性</div>
-            <div class="today-hero-stat-value" id="today-hero-flex">剩 0 kcal</div>
+            <div class="today-hero-stat-label">近7天平均</div>
+            <div class="today-hero-stat-value" id="today-hero-week-avg">資料不足</div>
           </div>
         </div>
+        <div id="today-hero-calibration" class="today-hero-calibration" hidden></div>
       </section>
       <div class="today-toolbar">
         <button type="button" id="today-refresh" class="secondary-btn">重新整理建議</button>
@@ -263,10 +267,9 @@
       <p id="ledger-status" class="status-text" aria-live="polite"></p>
 
       <section class="ledger-progress">
-        <h3>本週彈性點數</h3>
-        <p>已用 <span id="ledger-used">0</span> / 上限 <span id="ledger-cap">0</span> kcal</p>
-        <div class="progress-bar"><div id="ledger-bar-fill" class="progress-fill"></div></div>
-        <p class="taiwan-ref-note">每天自動結算：實際吃的比目標多，記進「已用」；比目標少一點，退回一些額度（有上限，且不會因為吃太少而多退）。不是靠特定食物才會扣點數。</p>
+        <h3>近7天平均</h3>
+        <p id="ledger-recent-avg" class="status-text">資料不足</p>
+        <p class="taiwan-ref-note">以「完整記錄日」（當天所有開啟時段都有記錄）計算近 7 天平均攝取熱量，與每日目標比較。</p>
       </section>
 
       <section class="ledger-form">

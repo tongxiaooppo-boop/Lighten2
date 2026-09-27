@@ -1,5 +1,5 @@
 // 輕盈計畫 (Lighten Plan) — 分頁四：本週總覽
-// 依賴：database.js（getProfile/getDailyLogs/getWeeklyLedger）、nutrition.js（calculateTargets）、feast.js（computeWeeklyCapKcal）
+// 依賴：database.js（getProfile/getDailyLogs）、nutrition.js（calculateTargets）、tdee.js（getCalibratedTargets）
 // 原則：只顯示「週平均是否仍在目標內」的中性總結，不做逐日評判性呈現。
 
 (function () {
@@ -112,7 +112,7 @@
 
     let targets;
     try {
-      targets = calculateTargets(profile);
+      targets = await getCalibratedTargets(profile);
     } catch (err) {
       console.error(err);
       if (status) status.textContent = "計算目標失敗。";
@@ -152,25 +152,6 @@
     const avgProtein = totalProtein / daysElapsed;
     const avgFiber = totalFiber / daysElapsed;
 
-    // 彈性點數剩餘：讀 weekly_flex_ledger；若尚無 ledger，用 computeWeeklyCapKcal 當上限。
-    let cap = null;
-    let used = 0;
-    try {
-      const ledger = await getWeeklyLedger(weekStart);
-      if (ledger && ledger.cap_kcal != null) cap = ledger.cap_kcal;
-      if (ledger) used = ledger.used_kcal || 0;
-    } catch (err) {
-      console.error(err);
-    }
-    if (cap == null) {
-      try {
-        cap = computeWeeklyCapKcal(profile);
-      } catch (err) {
-        cap = 0;
-      }
-    }
-    const remaining = Math.max(0, (cap || 0) - used);
-
     const calEl = $("#week-cal-summary");
     if (calEl) {
       if (logs.length === 0) {
@@ -198,7 +179,18 @@
 
     const flexEl = $("#week-flex");
     if (flexEl) {
-      flexEl.textContent = "彈性點數：剩餘 " + Math.round(remaining) + "／上限 " + Math.round(cap || 0) + " kcal";
+      let recent;
+      try {
+        const sevenAgo = dateAddDays(today, -6);
+        const recentLogs = await getDailyLogs({ start: sevenAgo, end: today });
+        recent = computeRecentAvgVsTarget(recentLogs, targets.targetKcal, profile.enabled_slots, 7);
+      } catch (err) {
+        console.error(err);
+        recent = { status: "insufficient" };
+      }
+      flexEl.textContent = recent.status === "ok"
+        ? "近7天平均 " + Math.round(recent.avgKcal) + "／目標 " + Math.round(recent.targetKcal) + " kcal"
+        : "近7天平均：資料不足";
     }
 
     renderDays(byDate, weekStart, daysElapsed);
