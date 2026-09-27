@@ -492,6 +492,12 @@ body {
   margin: 0;
 }
 
+.rec-reservation-note {
+  color: #3A2E22;
+  font-weight: 600;
+  margin: 0 0 0.6rem;
+}
+
 .dislike-btn {
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
