@@ -479,9 +479,8 @@
     var targets = await getCalibratedTargets(profile);
     var today = localDateStr();
     var todayLogs = await getDailyLogs({ start: today, end: today });
-    // 現成品項模式：排除整套便當（Part 0）；飲料從 ItemPicker 裡 role==='drink' 的品項挑。
+    // 現成品項模式：排除整套便當（Part 0）；飲料直接從過濾結果裡 role==='drink' 的品項挑。
     var filtered = await window.ItemPicker.filterForSlot(slot, profile, { excludeWholeMeals: true });
-    var drinkFiltered = await window.ItemPicker.filterForSlot(slot, profile, { excludeWholeMeals: true });
     var composeAxes = await window.ItemPicker.loadComposeAxes();
     manualPicker.slot = slot;
     manualPicker.mode = "items";
@@ -494,8 +493,8 @@
     manualPicker.compose = {
       axes: composeAxes, archetype: null, protein: null, staple: null, vegetable: null, seasoning: null, method: null,
       primaryScale: 1, drink: null,
-      drinkItems: drinkFiltered.pass.filter(function (it) { return it.role === "drink"; }),
-      drinkBlocked: drinkFiltered.blocked.filter(function (b) { return b.item.role === "drink"; }),
+      drinkItems: filtered.pass.filter(function (it) { return it.role === "drink"; }),
+      drinkBlocked: filtered.blocked.filter(function (b) { return b.item.role === "drink"; }),
     };
     var labelEl = $("#manual-picker-slot-label");
     if (labelEl) labelEl.textContent = SLOT_LABELS[slot] || slot;
