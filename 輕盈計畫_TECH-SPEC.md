@@ -92,14 +92,9 @@ lighten/
 | log_date | TEXT PK | ISO日期 |
 | weight_kg | REAL | 定期回填，供 `tdee.js` 計算7日移動平均 |
 
-### 3.3 `tdee_calibration_log`（新增，v4.0）
-| 欄位 | 型別 | 說明 |
-|---|---|---|
-| week_start_date | TEXT PK | 該週週一 |
-| weight_trend_7d_avg | REAL | 7日體重移動平均 |
-| estimated_tdee | REAL | 校正後 TDEE |
-| target_kcal | REAL | 校正後每日預算，UI直接顯示這個數字 |
-| calibration_note | TEXT | 內部除錯用（例如「體重連續2週未如預期下降，下修200kcal」），**不對使用者展示逐項運動明細** |
+### 3.3 `tdee_state`（2026-09-27 三輪審核後改為「體重趨勢自動校正」的狀態機，取代舊 `tdee_calibration_log`）
+
+欄位定義見 3.12 節；舊的 `tdee_calibration_log`（每週一筆的結構）與「冷卻期／等待確認／隔天生效」這種單一狀態機對不上，已整個移除，歷史紀錄改放 `tdee_state.history`。
 
 ### 3.4 `protein_sources` / `staples` / `sauce_methods`（新增，v4.0，取代 `recipes`；2026-09-25 新增第4軸「蔬菜」，取自 `raw_ingredients.json` 的 `category=蔬菜`）
 四軸各自一張小表：`id`、`name`、`kcal_100g`/`protein_100g`/`carb_100g`/`fat_100g`/`fiber_100g`（或每份標準克數的營養值）、`diet_tags`、`allergen_tags`、`prep_tier`（🟢/🟡/🔴，該軸帶來的備餐難度貢獻）。「蔬菜」軸沒有獨立的 JSON 檔，直接從 `raw_ingredients.json`（3.7節）篩 `category === "蔬菜"` 取得（目前 4 種：花椰菜/菠菜/芹菜/春筍）。
@@ -150,23 +145,27 @@ lighten/
 | status | TEXT | 'reserved' / 'confirmed' / 'cancelled' |
 | daily_log_id | TEXT NULL | confirmed 後關聯 3.10 |
 
-### 3.12 `weekly_flex_ledger`（新增，v4.0，取代舊 flex_quota_log 的額度角色）
-| 欄位 | 型別 | 說明 |
-|---|---|---|
-| week_start_date | TEXT PK | |
-| cap_kcal | REAL | 依 goal_mode 與熱量赤字換算的週彈性點數上限，**與運動無關** |
-| used_kcal | REAL | 已確認的 feast + 台式原版選擇累計消耗點數 |
+### 3.12 `tdee_state`（2026-09-27 三輪審核後新增，取代舊 `weekly_flex_ledger` 與 `tdee_calibration_log`）
 
-### 3.13 `overage_smoothing_log`（新增，v4.0）
+存放於 `settings` store，key 固定 `"tdee_state"`，整份物件一筆。各欄位意義見 `collab/opus-review-log/2026-09-27-tdee-calibration-offset-wiring.md` 第 1 節：
+
 | 欄位 | 型別 | 說明 |
 |---|---|---|
-| id | TEXT PK | |
-| origin_week_start_date | TEXT | |
-| overage_kcal | REAL | 超出週彈性點數的量 |
-| smoothing_days | INTEGER | 1–3 |
-| daily_cap_pct | REAL | ≤15% |
-| applied_dates_json | TEXT | 已攤還到哪幾天，避免重複扣 |
-| resolved | INTEGER | 0/1 |
+| offset_kcal | REAL | 已採用的「累計」offset，永遠限制在 [−300, +300] |
+| prev_offset_kcal | REAL | `effective_date` 之前（含今天）用的 offset，做到「隔天生效」 |
+| effective_date | TEXT NULL | `offset_kcal` 從這天開始生效；null 表示已生效 |
+| last_adjusted_date | TEXT NULL | 最後一次 offset 真的改變的日子，14 天冷卻期從這天算 |
+| last_evaluated_date | TEXT NULL | 每日防重跑游標 |
+| goal_mode / mode_since_date | TEXT / TEXT NULL | 上次評估的模式與目前模式開始日，用來偵測模式切換 |
+| pending | OBJECT NULL | 只有「維持模式下修」會用到：`{ delta_kcal, proposed_offset_kcal, created_date, slope_kg_per_week, ewma_latest_kg, goal_mode }` |
+| dismissed_until | TEXT NULL | 按「先不要」後，這天之前不再詢問 |
+| announce_until | TEXT NULL | 自動調整後，今日建議卡顯示告知到這天 |
+| last_result | OBJECT NULL | `{ date, status, slope_kg_per_week, ewma_latest_kg, n_weighins, note }` 給 UI 顯示用 |
+| history | ARRAY | 最多 20 筆 `{ date, from, to, source, slope_kg_per_week }` |
+
+### 3.13 `overage_smoothing_log`（2026-09-27 已停用）
+
+舊的超額攤還資料表，連同 `planOverageSmoothing()` 一起移除，不再讀寫（IndexedDB 舊資料放著不讀）。
 
 ### 3.14 `exercise_log`（獨立追蹤，v4.0；2026-09-25 修訂）
 | 欄位 | 型別 | 說明 |
@@ -195,19 +194,28 @@ const INTENSITY_MULTIPLIER = { "低": 0, "中": 1, "高": 2 }; // 低強度不�
 
 ### 4.1 `engine/nutrition.js`
 ```js
-function calculateTargets(profile) {
-  // 回傳: { bmr, tdee, targetKcal, flooredWarning, protein_g, fat_g, carb_g, fiber_g, netCarb_g }
-  // 僅作起點值，PRD 第3節1–6項
+function calculateTargets(profile, opts /* { offsetKcal } 選填 */) {
+  // 回傳: { bmr, tdee, targetKcal, baseTargetKcal, offsetKcal, flooredWarning,
+  //         protein_g, fat_g, carb_g, fiber_g, netCarb_g }
+  // 起點值公式（PRD 第3節1–6項）；opts.offsetKcal 是體重趨勢校正的累計 offset，
+  // 加在目標熱量上（不加在 TDEE），熱量下限永遠優先，脂肪/碳水用加了 offset 之後的 targetKcal 推算。
 }
 ```
 
-### 4.2 `engine/tdee.js`（新增）
+### 4.2 `engine/tdee.js`（2026-09-27 整個重寫為「體重趨勢自動校正」）
 ```js
-// 輸入：weight_log 近8週資料、daily_log 近8週熱量加總
-// 回傳：{ weightTrend7d, estimatedTdee, targetKcal, note }
-function calibrateWeeklyTdee(weightLogs, dailyLogs, profile) {
-  // 邏輯對照 PRD 3.7節：7日體重移動平均 + 實際攝取回歸校正
-  // 寫入 tdee_calibration_log，UI 只顯示 targetKcal，不顯示逐項運動明細
+// 狀態機放在 settings store 的 tdee_state（見 3.12 節）。
+// 對外函式（window.*）：
+//   ensureDailyCalibration(profile)  同一天共用一個 Promise，避免多分頁同時觸發多次評估
+//   runCalibrationNow(profile)       記錄體重/存完 profile 後強制重跑一次
+//   confirmPendingCalibration()      維持模式下修：按「套用」
+//   dismissPendingCalibration()      按「先不要」
+//   resetCalibrationOffset()         重設校正
+//   getCalibratedTargets(profile, dateStr) 取校正後目標（所有分頁取目標都走這裡）
+async function evaluateCalibration(profile, { force }) {
+  // EWMA(α=0.1) 平滑 → 28 天 OLS 斜率(kg/週) → 依 RULES 門檻判斷方向
+  // → 冷卻期(14天) → 累計上限(±300) → 熱量下限 → 下修前攝取檢查(intake_gap)
+  // → 維持下修 pending(需確認) / 其他自動套用。完整 12 步見 opus-review-log 第 3 節。
 }
 ```
 
@@ -348,14 +356,13 @@ function planOverageSmoothing(overageKcal, upcomingDaysBudget, safetyFloor) { /*
 ```js
 async function getProfile() / saveProfile(profile)
 async function addWeightLog(entry) / getWeightLogs(dateRange)
-async function getTdeeCalibration(weekStartDate) / saveTdeeCalibration(entry)
+async function getTdeeState() / saveTdeeState(state)
 async function getRecipeTemplates(filter) / getRecipeFeedback(id) / saveRecipeFeedback(id, rating)
 async function getRawIngredients()
 async function getTaiwanItems(filter)
 async function getCustomFoods() / addCustomFood(food)
-async function addDailyLog(entry) / getDailyLogs(dateRange)
-async function reserveFeast(entry) / updateFeastStatus(id, status, daylogId)
-async function getWeeklyLedger(weekStartDate) / updateWeeklyLedger(weekStartDate, usedKcal)
+async function addDailyLog(entry) / getDailyLogs(dateRange) / removeDailyLog(id)
+async function addFeastReservation(entry) / getFeastReservations(filter) / updateFeastStatus(id, status, daylogId)
 async function addOverageSmoothing(entry) / getOverageSmoothing(weekStartDate)
 async function addExerciseLog(entry) / getExerciseLogs(dateRange)
 async function getSetting(key) / setSetting(key, value)
