@@ -151,7 +151,14 @@
     // 2026-09-27 整案審查 B2：原本「記錄天數不夠」跟「攝取偏高」共用 intake_gap，只是記錄不完整的人
     // 也會收到「平均攝取略高於目標」。拆成兩個狀態；intake_gap 留給升級前存下來的舊結果。
     if (status === "intake_log_short") return "完整記錄的天數還不夠，暫不調整";
-    if (status === "intake_high") return "近4週完整記錄日的平均攝取高於目前目標，體重變化可能反映的是這部分，所以先不調整";
+    // 只陳述數字跟規則，不歸因（使用者 2026-09-27 拍板：明講，但不說「體重變化是因為吃多」）。
+    if (status === "intake_high") {
+      const lr = state.last_result || {};
+      const nums = lr.avg_intake_kcal != null && lr.target_kcal != null
+        ? "近4週完整記錄日平均攝取 " + lr.avg_intake_kcal + " kcal，目前目標 " + lr.target_kcal + " kcal。"
+        : "近4週完整記錄日的平均攝取高於目前目標。";
+      return nums + "平均攝取接近目標之前，系統不會調低目標。";
+    }
     if (status === "intake_gap") return "暫不調整";
     if (status === "dismissed") return "14 天內不會再提醒這件事";
     if (status === "insufficient") return "目前資料不足以判斷是否需要調整";

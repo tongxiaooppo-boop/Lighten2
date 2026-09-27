@@ -797,6 +797,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 620,
     "kcal_high": 850,
     "kcal_rep": 700,
@@ -815,6 +816,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 500,
     "kcal_high": 650,
     "kcal_rep": null,
@@ -850,6 +852,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 150,
     "kcal_high": 300,
     "kcal_rep": null,
@@ -905,6 +908,7 @@
       "breakfast",
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 170,
     "kcal_high": 190,
     "kcal_rep": 180,
@@ -960,6 +964,7 @@
       "breakfast",
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 220,
     "kcal_high": 250,
     "kcal_rep": 232,
@@ -1141,6 +1146,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 200,
     "kcal_high": 310,
     "kcal_rep": 255,
@@ -1161,6 +1167,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 180,
     "kcal_high": 270,
     "kcal_rep": 220,
@@ -1181,6 +1188,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 270,
     "kcal_high": 320,
     "kcal_rep": 300,
@@ -1201,6 +1209,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 300,
     "kcal_high": 550,
     "kcal_rep": null,
@@ -1221,6 +1230,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 120,
     "kcal_high": 200,
     "kcal_rep": 160,
@@ -1240,6 +1250,7 @@
     "valid_slots": [
       "afternoon_tea"
     ],
+    "is_treat": true,
     "kcal_low": 150,
     "kcal_high": 220,
     "kcal_rep": 180,

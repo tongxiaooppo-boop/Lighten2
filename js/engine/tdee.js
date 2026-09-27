@@ -321,6 +321,11 @@
         }
         // 「記錄天數不夠」跟「攝取偏高」分開，畫面才不會對只是記錄不完整的人說攝取偏高（整案審查 B2）。
         result.status = completeDays < 14 ? "intake_log_short" : "intake_high";
+        if (result.status === "intake_high") {
+          // 給畫面直接陳述數字與規則用，不做「體重變化是因為吃多」這種歸因。
+          result.avg_intake_kcal = Math.round(avgIntake);
+          result.target_kcal = Math.round(curTarget);
+        }
         state.last_result = result;
         state.last_evaluated_date = today;
         await saveTdeeState(state);

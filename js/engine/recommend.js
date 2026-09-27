@@ -500,6 +500,9 @@
       .map(fromConvenience);
     const taiwanItems = axes.taiwanItems
       .filter(function (it) { return !isTooWideRange(it); }) // 熱量區間太寬，不夠精準，不進推薦池
+      // 含糖飲料、甜點零食（is_treat）不主動推薦：系統推薦等於「建議你吃這個」。不是禁止，
+      // 使用者想吃照樣能在美饗日曆自己選、自己記錄（使用者 2026-09-27 拍板）。
+      .filter(function (it) { return !it.is_treat; })
       .map(fromTaiwan);
     // 超商品項、宅配／連鎖健康餐盒（channel=delivery）、台式外食各自獨立展開，不跨來源混搭。
     [

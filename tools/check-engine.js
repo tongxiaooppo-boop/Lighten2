@@ -95,6 +95,7 @@ async function main() {
     check(Array.isArray(c.valid_slots) && c.valid_slots.length > 0, c.id + " 沒有適用時段");
     if (c.is_composed) return;
     check(c.components.length <= 3, c.id + " 超過 3 件");
+    check(!c.components.some((uid) => itemByUid[uid].is_treat), c.id + " 含不主動推薦的含糖/零食品項");
     check(drinkCount(c) <= 1, c.id + " 一個組合裡有兩杯以上飲料");
     c.valid_slots.forEach((slot) => {
       c.components.forEach((uid) => check(itemByUid[uid].valid_slots.indexOf(slot) !== -1, c.id + " 的成分 " + uid + " 不適用 " + slot));

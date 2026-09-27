@@ -414,6 +414,11 @@ body {
   margin: 0.2rem 0 0.7rem;
 }
 
+/* display:flex 會蓋過 [hidden] 的預設 display:none，全部時段記錄完時要真的藏起來 */
+.today-hero-kcal[hidden] {
+  display: none;
+}
+
 .today-hero-kcal-value {
   font-family: "Noto Serif TC", serif;
   color: #C1652F;
