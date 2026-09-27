@@ -34,6 +34,10 @@
 6. **這輪（「自己煮」＋整套便當排除）沒有同步 PRD／TECH-SPEC**——上一輪（Part 8）有做文件同步，這輪範圍小，Cline 沒有補文件段落，之後要記得把「自己煮」模式、`excludeWholeMeals`、`source_type: manual_composed` 這些寫進 PRD 5.7 節或新增小節。
 7. **手動組餐整包功能都還沒有人用瀏覽器實際操作驗證過**（見上面第1點），只做了程式碼審查＋自動化測試。
 
+## 新增：快取破壞（cache-busting）機制
+
+使用者截圖回報「自己煮」模式顯示不正常，診斷後發現是**瀏覽器快取舊版 `.js` 檔案**（`index.html` 換了但 `<script src>` 檔名沒變，瀏覽器不會重新抓）。已經在 `index.html` 所有本機 `<link>`/`<script>` 加上 `?v=20260927d` 版本字串。**以後每次改動任何 `.js`／`css/style.css` 並要 push 時，記得把 `index.html` 裡這 15 個 `?v=` 全部改成新字串**（例如日期+遞增字母），不然使用者瀏覽器可能繼續吃到舊版檔案，卻誤以為是程式壞了。這個專案沒有建置流程，只能手動維護這個版本字串。
+
 ## 部署狀態
 
 GitHub Pages（https://tongxiaooppo-boop.github.io/lighten/）已經是最新版，我在推送後有直接 curl 確認過線上頁面內容包含這輪新增的功能，不是舊快取。
