@@ -416,6 +416,21 @@
       });
     });
 
+    // 2026-09-27：查了幾份營養師整理的「超商減脂午餐」實測組合（7-11/全家版），常見型態是
+    // 「餐盒/三明治 ＋ 沙拉 ＋（豆漿或茶葉蛋）」，不是只有「主餐＋一款飲品/點心棒」。
+    // 「沙拉」分類原本只會單獨出現，沒被當成可以附加在其他主餐上的配菜，這裡補上。
+    const SIDE_CATEGORIES = { "沙拉": true };
+    const sides = validConvenienceItems.filter(function (it) { return SIDE_CATEGORIES[it.category]; });
+    const realMains = mains.filter(function (it) { return !SIDE_CATEGORIES[it.category]; });
+    realMains.forEach(function (main) {
+      sides.forEach(function (side) {
+        combos.push(toConvenienceCombo([main, side]));
+        extras.forEach(function (extra) {
+          combos.push(toConvenienceCombo([main, side, extra]));
+        });
+      });
+    });
+
     // ---------- 3. 台式熱門品項（外送/餐廳） ----------
     // 2026-09-25 二輪重構：移除 uses_flex 額度判斷，改跟其他來源一樣單純比熱量貼近度，
     // 彈性帳本改成逐日結算（daily_log 本身就是唯一真相來源），不用在推薦階段另外攔一次。
