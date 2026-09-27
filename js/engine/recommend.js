@@ -511,8 +511,10 @@
     const breakfastDrinksForCombo = teaDrinksForCombo.filter(function (it) {
       return BREAKFAST_DRINK_IDS.indexOf(it.id) !== -1;
     });
+    // bundled_drink 標記的品項本身已經含一杯飲料（例如麥當勞滿福堡套餐已經算進美式咖啡），
+    // 不能再跟飲料池配對，否則會湊出「早餐店品項+已經內含的咖啡+又一杯拿鐵」這種怪組合。
     const breakfastMains = axes.taiwanItems.filter(function (it) {
-      return it.category === "早餐" && !isTooWideRange(it);
+      return it.category === "早餐" && !isTooWideRange(it) && !it.bundled_drink;
     });
     breakfastMains.forEach(function (main) {
       breakfastDrinksForCombo.forEach(function (drink) {
