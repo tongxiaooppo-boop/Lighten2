@@ -802,6 +802,22 @@ body {
   color: #8A7A63;
 }
 
+/* 硬性過濾擋掉的品項：灰階、不可點、顯示原因 */
+.feast-item-card.is-blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #E8E0D4;
+}
+.feast-item-card.is-blocked:hover {
+  border-color: #E8E0D4;
+}
+.feast-item-card-reason {
+  font-size: 0.7rem;
+  color: #a33;
+  overflow-wrap: break-word;
+  text-align: center;
+}
+
 /* ===== 響應式：小螢幕（手機） ===== */
 @media (max-width: 600px) {
   /* 分頁按鈕列：單列可橫向捲動，避免換行錯位／文字截斷 */

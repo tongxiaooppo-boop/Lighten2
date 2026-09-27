@@ -116,6 +116,15 @@
     return typeof v === "number" && isFinite(v) ? v : 0;
   }
 
+  // 2026-09-27 資料正確性修正（Opus 二輪審核條件 1）：缺資料要寫 null，不能寫 0。
+  // 超商/台式品項完全沒有 fat_g/carb_g 資料，過去 fromTaiwan/fromConvenience 把它寫死 0，
+  // 等於把「未知」存成「假的已知」。組合裡只要任一成員該欄位是 null，整個組合這欄就是 null；
+  // 否則才正常加總。蛋白質/纖維目前資料都有值，但統一套用避免以後任一項缺資料時算出 NaN。
+  function sumOrNull(members, field) {
+    if (members.some(function (m) { return m[field] == null; })) return null;
+    return round1(members.reduce(function (s, m) { return s + m[field]; }, 0));
+  }
+
   function tierRank(t) {
     return TIER_RANK.hasOwnProperty(t) ? TIER_RANK[t] : 2;
   }
@@ -191,6 +200,64 @@
     return dietTagSets.length > 0 && dietTagSets.every(function (tags) {
       return tagSatisfies(tags, dietRestriction);
     });
+  }
+
+  // 2026-09-27 新增：共用硬性過濾（過敏原 + 飲食限制 + 不吃食材），回傳 { ok, reason }。
+  // recommend.js 候選過濾、美饗日曆品項挑選器、手動組餐挑選器三處共用同一個函式，
+  // 確保同一個設定下三處擋掉的品項一致（Opus 條件 4 的安全漏洞修復）。
+  // item 有兩種形狀：recommend.js 的候選物件（有 diet_tag_sets/components/protein_name 等），
+  // 以及挑選器裡的單一品項（有 allergen_tags/diet_tags/uid），函式內部要能吃兩種。
+  function passesHardFilters(item, profile) {
+    const p = profile || {};
+
+    // 1. 過敏原：自訂食物略過（使用者不會替自己輸入的食物標過敏原），其餘照常判斷。
+    const userAllergens = normalizeAllergens(p.allergens);
+    const allergenTags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [UNVERIFIED_ALLERGEN];
+    if (!item.is_custom && !passesAllergens(allergenTags, userAllergens)) {
+      return { ok: false, reason: allergenTags.indexOf(UNVERIFIED_ALLERGEN) !== -1 ? "成分未確認" : "含過敏原" };
+    }
+
+    // 2. 飲食限制：單一品項沒有多成分概念時包成 [diet_tags || []]。
+    const dietTagSets = Array.isArray(item.diet_tag_sets) ? item.diet_tag_sets : [item.diet_tags || []];
+    if (!passesDiet(dietTagSets, p.diet_restriction)) {
+      return { ok: false, reason: "飲食限制未確認" };
+    }
+
+    // 3. 不吃食材：命中 profile.disliked_ingredients 就排除。
+    const disliked = Array.isArray(p.disliked_ingredients) ? p.disliked_ingredients : [];
+    if (disliked.length > 0) {
+      const hit = findDislikedHit(item, disliked);
+      if (hit) return { ok: false, reason: "你已設定不吃：" + hit };
+    }
+
+    return { ok: true, reason: null };
+  }
+
+  // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
+  //   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用名稱
+  //   - 現成品項：type='item'，key 用成分 uid（item.components）
+  function findDislikedHit(item, disliked) {
+    const keys = [];
+    if (item.is_composed) {
+      if (item.protein_name) keys.push({ type: "protein", key: item.protein_name });
+      if (item.staple_name) keys.push({ type: "staple", key: item.staple_name });
+      if (item.vegetable_name) keys.push({ type: "vegetable", key: item.vegetable_name });
+      if (item.sauce_name) keys.push({ type: "sauce", key: item.sauce_name });
+    } else {
+      const comps = Array.isArray(item.components) && item.components.length > 0
+        ? item.components
+        : (item.uid ? [item.uid] : []);
+      comps.forEach(function (uid) { keys.push({ type: "item", key: uid }); });
+    }
+    for (let i = 0; i < disliked.length; i++) {
+      const d = disliked[i];
+      for (let j = 0; j < keys.length; j++) {
+        if (d && d.type === keys[j].type && d.key === keys[j].key) {
+          return d.label || d.key;
+        }
+      }
+    }
+    return null;
   }
 
   function daysSince(dateStr) {
@@ -413,7 +480,7 @@
       return {
         uid: it.id, source_id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
         contains_drink: !!it.contains_drink, channel: it.channel === "delivery" ? "delivery" : "convenience",
-        kcal: num(it.kcal), protein_g: num(it.protein_g), carb_g: num(it.carb_g), fat_g: num(it.fat_g), fiber_g: num(it.fiber_g),
+        kcal: num(it.kcal), protein_g: num(it.protein_g), carb_g: it.carb_g != null ? num(it.carb_g) : null, fat_g: it.fat_g != null ? num(it.fat_g) : null, fiber_g: num(it.fiber_g),
         tier_rank: tierRank(it.tier), diet_tags: it.diet_tags || [],
         allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED_ALLERGEN],
         note: contentNote(it.note), is_taiwan: false,
@@ -425,7 +492,7 @@
         uid: "tw_" + it.id, source_id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
         contains_drink: !!it.contains_drink, channel: "delivery",
         kcal: it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2),
-        protein_g: num(it.protein_g), carb_g: 0, fat_g: 0, fiber_g: num(it.fiber_g),
+        protein_g: num(it.protein_g), carb_g: null, fat_g: null, fiber_g: num(it.fiber_g),
         tier_rank: 0, // 外食品項對使用者來說零烹調成本
         diet_tags: [], // 台式品項沒有飲食限制標記：有設定飲食限制的使用者一律看不到，刻意的保守預設
         allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED_ALLERGEN],
@@ -446,10 +513,10 @@
         protein_name: null,
         content_note: notes.length > 0 ? notes.join("；") : null,
         kcal: round1(members.reduce(function (s, m) { return s + m.kcal; }, 0)),
-        protein_g: round1(members.reduce(function (s, m) { return s + m.protein_g; }, 0)),
-        carb_g: round1(members.reduce(function (s, m) { return s + m.carb_g; }, 0)),
-        fat_g: round1(members.reduce(function (s, m) { return s + m.fat_g; }, 0)),
-        fiber_g: round1(members.reduce(function (s, m) { return s + m.fiber_g; }, 0)),
+        protein_g: sumOrNull(members, "protein_g"),
+        carb_g: sumOrNull(members, "carb_g"),
+        fat_g: sumOrNull(members, "fat_g"),
+        fiber_g: sumOrNull(members, "fiber_g"),
         tier: RANK_TO_TIER[maxTierRank],
         tier_rank: maxTierRank,
         diet_tag_sets: members.map(function (m) { return m.diet_tags; }),
@@ -523,11 +590,20 @@
   // allergens: profile.allergens（新版為固定詞彙陣列，舊版自由文字字串也接受）
   // skipSlots: { slot: true } 不需要推薦的時段（已記錄／已預約／已關閉）。這些時段直接回傳 null，
   //   也不佔用跨時段的多樣性限制（2026-09-27 整案審查 A3：已吃的時段原本還會被推薦一個約 770 kcal 的新組合）。
-  async function getTodayRecommendation(remainingBudget, hardConstraints, mealPrefs, dietRestriction, allergens, skipSlots) {
-    const budgetBySlot = (remainingBudget && remainingBudget.perSlotSuggestion) || {};
+  // 依序分配後，時段當下配額低於此門檻就標記「額度用完」，不跑候選搜尋（Opus 條件 3）。
+  const LOW_BUDGET_THRESHOLD_KCAL = 150;
+
+  // remainingBudget: budget.js 回傳的 { perSlotSuggestion, remainingKcal }
+  // hardConstraints: matcher.js 回傳的 { proteinGapToday, fiberGapThisWeek }
+  // mealPrefs: profile.meal_prefs（5個時段各自的來源偏好），可為 null
+  // dietRestriction / allergens / dislikedIngredients: profile 的硬性過濾設定
+  // skipSlots: { slot: true } 不需要推薦的時段（已記錄／已預約／已關閉），回傳 null 不佔剩餘熱量池
+  // 7a（2026-09-27）：改成依序處理時段，前面時段挑到的真實品項熱量跟配額的差額自然帶到下一個時段，
+  // 這是 hero 大數字（全天剩餘）跟卡片加總對不上的根本修法。
+  async function getTodayRecommendation(remainingBudget, hardConstraints, mealPrefs, dietRestriction, allergens, skipSlots, dislikedIngredients) {
     const constraints = hardConstraints || { proteinGapToday: 0, fiberGapThisWeek: 0 };
-    const userAllergens = normalizeAllergens(allergens);
     const skip = skipSlots || {};
+    const filterProfile = { diet_restriction: dietRestriction, allergens: allergens, disliked_ingredients: dislikedIngredients };
 
     const combos = await buildCandidatePool();
 
@@ -544,20 +620,38 @@
     const usedItemIds = {};
 
     const result = {};
+    const weights = window.SLOT_WEIGHTS || { breakfast: 0.2, lunch: 0.3, afternoon_tea: 0.1, dinner: 0.3, snack: 0.1 };
+    // 全天剩餘熱量池：budget.js 已算好。依序處理時前面時段超出的差額往後帶。
+    const perSlot = (remainingBudget && remainingBudget.perSlotSuggestion) || {};
+    let pool = typeof (remainingBudget && remainingBudget.remainingKcal) === "number"
+      ? remainingBudget.remainingKcal
+      : SLOTS.reduce(function (sum, s) { return sum + (Number(perSlot[s]) || 0); }, 0);
+
     SLOTS.forEach(function (slot) {
       if (skip[slot]) {
         result[slot] = null;
         return;
       }
-      const budget = num(budgetBySlot[slot]);
+      // 還沒處理的時段 = 本時段 + 排在本時段之後且沒被 skip 的時段
+      const idx = SLOTS.indexOf(slot);
+      const remainingSlots = SLOTS.filter(function (s, i) { return i >= idx && !skip[s]; });
+      const quota = window.slotShare
+        ? window.slotShare(pool, remainingSlots, slot)
+        : pool * ((weights[slot] || 0) / remainingSlots.reduce(function (sum, s) { return sum + (weights[s] || 0); }, 0));
+
+      // 配額低於門檻：前面時段把池子吃光了，標記「額度用完」（跟「找不到組合」是兩種不同文案）。
+      if (quota < LOW_BUDGET_THRESHOLD_KCAL) {
+        result[slot] = { lowBudget: true, budget: round1(quota) };
+        return;
+      }
+      const budget = quota;
       const sourcePref = getSourcePref(mealPrefs, slot);
       const maxRank = maxRankForSource(sourcePref);
 
       const baseCandidates = combos.filter(function (c) {
         if (c.tier_rank > maxRank) return false;
         if (c.valid_slots && c.valid_slots.indexOf(slot) === -1) return false;
-        if (!passesAllergens(c.allergen_tags, userAllergens)) return false;
-        if (!passesDiet(c.diet_tag_sets, dietRestriction)) return false;
+        if (!passesHardFilters(c, filterProfile).ok) return false;
         const fb = feedbackMap[c.id];
         if (fb && fb.rating === "dislike") return false; // 倒讚永久排除
         if (c.is_composed) {
@@ -604,6 +698,7 @@
         top.components.forEach(function (id) { usedItemIds[id] = true; });
       }
       result[slot] = Object.assign({}, top, {
+        budget: round1(budget),
         scale: round1(eff.scale),
         scaled_kcal: eff.kcal,
         protein_g: eff.protein_g,
@@ -613,6 +708,8 @@
         source_pref: sourcePref,
         fallback_to_auto: usedFallback,
       });
+      // 差額帶到下一個時段：扣掉真實品項熱量（不是原本配額）。
+      pool = Math.max(0, pool - eff.kcal);
     });
 
     return result;
@@ -630,4 +727,7 @@
   window.DEFAULT_MEAL_PREFS = DEFAULT_MEAL_PREFS;
   window.ALLERGEN_OPTIONS = ALLERGEN_OPTIONS;
   window.normalizeAllergens = normalizeAllergens;
+  window.passesHardFilters = passesHardFilters;
+  window.sumOrNull = sumOrNull;
+  window.LOW_BUDGET_THRESHOLD_KCAL = LOW_BUDGET_THRESHOLD_KCAL;
 })();

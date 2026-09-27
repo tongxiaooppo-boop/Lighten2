@@ -314,7 +314,8 @@
       profile.meal_prefs,
       profile.diet_restriction,
       profile.allergens,
-      skipSlots
+      skipSlots,
+      profile.disliked_ingredients
     );
     currentRecs = recs;
 
@@ -346,6 +347,7 @@
         fiber_g: rec.fiber_g,
         is_feast: 0,
         feast_reservation_id: null,
+        component_ids: rec.components || null,
       });
       await buildRecommendation();
     } catch (err) {

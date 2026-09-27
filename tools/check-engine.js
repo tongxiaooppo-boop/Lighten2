@@ -140,6 +140,9 @@ async function main() {
               nullByDiet[diet + ":" + slot] = (nullByDiet[diet + ":" + slot] || 0) + 1;
               return;
             }
+            // 7a（2026-09-27）依序分配後，時段配額可能低於門檻，回傳 { lowBudget: true } 而非候選組合。
+            // 這不是「找不到組合」，是「額度用完」，不做結構斷言。
+            if (r.lowBudget) return;
             if (diet !== "一般") {
               check(r.diet_tag_sets.length > 0 && r.diet_tag_sets.every((t) => tagOk(t, diet)), tag + " " + slot + " 推薦了不符合" + diet + "的成分：" + r.name);
             }
