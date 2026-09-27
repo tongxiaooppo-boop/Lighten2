@@ -48,7 +48,8 @@
     var kcal = it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
     return { uid: "tw_" + it.id, id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
       kcal: kcal, protein_g: it.protein_g != null ? it.protein_g : null,
-      carb_g: null, fat_g: null, fiber_g: it.fiber_g != null ? it.fiber_g : null,
+      // 2026-09-27：taiwan_items.json 已用食物代換表份量概念＋熱量平衡反推補上 carb_g/fat_g（估算值，非官方逐筆查證）。
+      carb_g: it.carb_g != null ? it.carb_g : null, fat_g: it.fat_g != null ? it.fat_g : null, fiber_g: it.fiber_g != null ? it.fiber_g : null,
       allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [],
       diet_tags: [], components: ["tw_" + it.id],
       is_custom: false, is_taiwan: true, image: TAIWAN_ITEM_IMAGE[it.id] || null };

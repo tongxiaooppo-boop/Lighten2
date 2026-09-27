@@ -213,8 +213,11 @@
       eatenCarb += l.carb_g != null ? Number(l.carb_g) : 0;
       eatenFat += l.fat_g != null ? Number(l.fat_g) : 0;
       eatenFiber += l.fiber_g != null ? Number(l.fiber_g) : 0;
-      // 資料涵蓋率：缺資料的新紀錄（null）或舊紀錄（source_type 是台式外送，改版前寫死的 0 分不出來）
-      if (l.fat_g == null || l.carb_g == null || l.source_type === "taiwan_item") {
+      // 資料涵蓋率：缺資料只看欄位是不是 null。
+      // 2026-09-27：taiwan_items.json 已用食物代換表份量概念回填 carb_g/fat_g 估算值，
+      // 拿掉原本「source_type 是 taiwan_item 就當缺資料」的舊版 fallback——那條是給「改版前
+      // fromTaiwan() 寫死 0」的舊紀錄用的，現在台式品項的新紀錄有真正的估算值，不能再一律當缺資料。
+      if (l.fat_g == null || l.carb_g == null) {
         missingCoverageKcal += Number(l.kcal) || 0;
       }
     });

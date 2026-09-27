@@ -492,7 +492,8 @@
         uid: "tw_" + it.id, source_id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
         contains_drink: !!it.contains_drink, channel: "delivery",
         kcal: it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2),
-        protein_g: num(it.protein_g), carb_g: null, fat_g: null, fiber_g: num(it.fiber_g),
+        // 2026-09-27：taiwan_items.json 已用食物代換表份量概念＋熱量平衡反推補上 carb_g/fat_g（估算值，非官方逐筆查證）。
+        protein_g: num(it.protein_g), carb_g: it.carb_g != null ? num(it.carb_g) : null, fat_g: it.fat_g != null ? num(it.fat_g) : null, fiber_g: num(it.fiber_g),
         tier_rank: 0, // 外食品項對使用者來說零烹調成本
         diet_tags: [], // 台式品項沒有飲食限制標記：有設定飲食限制的使用者一律看不到，刻意的保守預設
         allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED_ALLERGEN],
