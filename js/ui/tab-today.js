@@ -181,6 +181,15 @@
     if (!hero) return;
     const eatenProtein = todayLogs.reduce(function (s, l) { return s + (Number(l.protein_g) || 0); }, 0);
     const eatenFiber = todayLogs.reduce(function (s, l) { return s + (Number(l.fiber_g) || 0); }, 0);
+    // 所有開啟的時段都記錄完時，「接下來幾餐」已經不存在，改顯示記錄完成、不顯示數字
+    // （這個數字是「目標減已記錄」，記完之後仍可能是正數，繼續顯示會像在叫人再吃一餐）。
+    const loggedSlots = {};
+    todayLogs.forEach(function (l) { loggedSlots[l.slot] = true; });
+    const allLogged = SLOTS.every(function (s) {
+      return !window.isSlotEnabled(profile.enabled_slots, s) || loggedSlots[s];
+    });
+    $("#today-hero-label").textContent = allLogged ? "今天的餐點都記錄完了" : "接下來幾餐的建議熱量";
+    $("#today-hero-kcal").hidden = allLogged;
     $("#today-hero-kcal-value").textContent = Math.round(remainingBudget.remainingKcal);
     $("#today-hero-protein").textContent = Math.round(eatenProtein) + " / " + Math.round(targets.protein_g) + "g";
     $("#today-hero-fiber").textContent = Math.round(eatenFiber) + " / " + Math.round(targets.fiber_g) + "g";
