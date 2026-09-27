@@ -634,17 +634,90 @@
   },
   {
     "id": "dr05",
-    "name": "拿鐵咖啡（大杯，全脂鮮奶）",
+    "name": "拿鐵咖啡（無糖，大杯約400ml）",
     "category": "飲料",
-    "kcal_low": 180,
-    "kcal_high": 250,
-    "kcal_rep": null,
-    "note": "估算值，依奶量與是否加糖而異｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
+    "kcal_low": 160,
+    "kcal_high": 185,
+    "kcal_rep": 172,
+    "note": "衛福部台灣食品成分表2025版「拿鐵咖啡(無糖)」每100g約43大卡、蛋白質2.98g，換算大杯約400ml；原本是網路查詢估算值，這次改用官方實測數據校正｜2026-09-27更新",
     "uses_flex": false,
     "allergen_tags": [
       "乳製品"
     ],
-    "protein_g": 6,
+    "protein_g": 11.9,
+    "fiber_g": 0
+  },
+  {
+    "id": "dr06",
+    "name": "豆漿（無糖，大杯約300ml）",
+    "category": "飲料",
+    "kcal_low": 100,
+    "kcal_high": 110,
+    "kcal_rep": 105,
+    "note": "衛福部台灣食品成分表2025版「豆漿(無糖)」每100g約35大卡、蛋白質3.64g、纖維1.27g，換算大杯約300ml｜2026-09-27新增，官方實測數據",
+    "uses_flex": false,
+    "allergen_tags": [
+      "黃豆"
+    ],
+    "protein_g": 10.9,
+    "fiber_g": 3.8
+  },
+  {
+    "id": "dr07",
+    "name": "豆漿（含糖，大杯約300ml，一般早餐店常見版）",
+    "category": "飲料",
+    "kcal_low": 170,
+    "kcal_high": 190,
+    "kcal_rep": 180,
+    "note": "衛福部台灣食品成分表2025版「豆漿」（一般含糖包裝版）每100g約60大卡、蛋白質3.16g，換算大杯約300ml｜2026-09-27新增，官方實測數據",
+    "uses_flex": true,
+    "allergen_tags": [
+      "黃豆"
+    ],
+    "protein_g": 9.5,
+    "fiber_g": 6.2
+  },
+  {
+    "id": "dr08",
+    "name": "鮮奶（一杯，約240ml，全脂）",
+    "category": "飲料",
+    "kcal_low": 145,
+    "kcal_high": 160,
+    "kcal_rep": 152,
+    "note": "衛福部台灣食品成分表2025版「全脂鮮乳平均值」每100g約63大卡、蛋白質3.11g，換算一杯約240ml（國健署「我的餐盤」建議早晚各一杯約240ml的奶類）｜2026-09-27新增，官方實測數據",
+    "uses_flex": false,
+    "allergen_tags": [
+      "乳製品"
+    ],
+    "protein_g": 7.5,
+    "fiber_g": 0
+  },
+  {
+    "id": "dr09",
+    "name": "美式咖啡（無糖，大杯約450ml）",
+    "category": "飲料",
+    "kcal_low": 5,
+    "kcal_high": 15,
+    "kcal_rep": 11,
+    "note": "衛福部台灣食品成分表2025版「美式咖啡(無糖)」每100g約2.4大卡，幾乎無熱量，換算大杯約450ml｜2026-09-27新增，官方實測數據",
+    "uses_flex": false,
+    "allergen_tags": [],
+    "protein_g": 0.9,
+    "fiber_g": 0
+  },
+  {
+    "id": "dr10",
+    "name": "拿鐵咖啡（含糖，大杯約400ml）",
+    "category": "飲料",
+    "kcal_low": 220,
+    "kcal_high": 250,
+    "kcal_rep": 232,
+    "note": "以官方「拿鐵咖啡(無糖)」400ml版（約172大卡）為底，加估一份糖漿（約15g糖，約60大卡）；加糖部分是估算，無糖底數是官方實測數據｜2026-09-27新增",
+    "uses_flex": true,
+    "allergen_tags": [
+      "乳製品"
+    ],
+    "protein_g": 11.9,
     "fiber_g": 0
   },
   {
