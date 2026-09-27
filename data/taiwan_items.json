@@ -149,6 +149,73 @@
     "fiber_g": 1
   },
   {
+    "id": "bf11",
+    "name": "麥當勞 豬肉滿福堡＋經典美式咖啡(熱)",
+    "category": "早餐",
+    "bundled_drink": true,
+    "kcal_low": 330,
+    "kcal_high": 355,
+    "kcal_rep": 343,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質18g/脂肪16g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質",
+      "乳製品"
+    ],
+    "protein_g": 18,
+    "fiber_g": 1
+  },
+  {
+    "id": "bf12",
+    "name": "麥當勞 豬肉滿福堡加蛋＋紅茶(熱)",
+    "category": "早餐",
+    "bundled_drink": true,
+    "kcal_low": 375,
+    "kcal_high": 400,
+    "kcal_rep": 389,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質22g/脂肪20g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質",
+      "蛋",
+      "乳製品"
+    ],
+    "protein_g": 22,
+    "fiber_g": 1
+  },
+  {
+    "id": "bf13",
+    "name": "麥當勞 豬肉蛋堡＋經典美式咖啡(熱)",
+    "category": "早餐",
+    "bundled_drink": true,
+    "kcal_low": 410,
+    "kcal_high": 440,
+    "kcal_rep": 425,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質22g/脂肪23g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質",
+      "蛋",
+      "乳製品"
+    ],
+    "protein_g": 22,
+    "fiber_g": 1
+  },
+  {
+    "id": "bf14",
+    "name": "麥當勞 青蔬滿福堡＋鮮奶(盒裝)",
+    "category": "早餐",
+    "bundled_drink": true,
+    "kcal_low": 420,
+    "kcal_high": 445,
+    "kcal_rep": 433,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質24g/脂肪19g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質",
+      "蛋",
+      "乳製品"
+    ],
+    "protein_g": 24,
+    "fiber_g": 1.5
+  },
+  {
     "id": "ln01",
     "name": "排骨便當",
     "category": "午餐",
@@ -799,6 +866,47 @@
     ],
     "protein_g": 25,
     "fiber_g": 3
+  },
+  {
+    "id": "fw06",
+    "name": "麥當勞 藜麥烤雞沙拉＋水果袋＋無糖綠茶",
+    "category": "西式速食",
+    "kcal_low": 280,
+    "kcal_high": 305,
+    "kcal_rep": 294,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質22g/脂肪13g為官方標示；纖維為估算值（含沙拉/水果，估較高）｜2026-09-27新增",
+    "allergen_tags": [],
+    "protein_g": 22,
+    "fiber_g": 4
+  },
+  {
+    "id": "fw07",
+    "name": "麥當勞 嫩煎雞腿堡＋四季沙拉＋無糖紅茶",
+    "category": "西式速食",
+    "kcal_low": 395,
+    "kcal_high": 420,
+    "kcal_rep": 410,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質25g/脂肪13g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質"
+    ],
+    "protein_g": 25,
+    "fiber_g": 3
+  },
+  {
+    "id": "fw08",
+    "name": "麥當勞 帕瑪森安格斯牛肉堡＋四季沙拉＋可口可樂zero",
+    "category": "西式速食",
+    "kcal_low": 565,
+    "kcal_high": 595,
+    "kcal_rep": 580,
+    "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質28g/脂肪34g為官方標示；纖維為估算值｜2026-09-27新增",
+    "allergen_tags": [
+      "麩質",
+      "乳製品"
+    ],
+    "protein_g": 28,
+    "fiber_g": 2.5
   },
 
   {
