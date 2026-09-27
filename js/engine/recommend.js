@@ -396,17 +396,17 @@
     });
     const mains = validConvenienceItems.filter(function (it) { return !EXTRA_CATEGORIES[it.category]; });
     const extras = validConvenienceItems.filter(function (it) { return EXTRA_CATEGORIES[it.category]; });
-    const extraDrinks = extras.filter(function (it) { return it.category === "飲品"; });
-    const extraBars = extras.filter(function (it) { return it.category === "蛋白飲/點心棒"; });
-    // 一餐最多配「一款飲品」＋「一款點心棒」，不能兩款飲品疊在一起（例如統一豆漿+光泉燕麥豆漿）——
-    // 原本對整個 extras 陣列做無條件兩兩配對，會湊出「同一餐兩杯飲料」這種沒人會這樣吃的組合。
+    // 「蛋白飲/點心棒」分類混了液態（搖飲/燕麥奶）跟固態（營養棒），不能用分類名判斷是不是飲料，
+    // 改看品項本身的 is_drink：一個組合最多一款液態，第二款只能是固態點心。
+    const extraDrinks = extras.filter(function (it) { return !!it.is_drink; });
+    const extraSnacks = extras.filter(function (it) { return !it.is_drink; });
     mains.forEach(function (main) {
       extras.forEach(function (extra) {
         combos.push(toConvenienceCombo([main, extra]));
       });
       extraDrinks.forEach(function (drink) {
-        extraBars.forEach(function (bar) {
-          combos.push(toConvenienceCombo([main, drink, bar]));
+        extraSnacks.forEach(function (snack) {
+          combos.push(toConvenienceCombo([main, drink, snack]));
         });
       });
     });
