@@ -160,17 +160,19 @@
     const picker = $("#feast-item-picker");
     if (!slotSelect || !picker) return;
     const slot = slotSelect.value;
-    const taiwanItems = await getTaiwanItems();
-    const matched = taiwanItems.filter(function (it) { return itemFitsSlot(it, slot); });
-    const customFoods = await getCustomFoods();
+    // 硬性過濾（過敏原/飲食限制/不吃清單）：命中品項灰階＋顯示原因，不從清單移除（Opus 條件 4）。
+    var profile = currentProfile;
+    if (!profile) {
+      try { profile = await getProfile(); currentProfile = profile; } catch (e) { console.error(e); }
+    }
+    const filtered = await window.ItemPicker.filterForSlot(slot, profile, { includeConvenience: false });
 
     let html = itemCardHtml("", "自訂", "份量估算或輸入名稱", "images/food/custom-other.svg", "feast-item-card-custom");
-    html += matched.map(function (it) {
-      const kcal = it.kcal_rep != null ? it.kcal_rep : Math.round((it.kcal_low + it.kcal_high) / 2);
-      return itemCardHtml(it.id, it.name, "約 " + kcal + " kcal", TAIWAN_ITEM_IMAGE[it.id]);
+    html += filtered.pass.map(function (it) {
+      return window.ItemPicker.cardHtml(it, {});
     }).join("");
-    html += customFoods.map(function (f) {
-      return itemCardHtml(f.id, f.name, "約 " + f.kcal + " kcal", null);
+    html += filtered.blocked.map(function (b) {
+      return window.ItemPicker.cardHtml(b.item, { blockedReason: b.reason });
     }).join("");
 
     picker.innerHTML = html;
@@ -190,6 +192,7 @@
   // 熱量欄位預設「跟著份量走」（小/中/大 → 400/700/1200），讓使用者選份量時能直接看到數字，
   // 而不是送出後才知道估算值。一旦使用者自己手動改過熱量，就不再被份量覆蓋，直到重新選回「自訂」卡。
   let kcalManuallyEdited = false;
+  var currentProfile = null; // renderItemPicker 的硬性過濾要用（render() 每次切分頁會更新）
 
   function syncKcalFromSize() {
     if (kcalManuallyEdited) return;
@@ -244,6 +247,7 @@
       if (status) status.textContent = "請先到「基本資料」分頁填寫並按「計算」。";
       return;
     }
+    currentProfile = profile;
 
     // 近7天平均 vs 目標（取代舊的進度條顯示）。
     let targets;

@@ -509,6 +509,7 @@
         // 單一台式品項記錄時用 source_id 對回 taiwan_items；多品項組合沒有單一對應，直接記組合本身的數字。
         source_id: single && single.is_taiwan ? single.source_id : null,
         components: members.map(function (m) { return m.uid; }),
+        component_labels: members.map(function (m) { return { uid: m.uid, label: m.name }; }),
         name: members.map(function (m) { return m.name; }).join(" ＋ "),
         protein_name: null,
         content_note: notes.length > 0 ? notes.join("；") : null,

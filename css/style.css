@@ -585,6 +585,95 @@ body {
   margin-left: 0.4rem;
 }
 
+/* 「自己選」按鈕 + 「順便不要」chips */
+.rec-pick-btn {
+  margin-left: 0.4rem;
+}
+.dislike-chips {
+  margin: 0.3rem 0 0.5rem;
+  font-size: 0.8rem;
+  color: #8A7A63;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+.dislike-chip {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  border: 1px solid #E0B98C;
+  border-radius: 999px;
+  background-color: #fff;
+  color: #8A5A2B;
+  cursor: pointer;
+}
+.dislike-chip:hover {
+  background-color: #FBF0E6;
+}
+.disliked-ingredients-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.dislike-chip-x {
+  margin-left: 0.3rem;
+  border: none;
+  background: transparent;
+  color: #a33;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0.2rem;
+}
+
+/* 手動組餐 modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(58, 46, 34, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 100;
+}
+.modal-overlay[hidden] {
+  display: none;
+}
+.modal.manual-picker {
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  max-width: 720px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(60, 40, 20, 0.25);
+}
+.manual-picker .feast-item-picker {
+  max-height: 42vh;
+  overflow-y: auto;
+  padding: 0.2rem;
+}
+.manual-picker-summary {
+  margin: 0.6rem 0 0.2rem;
+  font-weight: 600;
+  color: #3A2E22;
+}
+.manual-picker-gap {
+  margin: 0.2rem 0 0.6rem;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+.manual-picker-gap p {
+  margin: 0.2rem 0;
+}
+.manual-picker-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+  margin-top: 0.6rem;
+}
+
 /* 週彈性帳本分頁 */
 .ledger-progress {
   margin-bottom: 1.2rem;

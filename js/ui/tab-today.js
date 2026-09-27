@@ -117,6 +117,24 @@
 
   // 這個時段已經有預約中的大餐時，不要再顯示一般推薦——使用者已經決定這餐要吃什麼了，
   // 繼續推薦別的東西只會讓人以為系統沒看到預約、或不確定該吃哪一個。
+  // 依組合內容列出可以「順便不要」的項目（Part 4）：
+  //   自組食譜 → 蛋白質 + 蔬菜兩個 chip；現成品項組合 → 每個成分名稱一個 chip；沒有可拆解成分就不顯示。
+  function dislikeChipsHtml(rec) {
+    var entries = [];
+    if (rec.is_composed) {
+      if (rec.protein_name) entries.push({ type: "protein", key: rec.protein_name, label: rec.protein_name });
+      if (rec.vegetable_name) entries.push({ type: "vegetable", key: rec.vegetable_name, label: rec.vegetable_name });
+    } else if (Array.isArray(rec.component_labels)) {
+      rec.component_labels.forEach(function (c) { entries.push({ type: "item", key: c.uid, label: c.label }); });
+    }
+    if (entries.length === 0) return "";
+    var chips = entries.map(function (e) {
+      return '<button type="button" class="dislike-chip" data-type="' + escapeHtml(e.type) +
+        '" data-key="' + escapeHtml(e.key) + '" data-label="' + escapeHtml(e.label) + '">' + escapeHtml(e.label) + "</button>";
+    }).join("");
+    return '<div class="dislike-chips"><span class="dislike-chips-label">順便不要：</span>' + chips + "</div>";
+  }
+
   function renderRecs(recs, profile, reservationsBySlot, logsBySlot) {
     SLOTS.forEach(function (slot) {
       const body = $("#rec-" + slot);
@@ -175,8 +193,10 @@
         '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>" +
         (rec.budget != null ? '<span class="rec-base"> · 配額 ' + Math.round(rec.budget) + " kcal</span>" : "") +
         "</div>" +
+        dislikeChipsHtml(rec) +
         '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
-        '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>';
+        '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>' +
+        '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自己選</button>';
     });
   }
 
@@ -434,6 +454,181 @@
       setStatus("倒讚記錄失敗。");
     });
   }
+// ===== Part 5：手動組餐（自己選） =====
+  var manualPicker = { slot: null, selectedUids: [], passItems: [], blockedItems: [], profile: null, targets: null, todayLogs: null };
+
+  function manualRoleLimits(slot) {
+    return { requireMain: slot !== "afternoon_tea", maxByRole: { main: 1, side: 1, drink: 1, snack: 1 } };
+  }
+
+  function manualSelectedItems() {
+    var sel = manualPicker.selectedUids;
+    return manualPicker.passItems.filter(function (it) { return sel.indexOf(it.uid) !== -1; });
+  }
+
+  function fmtNutrient(v) { return v == null ? "—" : Math.round(v) + "g"; }
+
+  async function openManualPicker(slot) {
+    var profile;
+    try { profile = await getProfile(); } catch (e) { console.error(e); return; }
+    if (!profile) { alert("請先到「基本資料」分頁填寫並按「計算」。"); return; }
+    var targets = await getCalibratedTargets(profile);
+    var today = localDateStr();
+    var todayLogs = await getDailyLogs({ start: today, end: today });
+    var filtered = await window.ItemPicker.filterForSlot(slot, profile, {});
+    manualPicker.slot = slot;
+    manualPicker.profile = profile;
+    manualPicker.targets = targets;
+    manualPicker.todayLogs = todayLogs;
+    manualPicker.passItems = filtered.pass;
+    manualPicker.blockedItems = filtered.blocked;
+    manualPicker.selectedUids = [];
+    var labelEl = $("#manual-picker-slot-label");
+    if (labelEl) labelEl.textContent = SLOT_LABELS[slot] || slot;
+    renderManualPicker();
+    var overlay = $("#manual-picker-overlay");
+    if (overlay) overlay.hidden = false;
+  }
+
+  function renderManualPicker() {
+    var itemsEl = $("#manual-picker-items");
+    if (!itemsEl) return;
+    var selected = manualPicker.selectedUids;
+    var html = manualPicker.passItems.map(function (it) {
+      return window.ItemPicker.cardHtml(it, { selected: selected.indexOf(it.uid) !== -1 });
+    }).join("");
+    html += manualPicker.blockedItems.map(function (b) {
+      return window.ItemPicker.cardHtml(b.item, { selected: false, blockedReason: b.reason });
+    }).join("");
+    itemsEl.innerHTML = html;
+
+    var selItems = manualSelectedItems();
+    var totals = window.ItemPicker.sumSelected(selItems);
+    var limits = manualRoleLimits(manualPicker.slot);
+    var roleCount = { main: 0, side: 0, drink: 0, snack: 0 };
+    selItems.forEach(function (it) { roleCount[it.role] = (roleCount[it.role] || 0) + 1; });
+
+    var summaryEl = $("#manual-picker-summary");
+    if (summaryEl) {
+      summaryEl.innerHTML =
+        "已選 " + selItems.length + " 件 · 約 " + Math.round(totals.kcal) + " kcal" +
+        " · 蛋白質 " + fmtNutrient(totals.protein_g) +
+        " · 碳水 " + fmtNutrient(totals.carb_g) +
+        " · 脂肪 " + fmtNutrient(totals.fat_g) +
+        " · 纖維 " + fmtNutrient(totals.fiber_g);
+    }
+
+    var gapEl = $("#manual-picker-gap");
+    if (gapEl) {
+      var share = window.slotNutrientShare
+        ? window.slotNutrientShare(manualPicker.targets, manualPicker.todayLogs, manualPicker.profile.enabled_slots, manualPicker.slot)
+        : { kcalShare: 0, proteinShare: 0, fiberShare: 0 };
+      var lines = [];
+      var overKcal = Math.round(totals.kcal - share.kcalShare);
+      if (overKcal > 0) lines.push("這組合約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + overKcal + "），仍可送出。");
+      var proteinGap = Math.round((share.proteinShare - (totals.protein_g || 0)) * 10) / 10;
+      var fiberGap = Math.round((share.fiberShare - (totals.fiber_g || 0)) * 10) / 10;
+      if (proteinGap > 0) lines.push("蛋白質缺口約 " + proteinGap + "g");
+      if (fiberGap > 0) lines.push("纖維缺口約 " + fiberGap + "g");
+      var suggestions = [];
+      if (proteinGap > 0) suggestions = suggestions.concat(suggestFillers(proteinGap, "protein_g", selItems, share));
+      if (fiberGap > 0) suggestions = suggestions.concat(suggestFillers(fiberGap, "fiber_g", selItems, share));
+      if (suggestions.length > 0) lines.push("可以考慮加：" + suggestions.slice(0, 2).join("、"));
+      gapEl.innerHTML = lines.length > 0 ? lines.map(function (t) { return "<p>" + escapeHtml(t) + "</p>"; }).join("") : "";
+    }
+
+    var submitBtn = $("#manual-picker-submit");
+    var hint = document.getElementById("manual-picker-main-hint");
+    var missingMain = limits.requireMain && roleCount.main === 0;
+    if (submitBtn) submitBtn.disabled = missingMain;
+    if (hint) hint.hidden = !missingMain;
+  }
+function suggestFillers(gap, field, selItems, share) {
+    var out = [];
+    manualPicker.passItems.forEach(function (it) {
+      if (selItems.indexOf(it) !== -1) return;
+      if (["side", "drink", "snack"].indexOf(it.role) === -1) return;
+      if (it[field] == null || it[field] <= 0) return;
+      var cur = window.ItemPicker.sumSelected(selItems);
+      if (cur.kcal + (it.kcal || 0) > share.kcalShare + 100) return;
+      var per100 = it[field] / Math.max(1, it.kcal || 100) * 100;
+      out.push({ label: it.name + "（+" + Math.round(it[field]) + "g）", score: per100 });
+    });
+    out.sort(function (a, b) { return b.score - a.score; });
+    return out.slice(0, 3).map(function (o) { return o.label; });
+  }
+
+  function onManualItemClick(e) {
+    var card = e.target.closest(".feast-item-card");
+    if (!card || card.disabled) return;
+    var uid = card.getAttribute("data-uid");
+    var it = manualPicker.passItems.filter(function (x) { return x.uid === uid; })[0];
+    if (!it) return;
+    var idx = manualPicker.selectedUids.indexOf(uid);
+    var limits = manualRoleLimits(manualPicker.slot);
+    if (idx === -1) {
+      var roleCount = {};
+      manualSelectedItems().forEach(function (x) { roleCount[x.role] = (roleCount[x.role] || 0) + 1; });
+      var max = limits.maxByRole[it.role] || 1;
+      if ((roleCount[it.role] || 0) >= max) {
+        alert("這個時段的「" + (it.role === "main" ? "主餐" : it.role === "side" ? "配菜" : it.role === "drink" ? "飲料" : "點心") + "」已經選過了，要不要先取消上一個？");
+        return;
+      }
+      manualPicker.selectedUids.push(uid);
+    } else {
+      manualPicker.selectedUids.splice(idx, 1);
+    }
+    renderManualPicker();
+  }
+
+  async function onManualSubmit() {
+    var selItems = manualSelectedItems();
+    if (selItems.length === 0) { alert("請至少選一個品項。"); return; }
+    var totals = window.ItemPicker.sumSelected(selItems);
+    var entry = {
+      log_date: localDateStr(),
+      slot: manualPicker.slot,
+      source_type: "manual_combo",
+      item_id: null,
+      item_name: selItems.map(function (it) { return it.name; }).join("＋"),
+      kcal: totals.kcal,
+      protein_g: totals.protein_g,
+      carb_g: totals.carb_g,
+      fat_g: totals.fat_g,
+      fiber_g: totals.fiber_g,
+      is_feast: 0,
+      feast_reservation_id: null,
+      component_ids: selItems.map(function (it) { return it.uid; }),
+    };
+    try {
+      await addDailyLog(entry);
+      var overlay = $("#manual-picker-overlay");
+      if (overlay) overlay.hidden = true;
+      await buildRecommendation();
+    } catch (err) {
+      console.error(err);
+      alert("記錄失敗，請重試。");
+    }
+  }
+
+  async function onDislikeChipClick(e) {
+    var chip = e.target.closest(".dislike-chip");
+    if (!chip) return;
+    var entry = { type: chip.getAttribute("data-type"), key: chip.getAttribute("data-key"), label: chip.getAttribute("data-label") };
+    var profile = await getProfile();
+    if (!profile) return;
+    var list = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
+    var exists = list.some(function (d) { return d.type === entry.type && d.key === entry.key; });
+    if (!exists) {
+      list.push(entry);
+      profile.disliked_ingredients = list;
+      await saveProfile(profile);
+    }
+    await buildRecommendation();
+  }
+
+
+
 
   ready(function () {
     const refreshBtn = $("#today-refresh");
@@ -461,9 +656,32 @@
           const slot = logBtn.getAttribute("data-slot");
           const rec = currentRecs[slot];
           if (rec) onLogRecClick(slot, rec, logBtn);
+          return;
+        }
+        const pickBtn = e.target.closest(".rec-pick-btn");
+        if (pickBtn && pickBtn.getAttribute("data-slot")) {
+          openManualPicker(pickBtn.getAttribute("data-slot"));
+          return;
+        }
+        const chipBtn = e.target.closest(".dislike-chip");
+        if (chipBtn && chipBtn.getAttribute("data-key")) {
+          onDislikeChipClick(e);
         }
       });
     }
+
+    const overlay = $("#manual-picker-overlay");
+    if (overlay) {
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) overlay.hidden = true;
+      });
+    }
+    const manualItems = $("#manual-picker-items");
+    if (manualItems) manualItems.addEventListener("click", onManualItemClick);
+    const manualCancel = $("#manual-picker-cancel");
+    if (manualCancel) manualCancel.addEventListener("click", function () { overlay.hidden = true; });
+    const manualSubmit = $("#manual-picker-submit");
+    if (manualSubmit) manualSubmit.addEventListener("click", onManualSubmit);
 
     // 從其他分頁切回來（預約／記錄／改基本資料之後）要重新算，不能停在載入時的畫面（整案審查 A4）。
     document.addEventListener("tab:activated", function (e) {
