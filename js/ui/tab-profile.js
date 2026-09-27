@@ -49,6 +49,36 @@
     return fmt(d);
   }
 
+  // 「不吃的食材」清單：只在本分頁顯示＋移除；新增入口在 tab-today.js 的「順便不要」chip。
+  var dislikedIngredients = [];
+
+  function renderDislikedList() {
+    var el = document.getElementById("disliked-ingredients-list");
+    if (!el) return;
+    if (dislikedIngredients.length === 0) {
+      el.innerHTML = '<p class="taiwan-ref-note">尚未設定。</p>';
+      return;
+    }
+    el.innerHTML = dislikedIngredients.map(function (d, i) {
+      return '<span class="dislike-chip">' + escapeHtml2(d.label || d.key) +
+        '<button type="button" class="dislike-chip-x" data-index="' + i + '" aria-label="移除">×</button></span>';
+    }).join("");
+  }
+
+  function escapeHtml2(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  async function removeDisliked(index) {
+    dislikedIngredients.splice(index, 1);
+    renderDislikedList();
+    var profile = await getProfile();
+    if (profile) {
+      profile.disliked_ingredients = dislikedIngredients;
+      await saveProfile(profile);
+    }
+  }
+
   function readProfileForm() {
     const form = document.getElementById("profile-form");
     const fd = new FormData(form);
@@ -74,6 +104,7 @@
         snack: fd.get("meal_pref_snack"),
       },
       goal_mode: fd.get("goal_mode"),
+      disliked_ingredients: dislikedIngredients,
       enabled_slots: {
         breakfast: fd.get("meal_pref_breakfast") !== "off",
         lunch: fd.get("meal_pref_lunch") !== "off",
@@ -87,6 +118,8 @@
   function fillProfileForm(profile) {
     if (!profile) return;
     const form = document.getElementById("profile-form");
+    dislikedIngredients = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
+    renderDislikedList();
     const set = function (name, value) {
       const el = form.elements[name];
       if (el && value !== null && value !== undefined) el.value = value;
@@ -347,6 +380,15 @@
 
     const weightForm = document.getElementById("weight-form");
     if (weightForm) weightForm.addEventListener("submit", onWeightSubmit);
+
+    const dislikedList = document.getElementById("disliked-ingredients-list");
+    if (dislikedList) {
+      dislikedList.addEventListener("click", function (e) {
+        const x = e.target.closest(".dislike-chip-x");
+        if (!x) return;
+        removeDisliked(parseInt(x.getAttribute("data-index"), 10));
+      });
+    }
 
     // 切回這個分頁時更新目標跟校正卡片（不重填表單，避免蓋掉還沒按「計算」的修改）。
     document.addEventListener("tab:activated", async function (e) {
