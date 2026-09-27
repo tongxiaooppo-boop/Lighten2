@@ -97,13 +97,29 @@
     if (el) el.textContent = msg || "";
   }
 
-  function renderRecs(recs, profile) {
+  const RESERVATION_SIZE_LABELS = { S: "小", M: "中", L: "大" };
+
+  // 這個時段已經有預約中的大餐時，不要再顯示一般推薦——使用者已經決定這餐要吃什麼了，
+  // 繼續推薦別的東西只會讓人以為系統沒看到預約、或不確定該吃哪一個。
+  function renderRecs(recs, profile, reservationsBySlot) {
     SLOTS.forEach(function (slot) {
       const body = $("#rec-" + slot);
       if (!body) return;
       const isEnabled = !profile || window.isSlotEnabled(profile.enabled_slots, slot);
       if (!isEnabled) {
         body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
+        return;
+      }
+      const reservation = reservationsBySlot && reservationsBySlot[slot];
+      if (reservation) {
+        const label = reservation.item_name || (RESERVATION_SIZE_LABELS[reservation.size] || "") + "份量";
+        body.innerHTML =
+          '<p class="rec-reservation-note">已預約：' + escapeHtml(label) + "（約 " + escapeHtml(reservation.estimated_kcal) + " kcal）</p>" +
+          '<button type="button" class="secondary-btn rec-goto-ledger-btn">到美饗日曆確認／取消</button>';
+        const gotoBtn = body.querySelector(".rec-goto-ledger-btn");
+        if (gotoBtn) gotoBtn.addEventListener("click", function () {
+          if (window.activateTab) window.activateTab("ledger");
+        });
         return;
       }
       const rec = recs[slot];
@@ -249,7 +265,9 @@
     );
     currentRecs = recs;
 
-    renderRecs(recs, profile);
+    const reservationsBySlot = {};
+    todayReservations.forEach(function (r) { reservationsBySlot[r.slot] = r; });
+    renderRecs(recs, profile, reservationsBySlot);
     // 修既有 bug：score() 的「近期出現過降權」一直讀 shown_count/last_shown_date，
     // 但這兩個欄位過去只在使用者按「倒讚」時才寫入，單純顯示從沒被記錄過，降權形同死碼。
     // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
