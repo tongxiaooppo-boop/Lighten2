@@ -164,9 +164,64 @@
     };
   }
 
+  // 依序分配的「單一時段份額」helper（供 recommend.js 7a 依序處理時段用）。
+  // pool：還沒處理時段的剩餘熱量池；slots：還沒處理的時段名單（含要算的 slot）。
+  // 公式跟 recalcTodayBudget 內部的權重分配一致，抽出來避免兩處各寫一份權重。
+  function slotShare(pool, slots, slot) {
+    const totalWeight = slots.reduce(function (sum, s) {
+      return sum + (DEFAULT_WEIGHTS[s] || 0);
+    }, 0);
+    if (totalWeight <= 0) return 0;
+    return pool * ((DEFAULT_WEIGHTS[slot] || 0) / totalWeight);
+  }
+
+  // 手動組餐缺口提示用的「單餐份額」（Opus 二輪審核指定放 engine 層，方便測試）。
+  // 跟 matcher.js 的 checkHardConstraints 是兩套刻意並存的缺口口徑：
+  //   - checkHardConstraints：推薦引擎排序用（全天蛋白質缺口 + 全週纖維平均缺口）
+  //   - slotNutrientShare：手動組餐「這個時段該補多少」用（單餐份額，kcal/蛋白質/纖維三項同權重）
+  // 不要把這兩套「統一」掉。草稿不塞進 todayLogs：recalcTodayBudget 看到某時段有東西就當「已吃」
+  // 歸零配額，拿去算這個時段自己的份額會兜死變成 0（Opus 二輪審核明確指出這個坑）。
+  function slotNutrientShare(targets, todayLogs, enabledSlots, slot) {
+    const t = targets || {};
+    const logs = Array.isArray(todayLogs) ? todayLogs : [];
+
+    const eaten = { kcal: 0, protein: 0, fiber: 0 };
+    const eatenSlots = {};
+    logs.forEach(function (l) {
+      if (!l) return;
+      if (l.slot) eatenSlots[l.slot] = true;
+      eaten.kcal += Number(l.kcal) || 0;
+      eaten.protein += Number(l.protein_g) || 0;
+      eaten.fiber += Number(l.fiber_g) || 0;
+    });
+
+    if (eatenSlots[slot]) return { kcalShare: 0, proteinShare: 0, fiberShare: 0 };
+
+    const targetKcal = Number(t.targetKcal) || 0;
+    const targetProtein = Number(t.protein_g) || 0;
+    const targetFiber = Number(t.fiber_g) || 0;
+
+    const uneatenSlots = SLOTS.filter(function (s) {
+      return !eatenSlots[s] && isSlotEnabled(enabledSlots, s);
+    });
+    const totalWeight = uneatenSlots.reduce(function (sum, s) {
+      return sum + (DEFAULT_WEIGHTS[s] || 0);
+    }, 0);
+    const ratio = totalWeight > 0 ? ((DEFAULT_WEIGHTS[slot] || 0) / totalWeight) : 0;
+
+    return {
+      kcalShare: round1(Math.max(0, targetKcal - eaten.kcal) * ratio),
+      proteinShare: round1(Math.max(0, targetProtein - eaten.protein) * ratio),
+      fiberShare: round1(Math.max(0, targetFiber - eaten.fiber) * ratio),
+    };
+  }
+
   window.recalcTodayBudget = recalcTodayBudget;
   window.DEFAULT_ENABLED_SLOTS = DEFAULT_ENABLED_SLOTS;
+  window.SLOT_WEIGHTS = DEFAULT_WEIGHTS;
   window.isSlotEnabled = isSlotEnabled;
   window.isCompleteLogDay = isCompleteLogDay;
   window.computeRecentAvgVsTarget = computeRecentAvgVsTarget;
+  window.slotShare = slotShare;
+  window.slotNutrientShare = slotNutrientShare;
 })();
