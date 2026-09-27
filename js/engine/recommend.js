@@ -484,20 +484,22 @@
       });
     });
 
-    // 早餐/午餐/晚餐/宵夜：飲料不能單獨當一整個時段的推薦（沒有人只喝一杯飲料當午餐），
-    // 但可以「正餐＋飲料」搭配出現（手搖飲配便當/牛肉麵是很常見的吃法）。跟下午茶那組
-    // 一樣固定「一正餐＋一飲料」，不會出現兩款飲料。「西式速食」本身常常已經含一杯飲料
-    // （例如大麥克餐已經算進中可樂），不重複疊加，所以不跟飲料另外配對。
-    const MAIN_MEAL_CATEGORY_TO_SLOT = { "早餐": "breakfast", "午餐": "lunch", "晚餐": "dinner", "宵夜": "snack" };
-    Object.keys(MAIN_MEAL_CATEGORY_TO_SLOT).forEach(function (category) {
-      const slot = MAIN_MEAL_CATEGORY_TO_SLOT[category];
-      const mains = axes.taiwanItems.filter(function (it) {
-        return it.category === category && !isTooWideRange(it);
-      });
-      mains.forEach(function (main) {
-        teaDrinksForCombo.forEach(function (drink) {
-          combos.push(toTaiwanMultiCombo([main, drink], [slot]));
-        });
+    // 早餐：查過國健署「我的餐盤－外食均衡飲食」實際範例（早餐店/自助餐/滷味/便利商店
+    // 4篇），只有早餐店、便利商店的範例會配飲品（且都是無糖鮮奶茶/拿鐵/鮮奶這類乳品，
+    // 用來補鈣質，不是含糖手搖飲），自助餐、滷味的範例完全沒有配飲料。所以「正餐＋飲料」
+    // 只加在早餐（午餐/晚餐/宵夜維持原本單獨主食即可，不強迫湊飲料，跟真實範例一致）；
+    // 早餐要配的飲料也只挑無糖/乳品類（無糖紅茶、拿鐵），含糖手搖飲（全糖/半糖珍奶、
+    // 水果茶）留給下午茶當作有意識選擇的甜點搭配，不預設塞進早餐。
+    // 來源：hpa.gov.tw「均衡飲食菜單-外食這樣吃也能很均衡」早餐篇/自助餐篇/滷味篇/便利商店篇。
+    const breakfastDrinksForCombo = teaDrinksForCombo.filter(function (it) {
+      return it.id === "dr03" || it.id === "dr05"; // 無糖紅茶、拿鐵咖啡
+    });
+    const breakfastMains = axes.taiwanItems.filter(function (it) {
+      return it.category === "早餐" && !isTooWideRange(it);
+    });
+    breakfastMains.forEach(function (main) {
+      breakfastDrinksForCombo.forEach(function (drink) {
+        combos.push(toTaiwanMultiCombo([main, drink], ["breakfast"]));
       });
     });
 
