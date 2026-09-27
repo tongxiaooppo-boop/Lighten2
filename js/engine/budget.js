@@ -119,7 +119,11 @@
     });
   }
 
-  // 近 N 天（預設 7 天）平均 vs 目標：只算「完整記錄日」。
+  // 近 N 天（預設 7 天，不含今天）平均 vs 目標：只算「完整記錄日」。
+  // 今天故意排除在外——今天在最後一個開啟時段吃完前，一定不是「完整記錄日」，
+  // 如果把今天算進窗口，過了某個時段但還沒吃完當天所有餐次時，這個統計會一直被今天
+  // 這個「必然不完整」的日子拖著跳「資料不足」或忽略當天，看起來像「過了餐食時間就不算」。
+  // 排除今天之後，這個數字只反映已經走完的日子，穩定、不會整天忽上忽下。
   // 完整記錄日 < 3 天 → { status: "insufficient" }；否則回傳 { status:"ok", avgKcal, targetKcal, completeDays }。
   function computeRecentAvgVsTarget(logs, targetKcal, enabledSlots, days) {
     const n = typeof days === "number" && days > 0 ? days : 7;
@@ -135,7 +139,7 @@
     });
 
     const completeDates = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = 1; i <= n; i++) {
       const d = dateAddDays(today, -i);
       const dayLogs = byDate[d] || [];
       if (isCompleteLogDay(dayLogs, enabledSlots)) completeDates.push(d);

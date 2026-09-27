@@ -210,7 +210,8 @@
     const targets = await getCalibratedTargets(profile);
     const today = localDateStr();
     const monday = mondayOfThisWeek();
-    const sevenAgo = dateAddDays(today, -6);
+    // 近7天平均不含今天（見 budget.js computeRecentAvgVsTarget 的說明），窗口往前多抓一天。
+    const sevenAgo = dateAddDays(today, -7);
 
     const [todayLogs, weekLogs, recentLogs, todayReservations] = await Promise.all([
       getDailyLogs({ start: today, end: today }),

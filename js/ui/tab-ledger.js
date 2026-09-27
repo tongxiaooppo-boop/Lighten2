@@ -107,7 +107,7 @@
 
   async function renderRecentAvg(targets, profile) {
     const today = localDateStr();
-    const sevenAgo = dateAddDays(today, -6);
+    const sevenAgo = dateAddDays(today, -7); // 近7天平均不含今天，窗口往前多抓一天
     const recentLogs = await getDailyLogs({ start: sevenAgo, end: today });
     const recent = computeRecentAvgVsTarget(recentLogs, targets.targetKcal, profile.enabled_slots, 7);
     const el = $("#ledger-recent-avg");
