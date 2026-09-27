@@ -1,5 +1,6 @@
 // 輕盈計畫 (Lighten Plan) — 蛋白質(日)／纖維(週日均) 硬約束缺口計算
 // 對照 TECH-SPEC 4.4、PRD 5.6。回傳值供 recommend.js 優先安排高蛋白/高纖組合。
+// 依賴 budget.js 的 isCompleteLogDay（index.html 裡 budget.js 在本檔之前載入）。
 
 (function () {
   "use strict";
@@ -37,7 +38,7 @@
     const today = localDateStr();
 
     let todayProtein = 0;
-    const fiberByDate = {};
+    const logsByDate = {};
 
     logs.forEach(function (log) {
       if (!log) return;
@@ -45,8 +46,8 @@
         todayProtein += Number(log.protein_g) || 0;
       }
       if (log.log_date) {
-        fiberByDate[log.log_date] =
-          (fiberByDate[log.log_date] || 0) + (Number(log.fiber_g) || 0);
+        if (!logsByDate[log.log_date]) logsByDate[log.log_date] = [];
+        logsByDate[log.log_date].push(log);
       }
     });
 
@@ -54,12 +55,16 @@
     let proteinGapToday = proteinTarget - todayProtein;
     if (proteinGapToday < 0) proteinGapToday = 0;
 
-    // 纖維週日均：以「有記錄的天數」取平均（每日纖維總量 ÷ 有記錄的天數）
-    const dates = Object.keys(fiberByDate);
+    // 纖維週日均：只算「完整記錄日」（所有開啟時段都有記錄）且不含今天，跟 budget.js 的近7天平均同一套規則。
+    // 原本連還沒吃完的今天、只記了一餐的日子都拿去平均，纖維缺口永遠大於 0（2026-09-27 整案審查第 3 節）。
+    const enabledSlots = profile ? profile.enabled_slots : null;
+    const dates = Object.keys(logsByDate).filter(function (d) {
+      return d < today && isCompleteLogDay(logsByDate[d], enabledSlots);
+    });
     const avgFiber =
       dates.length > 0
         ? dates.reduce(function (sum, d) {
-            return sum + fiberByDate[d];
+            return sum + logsByDate[d].reduce(function (s, l) { return s + (Number(l.fiber_g) || 0); }, 0);
           }, 0) / dates.length
         : 0;
     const fiberGapThisWeek = avgFiber < FIBER_FLOOR_G ? FIBER_FLOOR_G - avgFiber : 0;

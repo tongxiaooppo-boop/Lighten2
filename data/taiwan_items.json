@@ -3,11 +3,14 @@
     "id": "bf01",
     "name": "蛋餅（原味）",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 265,
     "kcal_high": 380,
     "kcal_rep": null,
     "note": "加起司/培根等配料取高值｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "蛋",
       "麩質"
@@ -19,11 +22,14 @@
     "id": "bf02",
     "name": "燕麥奶／牛奶（一杯約240ml）",
     "category": "早餐",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 120,
     "kcal_high": 150,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "乳製品"
     ],
@@ -34,11 +40,14 @@
     "id": "bf03",
     "name": "飯糰",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 480,
     "kcal_high": 670,
     "kcal_rep": null,
     "note": "依內餡（油條、肉鬆）差異大｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -49,11 +58,14 @@
     "id": "bf04",
     "name": "豬肉蛋吐司",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 320,
     "kcal_high": 380,
     "kcal_rep": null,
     "note": "估算值，比照同類三明治｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "蛋",
       "麩質"
@@ -62,30 +74,20 @@
     "fiber_g": 2
   },
   {
-    "id": "bf05",
-    "name": "豆漿（無糖，小杯360ml）",
-    "category": "早餐",
-    "kcal_low": 125,
-    "kcal_high": 125,
-    "kcal_rep": 125,
-    "note": "含糖大杯(600ml)約240｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [
-      "黃豆"
-    ],
-    "protein_g": 8,
-    "fiber_g": 1
-  },
-  {
     "id": "bf06",
     "name": "蘿蔔糕（2片）",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 355,
     "kcal_high": 355,
     "kcal_rep": 355,
     "note": "加蛋約450｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "甲殼類"
+    ],
     "protein_g": 5,
     "fiber_g": 1
   },
@@ -93,11 +95,14 @@
     "id": "bf07",
     "name": "鐵板麵",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 450,
     "kcal_high": 450,
     "kcal_rep": 450,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -108,11 +113,14 @@
     "id": "bf08",
     "name": "地瓜（1條，約150g）",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 180,
     "kcal_high": 180,
     "kcal_rep": 180,
     "note": "約180｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [],
     "protein_g": 2,
     "fiber_g": 3
@@ -121,11 +129,14 @@
     "id": "bf09",
     "name": "燒餅油條",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 500,
     "kcal_high": 554,
     "kcal_rep": null,
     "note": "加蛋約645–650｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -136,11 +147,14 @@
     "id": "bf10",
     "name": "抓餅加蛋",
     "category": "早餐",
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
     "kcal_low": 550,
     "kcal_high": 580,
     "kcal_rep": null,
     "note": "蔥抓餅450–480＋蛋約100｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "蛋",
       "麩質"
@@ -152,7 +166,11 @@
     "id": "bf11",
     "name": "麥當勞 豬肉滿福堡＋經典美式咖啡(熱)",
     "category": "早餐",
-    "bundled_drink": true,
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
+    "contains_drink": true,
     "kcal_low": 330,
     "kcal_high": 355,
     "kcal_rep": 343,
@@ -168,7 +186,11 @@
     "id": "bf12",
     "name": "麥當勞 豬肉滿福堡加蛋＋紅茶(熱)",
     "category": "早餐",
-    "bundled_drink": true,
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
+    "contains_drink": true,
     "kcal_low": 375,
     "kcal_high": 400,
     "kcal_rep": 389,
@@ -185,7 +207,11 @@
     "id": "bf13",
     "name": "麥當勞 豬肉蛋堡＋經典美式咖啡(熱)",
     "category": "早餐",
-    "bundled_drink": true,
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
+    "contains_drink": true,
     "kcal_low": 410,
     "kcal_high": 440,
     "kcal_rep": 425,
@@ -202,7 +228,11 @@
     "id": "bf14",
     "name": "麥當勞 青蔬滿福堡＋鮮奶(盒裝)",
     "category": "早餐",
-    "bundled_drink": true,
+    "role": "main",
+    "valid_slots": [
+      "breakfast"
+    ],
+    "contains_drink": true,
     "kcal_low": 420,
     "kcal_high": 445,
     "kcal_rep": 433,
@@ -219,11 +249,14 @@
     "id": "ln01",
     "name": "排骨便當",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 880,
     "kcal_high": 1055,
     "kcal_rep": 950,
     "note": "代表值約950｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -234,12 +267,17 @@
     "id": "ln02",
     "name": "雞腿便當",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 623,
     "kcal_high": 904,
     "kcal_rep": 810,
     "note": "滷雞腿623–807／炸雞腿780–904，代表值約810｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 32,
     "fiber_g": 3
   },
@@ -247,11 +285,14 @@
     "id": "ln03",
     "name": "水餃／鍋貼（10顆）",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 600,
     "kcal_high": 770,
     "kcal_rep": null,
     "note": "水餃1顆約60、鍋貼1顆約77｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -262,11 +303,14 @@
     "id": "ln04",
     "name": "牛肉麵",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 540,
     "kcal_high": 870,
     "kcal_rep": 700,
     "note": "代表值約700｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -277,11 +321,14 @@
     "id": "ln05",
     "name": "乾麵／湯麵",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 300,
     "kcal_high": 400,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -292,12 +339,17 @@
     "id": "ln06",
     "name": "自助餐（飯+2–3樣配菜）",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 600,
     "kcal_high": 750,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 25,
     "fiber_g": 4
   },
@@ -305,12 +357,17 @@
     "id": "ln07",
     "name": "健康餐盒",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 400,
     "kcal_high": 550,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 28,
     "fiber_g": 5
   },
@@ -318,12 +375,17 @@
     "id": "ln08",
     "name": "滷肉飯套餐",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 600,
     "kcal_high": 750,
     "kcal_rep": null,
     "note": "滷肉飯本身440–690＋湯/配菜｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 20,
     "fiber_g": 2
   },
@@ -331,11 +393,14 @@
     "id": "ln09",
     "name": "火腿炒飯",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 650,
     "kcal_high": 700,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "蛋"
     ],
@@ -346,12 +411,17 @@
     "id": "ln10",
     "name": "便利商店餐盒",
     "category": "午餐",
+    "role": "main",
+    "valid_slots": [
+      "lunch"
+    ],
     "kcal_low": 400,
     "kcal_high": 600,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 20,
     "fiber_g": 3
   },
@@ -359,12 +429,17 @@
     "id": "dn01",
     "name": "火鍋／刷刷鍋",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 700,
     "kcal_high": 2400,
     "kcal_rep": null,
     "note": "個人小火鍋含飯700–950；吃到飽或麻辣鍋1800–2400以上，湯底與沾醬是主要變數｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 30,
     "fiber_g": 5
   },
@@ -372,11 +447,14 @@
     "id": "dn02",
     "name": "鹹酥雞／炸雞",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 500,
     "kcal_high": 2000,
     "kcal_rep": null,
     "note": "單一雞排/鹹酥雞500–630；多樣拼盤1500–2000｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質"
     ],
@@ -387,11 +465,14 @@
     "id": "dn03",
     "name": "滷味",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 500,
     "kcal_high": 700,
     "kcal_rep": null,
     "note": "依食材組合，加工品（豆皮、燕餃）較高｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "黃豆"
     ],
@@ -402,12 +483,17 @@
     "id": "dn04",
     "name": "鐵板燒",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 700,
     "kcal_high": 900,
     "kcal_rep": null,
     "note": "估算值，主菜與醬料影響大｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 30,
     "fiber_g": 3
   },
@@ -415,11 +501,14 @@
     "id": "dn05",
     "name": "壽司／日式定食",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 700,
     "kcal_high": 900,
     "kcal_rep": null,
     "note": "壽司8–10貫或含炸物、飯、湯的定食｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "甲殼類",
       "麩質"
@@ -431,11 +520,14 @@
     "id": "dn06",
     "name": "夜市小吃（蚵仔煎／臭豆腐）",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 380,
     "kcal_high": 565,
     "kcal_rep": null,
     "note": "蚵仔煎440–560；臭豆腐380–565｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "甲殼類"
     ],
@@ -446,12 +538,17 @@
     "id": "dn07",
     "name": "水煮餐／健康餐",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 400,
     "kcal_high": 500,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 30,
     "fiber_g": 4
   },
@@ -459,11 +556,14 @@
     "id": "dn08",
     "name": "義大利麵",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 500,
     "kcal_high": 960,
     "kcal_rep": null,
     "note": "清炒500–600；白醬/奶油700–960｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -474,12 +574,17 @@
     "id": "dn09",
     "name": "家常菜（熱炒）",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 200,
     "kcal_high": 1100,
     "kcal_rep": null,
     "note": "清蒸/涼拌200–300；一般炒400–700；重油炸/沾醬700–1100以上，差異極大｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 20,
     "fiber_g": 3
   },
@@ -487,11 +592,14 @@
     "id": "dn10",
     "name": "海鮮粥／皮蛋瘦肉粥",
     "category": "晚餐",
+    "role": "main",
+    "valid_slots": [
+      "dinner"
+    ],
     "kcal_low": 165,
     "kcal_high": 260,
     "kcal_rep": null,
     "note": "相對清淡｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "甲殼類",
       "蛋"
@@ -503,11 +611,14 @@
     "id": "sn01",
     "name": "鹹酥雞",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 300,
     "kcal_high": 2000,
     "kcal_rep": null,
     "note": "單份300–630；多樣拼盤1500–2000｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質"
     ],
@@ -518,12 +629,17 @@
     "id": "sn02",
     "name": "串燒／燒烤",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 800,
     "kcal_high": 1200,
     "kcal_rep": null,
     "note": "每串120–235，5–8串約800–1200；未含酒精熱量｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 30,
     "fiber_g": 2
   },
@@ -531,11 +647,14 @@
     "id": "sn03",
     "name": "泡麵",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 250,
     "kcal_high": 400,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -546,11 +665,14 @@
     "id": "sn04",
     "name": "豆漿店（小籠包／燒餅）",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 522,
     "kcal_high": 522,
     "kcal_rep": 522,
     "note": "小籠包8顆｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質"
     ],
@@ -561,11 +683,14 @@
     "id": "sn05",
     "name": "派克／炸雞排",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 500,
     "kcal_high": 630,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質"
     ],
@@ -576,11 +701,14 @@
     "id": "sn06",
     "name": "滷味",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 500,
     "kcal_high": 700,
     "kcal_rep": null,
     "note": "同晚餐估算｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "黃豆"
     ],
@@ -591,11 +719,14 @@
     "id": "sn07",
     "name": "關東煮",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 300,
     "kcal_high": 500,
     "kcal_rep": null,
     "note": "5–6樣+湯；原型食材低，加工丸類/米血糕較高｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "魚",
       "麩質"
@@ -607,11 +738,14 @@
     "id": "sn08",
     "name": "涼麵",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 279,
     "kcal_high": 450,
     "kcal_rep": null,
     "note": "｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [
       "麩質",
       "芝麻"
@@ -623,11 +757,14 @@
     "id": "sn09",
     "name": "甜湯／豆花",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 120,
     "kcal_high": 350,
     "kcal_rep": null,
     "note": "不加糖水120；加糖水配料250–350｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "黃豆"
     ],
@@ -638,12 +775,17 @@
     "id": "sn10",
     "name": "鹽水雞",
     "category": "宵夜",
+    "role": "main",
+    "valid_slots": [
+      "snack"
+    ],
     "kcal_low": 350,
     "kcal_high": 450,
     "kcal_rep": null,
     "note": "雞肉+2–3樣蔬菜｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 30,
     "fiber_g": 2
   },
@@ -651,12 +793,17 @@
     "id": "dr01",
     "name": "珍珠奶茶（全糖）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 620,
     "kcal_high": 850,
     "kcal_rep": 700,
     "note": "500cc全糖約700大卡（維基百科），700cc大杯或加料（椰果/布丁）取高值；代表值約700｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "乳製品"
+    ],
     "protein_g": 2,
     "fiber_g": 0
   },
@@ -664,12 +811,17 @@
     "id": "dr02",
     "name": "珍珠奶茶（半糖去冰）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 500,
     "kcal_high": 650,
     "kcal_rep": null,
     "note": "估算值：半糖約可減少全糖版本15–20%糖量熱量，去冰不影響總糖量；珍珠本身熱量不隨甜度調整而變，各店做法差異大，僅供概略參考｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
-    "allergen_tags": [],
+    "allergen_tags": [
+      "乳製品"
+    ],
     "protein_g": 2,
     "fiber_g": 0
   },
@@ -677,11 +829,15 @@
     "id": "dr03",
     "name": "四季春／紅茶（無糖）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 0,
     "kcal_high": 15,
     "kcal_rep": 5,
     "note": "純茶無糖，幾乎無熱量｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": false,
     "allergen_tags": [],
     "protein_g": 0,
     "fiber_g": 0
@@ -690,11 +846,14 @@
     "id": "dr04",
     "name": "手搖水果茶（微糖）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 150,
     "kcal_high": 300,
     "kcal_rep": null,
     "note": "依水果配料與糖量差異大，估算值｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [],
     "protein_g": 0,
     "fiber_g": 1
@@ -703,11 +862,15 @@
     "id": "dr05",
     "name": "拿鐵咖啡（無糖，大杯約400ml）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 160,
     "kcal_high": 185,
     "kcal_rep": 172,
     "note": "衛福部台灣食品成分表2025版「拿鐵咖啡(無糖)」每100g約43大卡、蛋白質2.98g，換算大杯約400ml；原本是網路查詢估算值，這次改用官方實測數據校正｜2026-09-27更新",
-    "uses_flex": false,
     "allergen_tags": [
       "乳製品"
     ],
@@ -718,11 +881,15 @@
     "id": "dr06",
     "name": "豆漿（無糖，大杯約300ml）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 100,
     "kcal_high": 110,
     "kcal_rep": 105,
     "note": "衛福部台灣食品成分表2025版「豆漿(無糖)」每100g約35大卡、蛋白質3.64g、纖維1.27g，換算大杯約300ml｜2026-09-27新增，官方實測數據",
-    "uses_flex": false,
     "allergen_tags": [
       "黃豆"
     ],
@@ -733,11 +900,15 @@
     "id": "dr07",
     "name": "豆漿（含糖，大杯約300ml，一般早餐店常見版）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 170,
     "kcal_high": 190,
     "kcal_rep": 180,
     "note": "衛福部台灣食品成分表2025版「豆漿」（一般含糖包裝版）每100g約60大卡、蛋白質3.16g，換算大杯約300ml｜2026-09-27新增，官方實測數據",
-    "uses_flex": true,
     "allergen_tags": [
       "黃豆"
     ],
@@ -748,11 +919,15 @@
     "id": "dr08",
     "name": "鮮奶（一杯，約240ml，全脂）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 145,
     "kcal_high": 160,
     "kcal_rep": 152,
     "note": "衛福部台灣食品成分表2025版「全脂鮮乳平均值」每100g約63大卡、蛋白質3.11g，換算一杯約240ml（國健署「我的餐盤」建議早晚各一杯約240ml的奶類）｜2026-09-27新增，官方實測數據",
-    "uses_flex": false,
     "allergen_tags": [
       "乳製品"
     ],
@@ -763,11 +938,15 @@
     "id": "dr09",
     "name": "美式咖啡（無糖，大杯約450ml）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 5,
     "kcal_high": 15,
     "kcal_rep": 11,
     "note": "衛福部台灣食品成分表2025版「美式咖啡(無糖)」每100g約2.4大卡，幾乎無熱量，換算大杯約450ml｜2026-09-27新增，官方實測數據",
-    "uses_flex": false,
     "allergen_tags": [],
     "protein_g": 0.9,
     "fiber_g": 0
@@ -776,11 +955,15 @@
     "id": "dr10",
     "name": "拿鐵咖啡（含糖，大杯約400ml）",
     "category": "飲料",
+    "role": "drink",
+    "valid_slots": [
+      "breakfast",
+      "afternoon_tea"
+    ],
     "kcal_low": 220,
     "kcal_high": 250,
     "kcal_rep": 232,
     "note": "以官方「拿鐵咖啡(無糖)」400ml版（約172大卡）為底，加估一份糖漿（約15g糖，約60大卡）；加糖部分是估算，無糖底數是官方實測數據｜2026-09-27新增",
-    "uses_flex": true,
     "allergen_tags": [
       "乳製品"
     ],
@@ -791,11 +974,16 @@
     "id": "fw01",
     "name": "大麥克餐（大麥克＋中薯＋中可樂）",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
+    "contains_drink": true,
     "kcal_low": 950,
     "kcal_high": 1100,
     "kcal_rep": 1020,
     "note": "大麥克單點480–580（依市場略有差異，維基百科）＋中薯約320–340＋中可樂約150–180，套餐總和估算，代表值約1020｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質",
       "蛋",
@@ -808,11 +996,15 @@
     "id": "fw02",
     "name": "大麥克（單點，不含餐）",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
     "kcal_low": 480,
     "kcal_high": 580,
     "kcal_rep": 550,
     "note": "美國版580大卡（維基百科），各地版本略有差異｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質",
       "乳製品"
@@ -824,11 +1016,15 @@
     "id": "fw03",
     "name": "炸雞（2塊）＋薯條（中）",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
     "kcal_low": 600,
     "kcal_high": 750,
     "kcal_rep": null,
     "note": "估算值，依連鎖品牌與部位（雞胸/雞腿）而異｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質"
     ],
@@ -839,11 +1035,15 @@
     "id": "fw04",
     "name": "披薩（起司／總匯，2片）",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
     "kcal_low": 500,
     "kcal_high": 700,
     "kcal_rep": null,
     "note": "估算值，依餅皮厚度與配料差異大｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質",
       "乳製品"
@@ -855,11 +1055,16 @@
     "id": "fw05",
     "name": "美式漢堡套餐（漢堡＋薯條＋飲料）",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
+    "contains_drink": true,
     "kcal_low": 800,
     "kcal_high": 1000,
     "kcal_rep": null,
     "note": "估算值，涵蓋摩斯漢堡等連鎖漢堡套餐｜2026-09-25 補上 uses_flex/allergen_tags/protein_g/fiber_g（依常見營養資料與菜色組成估算）",
-    "uses_flex": true,
     "allergen_tags": [
       "麩質",
       "乳製品"
@@ -871,11 +1076,19 @@
     "id": "fw06",
     "name": "麥當勞 藜麥烤雞沙拉＋水果袋＋無糖綠茶",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
+    "contains_drink": true,
     "kcal_low": 280,
     "kcal_high": 305,
     "kcal_rep": 294,
     "note": "營養師整理麥當勞官方營養標示（nuturefit.com「麥當勞熱量7款減脂組合推薦」），組合已含飲品，蛋白質22g/脂肪13g為官方標示；纖維為估算值（含沙拉/水果，估較高）｜2026-09-27新增",
-    "allergen_tags": [],
+    "allergen_tags": [
+      "未確認"
+    ],
     "protein_g": 22,
     "fiber_g": 4
   },
@@ -883,6 +1096,12 @@
     "id": "fw07",
     "name": "麥當勞 嫩煎雞腿堡＋四季沙拉＋無糖紅茶",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
+    "contains_drink": true,
     "kcal_low": 395,
     "kcal_high": 420,
     "kcal_rep": 410,
@@ -897,6 +1116,12 @@
     "id": "fw08",
     "name": "麥當勞 帕瑪森安格斯牛肉堡＋四季沙拉＋可口可樂zero",
     "category": "西式速食",
+    "role": "main",
+    "valid_slots": [
+      "lunch",
+      "dinner"
+    ],
+    "contains_drink": true,
     "kcal_low": 565,
     "kcal_high": 595,
     "kcal_rep": 580,
@@ -908,16 +1133,23 @@
     "protein_g": 28,
     "fiber_g": 2.5
   },
-
   {
     "id": "tc01",
     "name": "西式蛋糕（一片，如咖啡布蕾／戚風／生乳捲）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 200,
     "kcal_high": 310,
     "kcal_rep": 255,
     "note": "參考85度C蛋糕熱量整理（咖啡布蕾約207大卡、沙架蛋糕約304大卡），連鎖烘焙店常見切片蛋糕範圍｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考，實際依品牌/份量差異",
-    "allergen_tags": ["麩質", "蛋", "乳製品"],
+    "allergen_tags": [
+      "麩質",
+      "蛋",
+      "乳製品"
+    ],
     "protein_g": 4,
     "fiber_g": 1
   },
@@ -925,11 +1157,19 @@
     "id": "tc02",
     "name": "葡式蛋塔（一顆）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 180,
     "kcal_high": 270,
     "kcal_rep": 220,
     "note": "各資料來源落差較大（約182–273大卡不等，含衛福部食品營養成分資料庫與媒體報導），取中間值｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考",
-    "allergen_tags": ["蛋", "乳製品", "麩質"],
+    "allergen_tags": [
+      "蛋",
+      "乳製品",
+      "麩質"
+    ],
     "protein_g": 4,
     "fiber_g": 0
   },
@@ -937,11 +1177,19 @@
     "id": "tc03",
     "name": "可頌（原味，一個）",
     "category": "茶點",
-    "kcal_low": 350,
-    "kcal_high": 450,
-    "kcal_rep": 400,
-    "note": "多份營養師整理資料顯示原味可頌約350–450大卡（層層裹油烘烤所致），加料款熱量更高，本筆僅指原味｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考",
-    "allergen_tags": ["麩質", "乳製品", "蛋"],
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
+    "kcal_low": 270,
+    "kcal_high": 320,
+    "kcal_rep": 300,
+    "note": "多份營養師整理資料顯示原味可頌約350–450大卡（層層裹油烘烤所致），加料款熱量更高，本筆僅指原味｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考｜2026-09-27 依 TFDB 452 kcal/100g、一個約 60–70g 修正代表值（原 400 偏高）",
+    "allergen_tags": [
+      "麩質",
+      "乳製品",
+      "蛋"
+    ],
     "protein_g": 7,
     "fiber_g": 1
   },
@@ -949,11 +1197,19 @@
     "id": "tc04",
     "name": "甜口味小餐包（奶酥／肉鬆等，一個）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 300,
     "kcal_high": 550,
     "kcal_rep": null,
     "note": "不同口味/品牌落差很大（奶酥類可到500+大卡，肉鬆/波蘿類較低），無法給單一代表值，僅供概略參考｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據）",
-    "allergen_tags": ["麩質", "乳製品", "蛋"],
+    "allergen_tags": [
+      "麩質",
+      "乳製品",
+      "蛋"
+    ],
     "protein_g": 7,
     "fiber_g": 1
   },
@@ -961,11 +1217,18 @@
     "id": "tc05",
     "name": "蘇打餅／夾心餅（一份，約4片）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 120,
     "kcal_high": 200,
     "kcal_rep": 160,
     "note": "蘇打餅每100克約450–550大卡，換算一份約30克估算；夾心/含糖款取範圍高端｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考",
-    "allergen_tags": ["麩質", "乳製品"],
+    "allergen_tags": [
+      "麩質",
+      "乳製品"
+    ],
     "protein_g": 2,
     "fiber_g": 1
   },
@@ -973,6 +1236,10 @@
     "id": "tc06",
     "name": "洋芋片（一小包，約30克）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 150,
     "kcal_high": 220,
     "kcal_rep": 180,
@@ -985,11 +1252,17 @@
     "id": "tc07",
     "name": "無調味綜合堅果（一小把，約20克，健康取向）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 100,
     "kcal_high": 140,
     "kcal_rep": 120,
     "note": "混合堅果每100克約590大卡，換算一小把約20克估算，比其他茶點類更飽足、蛋白質/纖維較高｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考",
-    "allergen_tags": ["堅果"],
+    "allergen_tags": [
+      "堅果"
+    ],
     "protein_g": 4,
     "fiber_g": 2
   },
@@ -997,11 +1270,17 @@
     "id": "tc08",
     "name": "無糖優格（含少量水果，一杯約150克，健康取向）",
     "category": "茶點",
+    "role": "snack",
+    "valid_slots": [
+      "afternoon_tea"
+    ],
     "kcal_low": 90,
     "kcal_high": 150,
     "kcal_rep": 120,
     "note": "原味無糖優格熱量低，加少量新鮮水果估算總量，比一般茶點類熱量低、蛋白質較高｜2026-09-27新增，Claude依網路公開資料整理估算（非使用者提供實測數據），僅供概略參考",
-    "allergen_tags": ["乳製品"],
+    "allergen_tags": [
+      "乳製品"
+    ],
     "protein_g": 7,
     "fiber_g": 1.5
   }

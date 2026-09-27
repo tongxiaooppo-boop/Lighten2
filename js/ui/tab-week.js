@@ -53,12 +53,12 @@
     return dateStr ? dateStr.slice(5).replace("-", "/") : "";
   }
 
-  // 週平均熱量狀態：只用中性/正向字眼，不用負面詞。
+  // 週平均熱量狀態：中性描述，不加「略」這類會在差很多時失準的修飾（2026-09-27 整案審查第 5 節）。
   function calStatus(avg, target) {
     if (!target || target <= 0) return "本週平均熱量已記錄";
     const diffPct = ((avg - target) / target) * 100;
-    if (diffPct > 5) return "本週平均熱量略高於目標";
-    if (diffPct < -5) return "本週平均熱量略低於目標";
+    if (diffPct > 5) return "本週平均熱量高於目標";
+    if (diffPct < -5) return "本週平均熱量低於目標";
     return "本週平均熱量在目標範圍內";
   }
 
@@ -134,31 +134,38 @@
     }
 
     const byDate = {};
-    let totalKcal = 0;
-    let totalProtein = 0;
-    let totalFiber = 0;
+    const logsByDate = {};
     logs.forEach(function (l) {
       const d = l.log_date;
       if (!byDate[d]) byDate[d] = { kcal: 0, protein: 0, fiber: 0 };
       byDate[d].kcal += Number(l.kcal) || 0;
       byDate[d].protein += Number(l.protein_g) || 0;
       byDate[d].fiber += Number(l.fiber_g) || 0;
-      totalKcal += Number(l.kcal) || 0;
-      totalProtein += Number(l.protein_g) || 0;
-      totalFiber += Number(l.fiber_g) || 0;
+      if (!logsByDate[d]) logsByDate[d] = [];
+      logsByDate[d].push(l);
     });
 
-    const avgKcal = totalKcal / daysElapsed;
-    const avgProtein = totalProtein / daysElapsed;
-    const avgFiber = totalFiber / daysElapsed;
+    // 平均只算「完整記錄日」（所有開啟時段都有記錄）且不含今天，跟「近7天平均」同一套規則。
+    // 原本除以含今天在內的所有天數，週一早上就會顯示「低於目標」（2026-09-27 整案審查第 5 節）。
+    const completeDates = Object.keys(logsByDate).filter(function (d) {
+      return d < today && isCompleteLogDay(logsByDate[d], profile.enabled_slots);
+    });
+    const nComplete = completeDates.length;
+    function avgOf(key) {
+      if (nComplete === 0) return 0;
+      return completeDates.reduce(function (s, d) { return s + byDate[d][key]; }, 0) / nComplete;
+    }
+    const avgKcal = avgOf("kcal");
+    const avgProtein = avgOf("protein");
+    const avgFiber = avgOf("fiber");
 
     const calEl = $("#week-cal-summary");
     if (calEl) {
-      if (logs.length === 0) {
-        calEl.textContent = "本週尚無攝取紀錄";
+      if (nComplete === 0) {
+        calEl.textContent = "本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）";
       } else {
         calEl.textContent = calStatus(avgKcal, targets.targetKcal) +
-          "（週平均 " + Math.round(avgKcal) + "／目標 " + Math.round(targets.targetKcal) + " kcal）";
+          "（" + nComplete + " 個完整記錄日平均 " + Math.round(avgKcal) + "／目標 " + Math.round(targets.targetKcal) + " kcal）";
       }
     }
 
@@ -166,13 +173,15 @@
     const fiberPct = pct(avgFiber, targets.fiber_g);
 
     const proteinEl = $("#week-protein");
-    if (proteinEl) {
+    if (proteinEl && nComplete === 0) proteinEl.textContent = "蛋白質：—";
+    else if (proteinEl) {
       proteinEl.textContent = "蛋白質：週平均 " + round1(avgProtein) + " g／目標 " + round1(targets.protein_g) + " g" +
         (proteinPct == null ? "" : "（達成率 " + proteinPct + "%）");
     }
 
     const fiberEl = $("#week-fiber");
-    if (fiberEl) {
+    if (fiberEl && nComplete === 0) fiberEl.textContent = "膳食纖維：—";
+    else if (fiberEl) {
       fiberEl.textContent = "膳食纖維：週平均 " + round1(avgFiber) + " g／目標 " + round1(targets.fiber_g) + " g" +
         (fiberPct == null ? "" : "（達成率 " + fiberPct + "%）");
     }
@@ -198,5 +207,10 @@
     if (status) status.textContent = "";
   }
 
-  ready(render);
+  ready(function () {
+    document.addEventListener("tab:activated", function (e) {
+      if (e.detail === "week") render();
+    });
+    render();
+  });
 })();

@@ -146,6 +146,25 @@ body {
   flex: 0 0 auto;
 }
 
+/* 過敏原固定選項：勾選框橫向排列，窄螢幕自動換行 */
+.allergen-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  color: #8A7A63;
+}
+
+.allergen-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.allergen-options .allergen-option {
+  gap: 0.3rem;
+  color: #3A2E22;
+}
+
 .primary-btn {
   padding: 0.6rem 1.4rem;
   font-size: 1rem;

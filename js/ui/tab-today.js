@@ -99,15 +99,36 @@
 
   const RESERVATION_SIZE_LABELS = { S: "小", M: "中", L: "大" };
 
+  // 這個時段已經記錄過（2026-09-27 整案審查 A3）：顯示記了什麼＋撤銷，不再推薦新的組合。
+  // 撤銷按鈕跟著卡片一起渲染（用 daily_log 的 id），所以任何重新整理都不會把它吃掉。
+  // 從預約確認來的紀錄要到美饗日曆處理，這裡不給撤銷。
+  function loggedHtml(logs) {
+    const total = logs.reduce(function (sum, l) { return sum + (Number(l.kcal) || 0); }, 0);
+    const names = logs.map(function (l) { return l.item_name || "已記錄的餐點"; }).join("、");
+    let html = '<p class="rec-reservation-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
+    logs.forEach(function (l) {
+      if (!l.feast_reservation_id) {
+        html += '<button type="button" class="feast-cancel rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' +
+          (logs.length > 1 ? "「" + escapeHtml(l.item_name || "") + "」" : "") + "</button>";
+      }
+    });
+    return html;
+  }
+
   // 這個時段已經有預約中的大餐時，不要再顯示一般推薦——使用者已經決定這餐要吃什麼了，
   // 繼續推薦別的東西只會讓人以為系統沒看到預約、或不確定該吃哪一個。
-  function renderRecs(recs, profile, reservationsBySlot) {
+  function renderRecs(recs, profile, reservationsBySlot, logsBySlot) {
     SLOTS.forEach(function (slot) {
       const body = $("#rec-" + slot);
       if (!body) return;
       const isEnabled = !profile || window.isSlotEnabled(profile.enabled_slots, slot);
       if (!isEnabled) {
         body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
+        return;
+      }
+      const slotLogs = logsBySlot && logsBySlot[slot];
+      if (slotLogs && slotLogs.length > 0) {
+        body.innerHTML = loggedHtml(slotLogs);
         return;
       }
       const reservation = reservationsBySlot && reservationsBySlot[slot];
@@ -134,7 +155,7 @@
         ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name || SLOT_LABELS[slot] || "") + '" loading="lazy">'
         : "";
       const fallbackNote = rec.fallback_to_auto
-        ? '<p class="rec-fallback-note">今日這個來源沒有符合配額的選擇，已改為一般推薦</p>'
+        ? '<p class="rec-fallback-note">今天這個來源沒有合適的選擇，已改為一般推薦</p>'
         : "";
       const contentNote = rec.content_note
         ? '<p class="rec-content-note">' + escapeHtml(rec.content_note) + "</p>"
@@ -153,7 +174,7 @@
     });
   }
 
-  // 頂部「今日剩餘預算」彙總卡：剩餘熱量（recalcTodayBudget 已算好）+ 今天蛋白質/纖維攝取量
+  // 頂部彙總卡：今日未記錄時段的建議熱量（recalcTodayBudget 已算好）+ 今天蛋白質/纖維攝取量
   // + 近7天平均 vs 目標 + 體重趨勢校正提示（pending / 自動調整告知）。
   async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile) {
     const hero = $("#today-hero");
@@ -182,7 +203,9 @@
         if (state.pending) {
           html = '<button type="button" class="today-cal-link" id="today-cal-pending">基本資料有一項目標調整建議待你確認</button>';
         } else if (state.announce_until && today <= state.announce_until && state.offset_kcal !== 0) {
-          html = '<p class="today-cal-announce">依近4週體重趨勢，每日目標從 ' + shortDate(state.effective_date) + ' 起調整為 ' + Math.round(targets.targetKcal) + ' kcal</p>';
+          // 用生效日當天的目標，不是今天的（調整當天今天還是舊值，2026-09-27 整案審查 B3）
+          const newTargets = await getCalibratedTargets(profile, state.effective_date);
+          html = '<p class="today-cal-announce">依近4週體重趨勢，每日目標從 ' + shortDate(state.effective_date) + ' 起調整為 ' + Math.round(newTargets.targetKcal) + ' kcal</p>';
         }
       } catch (err) {
         console.error(err);
@@ -223,7 +246,14 @@
       return;
     }
 
-    const targets = await getCalibratedTargets(profile);
+    let targets;
+    try {
+      targets = await getCalibratedTargets(profile);
+    } catch (e) {
+      console.error(e);
+      setStatus("計算今日目標失敗，請重新整理頁面。");
+      return;
+    }
     const today = localDateStr();
     const monday = mondayOfThisWeek();
     // 近7天平均不含今天（見 budget.js computeRecentAvgVsTarget 的說明），窗口往前多抓一天。
@@ -256,18 +286,30 @@
 
     renderHero(remainingBudget, targets, todayLogs, recentLogs, profile).catch(function (err) { console.error(err); });
 
+    // 已記錄、已預約、已關閉的時段都不需要推薦，也不該佔用跨時段不重複的名額。
+    const logsBySlot = {};
+    todayLogs.forEach(function (l) {
+      if (!logsBySlot[l.slot]) logsBySlot[l.slot] = [];
+      logsBySlot[l.slot].push(l);
+    });
+    const reservationsBySlot = {};
+    todayReservations.forEach(function (r) { reservationsBySlot[r.slot] = r; });
+    const skipSlots = {};
+    SLOTS.forEach(function (slot) {
+      if (logsBySlot[slot] || reservationsBySlot[slot] || !window.isSlotEnabled(profile.enabled_slots, slot)) skipSlots[slot] = true;
+    });
+
     const recs = await getTodayRecommendation(
       remainingBudget,
       hardConstraints,
       profile.meal_prefs,
       profile.diet_restriction,
-      profile.allergens
+      profile.allergens,
+      skipSlots
     );
     currentRecs = recs;
 
-    const reservationsBySlot = {};
-    todayReservations.forEach(function (r) { reservationsBySlot[r.slot] = r; });
-    renderRecs(recs, profile, reservationsBySlot);
+    renderRecs(recs, profile, reservationsBySlot, logsBySlot);
     // 修既有 bug：score() 的「近期出現過降權」一直讀 shown_count/last_shown_date，
     // 但這兩個欄位過去只在使用者按「倒讚」時才寫入，單純顯示從沒被記錄過，降權形同死碼。
     // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
@@ -276,51 +318,42 @@
     setStatus("");
   }
 
+  // 推薦的組合一律照組合本身算好的數字記錄，不算大餐（is_feast=0）。
+  // 單一台式品項帶 item_id 方便之後對回 taiwan_items；多品項組合沒有單一對應品項。
+  // 記錄完重新渲染，這個時段會改顯示「已記錄＋撤銷」（見 renderRecs）。
   async function onLogRecClick(slot, rec, btnEl) {
     btnEl.disabled = true; // 防連點
     try {
-      const today = localDateStr();
-      let savedId;
-      if (rec.is_delivery && rec.source_id) {
-        // source_id 是 recommend.js 給的原始 taiwan_items id（拿掉 tw_ 前綴後的那個）。
-        // 「茶點＋飲料」這種台式品項組合沒有單一 source_id（見 recommend.js 的
-        // toTaiwanTeaCombo），會落到下面的分支，直接用組合本身算好的數字記錄。
-        const saved = await logFeastDirectly(today, slot, null, rec.source_id);
-        savedId = saved.id;
-      } else {
-        const saved = await addDailyLog({
-          log_date: today,
-          slot: slot,
-          source_type: rec.is_convenience ? "custom" : "recipe_template",
-          item_id: null,
-          item_name: rec.name,
-          kcal: rec.scaled_kcal,
-          protein_g: rec.protein_g,
-          carb_g: rec.carb_g,
-          fat_g: rec.fat_g,
-          fiber_g: rec.fiber_g,
-          is_feast: 0,
-          feast_reservation_id: null,
-        });
-        savedId = saved.id;
-      }
-      btnEl.textContent = "已記錄";
-      const undoBtn = document.createElement("button");
-      undoBtn.type = "button";
-      undoBtn.className = "feast-cancel rec-undo-btn";
-      undoBtn.textContent = "撤銷";
-      undoBtn.addEventListener("click", async function () {
-        await undoDailyLog(savedId);
-        undoBtn.remove();
-        btnEl.disabled = false;
-        btnEl.textContent = "記錄這餐";
-        await buildRecommendation();
+      await addDailyLog({
+        log_date: localDateStr(),
+        slot: slot,
+        source_type: rec.source_id ? "taiwan_item" : rec.is_composed ? "recipe_template" : "custom",
+        item_id: rec.source_id || null,
+        item_name: rec.name,
+        kcal: rec.scaled_kcal,
+        protein_g: rec.protein_g,
+        carb_g: rec.carb_g,
+        fat_g: rec.fat_g,
+        fiber_g: rec.fiber_g,
+        is_feast: 0,
+        feast_reservation_id: null,
       });
-      btnEl.insertAdjacentElement("afterend", undoBtn);
       await buildRecommendation();
     } catch (err) {
       console.error(err);
       alert("記錄失敗，請重試。");
+      btnEl.disabled = false;
+    }
+  }
+
+  async function onUndoClick(logId, btnEl) {
+    btnEl.disabled = true;
+    try {
+      await undoDailyLog(logId);
+      await buildRecommendation();
+    } catch (err) {
+      console.error(err);
+      alert("撤銷失敗，請重試。");
       btnEl.disabled = false;
     }
   }
@@ -350,6 +383,11 @@
           onDislikeClick(dislikeBtn.getAttribute("data-id"));
           return;
         }
+        const undoBtn = e.target.closest(".rec-undo-btn");
+        if (undoBtn && undoBtn.getAttribute("data-log-id")) {
+          onUndoClick(undoBtn.getAttribute("data-log-id"), undoBtn);
+          return;
+        }
         const logBtn = e.target.closest(".rec-log-btn");
         if (logBtn && logBtn.getAttribute("data-slot")) {
           const slot = logBtn.getAttribute("data-slot");
@@ -358,6 +396,11 @@
         }
       });
     }
+
+    // 從其他分頁切回來（預約／記錄／改基本資料之後）要重新算，不能停在載入時的畫面（整案審查 A4）。
+    document.addEventListener("tab:activated", function (e) {
+      if (e.detail === "today") buildRecommendation();
+    });
 
     buildRecommendation();
   });

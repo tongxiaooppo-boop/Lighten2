@@ -1,6 +1,6 @@
 // 輕盈計畫 (Lighten Plan) — 體重趨勢自動校正每日目標熱量
 // 對照 TECH-SPEC 4.2、PRD 3.7，以及 collab/opus-review-log/2026-09-27-tdee-calibration-offset-wiring.md 第 3 節。
-// 長期熱量盈餘不再用週彈性帳本處理：體重用 EWMA 平滑掉單次水腫雜訊，看 28 天線性回歸斜率，
+// 長期熱量盈餘不再用週彈性帳本處理：看 28 天內原始體重量測的線性回歸斜率（EWMA 只用於顯示），
 // 依 goal_mode（減脂/維持/增肌）各自不同的觸發門檻做校正。維持模式「下修」目標熱量必須使用者按確認，
 // 其他方向（減脂/增肌的校正、維持模式的上修）自動套用。每次調整幅度上限 ±300kcal（累計 offset），
 // 修正後 14 天冷卻期，隔天生效不中途改當天配額。
@@ -115,23 +115,22 @@
     return ewmaByDate;
   }
 
-  // 28 天線性回歸（OLS），用每天的 EWMA 值做迴歸，回傳斜率（kg/週）。
-  function slopePerWeek(ewmaByDate, windowStart, today) {
-    const points = [];
-    for (let d = windowStart; d <= today; d = dateAddDays(d, 1)) {
-      if (ewmaByDate.hasOwnProperty(d)) {
-        points.push({ dayIndex: points.length, value: ewmaByDate[d] });
-      }
-    }
-    if (points.length < 2) return null;
-
+  // 28 天線性回歸（OLS），直接用窗內的「原始量測值」做迴歸，回傳斜率（kg/週）。
+  // 2026-09-27 整案審查 A6：原本用每天的 EWMA 值做迴歸，EWMA 在資格門檻剛滿足時還沒暖機完成，
+  // 斜率被系統性壓扁（實際 −1.2 kg/週在第 22–28 天只估出 −0.7），新使用者會被誤判成「下降太慢」而自動下修。
+  // OLS 本身就能平均掉單次水腫雜訊；EWMA 只留給畫面顯示「目前趨勢體重」用。
+  function slopePerWeek(measurements) {
+    if (measurements.length < 2) return null;
+    const origin = measurements[0].log_date;
     let sx = 0, sy = 0, sxy = 0, sxx = 0;
-    const n = points.length;
-    points.forEach(function (p) {
-      sx += p.dayIndex;
-      sy += p.value;
-      sxy += p.dayIndex * p.value;
-      sxx += p.dayIndex * p.dayIndex;
+    const n = measurements.length;
+    measurements.forEach(function (m) {
+      const x = diffDays(origin, m.log_date);
+      const y = Number(m.weight_kg) || 0;
+      sx += x;
+      sy += y;
+      sxy += x * y;
+      sxx += x * x;
     });
     const denom = n * sxx - sx * sx;
     if (denom === 0) return 0;
@@ -189,7 +188,6 @@
     const windowStart = state.mode_since_date && state.mode_since_date > regStart ? state.mode_since_date : regStart;
 
     const ewmaByDate = buildEwmaByDate(sorted);
-    const slope = slopePerWeek(ewmaByDate, windowStart, today);
     const ewmaLatest = ewmaByDate.hasOwnProperty(today)
       ? ewmaByDate[today]
       : (sorted.length ? Number(sorted[sorted.length - 1].weight_kg) || 0 : null);
@@ -197,6 +195,7 @@
     const measurements = sorted.filter(function (l) {
       return l.log_date >= windowStart && l.log_date <= today;
     });
+    const slope = slopePerWeek(measurements);
     const nWeighins = measurements.length;
     let spanDays = 0;
     if (measurements.length >= 2) {
@@ -320,7 +319,8 @@
           pushHistory(state, { date: today, from: state.offset_kcal, to: state.offset_kcal, source: "expired", slope_kg_per_week: result.slope_kg_per_week });
           state.pending = null;
         }
-        result.status = "intake_gap";
+        // 「記錄天數不夠」跟「攝取偏高」分開，畫面才不會對只是記錄不完整的人說攝取偏高（整案審查 B2）。
+        result.status = completeDays < 14 ? "intake_log_short" : "intake_high";
         state.last_result = result;
         state.last_evaluated_date = today;
         await saveTdeeState(state);
@@ -390,8 +390,13 @@
   function ensureDailyCalibration(profile) {
     const today = fmt(new Date());
     if (dailyCalibration && dailyCalibration.date === today) return dailyCalibration.promise;
-    dailyCalibration = { date: today, promise: evaluateCalibration(profile, { force: false }) };
-    return dailyCalibration.promise;
+    // 評估失敗時清掉快取再往外丟：原本失敗的 Promise 會被快取一整天，當天所有取目標的地方都跟著失敗。
+    const promise = evaluateCalibration(profile, { force: false }).catch(function (err) {
+      if (dailyCalibration && dailyCalibration.promise === promise) dailyCalibration = null;
+      throw err;
+    });
+    dailyCalibration = { date: today, promise: promise };
+    return promise;
   }
 
   // 記錄體重成功／onCalculate 存完 profile 後呼叫：強制重跑一次評估。

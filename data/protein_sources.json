@@ -27,7 +27,8 @@
     "fat_100g": 2.6,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [],
     "prep_tier": "🟢",
@@ -47,7 +48,9 @@
     "fat_100g": 9.5,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "蛋奶素",
+      "低碳"
     ],
     "allergen_tags": [
       "蛋"
@@ -69,7 +72,9 @@
     "fat_100g": 0.4,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "蛋奶素",
+      "低碳"
     ],
     "allergen_tags": [
       "乳製品"
@@ -91,7 +96,8 @@
     "fat_100g": 6.3,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [
       "魚"
@@ -113,7 +119,8 @@
     "fat_100g": 4.9,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [],
     "prep_tier": "🟡",
@@ -133,7 +140,8 @@
     "fat_100g": 3.8,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [],
     "prep_tier": "🔴",
@@ -153,7 +161,8 @@
     "fat_100g": 1.7,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [
       "魚"
@@ -176,7 +185,8 @@
     "fiber_100g": 1.6,
     "diet_tags": [
       "全素",
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [
       "黃豆"
@@ -198,7 +208,8 @@
     "fat_100g": 0.3,
     "fiber_100g": 0,
     "diet_tags": [
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [
       "甲殼類"
@@ -221,7 +232,8 @@
     "fiber_100g": 0.4,
     "diet_tags": [
       "全素",
-      "高蛋白"
+      "高蛋白",
+      "低碳"
     ],
     "allergen_tags": [
       "黃豆"

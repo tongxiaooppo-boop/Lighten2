@@ -30,7 +30,6 @@
     customFoods: "custom_foods",
     dailyLog: "daily_log",
     feastReservation: "feast_reservation",
-    overageSmoothing: "overage_smoothing_log",
     exerciseLog: "exercise_log",
     settings: "settings",
   };
@@ -324,23 +323,6 @@
     return entry;
   }
 
-  // ---------- 8. overage_smoothing_log ----------
-
-  async function addOverageSmoothing(entry) {
-    const list = await readList(STORE.overageSmoothing);
-    if (!entry.id) entry.id = generateId("overage");
-    list.push(entry);
-    await writeList(STORE.overageSmoothing, list);
-    return entry;
-  }
-
-  async function getOverageSmoothing(weekStartDate) {
-    const list = await readList(STORE.overageSmoothing);
-    return list.filter(function (e) {
-      return e.origin_week_start_date === weekStartDate;
-    });
-  }
-
   // ---------- 10. exercise_log ----------
 
   async function addExerciseLog(entry) {
@@ -393,8 +375,6 @@
     addFeastReservation: addFeastReservation,
     getFeastReservations: getFeastReservations,
     updateFeastStatus: updateFeastStatus,
-    addOverageSmoothing: addOverageSmoothing,
-    getOverageSmoothing: getOverageSmoothing,
     addExerciseLog: addExerciseLog,
     getExerciseLogs: getExerciseLogs,
     getSetting: getSetting,
