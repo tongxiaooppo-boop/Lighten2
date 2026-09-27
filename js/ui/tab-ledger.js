@@ -14,16 +14,11 @@
   // 只限制「今天 + 預約模式」，預約未來日期或「直接記錄」模式都不受此限制。
   const SLOT_END_HOUR = { breakfast: 10, lunch: 14, afternoon_tea: 17, dinner: 20, snack: 24 };
 
-  // 餐別 → 台式熱門品項分類（一個時段可對應多個分類；西式速食先不納入）。
-  // 2026-09-27：下午茶改成以「茶點」為主分類，飲料則五個時段都可選
-  // （跟 recommend.js 的 TAIWAN_CATEGORY_SLOTS 同步調整）。
-  const SLOT_TO_TAIWAN_CATEGORIES = {
-    breakfast: ["早餐", "飲料"],
-    lunch: ["午餐", "飲料"],
-    dinner: ["晚餐", "飲料"],
-    snack: ["宵夜", "飲料"],
-    afternoon_tea: ["茶點", "飲料"],
-  };
+  // 品項清單依資料本身的 valid_slots 過濾（跟 recommend.js 同一份定義）；飲料是使用者自己要點的，
+  // 五個時段都列出來。原本用分類對照表，午／晚餐漏了西式速食，大麥克無法預約（2026-09-27 整案審查）。
+  function itemFitsSlot(it, slot) {
+    return it.role === "drink" || (Array.isArray(it.valid_slots) && it.valid_slots.indexOf(slot) !== -1);
+  }
 
   // 台式熱門品項 id → 縮圖（查不到就不顯示，正常降級）
   const TAIWAN_ITEM_IMAGE = {
@@ -31,7 +26,6 @@
     bf02: "images/food/milk-glass.jpg",
     bf03: "images/food/rice-ball.jpg",
     bf04: "images/food/pork-egg-toast.jpg",
-    bf05: "images/food/soy-milk.jpg",
     bf06: "images/food/radish-cake.jpg",
     bf07: "images/food/teppan-noodles.jpg",
     bf08: "images/food/sweet-potato.jpg",
@@ -72,6 +66,7 @@
     dr03: "images/food/black-tea-unsweetened.jpg",
     dr04: "images/food/fruit-tea.jpg",
     dr05: "images/food/latte.jpg",
+    dr06: "images/food/soy-milk.jpg",
     fw01: "images/food/big-mac-meal.jpg",
     fw02: "images/food/big-mac.jpg",
     fw03: "images/food/fried-chicken-fries.jpg",
@@ -164,13 +159,9 @@
     const slotSelect = document.querySelector("#feast-form select[name='slot']");
     const picker = $("#feast-item-picker");
     if (!slotSelect || !picker) return;
-    const categories = SLOT_TO_TAIWAN_CATEGORIES[slotSelect.value] || [];
-
-    let matched = [];
-    if (categories.length > 0) {
-      const taiwanItems = await getTaiwanItems();
-      matched = taiwanItems.filter(function (it) { return categories.indexOf(it.category) !== -1; });
-    }
+    const slot = slotSelect.value;
+    const taiwanItems = await getTaiwanItems();
+    const matched = taiwanItems.filter(function (it) { return itemFitsSlot(it, slot); });
     const customFoods = await getCustomFoods();
 
     let html = itemCardHtml("", "自訂", "份量估算或輸入名稱", "images/food/custom-other.svg", "feast-item-card-custom");
@@ -537,6 +528,11 @@
 
     const listEl = document.getElementById("ledger-reservations");
     if (listEl) listEl.addEventListener("click", onAction);
+
+    // 從其他分頁切回來時重新讀資料（例如在今日建議記錄一餐後，近7天平均跟預約清單要更新）。
+    document.addEventListener("tab:activated", function (e) {
+      if (e.detail === "ledger") render();
+    });
 
     render();
     renderItemPicker();

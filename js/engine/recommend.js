@@ -3,10 +3,10 @@
 // 候選池由三個來源組成，共用同一套 tier/過敏原/飲食限制/份量比對篩選與評分：
 //   1. 自組食譜：data/dish_archetypes.json 定義的「餐型骨架」，組合只在餐型內部展開
 //      （is_convenience=false, is_delivery=false, is_composed=true）
-//   2. 超商/現成即食品項：data/convenience_items.json，含「主餐＋1~2個飲品/點心棒」的多品項組合
-//      （is_convenience=true, is_delivery=false）
-//   3. 台式熱門品項（外送/餐廳）：data/taiwan_items.json，透過 getTaiwanItems() 取得
-//      （is_convenience=false, is_delivery=true）
+//   2. 超商即食品項：data/convenience_items.json 裡 channel=convenience 的品項（is_convenience=true）
+//   3. 外食／外賣：data/taiwan_items.json（透過 getTaiwanItems() 取得），加上 convenience_items.json 裡
+//      channel=delivery 的連鎖健康餐盒／宅配健身餐（is_delivery=true）
+//   2、3 共用同一個「統一成分模型」生成器：品項在資料裡標 role/valid_slots，依一張規則表組合。
 // 2026-09-25 四輪修訂記錄（詳見 PRD 5.5/5.6 節、TECH-SPEC 4.5 節）：
 //   - 新增「蔬菜」軸（原本三軸組出來的餐點永遠沒有實際蔬菜份量）
 //   - 新增超商即食品項候選池 + 多品項組合
@@ -19,6 +19,9 @@
 //   - 三輪重構（Opus 三輪磋商，使用者質疑彈性點數該看實際總量超標）：移除 uses_flex/flexLedger，
 //     台式外送品項不再有額度不足就不推薦的特殊邏輯；score() 蛋白質改「夠好就好」、近期降權改綁
 //     蛋白質/蔬菜來源不是綁確切組合、「喜歡」加分降低，解決「每天都推薦同一種蛋白質」的問題
+//   - 2026-09-27 整案審查（collab/opus-review-log/2026-09-27-full-project-audit.md）：飲食限制改逐成分判斷、
+//     過敏原改固定詞彙＋「未確認」保守排除、現成品項改統一成分模型、已記錄時段不再推薦、跨時段不重複成分、
+//     纖維加分封頂
 // 注意：此函式需讀取 data/*.json、recipe_feedback、taiwan_items（經 database.js 快取），故為 async。
 
 (function () {
@@ -62,20 +65,8 @@
     return candidates;
   }
 
-  // 台式熱門品項（外送/餐廳）→ 適用時段對照。「西式速食」沒有專屬時段，比照常見食用情境歸到午/晚餐。
-  // 2026-09-27：下午茶原本「暫用飲料分類頂替」，改成下午茶主要用「茶點」分類。
-  // 「飲料」單獨一項的標準時段維持只有下午茶——一杯飲料單獨當「早餐/午餐/晚餐/宵夜」的
-  // 完整推薦不合理（沒有人只喝一杯珍奶當午餐）。飲料要出現在其他時段，走下面的
-  // 「正餐＋飲料」組合（見 mainMealDrinkCombo 那段），不是讓飲料自己單獨頂一個時段。
-  const TAIWAN_CATEGORY_SLOTS = {
-    "早餐": ["breakfast"],
-    "午餐": ["lunch"],
-    "晚餐": ["dinner"],
-    "宵夜": ["snack"],
-    "飲料": ["afternoon_tea"],
-    "茶點": ["afternoon_tea"],
-    "西式速食": ["lunch", "dinner"],
-  };
+  // 品項能出現在哪些時段、扮演什麼角色（主餐/配菜/飲料/點心），一律看資料本身的 valid_slots/role，
+  // 見下方「統一成分模型」那段；這裡不再用分類名稱對照時段。
   const WIDE_RANGE_RATIO = 1.5; // 沒有 kcal_rep、且 high/low ≥ 1.5 倍的品項熱量太不精準，不進推薦池（仍可在預約/直接記錄使用）
 
   function isTooWideRange(it) {
@@ -142,21 +133,64 @@
     return Object.keys(set);
   }
 
-  function parseAllergens(s) {
-    if (!s) return [];
-    return String(s)
-      .split(/[,、，;；\s]+/)
-      .map(function (x) {
-        return x.trim();
-      })
-      .filter(Boolean);
+  // 過敏原固定詞彙（基本資料分頁的勾選框選項，資料裡的 allergen_tags 也只用這些詞）。
+  const ALLERGEN_OPTIONS = ["甲殼類", "魚", "蛋", "乳製品", "堅果", "麩質", "黃豆", "芝麻"];
+  // 複合料理沒人逐項審過過敏原時標這個；使用者只要設了任何過敏原，這類品項一律排除。
+  const UNVERIFIED_ALLERGEN = "未確認";
+  // 舊版是自由文字輸入，常見寫法對回固定詞彙（打「蝦」比對不到資料裡的「甲殼類」）。
+  const ALLERGEN_SYNONYMS = {
+    "蝦": "甲殼類", "蝦子": "甲殼類", "蝦仁": "甲殼類", "蟹": "甲殼類", "螃蟹": "甲殼類", "甲殼": "甲殼類",
+    "魚類": "魚", "海鮮": "甲殼類",
+    "雞蛋": "蛋", "蛋類": "蛋",
+    "牛奶": "乳製品", "奶": "乳製品", "乳": "乳製品", "乳糖": "乳製品", "奶製品": "乳製品", "起司": "乳製品",
+    "花生": "堅果", "杏仁": "堅果", "核桃": "堅果",
+    "小麥": "麩質", "麵粉": "麩質",
+    "大豆": "黃豆", "豆漿": "黃豆", "豆腐": "黃豆", "黃豆製品": "黃豆",
+  };
+
+  // 回傳 { list: 固定詞彙陣列, unknown: 對不回固定詞彙的舊文字 }。
+  // 接受新版陣列，也接受舊版自由文字字串（逗號/頓號/空白分隔）。
+  function normalizeAllergens(input) {
+    const raw = Array.isArray(input)
+      ? input
+      : String(input || "").split(/[,、，;；\s]+/);
+    const list = [];
+    const unknown = [];
+    raw.forEach(function (x) {
+      const t = String(x || "").trim();
+      if (!t) return;
+      const mapped = ALLERGEN_OPTIONS.indexOf(t) !== -1 ? t : ALLERGEN_SYNONYMS[t];
+      if (mapped) {
+        if (list.indexOf(mapped) === -1) list.push(mapped);
+      } else if (unknown.indexOf(t) === -1) {
+        unknown.push(t);
+      }
+    });
+    return { list: list, unknown: unknown };
   }
 
-  function passesDiet(dietTags, dietRestriction) {
+  // 使用者有設任何過敏原（含對不回固定詞彙的舊文字）→ 未確認的品項排除；命中任一過敏原 → 排除。
+  function passesAllergens(allergenTags, userAllergens) {
+    if (userAllergens.list.length === 0 && userAllergens.unknown.length === 0) return true;
+    if (allergenTags.indexOf(UNVERIFIED_ALLERGEN) !== -1) return false;
+    return !userAllergens.list.some(function (a) { return allergenTags.indexOf(a) !== -1; });
+  }
+
+  function tagSatisfies(tags, restriction) {
+    const t = tags || [];
+    if (t.indexOf(restriction) !== -1) return true;
+    return restriction === "蛋奶素" && t.indexOf("全素") !== -1; // 全素一定也符合蛋奶素
+  }
+
+  // 2026-09-27 整案審查 A1：組合的飲食標記原本是所有成分的「聯集」，只要其中一樣（例如豆漿）帶全素，
+  // 整組雞肉炒飯就通過全素篩選。改成「每個成分都要符合」，烹調法（kind=method）不是食物不參與判斷。
+  function passesDiet(dietTagSets, dietRestriction) {
     if (!dietRestriction || dietRestriction === "一般" || dietRestriction === "無特殊限制") {
       return true;
     }
-    return dietTags.indexOf(dietRestriction) !== -1;
+    return dietTagSets.length > 0 && dietTagSets.every(function (tags) {
+      return tagSatisfies(tags, dietRestriction);
+    });
   }
 
   function daysSince(dateStr) {
@@ -217,7 +251,9 @@
       if (days < 3) s -= (3 - days) * 10; // 蔬菜也做一樣的降權，權重比蛋白質輕（蔬菜種類本來就該常換）
     }
     if (constraints.proteinGapToday > 0) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
-    if (constraints.fiberGapThisWeek > 0) s += combo.fiber_g * 2;
+    // 纖維加分以「這週平均還差多少」封頂：原本每克 ×2 沒有上限，高纖豆漿＋海藻沙拉能多拿 30 分，
+    // 等於 60% 的熱量偏差，結果幾乎每一餐都變成「沙拉＋高纖豆漿」（2026-09-27 整案審查第 3 節）。
+    if (constraints.fiberGapThisWeek > 0) s += Math.min(combo.fiber_g, constraints.fiberGapThisWeek) * 2;
     if (budget > 0) {
       const eff = achievableNutrition(combo, budget);
       s -= Math.abs(budget / eff.kcal - 1) * 50; // 用「縮放後貼近預算的實際熱量」評分，不是天然份量的熱量
@@ -244,16 +280,13 @@
     return recency;
   }
 
-  // remainingBudget: budget.js 回傳的 { perSlotSuggestion }
-  // hardConstraints: matcher.js 回傳的 { proteinGapToday, fiberGapThisWeek }
-  // mealPrefs: profile.meal_prefs（5個時段各自的來源偏好，見上方 SOURCE_OPTIONS），可為 null（全部用預設值）
-  // 2026-09-25 二輪重構：移除第6個參數 flexLedger——彈性帳本改成逐日結算（見 feast.js），
-  // 台式外送品項不再有「uses_flex額度不足就不推薦」的特殊邏輯，跟其他來源一樣單純比熱量貼近度。
-  async function getTodayRecommendation(remainingBudget, hardConstraints, mealPrefs, dietRestriction, allergens) {
+  // 候選池只跟種子資料有關（跟預算、偏好、回饋都無關），建一次就快取。
+  // 也給 tools/check-engine.js 直接檢查整個候選池用（不是只看最後被挑中的那幾組）。
+  let _poolCache = null;
+  async function buildCandidatePool() {
+    if (_poolCache) return _poolCache;
     const axes = await loadAxes();
-    const budgetBySlot = (remainingBudget && remainingBudget.perSlotSuggestion) || {};
-    const constraints = hardConstraints || { proteinGapToday: 0, fiberGapThisWeek: 0 };
-    const allergenList = parseAllergens(allergens);
+    const combos = [];
 
     // ---------- 1. 自組食譜（餐型骨架，取代舊的四軸無限制笛卡爾積） ----------
     // 2026-09-25 二輪重構：組合只在每個「餐型」（dish_archetypes.json）內部展開，槽位不對稱
@@ -261,7 +294,6 @@
     // 每個食材用自己的 serving_g（見各 data/*.json）算天然一份的營養值；用「主要槽位」
     // （有主食槽的用主食、沒有主食槽的用蛋白質）在 PRIMARY_SLOT_SCALE_RANGE 內縮放去對熱量預算，
     // 蔬菜/蛋白質（非主要槽位時）維持天然份量不縮放，對應「蔬菜固定下限、蛋白質約一掌心」的份量原則。
-    const combos = [];
 
     function itemContribution(it, servingG) {
       const r = (servingG != null ? servingG : (it.serving_g != null ? it.serving_g : 100)) / 100;
@@ -328,6 +360,7 @@
                 combos.push({
                   id: arche.id + "_" + p.id + "_" + (s ? s.id : "none") + "_" + (v ? v.id : "none") + "_" + (season ? season.id : "none") + "_" + m.id,
                   archetype_id: arche.id,
+                  valid_slots: arche.valid_slots || null, // 餐型自己標適用時段（例如熱炒定食不會出現在早餐／下午茶）
                   name: nameParts.join(" + "),
                   protein_name: p.name,
                   staple_name: s ? s.name : null,
@@ -346,7 +379,8 @@
                   is_composed: true,
                   tier: RANK_TO_TIER[rank],
                   tier_rank: rank,
-                  diet_tags: unionTags.apply(null, items.map(function (it) { return it.diet_tags; }).concat([m.diet_tags])),
+                  components: items.map(function (it) { return it.id; }),
+                  diet_tag_sets: items.map(function (it) { return it.diet_tags || []; }), // 烹調法 m 不是食物，不參與飲食限制判斷
                   allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags; }).concat([m.allergen_tags])),
                   is_convenience: false,
                   is_delivery: false,
@@ -358,202 +392,176 @@
       });
     });
 
-    // ---------- 2. 超商即食品項（含「主餐＋1~2個飲品/點心棒」多品項組合） ----------
-    const EXTRA_CATEGORIES = { "飲品": true, "蛋白飲/點心棒": true };
-
-    // convenience_items.json 的 note 欄位混雜「資料來源/通路」跟「內容物描述」兩種資訊，
-    // 格式固定是「...資料來源說明；實際內容物描述」，取「；」後半段給使用者看，前半段是內部備註不顯示。
-    function extractContentNote(note) {
+    // ---------- 2. 現成品項（超商／外食外賣）：統一成分模型、單一生成器 ----------
+    // 2026-09-27 整案審查（opus-review-log/2026-09-27-full-project-audit.md 第 3 節）重設計：
+    // 原本同一個「這是主餐還是飲料、能出現在哪個時段」的概念分散在分類名稱、is_drink、bundled_drink、
+    // 寫死的早餐飲料 id 清單、分類→時段對照表等 7 套機制裡，每修一個 bug 就多一條規則。
+    // 現在每個品項在資料裡自己標 role（main/side/drink/snack）與 valid_slots，這裡只有一張規則表：
+    //   - 正餐時段（早/午/晚/宵夜）：恰好 1 個 main，+ ≤1 side，+ ≤1 drink（main 已內含飲料時為 0），
+    //     + ≤1 snack，總數 ≤3 件。飲料不會單獨成為一餐，一餐也不會出現兩杯飲料。
+    //   - 下午茶：不需要 main，snack、drink 各 ≤1，至少 1 件。
+    // 每個成分都要在該時段的 valid_slots 裡才會被拿來組合；不同來源（超商／外食）不互相混搭。
+    function contentNote(note) {
+      // convenience_items.json 的 note 格式是「資料來源說明；實際內容物描述」，只取「；」後半段給使用者看。
       if (!note) return null;
       const idx = note.indexOf("；");
       if (idx === -1) return null;
-      const rest = note.slice(idx + 1).trim();
-      return rest || null;
+      return note.slice(idx + 1).trim() || null;
     }
 
-    function toConvenienceCombo(items) {
-      const tags = items.map(function (it) { return it.diet_tags; });
-      const allergens2 = items.map(function (it) { return it.allergen_tags; });
-      const maxTierRank = items.reduce(function (r, it) { return Math.max(r, tierRank(it.tier)); }, 0);
-      const notes = items.map(function (it) { return extractContentNote(it.note); }).filter(Boolean);
+    function fromConvenience(it) {
       return {
-        id: items.map(function (it) { return it.id; }).join("+"),
-        name: items.map(function (it) { return it.name; }).join(" ＋ "),
+        uid: it.id, source_id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
+        contains_drink: !!it.contains_drink, channel: it.channel === "delivery" ? "delivery" : "convenience",
+        kcal: num(it.kcal), protein_g: num(it.protein_g), carb_g: num(it.carb_g), fat_g: num(it.fat_g), fiber_g: num(it.fiber_g),
+        tier_rank: tierRank(it.tier), diet_tags: it.diet_tags || [],
+        allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED_ALLERGEN],
+        note: contentNote(it.note), is_taiwan: false,
+      };
+    }
+
+    function fromTaiwan(it) {
+      return {
+        uid: "tw_" + it.id, source_id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
+        contains_drink: !!it.contains_drink, channel: "delivery",
+        kcal: it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2),
+        protein_g: num(it.protein_g), carb_g: 0, fat_g: 0, fiber_g: num(it.fiber_g),
+        tier_rank: 0, // 外食品項對使用者來說零烹調成本
+        diet_tags: [], // 台式品項沒有飲食限制標記：有設定飲食限制的使用者一律看不到，刻意的保守預設
+        allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED_ALLERGEN],
+        note: null, is_taiwan: true,
+      };
+    }
+
+    function toItemCombo(members) {
+      const maxTierRank = members.reduce(function (r, m) { return Math.max(r, m.tier_rank); }, 0);
+      const notes = members.map(function (m) { return m.note; }).filter(Boolean);
+      const single = members.length === 1 ? members[0] : null;
+      return {
+        id: members.map(function (m) { return m.uid; }).join("+"),
+        // 單一台式品項記錄時用 source_id 對回 taiwan_items；多品項組合沒有單一對應，直接記組合本身的數字。
+        source_id: single && single.is_taiwan ? single.source_id : null,
+        components: members.map(function (m) { return m.uid; }),
+        name: members.map(function (m) { return m.name; }).join(" ＋ "),
         protein_name: null,
         content_note: notes.length > 0 ? notes.join("；") : null,
-        kcal: round1(items.reduce(function (s, it) { return s + num(it.kcal); }, 0)),
-        protein_g: round1(items.reduce(function (s, it) { return s + num(it.protein_g); }, 0)),
-        carb_g: round1(items.reduce(function (s, it) { return s + num(it.carb_g); }, 0)),
-        fat_g: round1(items.reduce(function (s, it) { return s + num(it.fat_g); }, 0)),
-        fiber_g: round1(items.reduce(function (s, it) { return s + num(it.fiber_g); }, 0)),
+        kcal: round1(members.reduce(function (s, m) { return s + m.kcal; }, 0)),
+        protein_g: round1(members.reduce(function (s, m) { return s + m.protein_g; }, 0)),
+        carb_g: round1(members.reduce(function (s, m) { return s + m.carb_g; }, 0)),
+        fat_g: round1(members.reduce(function (s, m) { return s + m.fat_g; }, 0)),
+        fiber_g: round1(members.reduce(function (s, m) { return s + m.fiber_g; }, 0)),
         tier: RANK_TO_TIER[maxTierRank],
         tier_rank: maxTierRank,
-        diet_tags: unionTags.apply(null, tags),
-        allergen_tags: unionTags.apply(null, allergens2),
-        is_convenience: true,
-        is_delivery: false,
+        diet_tag_sets: members.map(function (m) { return m.diet_tags; }),
+        allergen_tags: unionTags.apply(null, members.map(function (m) { return m.allergen_tags; })),
+        is_convenience: members[0].channel === "convenience",
+        is_delivery: members[0].channel === "delivery",
+        valid_slots: [],
       };
     }
 
-    const validConvenienceItems = axes.convenienceItems.filter(function (it) { return it.kcal != null; });
-    validConvenienceItems.forEach(function (it) {
-      combos.push(toConvenienceCombo([it]));
-    });
-    const mains = validConvenienceItems.filter(function (it) { return !EXTRA_CATEGORIES[it.category]; });
-    const extras = validConvenienceItems.filter(function (it) { return EXTRA_CATEGORIES[it.category]; });
-    // 「蛋白飲/點心棒」分類混了液態（搖飲/燕麥奶）跟固態（營養棒），不能用分類名判斷是不是飲料，
-    // 改看品項本身的 is_drink：一個組合最多一款液態，第二款只能是固態點心。
-    const extraDrinks = extras.filter(function (it) { return !!it.is_drink; });
-    const extraSnacks = extras.filter(function (it) { return !it.is_drink; });
-    mains.forEach(function (main) {
-      extras.forEach(function (extra) {
-        combos.push(toConvenienceCombo([main, extra]));
-      });
-      extraDrinks.forEach(function (drink) {
-        extraSnacks.forEach(function (snack) {
-          combos.push(toConvenienceCombo([main, drink, snack]));
+    // 依規則表對一組同來源的品項展開所有合法組合；同一個組合在多個時段合法時只產生一次，valid_slots 累加。
+    function generateItemCombos(items) {
+      const byId = {};
+      function add(members, slot) {
+        const id = members.map(function (m) { return m.uid; }).join("+");
+        if (!byId[id]) byId[id] = toItemCombo(members);
+        byId[id].valid_slots.push(slot);
+      }
+      SLOTS.forEach(function (slot) {
+        const here = items.filter(function (it) { return it.valid_slots.indexOf(slot) !== -1; });
+        const ofRole = function (role) { return here.filter(function (it) { return it.role === role; }); };
+        const mains = ofRole("main"), sides = ofRole("side"), drinks = ofRole("drink"), snacks = ofRole("snack");
+        if (slot === "afternoon_tea") {
+          snacks.forEach(function (sn) { add([sn], slot); });
+          drinks.forEach(function (dr) { add([dr], slot); });
+          snacks.forEach(function (sn) {
+            drinks.forEach(function (dr) { add([sn, dr], slot); });
+          });
+          return;
+        }
+        mains.forEach(function (main) {
+          const drinkOpts = main.contains_drink ? [null] : [null].concat(drinks);
+          [null].concat(sides).forEach(function (side) {
+            drinkOpts.forEach(function (drink) {
+              [null].concat(snacks).forEach(function (snack) {
+                const members = [main, side, drink, snack].filter(Boolean);
+                if (members.length <= 3) add(members, slot);
+              });
+            });
+          });
         });
       });
-    });
-
-    // 2026-09-27：查了幾份營養師整理的「超商減脂午餐」實測組合（7-11/全家版），常見型態是
-    // 「餐盒/三明治 ＋ 沙拉 ＋（豆漿或茶葉蛋）」，不是只有「主餐＋一款飲品/點心棒」。
-    // 「沙拉」分類原本只會單獨出現，沒被當成可以附加在其他主餐上的配菜，這裡補上。
-    const SIDE_CATEGORIES = { "沙拉": true };
-    const sides = validConvenienceItems.filter(function (it) { return SIDE_CATEGORIES[it.category]; });
-    const realMains = mains.filter(function (it) { return !SIDE_CATEGORIES[it.category]; });
-    realMains.forEach(function (main) {
-      sides.forEach(function (side) {
-        combos.push(toConvenienceCombo([main, side]));
-        extras.forEach(function (extra) {
-          combos.push(toConvenienceCombo([main, side, extra]));
-        });
-      });
-    });
-
-    // ---------- 3. 台式熱門品項（外送/餐廳） ----------
-    // 2026-09-25 二輪重構：移除 uses_flex 額度判斷，改跟其他來源一樣單純比熱量貼近度，
-    // 彈性帳本改成逐日結算（daily_log 本身就是唯一真相來源），不用在推薦階段另外攔一次。
-    axes.taiwanItems.forEach(function (it) {
-      if (isTooWideRange(it)) return; // 熱量區間太寬（無代表值且high/low≥1.5倍），不夠精準，不進推薦池
-      const validSlots = TAIWAN_CATEGORY_SLOTS[it.category];
-      if (!validSlots) return; // 目前沒有對應時段的分類（理論上不會發生，六類都已對照）
-      const kcal = it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
-      combos.push({
-        id: "tw_" + it.id,
-        source_id: it.id,
-        name: it.name,
-        protein_name: null,
-        kcal: kcal,
-        protein_g: num(it.protein_g),
-        carb_g: 0,
-        fat_g: 0,
-        fiber_g: num(it.fiber_g),
-        tier: "🟢", // 外送/餐廳品項對使用者來說零烹調成本，跟菜色本身好不好做無關
-        tier_rank: 0,
-        diet_tags: [], // 台式品項目前沒有飲食限制標記：有設定飲食限制的使用者一律看不到，這是刻意的保守預設
-        allergen_tags: it.allergen_tags || [],
-        is_convenience: false,
-        is_delivery: true,
-        valid_slots: validSlots,
-      });
-    });
-
-    // 下午茶：茶點／飲料除了各自單獨出現，也可以「茶點＋飲料」一起出現（兩者都有或選一，
-    // 單獨的兩種已經在上面的迴圈各自 push 過了，這裡只加兩者的組合）。飲料同一個組合只會有
-    // 一款（每個組合固定「一茶點＋一飲料」，不會出現兩款飲料），跟超商組合同一個原則。
-    // source_id 留 null（沒有單一品項可對應），tab-today.js 的「記錄這餐」要認得這種情況，
-    // 改用組合本身算好的巨量營養素直接記錄，不要嘗試用 source_id 去查表（那是給單一品項用的）。
-    const teaSnacksForCombo = axes.taiwanItems.filter(function (it) {
-      return it.category === "茶點" && !isTooWideRange(it);
-    });
-    const teaDrinksForCombo = axes.taiwanItems.filter(function (it) {
-      return it.category === "飲料" && !isTooWideRange(it);
-    });
-    function taiwanItemKcal(it) {
-      return it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
+      return Object.keys(byId).map(function (id) { return byId[id]; });
     }
-    function toTaiwanMultiCombo(items, validSlots) {
-      return {
-        id: items.map(function (it) { return "tw_" + it.id; }).join("+"),
-        source_id: null,
-        name: items.map(function (it) { return it.name; }).join(" ＋ "),
-        protein_name: null,
-        kcal: round1(items.reduce(function (s, it) { return s + taiwanItemKcal(it); }, 0)),
-        protein_g: round1(items.reduce(function (s, it) { return s + num(it.protein_g); }, 0)),
-        carb_g: 0,
-        fat_g: 0,
-        fiber_g: round1(items.reduce(function (s, it) { return s + num(it.fiber_g); }, 0)),
-        tier: "🟢",
-        tier_rank: 0,
-        diet_tags: [],
-        allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags || []; })),
-        is_convenience: false,
-        is_delivery: true,
-        valid_slots: validSlots,
-      };
-    }
-    teaSnacksForCombo.forEach(function (snack) {
-      teaDrinksForCombo.forEach(function (drink) {
-        combos.push(toTaiwanMultiCombo([snack, drink], ["afternoon_tea"]));
-      });
+
+    const convenienceItems = axes.convenienceItems
+      .filter(function (it) { return it.kcal != null; })
+      .map(fromConvenience);
+    const taiwanItems = axes.taiwanItems
+      .filter(function (it) { return !isTooWideRange(it); }) // 熱量區間太寬，不夠精準，不進推薦池
+      .map(fromTaiwan);
+    // 超商品項、宅配／連鎖健康餐盒（channel=delivery）、台式外食各自獨立展開，不跨來源混搭。
+    [
+      convenienceItems.filter(function (it) { return it.channel === "convenience"; }),
+      convenienceItems.filter(function (it) { return it.channel === "delivery"; }),
+      taiwanItems,
+    ].forEach(function (group) {
+      Array.prototype.push.apply(combos, generateItemCombos(group));
     });
 
-    // 早餐：查過國健署「我的餐盤－外食均衡飲食」實際範例（早餐店/自助餐/滷味/便利商店
-    // 4篇），只有早餐店、便利商店的範例會配飲品（且都是無糖鮮奶茶/拿鐵/鮮奶/豆漿這類，
-    // 用來補鈣質或蛋白質，不是含糖手搖飲），自助餐、滷味的範例完全沒有配飲料。所以
-    // 「正餐＋飲料」只加在早餐（午餐/晚餐/宵夜維持原本單獨主食即可，不強迫湊飲料，
-    // 跟真實範例一致）；早餐飲料池是紅茶/豆漿(無糖/含糖)/鮮奶/美式/拿鐵(無糖/含糖)，
-    // 含糖手搖飲（全糖/半糖珍奶、水果茶）留給下午茶當作有意識選擇的甜點搭配，不預設
-    // 塞進早餐。來源：hpa.gov.tw「均衡飲食菜單-外食這樣吃也能很均衡」早餐篇/自助餐篇/
-    // 滷味篇/便利商店篇；豆漿/鮮奶/美式/拿鐵營養數據來自衛福部台灣食品成分表2025版。
-    const BREAKFAST_DRINK_IDS = ["dr03", "dr05", "dr06", "dr07", "dr08", "dr09", "dr10"];
-    const breakfastDrinksForCombo = teaDrinksForCombo.filter(function (it) {
-      return BREAKFAST_DRINK_IDS.indexOf(it.id) !== -1;
-    });
-    // bundled_drink 標記的品項本身已經含一杯飲料（例如麥當勞滿福堡套餐已經算進美式咖啡），
-    // 不能再跟飲料池配對，否則會湊出「早餐店品項+已經內含的咖啡+又一杯拿鐵」這種怪組合。
-    const breakfastMains = axes.taiwanItems.filter(function (it) {
-      return it.category === "早餐" && !isTooWideRange(it) && !it.bundled_drink;
-    });
-    breakfastMains.forEach(function (main) {
-      breakfastDrinksForCombo.forEach(function (drink) {
-        combos.push(toTaiwanMultiCombo([main, drink], ["breakfast"]));
-      });
-    });
+    _poolCache = combos;
+    return combos;
+  }
+
+  // remainingBudget: budget.js 回傳的 { perSlotSuggestion }
+  // hardConstraints: matcher.js 回傳的 { proteinGapToday, fiberGapThisWeek }
+  // mealPrefs: profile.meal_prefs（5個時段各自的來源偏好，見上方 SOURCE_OPTIONS），可為 null（全部用預設值）
+  // allergens: profile.allergens（新版為固定詞彙陣列，舊版自由文字字串也接受）
+  // skipSlots: { slot: true } 不需要推薦的時段（已記錄／已預約／已關閉）。這些時段直接回傳 null，
+  //   也不佔用跨時段的多樣性限制（2026-09-27 整案審查 A3：已吃的時段原本還會被推薦一個約 770 kcal 的新組合）。
+  async function getTodayRecommendation(remainingBudget, hardConstraints, mealPrefs, dietRestriction, allergens, skipSlots) {
+    const budgetBySlot = (remainingBudget && remainingBudget.perSlotSuggestion) || {};
+    const constraints = hardConstraints || { proteinGapToday: 0, fiberGapThisWeek: 0 };
+    const userAllergens = normalizeAllergens(allergens);
+    const skip = skipSlots || {};
+
+    const combos = await buildCandidatePool();
 
     // ---------- 批次讀取回饋（一次 iterate，取代逐一 getRecipeFeedback） ----------
     const feedbackMap = await getAllRecipeFeedback();
     const recencyMap = buildRecencyMap(combos, feedbackMap);
 
-    // 2026-09-25 二輪重構：同一天的各時段之間，自組食譜不重複主蛋白質、同一餐型最多出現一次
-    // （對應使用者實測抓到「早餐晚餐都乳清+燕麥+泡菜」的荒謬案例）。只影響自組食譜，
-    // 超商/台式外送是真實獨立商品，不受這條限制。
+    // 同一天的各時段之間不重複：
+    //   - 自組食譜：不重複主蛋白質、同一餐型最多出現一次（2026-09-25，使用者實測「早餐晚餐都乳清+燕麥+泡菜」）
+    //   - 現成品項：任何一個成分（品項 id）只出現在一個時段（2026-09-27 整案審查 A5：原本只管自組食譜，
+    //     結果午餐跟晚餐推薦一模一樣的「炊飯＋海藻沙拉＋高纖豆漿」）
     const usedProteinNames = {};
     const usedArchetypeIds = {};
+    const usedItemIds = {};
 
     const result = {};
     SLOTS.forEach(function (slot) {
+      if (skip[slot]) {
+        result[slot] = null;
+        return;
+      }
       const budget = num(budgetBySlot[slot]);
       const sourcePref = getSourcePref(mealPrefs, slot);
       const maxRank = maxRankForSource(sourcePref);
 
       const baseCandidates = combos.filter(function (c) {
         if (c.tier_rank > maxRank) return false;
-        if (c.is_delivery && c.valid_slots.indexOf(slot) === -1) return false;
-        if (
-          allergenList.some(function (a) {
-            return c.allergen_tags.indexOf(a) !== -1;
-          })
-        ) {
-          return false;
-        }
-        if (!passesDiet(c.diet_tags, dietRestriction)) return false;
+        if (c.valid_slots && c.valid_slots.indexOf(slot) === -1) return false;
+        if (!passesAllergens(c.allergen_tags, userAllergens)) return false;
+        if (!passesDiet(c.diet_tag_sets, dietRestriction)) return false;
         const fb = feedbackMap[c.id];
         if (fb && fb.rating === "dislike") return false; // 倒讚永久排除
         if (c.is_composed) {
           if (c.protein_name && usedProteinNames[c.protein_name]) return false;
           if (c.archetype_id && usedArchetypeIds[c.archetype_id]) return false;
+        } else if (c.components.some(function (id) { return usedItemIds[id]; })) {
+          return false;
         }
         return true;
       });
@@ -563,8 +571,8 @@
       if (candidates.length === 0 && baseCandidates.length > 0) {
         usedFallback = true;
         // 使用者明確選了 convenience/cook_quick/cook_full 卻在該來源找不到符合的組合時，
-        // 退回全部候選池，但排除台式外送品項（除非使用者本來選的就是 delivery/auto），
-        // 避免使用者沒選外送卻被意外推薦、進而扣到彈性點數。
+        // 退回全部候選池，但排除外食品項（除非使用者本來選的就是 delivery/auto），
+        // 避免使用者沒選外食卻被推薦要花錢出門買的東西。
         candidates = (sourcePref === "delivery" || sourcePref === "auto")
           ? baseCandidates
           : baseCandidates.filter(function (c) { return !c.is_delivery; });
@@ -575,18 +583,22 @@
         return;
       }
 
-      candidates.sort(function (a, b) {
-        const sa = score(a, feedbackMap[a.id], constraints, budget, recencyMap);
-        const sb = score(b, feedbackMap[b.id], constraints, budget, recencyMap);
-        if (sb !== sa) return sb - sa;
-        return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+      // 分數先算好再排序，不要在比較函式裡重算（候選上千筆時會重算數十萬次）。
+      const scored = candidates.map(function (c) {
+        return { c: c, s: score(c, feedbackMap[c.id], constraints, budget, recencyMap) };
+      });
+      scored.sort(function (a, b) {
+        if (b.s !== a.s) return b.s - a.s;
+        return a.c.id < b.c.id ? -1 : a.c.id > b.c.id ? 1 : 0;
       });
 
-      const top = candidates[0];
+      const top = scored[0].c;
       const eff = achievableNutrition(top, budget);
       if (top.is_composed) {
         if (top.protein_name) usedProteinNames[top.protein_name] = true;
         if (top.archetype_id) usedArchetypeIds[top.archetype_id] = true;
+      } else {
+        top.components.forEach(function (id) { usedItemIds[id] = true; });
       }
       result[slot] = Object.assign({}, top, {
         scale: round1(eff.scale),
@@ -608,8 +620,11 @@
   }
 
   window.getTodayRecommendation = getTodayRecommendation;
+  window.buildRecommendCandidatePool = buildCandidatePool;
   window.RECOMMEND_SLOTS = SLOTS;
   window.RECOMMEND_SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", afternoon_tea: "下午茶", dinner: "晚餐", snack: "宵夜" };
   window.MEAL_SOURCE_OPTIONS = SOURCE_OPTIONS;
   window.DEFAULT_MEAL_PREFS = DEFAULT_MEAL_PREFS;
+  window.ALLERGEN_OPTIONS = ALLERGEN_OPTIONS;
+  window.normalizeAllergens = normalizeAllergens;
 })();

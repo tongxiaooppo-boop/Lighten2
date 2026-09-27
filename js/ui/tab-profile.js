@@ -60,7 +60,8 @@
       body_fat_pct: toFloatOrNull(fd.get("body_fat_pct")),
       activity_mode: fd.get("activity_mode"),
       diet_restriction: fd.get("diet_restriction"),
-      allergens: (fd.get("allergens") || "").trim(),
+      // 2026-09-27 整案審查 A2：改成固定詞彙勾選框（自由文字打「蝦」比對不到資料裡的「甲殼類」）
+      allergens: fd.getAll("allergens"),
       // 「今日建議時段」與「今日建議來源」已合併成同一組下拉（選「不顯示建議」= off）。
       // meal_prefs 照下拉原始值存（off 對 recommend.js 來說是無效值，會自動 fallback 成預設偏好，
       // 但反正該時段會被 enabled_slots 擋住不顯示，fallback 值本身不影響使用者看到的結果）；
@@ -97,7 +98,17 @@
     set("body_fat_pct", profile.body_fat_pct);
     set("activity_mode", profile.activity_mode);
     set("diet_restriction", profile.diet_restriction);
-    set("allergens", profile.allergens);
+    // 舊版存的是自由文字：能對回固定詞彙的直接勾上，對不回的提示使用者重新勾選。
+    const allergens = window.normalizeAllergens(profile.allergens);
+    Array.prototype.forEach.call(form.querySelectorAll("input[name='allergens']"), function (box) {
+      box.checked = allergens.list.indexOf(box.value) !== -1;
+    });
+    const legacyNote = document.getElementById("allergen-legacy-note");
+    if (legacyNote) {
+      legacyNote.hidden = allergens.unknown.length === 0;
+      legacyNote.textContent = allergens.unknown.length === 0 ? "" :
+        "舊設定裡的「" + allergens.unknown.join("、") + "」對不到上面的選項，目前推薦會先避開所有成分未確認的品項；請勾選最接近的項目後按「計算」儲存。";
+    }
     // 「今日建議時段」與「今日建議來源」合併後的下拉回填：時段被關閉（isSlotEnabled 為 false，
     // 含舊資料只存過 enabled_slots、沒存過合併後 UI 的情況）就顯示「不顯示建議」(off)；
     // 否則顯示驗證過的來源偏好，驗證不過（例如舊資料本來就沒存、或存的是 off）才套預設值。
@@ -137,7 +148,11 @@
     }
     if (status === "capped") return "已達累計調整上限（±300 kcal）";
     if (status === "at_floor") return "每日目標已到熱量安全下限，暫不調整";
-    if (status === "intake_gap") return "近4週平均攝取略高於目前目標，這段體重變化較可能反映的是這部分，所以先不調整";
+    // 2026-09-27 整案審查 B2：原本「記錄天數不夠」跟「攝取偏高」共用 intake_gap，只是記錄不完整的人
+    // 也會收到「平均攝取略高於目標」。拆成兩個狀態；intake_gap 留給升級前存下來的舊結果。
+    if (status === "intake_log_short") return "完整記錄的天數還不夠，暫不調整";
+    if (status === "intake_high") return "近4週完整記錄日的平均攝取高於目前目標，體重變化可能反映的是這部分，所以先不調整";
+    if (status === "intake_gap") return "暫不調整";
     if (status === "dismissed") return "14 天內不會再提醒這件事";
     if (status === "insufficient") return "目前資料不足以判斷是否需要調整";
     if (status === "adjusted") return "已自動調整每日目標";
@@ -176,7 +191,9 @@
     html += '<div class="cal-target-row">校正值：<span>' + (offset >= 0 ? "+" : "") + Math.round(offset) + ' kcal</span></div>';
     html += '<div class="cal-target-row">目前每日目標：<span>' + Math.round(current) + ' kcal</span></div>';
     if (state.effective_date && state.effective_date === tomorrow) {
-      html += '<div class="cal-target-row">明天起：<span>' + Math.round(current) + ' kcal</span></div>';
+      // 用生效日的目標，不是今天的（調整當天今天還是舊值，2026-09-27 整案審查 B3）
+      const next = await getCalibratedTargets(profile, state.effective_date);
+      html += '<div class="cal-target-row">明天起：<span>' + Math.round(next.targetKcal) + ' kcal</span></div>';
     }
     html += "</div>";
 
@@ -201,7 +218,8 @@
         : "";
       const downKcal = Math.abs(state.pending.delta_kcal || 150);
       html += '<div class="cal-pending">';
-      html += "<p>近4週體重平均每週上升 " + slopeText + " kg。如果你這段期間有重訓增肌，這可能是正常的；如果沒有，可以把每日目標下調 " + downKcal + " kcal（明天起生效）。</p>";
+      // 不在同一句提運動（PRD：運動與飲食熱量脫鉤），只說明體重變化本身。
+      html += "<p>近4週體重平均每週上升 " + slopeText + " kg。如果這是你預期中的變化（例如肌肉量增加），可以維持不變；如果不是，可以把每日目標調整 −" + downKcal + " kcal（明天起生效）。</p>";
       html += '<button type="button" class="primary-btn" id="cal-apply">套用</button> ';
       html += '<button type="button" class="secondary-btn" id="cal-dismiss">先不要</button>';
       html += "</div>";
@@ -322,5 +340,18 @@
 
     const weightForm = document.getElementById("weight-form");
     if (weightForm) weightForm.addEventListener("submit", onWeightSubmit);
+
+    // 切回這個分頁時更新目標跟校正卡片（不重填表單，避免蓋掉還沒按「計算」的修改）。
+    document.addEventListener("tab:activated", async function (e) {
+      if (e.detail !== "profile") return;
+      try {
+        const profile = await getProfile();
+        if (!profile) return;
+        showTargets(await getCalibratedTargets(profile));
+        await renderCalibrationCard(profile);
+      } catch (err) {
+        console.error(err);
+      }
+    });
   });
 })();

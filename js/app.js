@@ -20,6 +20,10 @@
       panel.classList.toggle("is-active", isActive);
       panel.hidden = !isActive;
     });
+
+    // 各分頁只在載入時渲染一次，切換過來時要重新讀資料（例如在美饗日曆預約後切回今日建議）。
+    // 各分頁自己監聽這個事件、只處理 detail 是自己名字的那次。
+    document.dispatchEvent(new CustomEvent("tab:activated", { detail: tabName }));
   }
 
   tabButtons.forEach(function (btn) {

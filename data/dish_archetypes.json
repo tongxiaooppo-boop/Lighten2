@@ -2,6 +2,7 @@
   {
     "id": "bowl_oat",
     "name": "早餐碗",
+    "valid_slots": ["breakfast", "afternoon_tea", "snack"],
     "protein": { "allow": ["ps_soy_milk", "ps_greek_yogurt"] },
     "staple": { "allow": ["st_oats"] },
     "vegetable": { "allow": [] },
@@ -12,6 +13,7 @@
   {
     "id": "egg_pan",
     "name": "煎蛋類",
+    "valid_slots": ["breakfast", "lunch", "dinner", "snack"],
     "protein": { "allow": ["ps_egg"] },
     "staple": { "allow": [] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "tomato", "bell_pepper", "onion"] },
@@ -22,6 +24,7 @@
   {
     "id": "protein_stir_fry",
     "name": "炒類",
+    "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["ps_beef", "ps_shrimp", "ps_chicken_thigh"] },
     "staple": { "allow": ["st_cauliflower_rice", "st_brown_rice", "st_edamame"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "onion", "bell_pepper", "bean_sprout", "eggplant", "luffa", "wood_ear", "shiitake", "snap_pea", "okra", "baby_corn"] },
@@ -32,6 +35,7 @@
   {
     "id": "grain_bowl_baked",
     "name": "烤／舒肥定食",
+    "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["ps_chicken_breast", "ps_salmon", "ps_chicken_thigh", "ps_tilapia", "ps_firm_tofu"] },
     "staple": { "allow": ["st_brown_rice", "st_quinoa", "st_mixed_grain", "st_sweet_potato"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "bell_pepper", "tomato", "onion", "snap_pea", "baby_corn", "okra"] },
@@ -42,6 +46,7 @@
   {
     "id": "warm_salad",
     "name": "溫沙拉",
+    "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["ps_chicken_thigh", "ps_chicken_breast", "ps_firm_tofu"] },
     "staple": { "allow": ["st_pumpkin", "st_sweet_potato"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "cabbage", "cucumber", "tomato", "bell_pepper", "daikon", "lettuce_a", "onion", "snap_pea"] },
