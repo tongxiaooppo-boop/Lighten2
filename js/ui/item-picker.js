@@ -44,6 +44,37 @@
     return _convCache;
   }
 
+  // 「整套便當」分類：手動組餐（自己選）要排除，但美饗日曆要看得到（那本來就是選整份大餐的地方）。
+  var WHOLE_MEAL_CATEGORIES = ["健身餐盒", "蔬食餐盒", "減醣餐盒", "連鎖健康餐盒", "宅配健身餐"];
+
+  function fetchJson(url) {
+    return fetch(url).then(function (res) {
+      if (!res.ok) throw new Error("[item-picker.js] 載入 " + url + " 失敗");
+      return res.json();
+    });
+  }
+
+  // 「自己煮」模式要用的食材軸資料（跟 recommend.js 的 loadAxes 同一批來源，不重複 fetch 太多份）。
+  var _composeAxesCache = null;
+  async function loadComposeAxes() {
+    if (_composeAxesCache) return _composeAxesCache;
+    var all = await Promise.all([
+      fetchJson("data/dish_archetypes.json"),
+      fetchJson("data/protein_sources.json"),
+      fetchJson("data/staples.json"),
+      fetchJson("data/sauce_methods.json"),
+      fetchJson("data/raw_ingredients.json"),
+    ]);
+    _composeAxesCache = {
+      archetypes: all[0],
+      proteins: all[1],
+      staples: all[2],
+      sauces: all[3],
+      vegetables: all[4].filter(function (it) { return it.category === "蔬菜"; }),
+    };
+    return _composeAxesCache;
+  }
+
   function normalizeTaiwan(it) {
     var kcal = it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
     return { uid: "tw_" + it.id, id: it.id, name: it.name, role: it.role, valid_slots: it.valid_slots || [],
@@ -77,10 +108,17 @@ function normalizeConvenience(it) {
     opts = opts || {};
     var items = [];
     var taiwan = await getTaiwanItems();
-    taiwan.forEach(function (it) { items.push(normalizeTaiwan(it)); });
+    taiwan.forEach(function (it) {
+      // 手動組餐（自己選）排除整套便當：台式只留飲料（role === 'drink'），其餘直接濾掉。
+      if (opts.excludeWholeMeals && it.role !== "drink") return;
+      items.push(normalizeTaiwan(it));
+    });
     if (opts.includeConvenience !== false) {
       var conv = await getConvenienceItems();
-      conv.forEach(function (it) { items.push(normalizeConvenience(it)); });
+      conv.forEach(function (it) {
+        if (opts.excludeWholeMeals && WHOLE_MEAL_CATEGORIES.indexOf(it.category) !== -1) return;
+        items.push(normalizeConvenience(it));
+      });
     }
     var custom = await getCustomFoods();
     custom.forEach(function (f) { items.push(normalizeCustom(f)); });
@@ -133,5 +171,6 @@ function normalizeConvenience(it) {
   window.ItemPicker = {
     loadItems: loadItems, filterForSlot: filterForSlot, fitsSlot: fitsSlot,
     cardHtml: cardHtml, sumSelected: sumSelected, TAIWAN_ITEM_IMAGE: TAIWAN_ITEM_IMAGE,
+    loadComposeAxes: loadComposeAxes, WHOLE_MEAL_CATEGORIES: WHOLE_MEAL_CATEGORIES,
   };
 })();

@@ -732,4 +732,5 @@
   window.passesHardFilters = passesHardFilters;
   window.sumOrNull = sumOrNull;
   window.LOW_BUDGET_THRESHOLD_KCAL = LOW_BUDGET_THRESHOLD_KCAL;
+  window.PRIMARY_SLOT_SCALE_RANGE = PRIMARY_SLOT_SCALE_RANGE;
 })();
