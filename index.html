@@ -452,9 +452,16 @@
   <div class="modal-overlay" id="manual-picker-overlay" hidden>
     <div class="modal manual-picker" role="dialog" aria-modal="true" aria-labelledby="manual-picker-title">
       <h3 id="manual-picker-title">自己配這一餐：<span id="manual-picker-slot-label"></span></h3>
-      <p class="taiwan-ref-note">點卡片多選，最多 1 主餐＋1 配菜＋1 飲料＋1 點心（下午茶不需要主餐）。灰色是過敏原／飲食限制／不吃清單擋掉的品項。</p>
-      <div id="manual-picker-items" class="feast-item-picker"></div>
-      <p id="manual-picker-main-hint" class="taiwan-ref-note" style="color:#a33" hidden>這個時段需要選 1 個主餐才能送出。</p>
+      <div class="manual-picker-mode">
+        <label><input type="radio" name="manual-picker-mode" value="items" checked /> 現成品項</label>
+        <label><input type="radio" name="manual-picker-mode" value="compose" /> 自己煮</label>
+      </div>
+      <div id="manual-picker-items-mode">
+        <p class="taiwan-ref-note">點卡片多選，最多 1 主餐＋1 配菜＋1 飲料＋1 點心（下午茶不需要主餐）。灰色是過敏原／飲食限制／不吃清單擋掉的品項。</p>
+        <div id="manual-picker-items" class="feast-item-picker"></div>
+      </div>
+      <div id="manual-picker-compose-mode" hidden></div>
+      <p id="manual-picker-main-hint" class="taiwan-ref-note" style="color:#a33" hidden>請先選齊必要的食材（餐型＋蛋白質，有主食槽的餐型還要選主食）才能送出。</p>
       <div id="manual-picker-summary" class="manual-picker-summary"></div>
       <div id="manual-picker-gap" class="manual-picker-gap"></div>
       <div class="manual-picker-actions">

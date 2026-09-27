@@ -457,8 +457,9 @@
       setStatus("倒讚記錄失敗。");
     });
   }
-// ===== Part 5：手動組餐（自己選） =====
-  var manualPicker = { slot: null, selectedUids: [], passItems: [], blockedItems: [], profile: null, targets: null, todayLogs: null };
+// ===== Part 5：手動組餐（自己選：現成品項 + 自己煮） =====
+  var manualPicker = { slot: null, mode: "items", selectedUids: [], passItems: [], blockedItems: [], profile: null, targets: null, todayLogs: null,
+    compose: { axes: null, archetype: null, protein: null, staple: null, vegetable: null, seasoning: null, method: null, primaryScale: 1, drink: null, drinkItems: [] } };
 
   function manualRoleLimits(slot) {
     return { requireMain: slot !== "afternoon_tea", maxByRole: { main: 1, side: 1, drink: 1, snack: 1 } };
@@ -478,43 +479,284 @@
     var targets = await getCalibratedTargets(profile);
     var today = localDateStr();
     var todayLogs = await getDailyLogs({ start: today, end: today });
-    var filtered = await window.ItemPicker.filterForSlot(slot, profile, {});
+    // 現成品項模式：排除整套便當（Part 0）；飲料從 ItemPicker 裡 role==='drink' 的品項挑。
+    var filtered = await window.ItemPicker.filterForSlot(slot, profile, { excludeWholeMeals: true });
+    var drinkFiltered = await window.ItemPicker.filterForSlot(slot, profile, { excludeWholeMeals: true });
+    var composeAxes = await window.ItemPicker.loadComposeAxes();
     manualPicker.slot = slot;
+    manualPicker.mode = "items";
     manualPicker.profile = profile;
     manualPicker.targets = targets;
     manualPicker.todayLogs = todayLogs;
     manualPicker.passItems = filtered.pass;
     manualPicker.blockedItems = filtered.blocked;
     manualPicker.selectedUids = [];
+    manualPicker.compose = {
+      axes: composeAxes, archetype: null, protein: null, staple: null, vegetable: null, seasoning: null, method: null,
+      primaryScale: 1, drink: null,
+      drinkItems: drinkFiltered.pass.filter(function (it) { return it.role === "drink"; }),
+      drinkBlocked: drinkFiltered.blocked.filter(function (b) { return b.item.role === "drink"; }),
+    };
     var labelEl = $("#manual-picker-slot-label");
     if (labelEl) labelEl.textContent = SLOT_LABELS[slot] || slot;
+    syncModeRadios();
     renderManualPicker();
     var overlay = $("#manual-picker-overlay");
     if (overlay) overlay.hidden = false;
   }
+// ----- 「自己煮」模式（compose）：餐型 → 食材 → 份量 -----
+  function syncModeRadios() {
+    var radios = document.querySelectorAll("input[name='manual-picker-mode']");
+    Array.prototype.forEach.call(radios, function (r) { r.checked = r.value === manualPicker.mode; });
+  }
+
+  function setManualMode(mode) {
+    manualPicker.mode = mode;
+    renderManualPicker();
+  }
+
+  function pickIds(list, ids) {
+    var map = {};
+    list.forEach(function (it) { map[it.id] = it; });
+    return (ids || []).map(function (id) { return map[id]; }).filter(Boolean);
+  }
+
+  // 把單一食材包成跟 recommend.js composed 組合一樣的形狀再過硬性過濾，
+  // 讓「不吃食材」清單（type protein/staple/vegetable/sauce）能正確命中。
+  function composePassFilter(candidate, axisType) {
+    var wrapper = { is_composed: true, allergen_tags: candidate.allergen_tags || [], diet_tag_sets: [candidate.diet_tags || []] };
+    if (axisType === "protein") wrapper.protein_name = candidate.name;
+    else if (axisType === "staple") wrapper.staple_name = candidate.name;
+    else if (axisType === "vegetable") wrapper.vegetable_name = candidate.name;
+    else if (axisType === "sauce") wrapper.sauce_name = candidate.name;
+    return window.passesHardFilters ? window.passesHardFilters(wrapper, manualPicker.profile) : { ok: true, reason: null };
+  }
+
+  function composeHasStapleSlot() {
+    var a = manualPicker.compose.archetype;
+    return !!(a && a.staple && a.staple.allow && a.staple.allow.length > 0);
+  }
+
+  function composePrimaryItem() {
+    var c = manualPicker.compose;
+    return composeHasStapleSlot() ? c.staple : c.protein;
+  }
+
+  function composeContribution(it, scale) {
+    var serving = it.serving_g != null ? it.serving_g : 100;
+    var r = serving / 100 * (scale || 1);
+    return {
+      kcal: (it.kcal_100g || 0) * r, protein_g: (it.protein_100g || 0) * r,
+      carb_g: (it.carb_100g || 0) * r, fat_g: (it.fat_100g || 0) * r, fiber_g: (it.fiber_100g || 0) * r,
+    };
+  }
+
+  // 自組食材四項營養素都有值；飲料可能缺值，缺值時用 null 傳染（只拖累飲料部分）。
+  function composeTotals() {
+    var c = manualPicker.compose;
+    var primary = composePrimaryItem();
+    var parts = [c.protein, c.staple, c.vegetable, c.seasoning].filter(Boolean);
+    var total = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
+    parts.forEach(function (it) {
+      var contrib = composeContribution(it, it === primary ? c.primaryScale : 1);
+      total.kcal += contrib.kcal; total.protein_g += contrib.protein_g;
+      total.carb_g += contrib.carb_g; total.fat_g += contrib.fat_g; total.fiber_g += contrib.fiber_g;
+    });
+    if (c.drink) {
+      var d = c.drink;
+      total.kcal += Number(d.kcal) || 0;
+      total.protein_g = d.protein_g == null ? null : total.protein_g + d.protein_g;
+      total.carb_g = d.carb_g == null ? null : total.carb_g + d.carb_g;
+      total.fat_g = d.fat_g == null ? null : total.fat_g + d.fat_g;
+      total.fiber_g = d.fiber_g == null ? null : total.fiber_g + d.fiber_g;
+    }
+    total.kcal = Math.round(total.kcal * 10) / 10;
+    ["protein_g", "carb_g", "fat_g", "fiber_g"].forEach(function (k) {
+      if (total[k] != null) total[k] = Math.round(total[k] * 10) / 10;
+    });
+    return total;
+  }
+
+  function composeBlockedReason(it, axisType, c) {
+    // 免開火食安：選了 sm_no_cook，需煮熟的食材擋掉（跟 recommend.js 第403-404行同一條規則）
+    if (c.method && c.method.id === "sm_no_cook" && it.requires_cooking) return "這個食材需要加熱";
+    var res = composePassFilter(it, axisType);
+    if (!res.ok) return res.reason;
+    return null;
+  }
+
+  function composeOptionHtml(id, name, opts) {
+    opts = opts || {};
+    var cls = "compose-option" + (opts.selected ? " selected" : "") + (opts.blockedReason != null ? " is-blocked" : "");
+    var reason = opts.blockedReason != null ? '<span class="feast-item-card-reason">' + escapeHtml(opts.blockedReason) + "</span>" : "";
+    return '<button type="button" class="' + cls + '" data-axis="' + escapeHtml(opts.axis) + '" data-id="' + escapeHtml(id) + '"' +
+      (opts.blockedReason != null ? " disabled" : "") + ">" + escapeHtml(name) + reason + "</button>";
+  }
+
+
+
+function composeAxisHtml(label, axisField, options, selected, axisType, c) {
+    var optional = (axisField === "vegetable" || axisField === "seasoning");
+    var html = '<div class="compose-axis"><div class="compose-axis-label">' + escapeHtml(label) + '</div><div class="compose-options">';
+    if (optional) html += composeOptionHtml("", "不加", { axis: axisField, selected: selected == null });
+    options.forEach(function (it) {
+      var isSel = selected && selected.id === it.id;
+      var blockedReason = composeBlockedReason(it, axisType, c);
+      // 已選中的品項即使有 blockedReason 也要能點（取消選取）；未選中的才 disabled。
+      html += composeOptionHtml(it.id, it.name, { axis: axisField, selected: isSel, blockedReason: isSel ? null : blockedReason });
+    });
+    html += "</div></div>";
+    return html;
+  }
+
+  function composeMethodAxisHtml(c) {
+    var methods = (c.archetype.methods || []).map(function (id) { return pickIds(c.axes.sauces, [id])[0]; }).filter(Boolean);
+    var html = '<div class="compose-axis"><div class="compose-axis-label">烹調法</div><div class="compose-options">';
+    methods.forEach(function (m) {
+      html += composeOptionHtml(m.id, m.name, { axis: "method", selected: c.method && c.method.id === m.id });
+    });
+    html += "</div></div>";
+    return html;
+  }
+
+  function renderComposeMode() {
+    var el = $("#manual-picker-compose-mode");
+    if (!el) return;
+    var c = manualPicker.compose;
+    var axes = c.axes;
+    if (!axes) { el.innerHTML = ""; return; }
+    var slot = manualPicker.slot;
+    var archetypes = axes.archetypes.filter(function (a) { return (a.valid_slots || []).indexOf(slot) !== -1; });
+    var html = '<div class="compose-step"><div class="compose-step-label">1. 選餐型</div><div class="compose-options">';
+    html += archetypes.map(function (a) {
+      return composeOptionHtml(a.id, a.name, { axis: "archetype", selected: c.archetype && c.archetype.id === a.id });
+    }).join("");
+    html += "</div></div>";
+
+    if (c.archetype) {
+      html += '<div class="compose-step"><div class="compose-step-label">2. 選食材</div>';
+      html += composeAxisHtml("蛋白質（必選）", "protein", pickIds(axes.proteins, c.archetype.protein.allow), c.protein, "protein", c);
+      if (composeHasStapleSlot()) html += composeAxisHtml("主食（必選）", "staple", pickIds(axes.staples, c.archetype.staple.allow), c.staple, "staple", c);
+      if (c.archetype.vegetable && c.archetype.vegetable.allow && c.archetype.vegetable.allow.length > 0) {
+        html += composeAxisHtml("蔬菜（選填）", "vegetable", pickIds(axes.vegetables, c.archetype.vegetable.allow), c.vegetable, "vegetable", c);
+      }
+      if (c.archetype.seasoning && c.archetype.seasoning.allow && c.archetype.seasoning.allow.length > 0) {
+        html += composeAxisHtml("調味（選填）", "seasoning", pickIds(axes.sauces, c.archetype.seasoning.allow), c.seasoning, "sauce", c);
+      }
+      html += composeMethodAxisHtml(c);
+      html += "</div>";
+
+      var primary = composePrimaryItem();
+      if (primary) {
+        html += '<div class="compose-step"><div class="compose-step-label">3. 份量（' + escapeHtml(primary.name) + '）</div><div class="compose-scale">';
+        html += '<input type="range" min="0.5" max="2.0" step="0.1" value="' + c.primaryScale + '" id="compose-scale-slider">' +
+          '<span id="compose-scale-value">' + c.primaryScale.toFixed(1) + ' 倍</span></div></div>';
+      }
+    }
+
+    html += '<div class="compose-step"><div class="compose-step-label">4. 加飲料（選填）</div><div class="compose-options">';
+    html += composeOptionHtml("", "不加飲料", { axis: "drink", selected: c.drink == null });
+    c.drinkItems.forEach(function (d) {
+      html += composeOptionHtml(d.uid, d.name, { axis: "drink", selected: c.drink && c.drink.uid === d.uid });
+    });
+    c.drinkBlocked.forEach(function (b) {
+      html += composeOptionHtml(b.item.uid, b.item.name, { axis: "drink", blockedReason: b.reason });
+    });
+    html += "</div></div>";
+
+    el.innerHTML = html;
+
+    var slider = document.getElementById("compose-scale-slider");
+    if (slider) {
+      slider.addEventListener("input", function () {
+        c.primaryScale = parseFloat(slider.value);
+        var v = document.getElementById("compose-scale-value");
+        if (v) v.textContent = c.primaryScale.toFixed(1) + " 倍";
+        updateManualSummary();
+      });
+    }
+  }
+
+  function composeMissingReason() {
+    var c = manualPicker.compose;
+    if (!c.archetype) return "請先選餐型";
+    if (!c.protein) return "請選蛋白質";
+    if (composeHasStapleSlot() && !c.staple) return "請選主食";
+    if (!c.method) return "請選烹調法";
+    // 免開火食安：選了 sm_no_cook，任何已選食材需要加熱就要擋（跟 recommend.js 同一條規則）。
+    if (c.method.id === "sm_no_cook") {
+      var needsCooking = [c.protein, c.staple, c.vegetable, c.seasoning].some(function (it) { return it && it.requires_cooking; });
+      if (needsCooking) return "免開火不能搭配需要加熱的食材，請換烹調法或換食材。";
+    }
+    return null;
+  }
+
+  function onComposeClick(e) {
+    var btn = e.target.closest(".compose-option");
+    if (!btn || btn.disabled) return;
+    var axis = btn.getAttribute("data-axis");
+    var id = btn.getAttribute("data-id");
+    var c = manualPicker.compose;
+    if (axis === "archetype") {
+      c.archetype = pickIds(c.axes.archetypes, [id])[0] || null;
+      c.protein = null; c.staple = null; c.vegetable = null; c.seasoning = null; c.method = null; c.primaryScale = 1;
+    } else if (axis === "protein") {
+      c.protein = id ? pickIds(c.axes.proteins, [id])[0] : null;
+    } else if (axis === "staple") {
+      c.staple = id ? pickIds(c.axes.staples, [id])[0] : null;
+    } else if (axis === "vegetable") {
+      c.vegetable = id ? pickIds(c.axes.vegetables, [id])[0] : null;
+    } else if (axis === "seasoning") {
+      c.seasoning = id ? pickIds(c.axes.sauces, [id])[0] : null;
+    } else if (axis === "method") {
+      c.method = id ? pickIds(c.axes.sauces, [id])[0] : null;
+    } else if (axis === "drink") {
+      c.drink = id ? (c.drinkItems.filter(function (d) { return d.uid === id; })[0] || null) : null;
+    }
+    renderComposeMode();
+    updateManualSummary();
+  }
+
 
   function renderManualPicker() {
-    var itemsEl = $("#manual-picker-items");
-    if (!itemsEl) return;
-    var selected = manualPicker.selectedUids;
-    var html = manualPicker.passItems.map(function (it) {
-      return window.ItemPicker.cardHtml(it, { selected: selected.indexOf(it.uid) !== -1 });
-    }).join("");
-    html += manualPicker.blockedItems.map(function (b) {
-      return window.ItemPicker.cardHtml(b.item, { selected: false, blockedReason: b.reason });
-    }).join("");
-    itemsEl.innerHTML = html;
+    var itemsModeEl = $("#manual-picker-items-mode");
+    var composeModeEl = $("#manual-picker-compose-mode");
+    if (itemsModeEl) itemsModeEl.hidden = manualPicker.mode !== "items";
+    if (composeModeEl) composeModeEl.hidden = manualPicker.mode !== "compose";
 
-    var selItems = manualSelectedItems();
-    var totals = window.ItemPicker.sumSelected(selItems);
-    var limits = manualRoleLimits(manualPicker.slot);
-    var roleCount = { main: 0, side: 0, drink: 0, snack: 0 };
-    selItems.forEach(function (it) { roleCount[it.role] = (roleCount[it.role] || 0) + 1; });
+    if (manualPicker.mode === "compose") {
+      renderComposeMode();
+    } else {
+      var itemsEl = $("#manual-picker-items");
+      if (itemsEl) {
+        var selected = manualPicker.selectedUids;
+        var html = manualPicker.passItems.map(function (it) {
+          return window.ItemPicker.cardHtml(it, { selected: selected.indexOf(it.uid) !== -1 });
+        }).join("");
+        html += manualPicker.blockedItems.map(function (b) {
+          return window.ItemPicker.cardHtml(b.item, { selected: false, blockedReason: b.reason });
+        }).join("");
+        itemsEl.innerHTML = html;
+      }
+    }
+    updateManualSummary();
+  }
+
+  function updateManualSummary() {
+    var isCompose = manualPicker.mode === "compose";
+    var totals, selItems;
+    if (isCompose) {
+      totals = composeTotals();
+      selItems = [];
+    } else {
+      selItems = manualSelectedItems();
+      totals = window.ItemPicker.sumSelected(selItems);
+    }
 
     var summaryEl = $("#manual-picker-summary");
     if (summaryEl) {
       summaryEl.innerHTML =
-        "已選 " + selItems.length + " 件 · 約 " + Math.round(totals.kcal) + " kcal" +
+        (isCompose ? "已配好 · " : "已選 " + selItems.length + " 件 · ") + "約 " + Math.round(totals.kcal) + " kcal" +
         " · 蛋白質 " + fmtNutrient(totals.protein_g) +
         " · 碳水 " + fmtNutrient(totals.carb_g) +
         " · 脂肪 " + fmtNutrient(totals.fat_g) +
@@ -533,18 +775,31 @@
       var fiberGap = Math.round((share.fiberShare - (totals.fiber_g || 0)) * 10) / 10;
       if (proteinGap > 0) lines.push("蛋白質缺口約 " + proteinGap + "g");
       if (fiberGap > 0) lines.push("纖維缺口約 " + fiberGap + "g");
-      var suggestions = [];
-      if (proteinGap > 0) suggestions = suggestions.concat(suggestFillers(proteinGap, "protein_g", selItems, share));
-      if (fiberGap > 0) suggestions = suggestions.concat(suggestFillers(fiberGap, "fiber_g", selItems, share));
-      if (suggestions.length > 0) lines.push("可以考慮加：" + suggestions.slice(0, 2).join("、"));
+      if (!isCompose) {
+        var suggestions = [];
+        if (proteinGap > 0) suggestions = suggestions.concat(suggestFillers(proteinGap, "protein_g", selItems, share));
+        if (fiberGap > 0) suggestions = suggestions.concat(suggestFillers(fiberGap, "fiber_g", selItems, share));
+        if (suggestions.length > 0) lines.push("可以考慮加：" + suggestions.slice(0, 2).join("、"));
+      }
       gapEl.innerHTML = lines.length > 0 ? lines.map(function (t) { return "<p>" + escapeHtml(t) + "</p>"; }).join("") : "";
     }
 
     var submitBtn = $("#manual-picker-submit");
     var hint = document.getElementById("manual-picker-main-hint");
-    var missingMain = limits.requireMain && roleCount.main === 0;
-    if (submitBtn) submitBtn.disabled = missingMain;
-    if (hint) hint.hidden = !missingMain;
+    var missingReason = null;
+    if (isCompose) {
+      missingReason = composeMissingReason();
+    } else {
+      var limits = manualRoleLimits(manualPicker.slot);
+      var roleCount = { main: 0, side: 0, drink: 0, snack: 0 };
+      selItems.forEach(function (it) { roleCount[it.role] = (roleCount[it.role] || 0) + 1; });
+      if (limits.requireMain && roleCount.main === 0) missingReason = "這個時段需要選 1 個主餐才能送出。";
+    }
+    if (submitBtn) submitBtn.disabled = missingReason != null;
+    if (hint) {
+      hint.hidden = missingReason == null;
+      if (missingReason) hint.textContent = missingReason;
+    }
   }
 function suggestFillers(gap, field, selItems, share) {
     var out = [];
@@ -585,24 +840,32 @@ function suggestFillers(gap, field, selItems, share) {
   }
 
   async function onManualSubmit() {
-    var selItems = manualSelectedItems();
-    if (selItems.length === 0) { alert("請至少選一個品項。"); return; }
-    var totals = window.ItemPicker.sumSelected(selItems);
-    var entry = {
-      log_date: localDateStr(),
-      slot: manualPicker.slot,
-      source_type: "manual_combo",
-      item_id: null,
-      item_name: selItems.map(function (it) { return it.name; }).join("＋"),
-      kcal: totals.kcal,
-      protein_g: totals.protein_g,
-      carb_g: totals.carb_g,
-      fat_g: totals.fat_g,
-      fiber_g: totals.fiber_g,
-      is_feast: 0,
-      feast_reservation_id: null,
-      component_ids: selItems.map(function (it) { return it.uid; }),
-    };
+    var entry;
+    if (manualPicker.mode === "compose") {
+      // 「自己煮」：source_type 用 manual_composed，跟現成品項的 manual_combo 區分。
+      var missing = composeMissingReason();
+      if (missing) { alert(missing); return; }
+      var c = manualPicker.compose;
+      var totals = composeTotals();
+      var nameParts = [c.archetype.name, c.protein.name, c.staple && c.staple.name, c.vegetable && c.vegetable.name, c.seasoning && c.seasoning.name, c.drink && c.drink.name].filter(Boolean);
+      var compIds = [c.archetype.id, c.protein.id, c.staple && c.staple.id, c.vegetable && c.vegetable.id, c.seasoning && c.seasoning.id, c.method && c.method.id, c.drink && c.drink.uid].filter(Boolean);
+      entry = {
+        log_date: localDateStr(), slot: manualPicker.slot, source_type: "manual_composed", item_id: null,
+        item_name: nameParts.join("＋"),
+        kcal: totals.kcal, protein_g: totals.protein_g, carb_g: totals.carb_g, fat_g: totals.fat_g, fiber_g: totals.fiber_g,
+        is_feast: 0, feast_reservation_id: null, component_ids: compIds,
+      };
+    } else {
+      var selItems = manualSelectedItems();
+      if (selItems.length === 0) { alert("請至少選一個品項。"); return; }
+      var totals2 = window.ItemPicker.sumSelected(selItems);
+      entry = {
+        log_date: localDateStr(), slot: manualPicker.slot, source_type: "manual_combo", item_id: null,
+        item_name: selItems.map(function (it) { return it.name; }).join("＋"),
+        kcal: totals2.kcal, protein_g: totals2.protein_g, carb_g: totals2.carb_g, fat_g: totals2.fat_g, fiber_g: totals2.fiber_g,
+        is_feast: 0, feast_reservation_id: null, component_ids: selItems.map(function (it) { return it.uid; }),
+      };
+    }
     try {
       await addDailyLog(entry);
       var overlay = $("#manual-picker-overlay");
@@ -681,6 +944,12 @@ function suggestFillers(gap, field, selItems, share) {
     }
     const manualItems = $("#manual-picker-items");
     if (manualItems) manualItems.addEventListener("click", onManualItemClick);
+    const composeModeEl = $("#manual-picker-compose-mode");
+    if (composeModeEl) composeModeEl.addEventListener("click", onComposeClick);
+    var modeRadios = document.querySelectorAll("input[name='manual-picker-mode']");
+    Array.prototype.forEach.call(modeRadios, function (r) {
+      r.addEventListener("change", function () { if (r.checked) setManualMode(r.value); });
+    });
     const manualCancel = $("#manual-picker-cancel");
     if (manualCancel) manualCancel.addEventListener("click", function () { overlay.hidden = true; });
     const manualSubmit = $("#manual-picker-submit");
