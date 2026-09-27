@@ -28,6 +28,16 @@
     "無糖豆漿": "images/food/soy-milk.jpg",
   };
 
+  // 時段 → 預設插畫（找不到具體食物照片時墊底用，取代原本依「來源」分色的漸層色塊）。
+  // 溫馨手繪風格，5 張同一套風格、只有時段場景不同，跟 images/food/ 那批寫實食物照刻意區隔。
+  const MEAL_DEFAULT_IMAGE = {
+    breakfast: "images/gemini/meal-default-breakfast.jpg",
+    lunch: "images/gemini/meal-default-lunch.jpg",
+    afternoon_tea: "images/gemini/meal-default-afternoon-tea.jpg",
+    dinner: "images/gemini/meal-default-dinner.jpg",
+    snack: "images/gemini/meal-default-snack.jpg",
+  };
+
   // 記錄「最近一次」的推薦結果，供「記錄這餐」按鈕點擊時找到對應 slot 的 rec
   let currentRecs = {};
 
@@ -101,12 +111,12 @@
         body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>';
         return;
       }
-      const imgSrc = PROTEIN_IMAGE[rec.protein_name];
+      // 找不到具體食物照片時（超商/台式外送品項、或還沒建檔縮圖的食材），墊底用該時段的預設插畫，
+      // 取代原本依「來源」分色的漸層色塊。
+      const imgSrc = PROTEIN_IMAGE[rec.protein_name] || MEAL_DEFAULT_IMAGE[slot];
       const imgHtml = imgSrc
-        ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name) + '" loading="lazy">'
-        // 沒有對應照片時（超商/台式外送品項、或還沒建檔縮圖的食材）用色塊墊底取代整塊留白，
-        // 依來源分三種色調（自組食譜/超商/台式外送），視覺上仍看得出這是哪一類建議。
-        : '<div class="rec-card-placeholder ' + (rec.is_convenience ? "rec-placeholder-convenience" : rec.is_delivery ? "rec-placeholder-delivery" : "rec-placeholder-cooked") + '" aria-hidden="true"></div>';
+        ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name || SLOT_LABELS[slot] || "") + '" loading="lazy">'
+        : "";
       const fallbackNote = rec.fallback_to_auto
         ? '<p class="rec-fallback-note">今日這個來源沒有符合配額的選擇，已改為一般推薦</p>'
         : "";

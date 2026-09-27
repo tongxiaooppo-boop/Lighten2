@@ -357,25 +357,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-/* 找不到食物照片時的色塊墊底（依來源分三種色調，取代整塊留白） */
-.rec-card-placeholder {
-  width: 100%;
-  height: 110px;
-  border-radius: 10px;
-  margin-bottom: 0.5rem;
-}
-
-.rec-placeholder-cooked {
-  background: linear-gradient(135deg, #E8B978, #C1652F);
-}
-
-.rec-placeholder-convenience {
-  background: linear-gradient(135deg, #9CB68A, #4B6043);
-}
-
-.rec-placeholder-delivery {
-  background: linear-gradient(135deg, #D9A6A0, #A8574F);
-}
 
 .rec-card h3 {
   margin: 0 0 0.5rem;
