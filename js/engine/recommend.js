@@ -63,12 +63,16 @@
   }
 
   // 台式熱門品項（外送/餐廳）→ 適用時段對照。「西式速食」沒有專屬時段，比照常見食用情境歸到午/晚餐。
+  // 2026-09-27：下午茶原本「暫用飲料分類頂替」（只給飲料、飲料也只能出現在下午茶），
+  // 使用者指出下午茶該有茶點/蛋糕，飲料本身應該五個時段都能出現，改成飲料不限時段、
+  // 下午茶改用新的「茶點」分類為主。
   const TAIWAN_CATEGORY_SLOTS = {
     "早餐": ["breakfast"],
     "午餐": ["lunch"],
     "晚餐": ["dinner"],
     "宵夜": ["snack"],
-    "飲料": ["afternoon_tea"],
+    "飲料": ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"],
+    "茶點": ["afternoon_tea"],
     "西式速食": ["lunch", "dinner"],
   };
   const WIDE_RANGE_RATIO = 1.5; // 沒有 kcal_rep、且 high/low ≥ 1.5 倍的品項熱量太不精準，不進推薦池（仍可在預約/直接記錄使用）
