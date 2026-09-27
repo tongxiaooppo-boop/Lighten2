@@ -63,15 +63,16 @@
   }
 
   // 台式熱門品項（外送/餐廳）→ 適用時段對照。「西式速食」沒有專屬時段，比照常見食用情境歸到午/晚餐。
-  // 2026-09-27：下午茶原本「暫用飲料分類頂替」（只給飲料、飲料也只能出現在下午茶），
-  // 使用者指出下午茶該有茶點/蛋糕，飲料本身應該五個時段都能出現，改成飲料不限時段、
-  // 下午茶改用新的「茶點」分類為主。
+  // 2026-09-27：下午茶原本「暫用飲料分類頂替」，改成下午茶主要用「茶點」分類。
+  // 「飲料」單獨一項的標準時段維持只有下午茶——一杯飲料單獨當「早餐/午餐/晚餐/宵夜」的
+  // 完整推薦不合理（沒有人只喝一杯珍奶當午餐）。飲料要出現在其他時段，走下面的
+  // 「正餐＋飲料」組合（見 mainMealDrinkCombo 那段），不是讓飲料自己單獨頂一個時段。
   const TAIWAN_CATEGORY_SLOTS = {
     "早餐": ["breakfast"],
     "午餐": ["lunch"],
     "晚餐": ["dinner"],
     "宵夜": ["snack"],
-    "飲料": ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"],
+    "飲料": ["afternoon_tea"],
     "茶點": ["afternoon_tea"],
     "西式速食": ["lunch", "dinner"],
   };
@@ -457,7 +458,7 @@
     function taiwanItemKcal(it) {
       return it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
     }
-    function toTaiwanTeaCombo(items) {
+    function toTaiwanMultiCombo(items, validSlots) {
       return {
         id: items.map(function (it) { return "tw_" + it.id; }).join("+"),
         source_id: null,
@@ -474,12 +475,29 @@
         allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags || []; })),
         is_convenience: false,
         is_delivery: true,
-        valid_slots: ["afternoon_tea"],
+        valid_slots: validSlots,
       };
     }
     teaSnacksForCombo.forEach(function (snack) {
       teaDrinksForCombo.forEach(function (drink) {
-        combos.push(toTaiwanTeaCombo([snack, drink]));
+        combos.push(toTaiwanMultiCombo([snack, drink], ["afternoon_tea"]));
+      });
+    });
+
+    // 早餐/午餐/晚餐/宵夜：飲料不能單獨當一整個時段的推薦（沒有人只喝一杯飲料當午餐），
+    // 但可以「正餐＋飲料」搭配出現（手搖飲配便當/牛肉麵是很常見的吃法）。跟下午茶那組
+    // 一樣固定「一正餐＋一飲料」，不會出現兩款飲料。「西式速食」本身常常已經含一杯飲料
+    // （例如大麥克餐已經算進中可樂），不重複疊加，所以不跟飲料另外配對。
+    const MAIN_MEAL_CATEGORY_TO_SLOT = { "早餐": "breakfast", "午餐": "lunch", "晚餐": "dinner", "宵夜": "snack" };
+    Object.keys(MAIN_MEAL_CATEGORY_TO_SLOT).forEach(function (category) {
+      const slot = MAIN_MEAL_CATEGORY_TO_SLOT[category];
+      const mains = axes.taiwanItems.filter(function (it) {
+        return it.category === category && !isTooWideRange(it);
+      });
+      mains.forEach(function (main) {
+        teaDrinksForCombo.forEach(function (drink) {
+          combos.push(toTaiwanMultiCombo([main, drink], [slot]));
+        });
       });
     });
 
