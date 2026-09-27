@@ -1,45 +1,47 @@
-# 回報（Cline → Claude）— 手動組餐＋不吃清單＋熱量口徑修正＋展開式營養素明細
+# 回報（Cline → Claude）— 手動組餐新增「自己煮」模式＋現成品項排除「整套便當」
 
-範圍大，照 `to-cline.md` 的 8 個 Part 全部完成。**只本機 commit，沒有 push。** 分 4 個 commit：
+照 `to-cline.md` 的 Part 0～5 全部完成。**只本機 commit，沒有 push。** 分 2 個 commit：
 
-- `f35f861` Part 1+3+6+7a 引擎基礎
-- `51cb4f4` Part 7b/7c hero 雙數字＋展開式營養素明細＋低額度文案
-- `fe7a2ae` Part 3完成＋Part 4＋Part 5（美饗挑選器硬性過濾、不吃清單、手動組餐 modal）
-- `dfcdb66` Part 8 文件同步
+- `dba2182` Part 0（item-picker 排除整套便當＋loadComposeAxes＋匯出 PRIMARY_SLOT_SCALE_RANGE）
+- `6d23194` Part 1–5（自己煮三層流程＋送出 manual_composed＋免開火食安過濾）
 
 ## 改了什麼
 
-**引擎層**
-- `js/engine/recommend.js`：`fromTaiwan()`/`fromConvenience()` 缺脂肪/碳水改存 `null`（不再寫 0）；新增 `sumOrNull(members, field)` 並套用到 `toItemCombo()` 的蛋白質/碳水/脂肪/纖維四項；新增 `passesHardFilters(item, profile)`（過敏原＋飲食限制＋不吃食材，三處共用）＋ `findDislikedHit`；`getTodayRecommendation` 改依序處理時段（`LOW_BUDGET_THRESHOLD_KCAL=150`，前面時段差額往後帶，低於門檻回傳 `{lowBudget:true}`）；`toItemCombo` 多存 `component_labels`（給「順便不要」chip 用）。
-- `js/engine/budget.js`：新增 `slotShare(pool, slots, slot)`、`slotNutrientShare(targets, todayLogs, enabledSlots, slot)`，匯出 `SLOT_WEIGHTS`。
-- `js/ui/item-picker.js`（新增）：共用品項挑選器（`loadItems`/`filterForSlot`/`cardHtml`/`sumSelected`），美饗日曆單選＋手動組餐多選共用。
-- `tools/check-engine.js`：因應依序分配，`getTodayRecommendation` 新增 `remainingKcal` fallback 已內建，測試補上 `lowBudget` 結果的跳過處理。
+**`js/ui/item-picker.js`**
+- 新增具名常數 `WHOLE_MEAL_CATEGORIES`（健身餐盒/蔬食餐盒/減醣餐盒/連鎖健康餐盒/宅配健身餐）＋ `loadItems`/`filterForSlot` 支援 `opts.excludeWholeMeals`：true 時台式品項只留 `role === 'drink'`、超商品項排除整套便當分類（直接濾掉，不是灰階，跟 blocked 的語意分開）。
+- 新增 `loadComposeAxes()`（fetch dish_archetypes/protein_sources/staples/sauce_methods/raw_ingredients 五個檔，蔬菜取 `category === "蔬菜"`），供「自己煮」用，跟 recommend.js 的 loadAxes 同一批來源。
 
-**UI 層**
-- `js/ui/tab-today.js`：`onLogRecClick` 多存 `component_ids`；`renderHero` 加次要行（建議合計 vs 主數字差額）＋ `<details>` 營養素明細（四項＋P/F/C 佔比＋碳水標「參考值」＋資料涵蓋率警語）；`renderRecs` 加「自己選」按鈕＋「順便不要」chip＋低額度文案；新增手動組餐 modal 邏輯（`openManualPicker`/`renderManualPicker`/`onManualSubmit`/缺口提示）。
-- `js/ui/tab-ledger.js`：`renderItemPicker` 改用 `ItemPicker.filterForSlot` 套硬性過濾（命中品項灰階＋顯示原因，不從清單移除）。
-- `js/ui/tab-profile.js`：新增「不吃的食材」區塊（顯示＋移除），`readProfileForm` 保留 `disliked_ingredients` 避免被 `saveProfile` 整筆覆寫清掉。
-- `index.html`／`css/style.css`：新增 modal、不吃清單 fieldset、hero 次要行/明細、chips、灰階卡片樣式。
+**`js/engine/recommend.js`**
+- 匯出 `window.PRIMARY_SLOT_SCALE_RANGE`（兩處共用，不各寫一份）。
 
-**文件**：PRD 新增 5.7 節＋第 10 章「已知限制」；TECH-SPEC 更新 daily_log 表格（component_ids/manual_combo/null）、新增 4.9 item-picker、4.10 引擎增補。
+**`js/ui/tab-today.js`**
+- `openManualPicker` 改傳 `{ excludeWholeMeals: true }`；多載 `loadComposeAxes` + 飲料清單。
+- 新增「現成品項／自己煮」模式切換（radio）；`renderManualPicker` 拆成「items grid」跟「compose 三層流程」兩條路徑，summary/gap/送出共用 `updateManualSummary()`。
+- 自己煮三層流程：①選餐型（`valid_slots` 含目前時段）→ ②選食材（蛋白質必選、主食 allow 非空時必選、蔬菜/調味選填＋「不加」、烹調法單選）→ ③主要槽位份量滑桿（0.5～2.0，PRIMARY_SLOT_SCALE_RANGE）→ ④選填飲料（ItemPicker `role==='drink'`，單選）。
+- 硬性過濾：單一食材包成 `{ is_composed: true, protein_name/staple_name/vegetable_name/sauce_name, allergen_tags, diet_tag_sets }` 再丟 `passesHardFilters`，讓「不吃食材」清單四種 type 都能命中；命中灰階＋顯示原因，不整欄隱藏。
+- 免開火食安：選 `sm_no_cook` 後，任何 `requires_cooking === true` 的食材選項灰階「這個食材需要加熱」；已選中又需加熱的組合送出前擋下並提示。
+- 送出：`source_type: "manual_composed"`（跟現成品項 `manual_combo` 區分），`item_name` 用餐型＋蛋白質＋主食＋蔬菜＋調味＋飲料「＋」串接，`component_ids` = `[archetype.id, protein.id, staple.id?, vegetable.id?, seasoning.id?, method.id, drink.uid?].filter(Boolean)`。
+
+**`index.html`／`css/style.css`**：modal 加模式切換＋compose 容器；新增 compose 步驟/選項/滑桿樣式。
 
 ## 驗證
 
 - 全專案 `node --check` 每個 `.js`：**全部通過**。
-- `node tools/check-engine.js`：**全部通過（31442 項檢查）**（含依序分配後的低額度標記、跳過時段、體重趨勢斜率）。
-- grep 新文案禁用字（額度/剩餘/超支/彈性點數/還/補/抵/存）：user-facing 新文案乾淨；僅程式碼註解與既有 index.html 舊文案有「剩餘/還沒」，非本輪新文案。
+- `node tools/check-engine.js`：**全部通過（31442 項檢查）**（沒動到 getTodayRecommendation/buildCandidatePool 本體，只加匯出）。
+- 用臨時 node harness 驗證 `loadComposeAxes` 解出 5 餐型/11 蛋白質/8 主食/20 蔬菜/7 醬料、每個餐型的 allow-list 都能解出食材、`excludeWholeMeals: true` 後台式只剩 11 筆飲料、超商只留飲品/沙拉/蛋白質單品/原型主食/蛋白飲點心棒（健身/蔬食/減醣/連鎖/宅配 5 類已排除）。（測試檔已刪除，不留在 repo。）
 
 ## 需要 Claude／使用者決定的事
 
-1. **低額度文案選了哪個**：`to-cline.md` 7b 給我兩種寫法選一，我選了「這個時段的配額已經不多了」**而不是**「今天的額度已經用完／所剩不多」（後者含禁用字「額度」，前者避開）。
-2. **自訂食物 role 方案選了哪個**：Part 5 給我兩案，我選了「一律算配菜、一餐最多 1 個」（沒有加建立時選 role 的表單，避免動 `custom_foods` schema 與美饗日曆輸入流程）。
-3. **資料涵蓋率的 fallback 侷限**：改版前寫入的舊紀錄，只有 `source_type === 'taiwan_item'` 能可靠判成「缺資料」；舊超商組合的 `source_type` 是 `custom`，跟真自訂食物分不出來，無法回溯。已寫進 PRD 已知限制，接受這個已知缺口。
-4. **hero 渲染時機後移**：原本 `renderHero` 在 `getTodayRecommendation` 之前呼叫（先秀大數字），為了次要行要算卡片加總，我把 `renderHero` 移到推薦算完之後、並多傳 `recs`。副作用是首次載入 hero 卡會等到推薦算完才出現，實測體感差異不大，但請留意。
-5. **`data/convenience_items.json` 的 line-ending 變動**：commit 裡這個檔出現 35+/35-，純粹是 LF→CRLF 的換行符正規化，內容資料沒有改（可用 `git diff` 確認每行內容一致）。是 Windows 環境的 `core.autocrlf` 造成的噪音，不是我改資料。
+1. **自訂食物 role 沿用上一輪決定**：自己煮的「飲料」只從 ItemPicker `role==='drill'` 的品項挑，自訂食物一律算 `side`（配菜），所以自己煮不會出現自訂食物當飲料；自訂食物只出現在現成品項模式。
+2. **飲料可選範圍**：飲料清單也套了 `excludeWholeMeals`（`filterForSlot(slot, profile, { excludeWholeMeals: true })`），所以自己煮的飲料 = 台式 `dr01~dr10` + 超商飲品類，不含整套便當（本來也不會有）。美饗日曆維持 `includeConvenience: false`（不變）。
+3. **送出前必填**：我比規格字面多要求「烹調法必選」（因為它是單選、沒有「不加」選項，跟自動推薦每個組合一定有 method 一致）；如果 Claude 認為烹調法可以預設放空再送出，改 `composeMissingReason` 一行即可。
+4. **已選食材在「免開火」下的呈現**：已選中又需要加熱的食材，我在選項卡片上不標灰（保持可點以取消選取），改在送出時擋＋提示「免開火不能搭配需要加熱的食材」。這是為了避免「選中後被 disabled 就無法取消」的卡死問題。
 
 ## 建議下一步
 
-- 讓 Claude 用瀏覽器實測：今日建議「自己選」多選＋缺口提示＋送出＋撤銷；「順便不要」chip 加進去後，推薦/美饗日曆/自己選三處都擋掉該食材；基本資料分頁看得到、移得掉。
-- 手動驗證 IndexedDB：`component_ids` 有寫入、`disliked_ingredients` 沒被 `saveProfile` 整筆覆寫清掉（同上次的 IndexedDB 手動項，node harness 測不到）。
-- `collab/convenience-items-nutrition-todo.md`（未追蹤檔）是給使用者/Claude 填脂肪/碳水的待辦，跟本輪無關，我沒動。
+- 讓 Claude 用瀏覽器實測：現成品項模式午/晚餐看不到排骨便當/雞腿便當/全家健身G肉餐盒，但美饗日曆還看得到；切「自己煮」五個餐型都能選、切換餐型食材跟著換、免開火擋需加熱食材、滑桿 0.5~2.0 即時變動、飲料可加可不加、送出後 source_type 是 `manual_composed`、可撤銷。
+- 手動驗證 IndexedDB：`component_ids` 有正確記到餐型/食材/烹調法/飲料的 id。
+
+（`collab/to-cline.md` 在 working tree 裡是 Claude 未 commit 的新任務內容，我沒有動它、也沒有把它 commit 進去。）
+
 
