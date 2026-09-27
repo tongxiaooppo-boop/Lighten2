@@ -285,9 +285,6 @@
           </div>
           <div class="form-row">
             <div class="form-field">
-              <label>日期<input type="date" name="plan_date" /></label>
-            </div>
-            <div class="form-field">
               <label>餐別
                 <select name="slot">
                   <option value="lunch">午餐</option>
@@ -301,6 +298,11 @@
             <div class="form-field form-field-btn">
               <button type="submit" class="primary-btn" id="feast-submit-btn">預約</button>
             </div>
+          </div>
+          <div class="feast-date-field">
+            <p class="feast-date-label">日期</p>
+            <input type="hidden" name="plan_date" id="feast-date-value" />
+            <div class="feast-date-picker" id="feast-date-picker"></div>
           </div>
           <div class="feast-item-picker-field">
             <p class="feast-item-picker-label">點選實際品項（會跟著上面「餐別」變化）</p>
