@@ -161,6 +161,98 @@ body {
   background-color: #9E4F24;
 }
 
+/* 大餐預約日期選擇：inline 週捲動月曆格（取代原生 date input），可以直接看到範圍再挑日期，
+   哪些日期可選（預約=今天起、直接記錄=今天以前）用格子本身的樣式呈現，不用另外看說明文字。 */
+.feast-date-field {
+  margin: 0.75rem 0;
+}
+
+.feast-date-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.feast-date-picker {
+  border: 1px solid #EFE3D2;
+  border-radius: 14px;
+  background-color: #ffffff;
+  padding: 0.7rem 0.6rem;
+}
+
+.fdp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.fdp-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #8A7A63;
+}
+
+.fdp-nav-btn {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #3A2E22;
+  cursor: pointer;
+}
+
+.fdp-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.fdp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.fdp-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #8A7A63;
+  padding: 0.2rem 0;
+}
+
+.fdp-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background-color: #fff;
+  color: #3A2E22;
+  cursor: pointer;
+}
+
+.fdp-day.fdp-disabled {
+  opacity: 0.35;
+  cursor: default;
+  background-color: #FBF5ED;
+}
+
+.fdp-day.fdp-today {
+  border-color: #C1652F;
+  border-width: 2px;
+  font-weight: 700;
+}
+
+.fdp-day.fdp-selected {
+  background-color: #C1652F;
+  border-color: #C1652F;
+  color: #fff;
+  font-weight: 700;
+}
+
 .targets-result {
   margin: 1rem 0;
   padding: 0.9rem 1rem;

@@ -6,6 +6,8 @@
 
   const SLOT_LABELS = { breakfast: "早餐", lunch: "午餐", afternoon_tea: "下午茶", dinner: "晚餐", snack: "宵夜" };
   const SIZE_LABELS = { S: "小", M: "中", L: "大" };
+  const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+  const FEAST_CAL_WINDOW_WEEKS = 3; // 一次顯示 3 週，用「往前/往後一週」捲動看更遠的日期
 
   // 「預約」是計畫還沒吃的餐，如果日期是今天、但這個時段的一般用餐時間已經過了，
   // 代表這餐要嘛已經吃過（該用「已經吃了，直接記錄」）、要嘛就是不會再吃了，不該讓使用者預約。
@@ -278,8 +280,8 @@
       alert("請選擇日期。");
       return;
     }
-    // min/max 屬性只是讓瀏覽器的日期選擇器「傾向」擋掉，使用者仍可手動輸入繞過，
-    // 送出時要再明確驗證一次，不能只靠屬性。
+    // 月曆格子本身已經把不合法的日期畫成不可點，這裡送出時再驗證一次是防禦性檢查
+    // （例如表單被用其他方式送出、或畫面狀態沒跟資料同步時）。
     const today = localDateStr();
     if (mode === "log" && planDate > today) {
       alert("「已經吃了，直接記錄」不能選未來日期。");
@@ -329,7 +331,7 @@
       } else {
         await reserveFeast(planDate, slot, size, itemId);
       }
-      form.elements["plan_date"].value = localDateStr();
+      setFeastDate(localDateStr());
       form.elements["item_id"].value = "";
       ["custom_food_name", "custom_food_kcal", "custom_food_protein", "custom_food_fiber"].forEach(function (name) {
         const el = document.querySelector("#feast-form [name='" + name + "']");
@@ -368,19 +370,99 @@
 
   // 「預約」是計畫未來要吃的，選過去日期沒意義；「已經吃了，直接記錄」是補記，
   // 只能記錄今天或以前吃過的，選未來日期也沒意義。兩種模式的日期限制互斥。
+  // 日期選擇改成 inline 週捲動月曆格（參考 jioka2 專案的 calendarHtml 做法），
+  // 不再用原生 <input type="date">：格子本身依模式把不能選的日期顯示成灰階不可點，
+  // 使用者看得到完整範圍再挑，不用另外看 min/max 限制文字。
+  let feastCalWeekOffset = 0;
+
+  function feastDateValue() {
+    const el = $("#feast-date-value");
+    return el ? el.value : "";
+  }
+
+  function feastCalendarRange(weekOffset) {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + (weekOffset || 0) * 7);
+    return { start: start, weeks: FEAST_CAL_WINDOW_WEEKS };
+  }
+
+  function setFeastDate(dateStr) {
+    const el = $("#feast-date-value");
+    if (el) el.value = dateStr;
+    renderFeastDatePicker();
+    updateSlotAvailability();
+  }
+
+  // 依模式把值夾回合法範圍內（預約不能是過去、直接記錄不能是未來），並把月曆視窗跳到
+  // 對該模式最有用的位置：預約從這週開始往後看；直接記錄以這週為終點往前看（多數補記
+  // 都是記最近幾天，這樣切過去不用手動點「往前一週」才看得到能選的日期）。
   function updateDateConstraint(mode) {
-    const dateInput = document.querySelector("#feast-form input[name='plan_date']");
-    if (!dateInput) return;
     const today = localDateStr();
+    const current = feastDateValue();
+    let next = current;
     if (mode === "log") {
-      dateInput.removeAttribute("min");
-      dateInput.max = today;
-      if (dateInput.value && dateInput.value > today) dateInput.value = today;
+      if (current && current > today) next = today;
+      feastCalWeekOffset = -(FEAST_CAL_WINDOW_WEEKS - 1);
     } else {
-      dateInput.removeAttribute("max");
-      dateInput.min = today;
-      if (dateInput.value && dateInput.value < today) dateInput.value = today;
+      if (!current || current < today) next = today;
+      feastCalWeekOffset = 0;
     }
+    const el = $("#feast-date-value");
+    if (el) el.value = next;
+    renderFeastDatePicker();
+  }
+
+  function renderFeastDatePicker() {
+    const picker = $("#feast-date-picker");
+    if (!picker) return;
+    const mode = currentFeastMode();
+    const today = localDateStr();
+    const selected = feastDateValue();
+    const range = feastCalendarRange(feastCalWeekOffset);
+    const end = new Date(range.start.getFullYear(), range.start.getMonth(), range.start.getDate() + range.weeks * 7 - 1);
+    const label = (range.start.getMonth() + 1) + "/" + range.start.getDate() + " – " + (end.getMonth() + 1) + "/" + end.getDate();
+
+    let html = '<div class="fdp-header"><div class="fdp-title">' + label + '</div><div class="fdp-nav">' +
+      '<button type="button" class="fdp-nav-btn" id="fdp-prev">‹ 往前一週</button> ' +
+      '<button type="button" class="fdp-nav-btn" id="fdp-next">往後一週 ›</button></div></div>';
+
+    html += '<div class="fdp-grid">';
+    WEEKDAYS.forEach(function (w) {
+      html += '<div class="fdp-dow">' + w + '</div>';
+    });
+    for (let i = 0; i < range.weeks * 7; i++) {
+      const d = new Date(range.start.getFullYear(), range.start.getMonth(), range.start.getDate() + i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      const dateStr = y + "-" + m + "-" + day;
+      const disabled = mode === "log" ? dateStr > today : dateStr < today;
+      let cls = "fdp-day";
+      if (disabled) cls += " fdp-disabled";
+      if (dateStr === today) cls += " fdp-today";
+      if (dateStr === selected) cls += " fdp-selected";
+      const attr = disabled ? "" : ' data-date="' + dateStr + '"';
+      html += '<div class="' + cls + '"' + attr + '>' + d.getDate() + "</div>";
+    }
+    html += "</div>";
+
+    picker.innerHTML = html;
+
+    const prevBtn = $("#fdp-prev");
+    if (prevBtn) prevBtn.addEventListener("click", function () {
+      feastCalWeekOffset -= 1;
+      renderFeastDatePicker();
+    });
+    const nextBtn = $("#fdp-next");
+    if (nextBtn) nextBtn.addEventListener("click", function () {
+      feastCalWeekOffset += 1;
+      renderFeastDatePicker();
+    });
+    picker.querySelectorAll(".fdp-day[data-date]").forEach(function (cell) {
+      cell.addEventListener("click", function () {
+        setFeastDate(cell.getAttribute("data-date"));
+      });
+    });
   }
 
   function currentFeastMode() {
@@ -415,8 +497,8 @@
   }
 
   ready(function () {
-    const dateInput = document.querySelector("#feast-form input[name='plan_date']");
-    if (dateInput) dateInput.value = localDateStr();
+    const dateValueEl = $("#feast-date-value");
+    if (dateValueEl) dateValueEl.value = localDateStr();
 
     const form = document.getElementById("feast-form");
     if (form) form.addEventListener("submit", onSubmitFeastForm);
@@ -432,8 +514,6 @@
     });
     const checkedMode = document.querySelector("#feast-form input[name='feast_mode']:checked");
     updateDateConstraint(checkedMode ? checkedMode.value : "reserve");
-
-    if (dateInput) dateInput.addEventListener("change", updateSlotAvailability);
 
     const slotSelect = document.querySelector("#feast-form select[name='slot']");
     if (slotSelect) {
