@@ -125,11 +125,12 @@ lighten/
 |---|---|---|
 | id | TEXT PK | |
 | log_date / slot | — | |
-| source_type | TEXT | 'recipe_template'/'taiwan_item'/'custom' |
+| source_type | TEXT | 'recipe_template'/'taiwan_item'/'custom'/'manual_combo'（2026-09-27 手動組餐新增 'manual_combo'） |
 | item_id / item_name | — | |
-| kcal / protein_g / carb_g / fat_g / fiber_g | REAL | |
+| kcal / protein_g / carb_g / fat_g / fiber_g | REAL | 缺資料存 `null` 不寫 0（2026-09-27 修正，見 4.5 節 `sumOrNull`） |
 | is_feast | INTEGER | 0/1 |
 | feast_reservation_id | TEXT NULL | 若由預約轉正式記錄，關聯 3.11 |
+| component_ids | ARRAY NULL | **（2026-09-27 新增）** 純 id 陣列，不建 index，UI 不讀；「記錄這餐」與「自己選」都寫入，供資料涵蓋率判斷 |
 | uses_flex | INTEGER NULL | **（2026-09-25 新增）** 0/1，這筆記錄當初是否消耗了週彈性點數（依來源的 `uses_flex` 判斷，見 3.8/3.9/4.6 節），`undoDailyLog()` 撤銷時要看這個欄位決定要不要把點數退回 `weekly_flex_ledger` |
 
 ### 3.11 `feast_reservation`（新增，v4.0，取代舊 flex_quota_log 的預約角色）
@@ -367,6 +368,24 @@ async function addOverageSmoothing(entry) / getOverageSmoothing(weekStartDate)
 async function addExerciseLog(entry) / getExerciseLogs(dateRange)
 async function getSetting(key) / setSetting(key, value)
 ```
+
+### 4.9 `ui/item-picker.js`（2026-09-27 新增，美饗日曆與手動組餐共用品項挑選器）
+
+```js
+// 資料正規化 + 硬性過濾 + 卡片渲染，兩處挑選器共用，不複製兩份邏輯
+window.ItemPicker.loadItems(opts)          // 回傳正規化後的品項（taiwan + convenience + custom）
+window.ItemPicker.filterForSlot(slot, profile, opts) // 回傳 { pass, blocked }（套 passesHardFilters）
+window.ItemPicker.cardHtml(item, opts)     // 卡片 HTML；opts.blockedReason 非空時灰階＋disabled＋顯示原因
+window.ItemPicker.sumSelected(items)       // null-safe 加總（kcal 一定加；四項營養素任一缺資料整欄 null）
+```
+
+- 選取策略（單選/多選、role 上限）由各呼叫端自己管；美饗日曆 `mode='single'`，今日建議手動組餐 `mode='multi'`。
+- 自訂食物一律算 `role: 'side'`（配菜，一餐最多 1 個）。
+
+### 4.10 `engine/budget.js` 與 `engine/recommend.js` 的 2026-09-27 增補
+
+- `budget.js` 新增 `slotNutrientShare(targets, todayLogs, enabledSlots, slot)`（手動組餐缺口提示用，engine 層純函式，跟 matcher.js 的 `checkHardConstraints` 兩套缺口口徑刻意並存）、`slotShare(pool, slots, slot)`（依序分配的單一時段份額）、匯出 `SLOT_WEIGHTS`。
+- `recommend.js` 新增 `passesHardFilters(item, profile)`（過敏原＋飲食限制＋不吃食材，三處共用）、`sumOrNull(members, field)`（缺資料存 null）、`LOW_BUDGET_THRESHOLD_KCAL = 150`；`getTodayRecommendation` 改依序處理時段（前面時段超出的差額往後帶），低於門檻回傳 `{ lowBudget: true }`。
 
 ---
 
