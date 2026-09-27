@@ -263,8 +263,10 @@
     try {
       const today = localDateStr();
       let savedId;
-      if (rec.is_delivery) {
-        // source_id 是 recommend.js 給的原始 taiwan_items id（拿掉 tw_ 前綴後的那個）
+      if (rec.is_delivery && rec.source_id) {
+        // source_id 是 recommend.js 給的原始 taiwan_items id（拿掉 tw_ 前綴後的那個）。
+        // 「茶點＋飲料」這種台式品項組合沒有單一 source_id（見 recommend.js 的
+        // toTaiwanTeaCombo），會落到下面的分支，直接用組合本身算好的數字記錄。
         const saved = await logFeastDirectly(today, slot, null, rec.source_id);
         savedId = saved.id;
       } else {

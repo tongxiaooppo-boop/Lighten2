@@ -443,6 +443,46 @@
       });
     });
 
+    // 下午茶：茶點／飲料除了各自單獨出現，也可以「茶點＋飲料」一起出現（兩者都有或選一，
+    // 單獨的兩種已經在上面的迴圈各自 push 過了，這裡只加兩者的組合）。飲料同一個組合只會有
+    // 一款（每個組合固定「一茶點＋一飲料」，不會出現兩款飲料），跟超商組合同一個原則。
+    // source_id 留 null（沒有單一品項可對應），tab-today.js 的「記錄這餐」要認得這種情況，
+    // 改用組合本身算好的巨量營養素直接記錄，不要嘗試用 source_id 去查表（那是給單一品項用的）。
+    const teaSnacksForCombo = axes.taiwanItems.filter(function (it) {
+      return it.category === "茶點" && !isTooWideRange(it);
+    });
+    const teaDrinksForCombo = axes.taiwanItems.filter(function (it) {
+      return it.category === "飲料" && !isTooWideRange(it);
+    });
+    function taiwanItemKcal(it) {
+      return it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2);
+    }
+    function toTaiwanTeaCombo(items) {
+      return {
+        id: items.map(function (it) { return "tw_" + it.id; }).join("+"),
+        source_id: null,
+        name: items.map(function (it) { return it.name; }).join(" ＋ "),
+        protein_name: null,
+        kcal: round1(items.reduce(function (s, it) { return s + taiwanItemKcal(it); }, 0)),
+        protein_g: round1(items.reduce(function (s, it) { return s + num(it.protein_g); }, 0)),
+        carb_g: 0,
+        fat_g: 0,
+        fiber_g: round1(items.reduce(function (s, it) { return s + num(it.fiber_g); }, 0)),
+        tier: "🟢",
+        tier_rank: 0,
+        diet_tags: [],
+        allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags || []; })),
+        is_convenience: false,
+        is_delivery: true,
+        valid_slots: ["afternoon_tea"],
+      };
+    }
+    teaSnacksForCombo.forEach(function (snack) {
+      teaDrinksForCombo.forEach(function (drink) {
+        combos.push(toTaiwanTeaCombo([snack, drink]));
+      });
+    });
+
     // ---------- 批次讀取回饋（一次 iterate，取代逐一 getRecipeFeedback） ----------
     const feedbackMap = await getAllRecipeFeedback();
     const recencyMap = buildRecencyMap(combos, feedbackMap);
