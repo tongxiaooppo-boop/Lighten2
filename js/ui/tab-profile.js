@@ -59,7 +59,6 @@
       weight_kg: toFloatOrNull(fd.get("weight_kg")),
       body_fat_pct: toFloatOrNull(fd.get("body_fat_pct")),
       activity_mode: fd.get("activity_mode"),
-      special_activity_kcal: toFloatOrNull(fd.get("special_activity_kcal")),
       diet_restriction: fd.get("diet_restriction"),
       allergens: (fd.get("allergens") || "").trim(),
       // 「今日建議時段」與「今日建議來源」已合併成同一組下拉（選「不顯示建議」= off）。
@@ -97,7 +96,6 @@
     set("weight_kg", profile.weight_kg);
     set("body_fat_pct", profile.body_fat_pct);
     set("activity_mode", profile.activity_mode);
-    set("special_activity_kcal", profile.special_activity_kcal);
     set("diet_restriction", profile.diet_restriction);
     set("allergens", profile.allergens);
     // 「今日建議時段」與「今日建議來源」合併後的下拉回填：時段被關閉（isSlotEnabled 為 false，

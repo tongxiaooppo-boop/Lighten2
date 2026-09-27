@@ -82,10 +82,13 @@
       bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
     }
 
-    // 2. TDEE = BMR × 活動係數 + 特殊活動消耗（profile 沒帶就當 0）
+    // 2. TDEE = BMR × 活動係數。
+    // 2026-09-27 移除「特殊活動消耗」：這是 profile（不常變動的基本資料）裡的一個欄位，
+    // 卻要放「當天」的運動消耗，值一填就永久留著、沒人會記得吃完當天要改回0，
+    // 而且這正是 PRD 3.7 節（見 PRD 第51行）已經審核否決的「運動消耗折抵飲食熱量」設計——
+    // 運動紀錄已經改用「本週活動量」（見 tab-exercise.js），刻意不換算成 kcal 疊加回飲食預算。
     const activityFactor = resolveActivityFactor(profile);
-    const specialActivityKcal = Number(profile.special_activity_kcal || 0) || 0;
-    const tdee = bmr * activityFactor + specialActivityKcal;
+    const tdee = bmr * activityFactor;
 
     // 3. 目標熱量
     const goalKey = String(profile.goal_mode || "maintain").trim().toLowerCase();
