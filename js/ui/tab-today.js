@@ -148,6 +148,11 @@
         body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>';
         return;
       }
+      // 7a：依序分配後配額低於門檻（不是「找不到組合」，是「配額被前面時段用完了」）
+      if (rec.lowBudget) {
+        body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>';
+        return;
+      }
       // 找不到具體食物照片時（超商/台式外送品項、或還沒建檔縮圖的食材），墊底用該時段的預設插畫，
       // 取代原本依「來源」分色的漸層色塊。
       const imgSrc = PROTEIN_IMAGE[rec.protein_name] || MEAL_DEFAULT_IMAGE[slot];
@@ -168,6 +173,7 @@
         '<div class="rec-meta">' +
         escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
         '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>" +
+        (rec.budget != null ? '<span class="rec-base"> · 配額 ' + Math.round(rec.budget) + " kcal</span>" : "") +
         "</div>" +
         '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
         '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>';
@@ -176,11 +182,22 @@
 
   // 頂部彙總卡：今日未記錄時段的建議熱量（recalcTodayBudget 已算好）+ 今天蛋白質/纖維攝取量
   // + 近7天平均 vs 目標 + 體重趨勢校正提示（pending / 自動調整告知）。
-  async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile) {
+  async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs) {
     const hero = $("#today-hero");
     if (!hero) return;
-    const eatenProtein = todayLogs.reduce(function (s, l) { return s + (Number(l.protein_g) || 0); }, 0);
-    const eatenFiber = todayLogs.reduce(function (s, l) { return s + (Number(l.fiber_g) || 0); }, 0);
+    // null-safe 累加：跳過 null（缺資料），不當 0 加
+    var eatenProtein = 0, eatenCarb = 0, eatenFat = 0, eatenFiber = 0;
+    var missingCoverageKcal = 0;
+    todayLogs.forEach(function (l) {
+      eatenProtein += l.protein_g != null ? Number(l.protein_g) : 0;
+      eatenCarb += l.carb_g != null ? Number(l.carb_g) : 0;
+      eatenFat += l.fat_g != null ? Number(l.fat_g) : 0;
+      eatenFiber += l.fiber_g != null ? Number(l.fiber_g) : 0;
+      // 資料涵蓋率：缺資料的新紀錄（null）或舊紀錄（source_type 是台式外送，改版前寫死的 0 分不出來）
+      if (l.fat_g == null || l.carb_g == null || l.source_type === "taiwan_item") {
+        missingCoverageKcal += Number(l.kcal) || 0;
+      }
+    });
     // 所有開啟的時段都記錄完時，「接下來幾餐」已經不存在，改顯示記錄完成、不顯示數字
     // （這個數字是「目標減已記錄」，記完之後仍可能是正數，繼續顯示會像在叫人再吃一餐）。
     const loggedSlots = {};
@@ -193,6 +210,47 @@
     $("#today-hero-kcal-value").textContent = Math.round(remainingBudget.remainingKcal);
     $("#today-hero-protein").textContent = Math.round(eatenProtein) + " / " + Math.round(targets.protein_g) + "g";
     $("#today-hero-fiber").textContent = Math.round(eatenFiber) + " / " + Math.round(targets.fiber_g) + "g";
+
+    // 7b：次要行「目前這幾餐建議合計」，跟主數字有落差時顯示差額。
+    var subEl = $("#today-hero-kcal-sub");
+    if (subEl) {
+      if (!allLogged && recs) {
+        var cardTotal = 0;
+        SLOTS.forEach(function (s) {
+          var r = recs[s];
+          if (r && !r.lowBudget && r.scaled_kcal != null) cardTotal += r.scaled_kcal;
+        });
+        cardTotal = Math.round(cardTotal);
+        if (cardTotal > 0) {
+          var diff = cardTotal - Math.round(remainingBudget.remainingKcal);
+          $("#today-hero-kcal-sub-value").textContent = cardTotal + (Math.abs(diff) >= 20 ? "（" + (diff > 0 ? "+" : "") + Math.round(diff) + "）" : "");
+          subEl.hidden = false;
+        } else { subEl.hidden = true; }
+      } else { subEl.hidden = true; }
+    }
+
+    // 7c：營養素明細（<details> 展開區塊）
+    var nutritionEl = $("#today-hero-nutrition");
+    if (nutritionEl) {
+      var body = $("#today-hero-nutrition-body");
+      if (body) {
+        body.innerHTML =
+          '<div class="today-hero-stat"><span class="today-hero-stat-label">蛋白質</span><span class="today-hero-stat-value">' + Math.round(eatenProtein) + " / " + Math.round(targets.protein_g) + "g（" + Math.round(eatenProtein * 4 / targets.targetKcal * 100) + "%）</span></div>" +
+          '<div class="today-hero-stat"><span class="today-hero-stat-label">脂肪</span><span class="today-hero-stat-value">' + Math.round(eatenFat) + " / " + Math.round(targets.fat_g) + "g（" + Math.round(eatenFat * 9 / targets.targetKcal * 100) + "%）</span></div>" +
+          '<div class="today-hero-stat"><span class="today-hero-stat-label">碳水（參考值）</span><span class="today-hero-stat-value">' + Math.round(eatenCarb) + " / " + Math.round(targets.carb_g) + "g（" + Math.round(eatenCarb * 4 / targets.targetKcal * 100) + "%）</span></div>" +
+          '<div class="today-hero-stat"><span class="today-hero-stat-label">纖維</span><span class="today-hero-stat-value">' + Math.round(eatenFiber) + " / " + Math.round(targets.fiber_g) + "g</span></div>" +
+          '<p class="taiwan-ref-note">碳水是用目標熱量扣掉蛋白質、脂肪熱量後反推出來的，不是獨立設定的建議值。</p>';
+      }
+      nutritionEl.hidden = false;
+    }
+    // 資料涵蓋率警語
+    var coverageEl = $("#today-hero-coverage-warn");
+    if (coverageEl) {
+      if (missingCoverageKcal > 0) {
+        coverageEl.textContent = "今天有 " + Math.round(missingCoverageKcal) + " kcal 來自沒有脂肪/碳水資料的品項（超商即食／台式外送），這部分的脂肪、碳水沒有算進上面的數字。";
+        coverageEl.hidden = false;
+      } else { coverageEl.hidden = true; }
+    }
 
     const recent = computeRecentAvgVsTarget(recentLogs, targets.targetKcal, profile.enabled_slots, 7);
     const avgEl = $("#today-hero-week-avg");
@@ -212,7 +270,6 @@
         if (state.pending) {
           html = '<button type="button" class="today-cal-link" id="today-cal-pending">基本資料有一項目標調整建議待你確認</button>';
         } else if (state.announce_until && today <= state.announce_until && state.offset_kcal !== 0) {
-          // 用生效日當天的目標，不是今天的（調整當天今天還是舊值，2026-09-27 整案審查 B3）
           const newTargets = await getCalibratedTargets(profile, state.effective_date);
           html = '<p class="today-cal-announce">依近4週體重趨勢，每日目標從 ' + shortDate(state.effective_date) + ' 起調整為 ' + Math.round(newTargets.targetKcal) + ' kcal</p>';
         }
@@ -293,8 +350,6 @@
     );
     const hardConstraints = checkHardConstraints(weekLogs.concat(reservationMacros), profile);
 
-    renderHero(remainingBudget, targets, todayLogs, recentLogs, profile).catch(function (err) { console.error(err); });
-
     // 已記錄、已預約、已關閉的時段都不需要推薦，也不該佔用跨時段不重複的名額。
     const logsBySlot = {};
     todayLogs.forEach(function (l) {
@@ -318,6 +373,8 @@
       profile.disliked_ingredients
     );
     currentRecs = recs;
+
+    renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs).catch(function (err) { console.error(err); });
 
     renderRecs(recs, profile, reservationsBySlot, logsBySlot);
     // 修既有 bug：score() 的「近期出現過降權」一直讀 shown_count/last_shown_date，

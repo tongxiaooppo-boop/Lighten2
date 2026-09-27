@@ -433,6 +433,47 @@ body {
   font-weight: 500;
 }
 
+.today-hero-kcal-sub {
+  color: #8A7A63;
+  font-size: 0.85rem;
+  margin: -0.4rem 0 0.7rem;
+}
+.today-hero-kcal-sub[hidden] {
+  display: none;
+}
+
+.today-hero-nutrition {
+  margin-top: 0.8rem;
+  border-top: 1px dashed #EFE3D2;
+  padding-top: 0.5rem;
+}
+.today-hero-nutrition[hidden] {
+  display: none;
+}
+.today-hero-nutrition summary {
+  cursor: pointer;
+  color: #C1652F;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.today-hero-nutrition .today-hero-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.2rem 0;
+  border-bottom: 1px dotted #F3E4D0;
+}
+.today-hero-nutrition .today-hero-stat-label {
+  color: #8A7A63;
+}
+.today-hero-coverage-warn {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #a33;
+}
+.today-hero-coverage-warn[hidden] {
+  display: none;
+}
+
 .today-hero-stats {
   display: flex;
   gap: 1.4rem;
