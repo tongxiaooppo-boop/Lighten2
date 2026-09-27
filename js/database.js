@@ -4,8 +4,7 @@
 // - 每個資料表對應一個 localforage store（用 createInstance 指定 storeName）。
 // - 單例表（user_profile）用固定 key 存「單一物件」，永遠 upsert 同一筆，不新增第二筆。
 // - 清單表（weight_log / daily_log / exercise_log / …）用固定 key `LIST_KEY` 存「陣列」。
-// - 依主鍵查詢的表（tdee_calibration_log / recipe_feedback / weekly_flex_ledger / settings）
-//   直接以主鍵當 localforage key 存單一物件。
+// - 依主鍵查詢的表（recipe_feedback / settings）直接以主鍵當 localforage key 存單一物件。
 // - 其他模組（engine/*、ui/*）一律只能透過本檔提供的函式讀寫，不得直接呼叫 localforage。
 
 (function () {
@@ -24,7 +23,6 @@
   const STORE = {
     userProfile: "user_profile",
     weightLog: "weight_log",
-    tdeeCalibration: "tdee_calibration_log",
     recipeTemplates: "recipe_templates",
     recipeFeedback: "recipe_feedback",
     rawIngredients: "raw_ingredients",
@@ -32,7 +30,6 @@
     customFoods: "custom_foods",
     dailyLog: "daily_log",
     feastReservation: "feast_reservation",
-    weeklyFlexLedger: "weekly_flex_ledger",
     overageSmoothing: "overage_smoothing_log",
     exerciseLog: "exercise_log",
     settings: "settings",
@@ -150,15 +147,31 @@
     });
   }
 
-  // ---------- 3. tdee_calibration_log（依週一主鍵） ----------
+  // ---------- 3. tdee_state（體重趨勢自動校正，放 settings store） ----------
 
-  async function getTdeeCalibration(weekStartDate) {
-    return await db(STORE.tdeeCalibration).getItem(weekStartDate);
+  // 讀取體重趨勢校正狀態；不存在時回傳預設值。
+  // 各欄位意義見 collab/opus-review-log/2026-09-27-tdee-calibration-offset-wiring.md 第 1 節。
+  async function getTdeeState() {
+    const raw = await getSetting("tdee_state");
+    return raw || {
+      version: 1,
+      offset_kcal: 0,
+      prev_offset_kcal: 0,
+      effective_date: null,
+      last_adjusted_date: null,
+      last_evaluated_date: null,
+      goal_mode: null,
+      mode_since_date: null,
+      pending: null,
+      dismissed_until: null,
+      announce_until: null,
+      last_result: null,
+      history: [],
+    };
   }
 
-  async function saveTdeeCalibration(entry) {
-    await db(STORE.tdeeCalibration).setItem(entry.week_start_date, entry);
-    return entry;
+  async function saveTdeeState(state) {
+    return await setSetting("tdee_state", state);
   }
 
   // ---------- 4. recipe_templates / recipe_feedback ----------
@@ -311,24 +324,7 @@
     return entry;
   }
 
-  // ---------- 8. weekly_flex_ledger（依週一主鍵） ----------
-
-  async function getWeeklyLedger(weekStartDate) {
-    return await db(STORE.weeklyFlexLedger).getItem(weekStartDate);
-  }
-
-  async function updateWeeklyLedger(weekStartDate, usedKcal, capKcal) {
-    const existing = (await getWeeklyLedger(weekStartDate)) || {};
-    const updated = Object.assign({}, existing, {
-      week_start_date: weekStartDate,
-      used_kcal: usedKcal,
-    });
-    if (capKcal !== undefined && capKcal !== null) updated.cap_kcal = capKcal;
-    await db(STORE.weeklyFlexLedger).setItem(weekStartDate, updated);
-    return updated;
-  }
-
-  // ---------- 9. overage_smoothing_log ----------
+  // ---------- 8. overage_smoothing_log ----------
 
   async function addOverageSmoothing(entry) {
     const list = await readList(STORE.overageSmoothing);
@@ -380,8 +376,8 @@
     saveProfile: saveProfile,
     addWeightLog: addWeightLog,
     getWeightLogs: getWeightLogs,
-    getTdeeCalibration: getTdeeCalibration,
-    saveTdeeCalibration: saveTdeeCalibration,
+    getTdeeState: getTdeeState,
+    saveTdeeState: saveTdeeState,
     getRecipeTemplates: getRecipeTemplates,
     getRecipeFeedback: getRecipeFeedback,
     getAllRecipeFeedback: getAllRecipeFeedback,
@@ -397,8 +393,6 @@
     addFeastReservation: addFeastReservation,
     getFeastReservations: getFeastReservations,
     updateFeastStatus: updateFeastStatus,
-    getWeeklyLedger: getWeeklyLedger,
-    updateWeeklyLedger: updateWeeklyLedger,
     addOverageSmoothing: addOverageSmoothing,
     getOverageSmoothing: getOverageSmoothing,
     addExerciseLog: addExerciseLog,

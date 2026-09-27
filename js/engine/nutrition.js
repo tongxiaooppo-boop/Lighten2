@@ -52,8 +52,15 @@
     return 1.8;
   }
 
-  function calculateTargets(profile) {
+  // opts = { offsetKcal: number }：體重趨勢校正的「累計 offset」，預設 0。
+  // 保持純同步、不碰 DB。offset 加在目標熱量上（不加在 TDEE），熱量下限永遠優先。
+  function calculateTargets(profile, opts) {
     if (!profile) throw new Error("[nutrition.js] 缺少 profile。");
+
+    const offsetKcal =
+      opts && typeof opts.offsetKcal === "number" && isFinite(opts.offsetKcal)
+        ? opts.offsetKcal
+        : 0;
 
     const gender = normalizeGender(profile.gender);
     if (!gender) {
@@ -87,7 +94,12 @@
       : GOAL_MULTIPLIER[String(profile.goal_mode || "")];
     let targetKcal = tdee * (multiplier || 1.0);
 
-    // 4. 熱量安全下限（PRD 3.4：女 < 1200 / 男 < 1500 自動上調）
+    // 4. 加上體重趨勢校正 offset（先記下公式起點，再加 offset，之後才做熱量下限）
+    const baseTargetKcal = targetKcal;
+    targetKcal = targetKcal + offsetKcal;
+
+    // 5. 熱量安全下限（PRD 3.4：女 < 1200 / 男 < 1500 自動上調）。下限永遠優先，
+    //    就算 offset 是負值也不能讓目標低於下限。
     const floor = gender === "male" ? 1500 : 1200;
     let flooredWarning = false;
     if (targetKcal < floor) {
@@ -95,7 +107,7 @@
       flooredWarning = true;
     }
 
-    // 5. 巨量營養素
+    // 6. 巨量營養素（脂肪／碳水改用加了 offset 之後的 targetKcal；蛋白質、纖維不受影響）
     const proteinPerKg =
       typeof profile.protein_g_per_kg === "number" && profile.protein_g_per_kg > 0
         ? profile.protein_g_per_kg
@@ -108,7 +120,7 @@
         : 0.25; // 預設 25%（PRD 範圍 20–25%）
     const fat_g = (targetKcal * fatPct) / 9;
 
-    // 6. 膳食纖維（預設 30g）＋淨碳水
+    // 7. 膳食纖維（預設 30g）＋淨碳水
     const fiber_g = typeof profile.fiber_target_g === "number" ? profile.fiber_target_g : 30;
     let carb_g = (targetKcal - protein_g * 4 - fat_g * 9) / 4;
     if (carb_g < 0) carb_g = 0;
@@ -118,6 +130,8 @@
       bmr: round1(bmr),
       tdee: round1(tdee),
       targetKcal: round1(targetKcal),
+      baseTargetKcal: round1(baseTargetKcal),
+      offsetKcal: offsetKcal,
       flooredWarning: flooredWarning,
       protein_g: round1(protein_g),
       fat_g: round1(fat_g),

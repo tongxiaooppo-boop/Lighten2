@@ -1,5 +1,5 @@
-// 輕盈計畫 (Lighten Plan) — 日總額 × 週彈性點數：今日餐次配額動態重算
-// 對照 TECH-SPEC 4.3、PRD 5.1。此檔只做「今日預算重算」，不碰週彈性點數（那是 feast.js 的事）。
+// 輕盈計畫 (Lighten Plan) — 日總額：今日餐次配額動態重算 + 完整記錄日/近N天平均共用 helper
+// 對照 TECH-SPEC 4.3、PRD 5.1。此檔做「今日預算重算」與「近7天平均 vs 目標」的完整記錄日判斷。
 
 (function () {
   "use strict";
@@ -85,7 +85,84 @@
     return Math.round(n * 10) / 10;
   }
 
+  function localDateStr() {
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  function dateAddDays(dateStr, days) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return y + "-" + m + "-" + day;
+  }
+
+  // 該天是不是「完整記錄日」：所有開啟中的時段都有 daily_log 記錄。
+  // tdee.js 第 9 步（下修前攝取檢查）跟「近7天平均 vs 目標」都用它。
+  function isCompleteLogDay(dayLogs, enabledSlots) {
+    const logs = Array.isArray(dayLogs) ? dayLogs : [];
+    const enabled = SLOTS.filter(function (s) {
+      return isSlotEnabled(enabledSlots, s);
+    });
+    if (enabled.length === 0) return false;
+    const logged = {};
+    logs.forEach(function (l) {
+      if (l && l.slot) logged[l.slot] = true;
+    });
+    return enabled.every(function (s) {
+      return logged[s];
+    });
+  }
+
+  // 近 N 天（預設 7 天）平均 vs 目標：只算「完整記錄日」。
+  // 完整記錄日 < 3 天 → { status: "insufficient" }；否則回傳 { status:"ok", avgKcal, targetKcal, completeDays }。
+  function computeRecentAvgVsTarget(logs, targetKcal, enabledSlots, days) {
+    const n = typeof days === "number" && days > 0 ? days : 7;
+    const list = Array.isArray(logs) ? logs : [];
+    const target = Number(targetKcal) || 0;
+    const today = localDateStr();
+
+    const byDate = {};
+    list.forEach(function (l) {
+      if (!l || !l.log_date) return;
+      if (!byDate[l.log_date]) byDate[l.log_date] = [];
+      byDate[l.log_date].push(l);
+    });
+
+    const completeDates = [];
+    for (let i = 0; i < n; i++) {
+      const d = dateAddDays(today, -i);
+      const dayLogs = byDate[d] || [];
+      if (isCompleteLogDay(dayLogs, enabledSlots)) completeDates.push(d);
+    }
+
+    if (completeDates.length < 3) {
+      return { status: "insufficient" };
+    }
+
+    let totalKcal = 0;
+    completeDates.forEach(function (d) {
+      totalKcal += byDate[d].reduce(function (s, l) {
+        return s + (Number(l.kcal) || 0);
+      }, 0);
+    });
+
+    return {
+      status: "ok",
+      avgKcal: round1(totalKcal / completeDates.length),
+      targetKcal: target,
+      completeDays: completeDates.length,
+    };
+  }
+
   window.recalcTodayBudget = recalcTodayBudget;
   window.DEFAULT_ENABLED_SLOTS = DEFAULT_ENABLED_SLOTS;
   window.isSlotEnabled = isSlotEnabled;
+  window.isCompleteLogDay = isCompleteLogDay;
+  window.computeRecentAvgVsTarget = computeRecentAvgVsTarget;
 })();
