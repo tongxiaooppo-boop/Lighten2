@@ -1,4 +1,4 @@
-// 輕盈計畫 (Lighten Plan) — 分頁三：大餐預約
+// 輕盈計畫 (Lighten Plan) — 分頁三：美饗日曆（大餐預約/直接記錄 + 近7天平均）
 // 依賴：database.js、nutrition.js（calculateTargets）、feast.js、tdee.js（getCalibratedTargets）
 
 (function () {
@@ -12,8 +12,8 @@
   // 只限制「今天 + 預約模式」，預約未來日期或「直接記錄」模式都不受此限制。
   const SLOT_END_HOUR = { breakfast: 10, lunch: 14, afternoon_tea: 17, dinner: 20, snack: 24 };
 
-  // 餐別 → 台式熱門品項分類（下午茶暫用「飲料」分類頂替，西式速食先不納入）
-  // 2026-09-27：下午茶原本「暫用飲料分類頂替」，改成茶點為主，飲料則五個時段都可選
+  // 餐別 → 台式熱門品項分類（一個時段可對應多個分類；西式速食先不納入）。
+  // 2026-09-27：下午茶改成以「茶點」為主分類，飲料則五個時段都可選
   // （跟 recommend.js 的 TAIWAN_CATEGORY_SLOTS 同步調整）。
   const SLOT_TO_TAIWAN_CATEGORIES = {
     breakfast: ["早餐", "飲料"],
