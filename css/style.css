@@ -674,6 +674,78 @@ body {
   margin-top: 0.6rem;
 }
 
+/* 「現成品項／自己煮」模式切換 + 自己煮三層流程 */
+.manual-picker-mode {
+  display: flex;
+  gap: 1rem;
+  margin: 0.4rem 0 0.6rem;
+  font-size: 0.9rem;
+}
+.manual-picker-mode label {
+  cursor: pointer;
+  color: #5A4C3A;
+}
+.compose-step {
+  margin-bottom: 0.7rem;
+}
+.compose-step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8A5A2B;
+  margin-bottom: 0.35rem;
+}
+.compose-axis {
+  margin-bottom: 0.5rem;
+}
+.compose-axis-label {
+  font-size: 0.8rem;
+  color: #5A4C3A;
+  margin-bottom: 0.25rem;
+}
+.compose-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.compose-option {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.85rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  background-color: #fff;
+  color: #3A2E22;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.compose-option:hover {
+  border-color: #E0B98C;
+}
+.compose-option.selected {
+  border-color: #C1652F;
+  background-color: #FBF0E6;
+}
+.compose-option.is-blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #E8E0D4;
+}
+.compose-scale {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.compose-scale input[type="range"] {
+  flex: 1;
+  max-width: 260px;
+}
+.compose-scale span {
+  font-size: 0.85rem;
+  color: #8A5A2B;
+  min-width: 3.2em;
+}
+
 /* 週彈性帳本分頁 */
 .ledger-progress {
   margin-bottom: 1.2rem;
