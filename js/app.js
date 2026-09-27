@@ -27,4 +27,7 @@
       activateTab(btn.getAttribute("data-tab"));
     });
   });
+
+  // Part 6：今日建議彙總卡的校正提示要能切換到基本資料分頁。
+  window.activateTab = activateTab;
 })();

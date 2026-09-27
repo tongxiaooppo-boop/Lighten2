@@ -188,13 +188,61 @@ body {
   color: #9a5b00;
 }
 
-.calibrated-row {
+.calibration-card {
   margin: 0.6rem 0 0;
-  padding: 0.4rem 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #E5D5BE;
+  border-radius: 8px;
+  background-color: #FBF5EC;
+  color: #3A2E22;
+}
+
+.calibration-card h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.cal-target-row,
+.cal-trend,
+.cal-status {
+  font-size: 0.9rem;
+  margin: 0.2rem 0;
+}
+
+.cal-pending {
+  margin-top: 0.6rem;
+  padding: 0.5rem 0.6rem;
   border-left: 3px solid #C1652F;
   background-color: #F3E4D0;
-  color: #3A2E22;
-  font-weight: 600;
+}
+
+.cal-pending p {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.cal-reset {
+  margin-top: 0.6rem;
+}
+
+.today-hero-calibration {
+  margin-top: 0.6rem;
+}
+
+.today-cal-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #9a5b00;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.today-cal-announce {
+  margin: 0;
+  color: #6B5B45;
+  font-size: 0.85rem;
 }
 
 .weight-widget {
@@ -403,21 +451,6 @@ body {
 .ledger-list h3 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
-}
-
-.progress-bar {
-  height: 14px;
-  border-radius: 999px;
-  background-color: #EFE3D2;
-  overflow: hidden;
-  margin-top: 0.4rem;
-}
-
-.progress-fill {
-  height: 100%;
-  width: 0;
-  background-color: #C1652F;
-  transition: width 0.2s ease;
 }
 
 .ledger-form {

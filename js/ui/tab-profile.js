@@ -1,5 +1,5 @@
 // 輕盈計畫 (Lighten Plan) — 分頁一：基本資料 + 體重回填
-// 依賴：database.js（getProfile/saveProfile/addWeightLog）、nutrition.js（calculateTargets）
+// 依賴：database.js（getProfile/saveProfile/addWeightLog/getTdeeState）、nutrition.js（calculateTargets）、tdee.js（getCalibratedTargets 等）
 
 (function () {
   "use strict";
@@ -41,14 +41,6 @@
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     return y + "-" + m + "-" + day;
-  }
-
-  function mondayOfThisWeek() {
-    const d = new Date();
-    const day = d.getDay();
-    const diff = day === 0 ? 6 : day - 1;
-    d.setDate(d.getDate() - diff);
-    return fmt(d);
   }
 
   function dateAddDays(dateStr, days) {
@@ -140,29 +132,106 @@
     $("#targets-result").hidden = false;
   }
 
-  function showCalibration(targetKcal) {
-    const row = $("#calibrated-target-row");
-    if (row) {
-      $("#calibrated-target").textContent = targetKcal;
-      row.hidden = false;
+  function calStatusText(status, state) {
+    if (status === "cooldown") {
+      const next = state.last_adjusted_date ? dateAddDays(state.last_adjusted_date, 14) : "";
+      return "已調整，下次可調整日期：" + next;
     }
+    if (status === "capped") return "已達累計調整上限（±300 kcal）";
+    if (status === "at_floor") return "每日目標已到熱量安全下限，暫不調整";
+    if (status === "intake_gap") return "近4週平均攝取略高於目前目標，這段體重變化較可能反映的是這部分，所以先不調整";
+    if (status === "dismissed") return "14 天內不會再提醒這件事";
+    if (status === "insufficient") return "目前資料不足以判斷是否需要調整";
+    if (status === "adjusted") return "已自動調整每日目標";
+    if (status === "ok") return "目前無需調整";
+    return "";
   }
 
-  function hideCalibration() {
-    const row = $("#calibrated-target-row");
-    if (row) row.hidden = true;
-  }
+  // 體重趨勢校正卡片：唯一能操作 offset 的地方。
+  async function renderCalibrationCard(profile) {
+    const card = $("#calibration-card");
+    if (!card) return;
+    const body = $("#calibration-body");
+    if (!body) return;
 
-  async function refreshCalibration(profile) {
+    let state;
     try {
-      const eightWeeksAgo = dateAddDays(mondayOfThisWeek(), -7 * 8);
-      const weightLogs = await getWeightLogs({ start: eightWeeksAgo });
-      const dailyLogs = await getDailyLogs({ start: eightWeeksAgo });
-      const cal = await calibrateWeeklyTdee(weightLogs, dailyLogs, profile);
-      showCalibration(cal.targetKcal);
+      state = await getTdeeState();
     } catch (err) {
-      console.error("calibrateWeeklyTdee 失敗", err);
+      console.error(err);
+      card.hidden = true;
+      return;
     }
+
+    const targets = await getCalibratedTargets(profile);
+    const base = targets.baseTargetKcal;
+    const offset = targets.offsetKcal;
+    const current = targets.targetKcal;
+    const today = getLocalDateStr();
+    const tomorrow = dateAddDays(today, 1);
+
+    let html = "";
+
+    // 目標拆解。
+    html += '<div class="cal-targets">';
+    html += '<div class="cal-target-row">公式目標：<span>' + Math.round(base) + ' kcal</span></div>';
+    html += '<div class="cal-target-row">校正值：<span>' + (offset >= 0 ? "+" : "") + Math.round(offset) + ' kcal</span></div>';
+    html += '<div class="cal-target-row">目前每日目標：<span>' + Math.round(current) + ' kcal</span></div>';
+    if (state.effective_date && state.effective_date === tomorrow) {
+      html += '<div class="cal-target-row">明天起：<span>' + Math.round(current) + ' kcal</span></div>';
+    }
+    html += "</div>";
+
+    // 趨勢。
+    const lr = state.last_result || {};
+    if (lr.slope_kg_per_week == null) {
+      html += '<div class="cal-trend">需要近4週至少8次體重紀錄</div>';
+    } else {
+      const sign = lr.slope_kg_per_week > 0 ? "+" : "";
+      html += '<div class="cal-trend">近4週體重趨勢：' + sign + lr.slope_kg_per_week + ' kg／週</div>';
+    }
+
+    // 狀態說明（pending 時由下方 pending 區塊說明，不重複顯示）。
+    if (lr.status !== "pending") {
+      html += '<div class="cal-status">' + calStatusText(lr.status, state) + "</div>";
+    }
+
+    // pending 區塊（只有維持模式下修會進到這個狀態）。
+    if (state.pending) {
+      const slopeText = state.pending.slope_kg_per_week != null
+        ? (state.pending.slope_kg_per_week > 0 ? "+" : "") + state.pending.slope_kg_per_week
+        : "";
+      const downKcal = Math.abs(state.pending.delta_kcal || 150);
+      html += '<div class="cal-pending">';
+      html += "<p>近4週體重平均每週上升 " + slopeText + " kg。如果你這段期間有重訓增肌，這可能是正常的；如果沒有，可以把每日目標下調 " + downKcal + " kcal（明天起生效）。</p>";
+      html += '<button type="button" class="primary-btn" id="cal-apply">套用</button> ';
+      html += '<button type="button" class="secondary-btn" id="cal-dismiss">先不要</button>';
+      html += "</div>";
+    }
+
+    // 重設按鈕。
+    if (offset !== 0) {
+      html += '<div class="cal-reset"><button type="button" class="secondary-btn" id="cal-reset-btn">重設校正</button></div>';
+    }
+
+    body.innerHTML = html;
+    card.hidden = false;
+
+    const applyBtn = body.querySelector("#cal-apply");
+    if (applyBtn) applyBtn.addEventListener("click", async function () {
+      await confirmPendingCalibration();
+      await renderCalibrationCard(profile);
+    });
+    const dismissBtn = body.querySelector("#cal-dismiss");
+    if (dismissBtn) dismissBtn.addEventListener("click", async function () {
+      await dismissPendingCalibration();
+      await renderCalibrationCard(profile);
+    });
+    const resetBtn = body.querySelector("#cal-reset-btn");
+    if (resetBtn) resetBtn.addEventListener("click", async function () {
+      await resetCalibrationOffset();
+      await renderCalibrationCard(profile);
+    });
   }
 
   async function onCalculate(e) {
@@ -173,21 +242,30 @@
       return;
     }
 
-    let result;
+    // 先用原始 profile 驗證公式可以算（不帶 offset），再存檔、跑校正、顯示校正後目標。
+    let baseResult;
     try {
-      result = calculateTargets(profile);
+      baseResult = calculateTargets(profile);
     } catch (err) {
       alert(err && err.message ? err.message : "計算失敗。");
       return;
     }
 
-    showTargets(result);
     try {
       await saveProfile(profile);
     } catch (err) {
       console.error("saveProfile 失敗", err);
     }
-    await refreshCalibration(profile);
+
+    try {
+      await runCalibrationNow(profile);
+      const calibrated = await getCalibratedTargets(profile);
+      showTargets(calibrated);
+      await renderCalibrationCard(profile);
+    } catch (err) {
+      console.error("校正失敗", err);
+      showTargets(baseResult);
+    }
   }
 
   async function onWeightSubmit(e) {
@@ -210,6 +288,18 @@
     } catch (err) {
       console.error("addWeightLog 失敗", err);
       $("#weight-log-status").textContent = "記錄失敗，請重試。";
+      return;
+    }
+
+    // 記錄體重後重跑校正（就算因此調整也是隔天生效，不會改到今天的目標）。
+    try {
+      const profile = await getProfile();
+      if (profile) {
+        await runCalibrationNow(profile);
+        await renderCalibrationCard(profile);
+      }
+    } catch (err) {
+      console.error("校正失敗", err);
     }
   }
 
@@ -221,12 +311,9 @@
       const profile = await getProfile();
       fillProfileForm(profile);
       if (profile) {
-        const cal = await getTdeeCalibration(mondayOfThisWeek());
-        if (cal && cal.target_kcal != null) {
-          showCalibration(cal.target_kcal);
-        } else {
-          hideCalibration();
-        }
+        const targets = await getCalibratedTargets(profile);
+        showTargets(targets);
+        await renderCalibrationCard(profile);
       }
     } catch (err) {
       console.error("載入 profile 失敗", err);

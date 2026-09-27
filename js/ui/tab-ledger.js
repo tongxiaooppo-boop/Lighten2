@@ -1,5 +1,5 @@
-// 輕盈計畫 (Lighten Plan) — 分頁三：週彈性帳本
-// 依賴：database.js、nutrition.js（calculateTargets）、feast.js
+// 輕盈計畫 (Lighten Plan) — 分頁三：大餐預約
+// 依賴：database.js、nutrition.js（calculateTargets）、feast.js、tdee.js（getCalibratedTargets）
 
 (function () {
   "use strict";
@@ -13,12 +13,14 @@
   const SLOT_END_HOUR = { breakfast: 10, lunch: 14, afternoon_tea: 17, dinner: 20, snack: 24 };
 
   // 餐別 → 台式熱門品項分類（下午茶暫用「飲料」分類頂替，西式速食先不納入）
-  const SLOT_TO_TAIWAN_CATEGORY = {
-    breakfast: "早餐",
-    lunch: "午餐",
-    dinner: "晚餐",
-    snack: "宵夜",
-    afternoon_tea: "飲料",
+  // 2026-09-27：下午茶原本「暫用飲料分類頂替」，改成茶點為主，飲料則五個時段都可選
+  // （跟 recommend.js 的 TAIWAN_CATEGORY_SLOTS 同步調整）。
+  const SLOT_TO_TAIWAN_CATEGORIES = {
+    breakfast: ["早餐", "飲料"],
+    lunch: ["午餐", "飲料"],
+    dinner: ["晚餐", "飲料"],
+    snack: ["宵夜", "飲料"],
+    afternoon_tea: ["茶點", "飲料"],
   };
 
   // 台式熱門品項 id → 縮圖（查不到就不顯示，正常降級）
@@ -82,8 +84,6 @@
 
   function $(sel) { return document.querySelector(sel); }
 
-  function round1(n) { return Math.round(n * 10) / 10; }
-
   function fmt(d) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -93,11 +93,9 @@
 
   function localDateStr() { return fmt(new Date()); }
 
-  function mondayOfThisWeek() {
-    const d = new Date();
-    const day = d.getDay();
-    const diff = day === 0 ? 6 : day - 1;
-    d.setDate(d.getDate() - diff);
+  function dateAddDays(dateStr, days) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
     return fmt(d);
   }
 
@@ -105,12 +103,17 @@
     return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
-  function renderProgress(used, cap) {
-    $("#ledger-used").textContent = round1(used);
-    $("#ledger-cap").textContent = round1(cap);
-    const pct = cap > 0 ? Math.min(100, (used / cap) * 100) : 0;
-    const fill = $("#ledger-bar-fill");
-    if (fill) fill.style.width = pct + "%";
+  async function renderRecentAvg(targets, profile) {
+    const today = localDateStr();
+    const sevenAgo = dateAddDays(today, -6);
+    const recentLogs = await getDailyLogs({ start: sevenAgo, end: today });
+    const recent = computeRecentAvgVsTarget(recentLogs, targets.targetKcal, profile.enabled_slots, 7);
+    const el = $("#ledger-recent-avg");
+    if (el) {
+      el.textContent = recent.status === "ok"
+        ? "近7天平均 " + Math.round(recent.avgKcal) + "／目標 " + Math.round(recent.targetKcal) + " kcal"
+        : "資料不足";
+    }
   }
 
   function renderList(list) {
@@ -159,12 +162,12 @@
     const slotSelect = document.querySelector("#feast-form select[name='slot']");
     const picker = $("#feast-item-picker");
     if (!slotSelect || !picker) return;
-    const category = SLOT_TO_TAIWAN_CATEGORY[slotSelect.value];
+    const categories = SLOT_TO_TAIWAN_CATEGORIES[slotSelect.value] || [];
 
     let matched = [];
-    if (category) {
+    if (categories.length > 0) {
       const taiwanItems = await getTaiwanItems();
-      matched = taiwanItems.filter(function (it) { return it.category === category; });
+      matched = taiwanItems.filter(function (it) { return categories.indexOf(it.category) !== -1; });
     }
     const customFoods = await getCustomFoods();
 
@@ -249,16 +252,14 @@
       return;
     }
 
-    // 彈性帳本改成逐日結算（見 feast.js 的 settleWeeklyLedger），每次進這頁順便結算一次
-    // 「昨天以前」還沒結算的日子，不用再靠預約/記錄當下手動加減。
-    await settleWeeklyLedger(profile);
-    const weekStart = mondayOfThisWeek();
-    let ledger = await getWeeklyLedger(weekStart);
-    if (!ledger || ledger.cap_kcal == null) {
-      const cap = computeWeeklyCapKcal(profile);
-      ledger = await updateWeeklyLedger(weekStart, (ledger && ledger.used_kcal) || 0, cap);
+    // 近7天平均 vs 目標（取代舊的進度條顯示）。
+    let targets;
+    try {
+      targets = await getCalibratedTargets(profile);
+      await renderRecentAvg(targets, profile);
+    } catch (err) {
+      console.error(err);
     }
-    renderProgress(ledger.used_kcal || 0, ledger.cap_kcal || 0);
 
     const reservations = await getFeastReservations();
     renderList(reservations);
