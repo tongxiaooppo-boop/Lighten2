@@ -229,6 +229,7 @@
       <section class="today-hero" id="today-hero" hidden>
         <div class="today-hero-label" id="today-hero-label">接下來幾餐的建議熱量</div>
         <div class="today-hero-kcal" id="today-hero-kcal"><span id="today-hero-kcal-value">0</span><span class="today-hero-kcal-unit">kcal</span></div>
+        <div class="today-hero-kcal-sub" id="today-hero-kcal-sub" hidden>建議合計 <span id="today-hero-kcal-sub-value"></span> kcal</div>
         <div class="today-hero-stats">
           <div class="today-hero-stat">
             <div class="today-hero-stat-label">蛋白質</div>
@@ -243,6 +244,11 @@
             <div class="today-hero-stat-value" id="today-hero-week-avg">資料不足</div>
           </div>
         </div>
+        <details class="today-hero-nutrition" id="today-hero-nutrition" hidden>
+          <summary><span class="today-hero-nutrition-summary">營養素明細</span></summary>
+          <div id="today-hero-nutrition-body"></div>
+          <div class="today-hero-coverage-warn" id="today-hero-coverage-warn" hidden></div>
+        </details>
         <div id="today-hero-calibration" class="today-hero-calibration" hidden></div>
       </section>
       <div class="today-toolbar">
