@@ -72,8 +72,8 @@ function normTotals(t) {
 function normWrite(w) {
   if (w.op === "addDailyLog") {
     const e = w.entry;
-    return "addDailyLog " + e.slot + " " + JSON.stringify(e.item_name) + " " + normTotals(e) +
-      " source=" + e.source_type + " item=" + e.item_id + " comps=" + JSON.stringify(e.component_ids);
+    // 只比時段、名稱與營養合計；紀錄的其他欄位是 v1 舊格式（−1a 改成 MealContent，屬刻意的格式變更）
+    return "addDailyLog " + e.slot + " " + JSON.stringify(e.name) + " " + normTotals(e.totals);
   }
   if (w.op === "markRecipesShown") return "markRecipesShown " + w.ids.join(",");
   return w.op + " " + stable(w);
@@ -111,7 +111,7 @@ const P = {
 let logSeq = 0;
 function log(date, slot, kcal, p, c, f, fb, name) {
   return {
-    id: "fx_" + (++logSeq), log_date: date, slot: slot, source_type: "custom", item_id: null,
+    id: "fx_" + String(++logSeq).padStart(4, "0"), log_date: date, slot: slot, source_type: "custom", item_id: null,
     item_name: name || "測試餐點", kcal: kcal, protein_g: p, carb_g: c, fat_g: f, fiber_g: fb,
     is_feast: 0, feast_reservation_id: null, component_ids: null,
   };
@@ -121,7 +121,7 @@ function log(date, slot, kcal, p, c, f, fb, name) {
 function history(days, opts) {
   const o = Object.assign({ slots: ["breakfast", "lunch", "dinner"], fiberPerMeal: 6, kcalShift: 0, skip: [] }, opts);
   const out = [];
-  for (let i = 1; i <= days; i++) {
+  for (let i = days; i >= 1; i--) { // 由舊到新，跟 IndexedDB 依日期排序的讀取順序一致
     if (o.skip.indexOf(i) !== -1) continue;
     const d = addDays(DAY, -i);
     o.slots.forEach((s, j) => {

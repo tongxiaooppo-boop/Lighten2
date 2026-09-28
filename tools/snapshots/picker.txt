@@ -96,7 +96,7 @@ items/breakfast/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
 items/breakfast/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
 items/breakfast/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
 items/breakfast/none	 kcal=0 P=0 C=0 F=0 Fb=0
-items/breakfast/submit0	addDailyLog breakfast "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/breakfast/submit0	addDailyLog breakfast "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
 items/lunch/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
 items/lunch/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8
 items/lunch/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
@@ -105,7 +105,7 @@ items/lunch/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
 items/lunch/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
 items/lunch/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
 items/lunch/none	 kcal=0 P=0 C=0 F=0 Fb=0
-items/lunch/submit0	addDailyLog lunch "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/lunch/submit0	addDailyLog lunch "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
 items/afternoon_tea/main	 kcal=0 P=0 C=0 F=0 Fb=0
 items/afternoon_tea/main+side	custom_a kcal=650 P=30 C=null F=20 Fb=5
 items/afternoon_tea/main+side+drink	custom_a+tw_bf02 kcal=785 P=36 C=null F=23.8 Fb=6
@@ -114,7 +114,7 @@ items/afternoon_tea/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
 items/afternoon_tea/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
 items/afternoon_tea/custom-carb-null	custom_a kcal=650 P=30 C=null F=20 Fb=5
 items/afternoon_tea/none	 kcal=0 P=0 C=0 F=0 Fb=0
-items/afternoon_tea/submit0	addDailyLog afternoon_tea "燕麥奶／牛奶（一杯約240ml）＋自製便當" kcal=785 P=36 C=null F=23.8 Fb=6 source=manual_combo item=null comps=["tw_bf02","custom_a"]
+items/afternoon_tea/submit0	addDailyLog afternoon_tea "燕麥奶／牛奶（一杯約240ml）＋自製便當" kcal=785 P=36 C=null F=23.8 Fb=6
 items/dinner/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
 items/dinner/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8
 items/dinner/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
@@ -123,7 +123,7 @@ items/dinner/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
 items/dinner/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
 items/dinner/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
 items/dinner/none	 kcal=0 P=0 C=0 F=0 Fb=0
-items/dinner/submit0	addDailyLog dinner "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/dinner/submit0	addDailyLog dinner "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
 items/snack/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
 items/snack/main+side	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
 items/snack/main+side+drink	conv_bx04+custom_a+tw_bf02 kcal=905 P=59 C=null F=26.6 Fb=6
@@ -132,7 +132,7 @@ items/snack/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
 items/snack/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
 items/snack/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
 items/snack/none	 kcal=0 P=0 C=0 F=0 Fb=0
-items/snack/submit0	addDailyLog snack "燕麥奶／牛奶（一杯約240ml）＋即食舒肥雞胸肉（單包）＋自製便當" kcal=905 P=59 C=null F=26.6 Fb=6 source=manual_combo item=null comps=["tw_bf02","conv_bx04","custom_a"]
+items/snack/submit0	addDailyLog snack "燕麥奶／牛奶（一杯約240ml）＋即食舒肥雞胸肉（單包）＋自製便當" kcal=905 P=59 C=null F=26.6 Fb=6
 compose/breakfast/bowl_oat/s1	kcal=262.6 P=14.7 C=32.2 F=9.5 Fb=5.5
 compose/breakfast/bowl_oat/s0.5	kcal=180.8 P=12.3 C=18.8 F=7.5 Fb=3.3
 compose/breakfast/bowl_oat/s1.3	kcal=311.7 P=16.2 C=40.2 F=10.8 Fb=6.8
@@ -150,7 +150,7 @@ compose/breakfast/egg_pan/drink	kcal=298 P=20.8 C=24.8 F=13.4 Fb=3
 compose/breakfast/egg_pan/no-method	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
 compose/breakfast/egg_pan/last-protein	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
 compose/breakfast/no-cook-unsafe	#manual-picker-main-hint text="免開火不能搭配需要加熱的食材，請換烹調法或換食材。"
-compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=430.3 P=21.7 C=56.7 F=14.1 Fb=7.3 source=manual_composed item=null comps=["bowl_oat","ps_soy_milk","st_oats","sm_no_cook","tw_bf02"]
+compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=430.3 P=21.7 C=56.7 F=14.1 Fb=7.3
 compose/lunch/egg_pan/s1	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
 compose/lunch/egg_pan/s0.5	kcal=93 P=8.3 C=5.1 F=4.9 Fb=2
 compose/lunch/egg_pan/s1.3	kcal=205 P=18.7 C=5.9 F=12.5 Fb=2
@@ -183,7 +183,7 @@ compose/lunch/warm_salad/no-veg-sauce	kcal=265.7 P=28.7 C=26 F=5.2 Fb=3.8
 compose/lunch/warm_salad/drink	kcal=423.7 P=36.5 C=49.7 F=9.1 Fb=6.8
 compose/lunch/warm_salad/no-method	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
 compose/lunch/warm_salad/last-protein	kcal=278 P=18.8 C=33.3 F=8.7 Fb=8.2
-compose/lunch/submit0	addDailyLog lunch "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3 source=manual_composed item=null comps=["egg_pan","ps_egg","broccoli","sm_pan_fry","tw_bf02"]
+compose/lunch/submit0	addDailyLog lunch "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3
 compose/dinner/egg_pan/s1	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
 compose/dinner/egg_pan/s0.5	kcal=93 P=8.3 C=5.1 F=4.9 Fb=2
 compose/dinner/egg_pan/s1.3	kcal=205 P=18.7 C=5.9 F=12.5 Fb=2
@@ -216,4 +216,4 @@ compose/dinner/warm_salad/no-veg-sauce	kcal=265.7 P=28.7 C=26 F=5.2 Fb=3.8
 compose/dinner/warm_salad/drink	kcal=423.7 P=36.5 C=49.7 F=9.1 Fb=6.8
 compose/dinner/warm_salad/no-method	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
 compose/dinner/warm_salad/last-protein	kcal=278 P=18.8 C=33.3 F=8.7 Fb=8.2
-compose/dinner/submit0	addDailyLog dinner "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3 source=manual_composed item=null comps=["egg_pan","ps_egg","broccoli","sm_pan_fry","tw_bf02"]
+compose/dinner/submit0	addDailyLog dinner "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3

@@ -466,7 +466,7 @@ today/M/fb-shownOften-night/afternoon_tea	-
 today/M/fb-shownOften-night/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
 today/M/fb-shownOften-night/snack	-
 today/M/fb-shownOften-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave
-flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 高纖藜麥／穀物沙拉盒 ＋ Plenti／Oatly 濃縮燕麥奶" kcal=475 P=33 C=47.5 F=16.3 Fb=8.5 source=custom item=null comps=["conv_bx04","conv_sl04","conv_pk04"]
+flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 高纖藜麥／穀物沙拉盒 ＋ Plenti／Oatly 濃縮燕麥奶" kcal=475 P=33 C=47.5 F=16.3 Fb=8.5
 flow/log-breakfast/write1	markRecipesShown conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
 flow/log-breakfast/breakfast	-
 flow/log-breakfast/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
