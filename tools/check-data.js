@@ -208,6 +208,8 @@ function checkProducts(products, frozen, refs) {
     });
     checkAllergenTags(w, p.allergen_tags, true);
     checkDietTags(w, p);
+    // note 只放「資料來源；內容描述」，AI 的數字不是出處、不寫進 note（章程 B2.3、B2.6）
+    if (/AI/.test(p.note || "")) err(w + "：note 不得出現 AI 回答的內容，出處寫在 source／field_sources（章程 B2.6）");
     // 複合料理（章程 B6.3）：要標 composite；沒標「未確認」時要有官方成分表出處
     if (typeof p.composite !== "boolean") err(w + "：要標 composite: true|false（章程 B6.3）");
     if (p.composite && Array.isArray(p.allergen_tags) && p.allergen_tags.indexOf(UNVERIFIED) === -1 &&
