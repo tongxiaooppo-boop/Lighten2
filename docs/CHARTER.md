@@ -185,7 +185,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 ## B9. 資料下架
 
-刪除一個食材或品項時，`meal_plan`、`daily_log` 快照、「我的品項」的 `copied_from` 若還指著它：紀錄照樣用快照顯示；計畫顯示中性提示「這個品項已不提供」；程式不得因為查不到而出錯〔機：check-engine 斷言〕。
+刪除一個食材或品項時，`meal_plan`、`daily_log` 快照、「我的品項」的 `copied_from`、「我的組合」（`saved_meals`）若還指著它：紀錄照樣用快照顯示；計畫顯示中性提示「這個品項已不提供」；組合由 `resolveSavedMeal` 歸入「已不提供」並顯示中性提示；程式不得因為查不到而出錯〔機：check-engine 斷言，含組合引用已刪除 id 時解析不拋錯並回報缺少的元件〕。
 
 ## B10. 參考資料與 TFDA 改版
 
@@ -220,7 +220,7 @@ ui/  →  data/    →  core/
 2. `data/` 不 import `engine/`；`core/` 不 import 任何東西〔機〕。
 3. 全部使用 ES modules，不把函式掛到 `window`；唯一例外是 `ui/app.js` 掛少數除錯函式〔機〕。
 4. 儲存層使用瀏覽器原生 IndexedDB 加一層薄的封裝（`data/db.js`），不使用 localforage；資料庫名稱 `lighten2`，`settings` 與任何 localStorage key 一律加 `lighten2.` 前綴〔機〕。
-5. 清單型資料（`daily_log`、`meal_plan`、`weight_log`、`exercise_log`、`custom_foods`）一筆紀錄一個 key，需要全有全無的批次寫入用 IndexedDB transaction〔機：check-engine 對 db.js 的寫入函式斷言「傳入陣列會報錯」；〔人〕：審查 db.js〕。
+5. 清單型資料（`daily_log`、`meal_plan`、`weight_log`、`exercise_log`、`custom_foods`、`saved_meals`）一筆紀錄一個 key，需要全有全無的批次寫入用 IndexedDB transaction〔機：check-engine 對 db.js 的寫入函式斷言「傳入陣列會報錯」；〔人〕：審查 db.js〕。
 6. 部署時用一個版本字串統一帶進所有模組（import map），不靠使用者手動重新整理〔機：本次提交改到 `js/` 而 import map 的版本字串沒變就失敗〕。本機開發要用本機 server 開，不能用 `file://`。
 
 ## C2. 單一真相來源
@@ -273,7 +273,7 @@ ui/  →  data/    →  core/
 13. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品不依熱量排序或上色；飲料不做糖量警告〔機：check-arch 對 `ui/` 做禁用字 grep；〔人〕：配色與排序〕。
 14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：engine 評分不讀 sodium；〔人〕：畫面〕。
 15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取〔機：check-arch grep——這個 key 只允許出現在 `data/db.js` 與「自己選」modal 的檔案〕。
-16. 「我的組合」（`meal_combos`）只供手動引用，推薦、統計、hero 不得讀取；引用時重新跑硬性過濾與骨架驗證（同 4）〔機：check-arch grep——這個 store 的存取只允許出現在 `data/db.js`、選擇器、管理畫面與餐點日曆的檔案〕。
+16. 「我的組合」（`saved_meals`）只供手動引用，推薦、統計、hero 不得讀取〔機：check-arch——`data/db.js` 的讀取函式 `listSavedMeals`、`getSavedMeal` 只允許在白名單檔案 import：`ui/meal-picker/` 底下的檔案、`ui/profile/saved-meals.js`、`ui/tab-calendar.js`、`ui/backup.js`；寫入函式不限〕。每次引用都經過 `engine/meal-content.js` 的 `resolveSavedMeal`（元件級的硬性過濾、骨架驗證、下架與隱藏處理）〔機：check-engine 對 `resolveSavedMeal` 斷言；〔人〕：ui 引用時都呼叫它〕。
 
 ## C5. 修 bug 的規則
 
