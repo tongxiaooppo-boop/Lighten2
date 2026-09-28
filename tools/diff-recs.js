@@ -9,7 +9,7 @@
 // 輸出是規範化後的文字：一行一個 key，選中的組合 id、四捨五入後的營養值、縮放倍數；
 // 不比整包 JSON。快照測試資料不含預約（PRD 第 7 節 −1a）。
 //
-// 引擎的載入方式放在 tools/lib/adapter-*.js；Phase −1a 改寫前後換 adapter，情境與快照不變。
+// 引擎的載入方式放在 tools/lib/adapter-v2.js（v1 的 adapter-v1.js 在 Phase −1a 改寫時換掉；情境與快照不變）。
 
 "use strict";
 
@@ -26,7 +26,7 @@ const args = process.argv.slice(2);
 const UPDATE = args.indexOf("--update") !== -1;
 const FULL = args.indexOf("--full") !== -1;
 
-const A = require("./lib/adapter-v1")(ROOT);
+let A = null; // main() 裡載入（ES modules 要非同步 import）
 
 const SLOTS = ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"];
 const DAY = "2026-09-23"; // 週三
@@ -529,6 +529,7 @@ function parse(text) {
 
 async function main() {
   const t0 = env.RealDate.now();
+  A = await require("./lib/adapter-v2")(ROOT);
   await snapPool();
   await snapMatrix();
   await snapToday();
