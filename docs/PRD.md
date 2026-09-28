@@ -122,8 +122,8 @@ MealContent = {
   - Phase 2 起「照計畫記下」用計畫的有效型態（第 1 節解析規則）。
   - 型態一旦寫進紀錄就不再推導（第 11.2 節從紀錄存成組合時沿用紀錄的型態）。
 - `source`：`rec_accepted`（記錄推薦）、`manual`（自己選）；`from_plan`、`backfill` 留給 Phase 2、3。
-- −1a 的 `implicit` 一律 `null`（用油與調味在 −1b 加入）。
-- `data/db.js` 寫入前驗證以上欄位與 `content` 的結構（元件種類、各種元件的必填欄位、`implicit` 欄位存在；`totals` 的營養欄位缺值要寫 `null`，不能省略欄位）。
+- `implicit`：−1b 起，自煮（`cook_quick`／`cook_full`）的紀錄一定是 `{ oil_g: 非負數, seasoning: "light" | "normal" | null }`（實際採用的用油與調味，章程 C4.11）；其他型態是 `null`。
+- `data/db.js` 寫入前驗證以上欄位與 `content` 的結構（元件種類、各種元件的必填欄位、`implicit` 依型態（自煮必有用油與調味、其他是 `null`）；`totals` 的營養欄位缺值要寫 `null`，不能省略欄位）。
 
 **預算規則**（沿用 v1 大餐預約的精神，泛化到所有計畫）：
 - `product`／`estimate` 元件：熱量固定（用快照），**預先佔用**當天預算。
