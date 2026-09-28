@@ -274,7 +274,7 @@ ui/  →  data/    →  core/
 **核心原則**
 12. 運動與飲食脫鉤：讀取運動紀錄的函式只允許出現在 `ui/tab-exercise.js` 與 `data/db.js`〔機：check-arch grep〕；飲食畫面不出現運動內容，反之亦然〔人〕。
 13. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品不依熱量排序或上色；飲料不做糖量警告〔機：check-arch 對 `ui/` 做禁用字 grep；〔人〕：配色與排序〕。
-14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：engine 評分不讀 sodium；〔人〕：畫面〕。
+14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：顯示欄位（鈉、飽和脂肪）只在 `engine/meal-content.js` 處理，其他 engine 模組只能把 `displayFields(...)` 原封併進輸出物件；啟發式檢查；〔人〕：畫面〕。
 15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取〔機：check-arch grep——這個 key 只允許出現在 `data/db.js` 與「自己選」modal 的檔案〕。
 16. 「我的組合」（`saved_meals`）只供手動引用，推薦、統計、hero 不得讀取〔機：check-arch——`data/db.js` 的讀取函式 `listSavedMeals`、`getSavedMeal` 只允許白名單檔案 import；白名單寫在 `tools/check-arch.js` 的設定裡，只能加入負責「選擇器、組合管理區、餐點日曆、備份匯出匯入」這四類職責的檔案，檔名調整不算修改本章程；寫入函式不限〕。每次引用都經過 `engine/meal-content.js` 的 `resolveSavedMeal`（元件級的硬性過濾、依目前骨架重新驗證含免開火與軸上限、下架與隱藏處理）〔機：check-engine 對 `resolveSavedMeal` 斷言；〔人〕：ui 引用時都呼叫它〕。
 

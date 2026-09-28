@@ -248,6 +248,7 @@ Object.keys(defined).sort().forEach((name) => {
   check(inFiles.size === 1, "「" + name + "」在 " + inFiles.size + " 個檔案各定義一份：" + where.join("、") + "（放到唯一位置再 import）");
 });
 
+// 啟發式檢查，不是完整證明（例：.map(x => x.kcal).reduce((s, v) => s + v) 就繞得過）
 console.log("[ui 不自己加總營養 C4.11]");
 for (const f of files.filter((x) => x.layer === "ui")) {
   f.code.split("\n").forEach((line, i) => {
@@ -283,9 +284,20 @@ for (const f of files.filter((x) => x.layer === "ui")) {
 }
 BANNED_WORDS.forEach((w) => check(indexHtml.indexOf(w) === -1, "index.html 出現禁用字「" + w + "」"));
 
+// 啟發式檢查，不是完整證明（例如用字串拼出欄位名就繞得過）；目的是擋住順手寫出來的違規
 console.log("[鈉不參與評分 C4.14]");
-for (const f of files.filter((x) => x.layer === "engine" && /recommend|score|pool/.test(x.rel))) {
-  check(!/sodium/.test(f.code), f.rel + " 推薦/評分程式讀了 sodium");
+// 顯示欄位（飽和脂肪、鈉）只在 engine/meal-content.js 裡處理；其他 engine 模組只能把 displayFields(...) 的結果
+// 原封不動併進輸出物件（Object.assign 的後段參數），不能讀出來比較或評分（−1b 驗收審核）
+for (const f of files.filter((x) => x.layer === "engine" && !/meal-content\.js$/.test(x.rel))) {
+  f.code.split("\n").forEach((line, i) => {
+    checks++;
+    const m = /sodium|sat_fat|DISPLAY_FIELDS|sumDisplayLogTotals/.exec(line);
+    if (m) fail(f.rel + ":" + (i + 1) + " 出現「" + m[0] + "」：顯示欄位只在 meal-content.js 處理，推薦與評分不能讀（C4.14）");
+    checks++;
+    if (/displayFields\(/.test(line) && !/(Object\.assign\([^;]*,\s*|^\s*},\s*)displayFields\((?:[^()]|\([^()]*\))*\)\s*[,)]/.test(line)) {
+      fail(f.rel + ":" + (i + 1) + " displayFields(...) 只能當 Object.assign 的參數併進輸出（C4.14）：" + line.trim().slice(0, 100));
+    }
+  });
 }
 
 console.log("[picker_last_meal_type 只給自己選 C4.15]");
