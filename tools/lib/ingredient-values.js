@@ -6,6 +6,7 @@
 //   derived  ref＝「<TFDA 編號> × <倍數>」（例：熟重＝生米 × cooked_to_raw）
 // TFDA 某欄是 null、但實際接近 0 的（動物性食材的纖維、蔬菜的飽和脂肪、油的鈉），在 field_sources 標
 // { type: "derived", value: 0, note: 理由 }（章程 B5.1）。其他 null 照實保留。
+// value 只能補參考資料的 null、只能是 0，否則報錯（−1b 驗收審核 T1–T3：之前可以覆寫任何欄位）。
 // 數值一律四捨五入到小數 1 位。
 
 "use strict";
@@ -68,8 +69,14 @@ function computePer100g(ing, refs) {
   const out = {};
   FIELDS.forEach((k) => {
     const override = fs_[k];
-    if (override && Object.prototype.hasOwnProperty.call(override, "value")) out[k] = override.value;
-    else out[k] = raw[k] == null ? null : round1(raw[k]);
+    if (override && Object.prototype.hasOwnProperty.call(override, "value")) {
+      // 只准補參考資料的 null，而且只能填 0（章程 B5.1）；不能拿來改掉參考資料有的數字
+      if (raw[k] != null) throw new Error(k + " 參考資料有值（" + round1(raw[k]) + "），field_sources.value 不能覆寫");
+      if (override.value !== 0) throw new Error(k + " 參考資料是 null，field_sources.value 只能填 0（目前 " + override.value + "）");
+      out[k] = 0;
+    } else {
+      out[k] = raw[k] == null ? null : round1(raw[k]);
+    }
   });
   return out;
 }
