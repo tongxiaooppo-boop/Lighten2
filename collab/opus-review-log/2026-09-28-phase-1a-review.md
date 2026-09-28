@@ -134,3 +134,71 @@
 - **CI 和 hook**：CI 跑在 ubuntu，diff-recs 會用 TZ 重新啟動自己，時區沒問題；hook 用 `set -e`，檔案權限是 755，換行固定 LF；hook 總時間約 5 秒。
 
 **結論：修完再驗收。** 4 個必須修改都是小改動：M1 是文件，M2 是測試，M3 是驗證，M4 是 commit 審核紀錄。行為面沒有發現需要回退的地方。
+
+---
+
+## 第二輪：送出的提問（逐字，續用同一個審核 agent）
+
+第二輪（核對）：M1–M4 已修，另採納建議 1–7、10（建議 8 列入 PRD 第 7 節 −1b 待審項目；建議 9 運動分頁「連續紀錄」交使用者拍板）。commit：b768eaf（M1–M4）、24c686d（建議收尾）、90876d2（diff-recs 強化）。只讀不改：逐條一行確認 M1–M4「已解決／未解決」，檢查這三個 commit 有沒有引入新問題（特別是 db.js 升級/驗證、check-arch 新 regex 的誤判或漏判、logTotal 收斂是否改變行為、ui 快照改名差異），最後一行結論（−1a 可以驗收／需再修）。中文。
+
+## 第二輪：審核回覆（逐字）
+
+# Phase −1a 第二輪核對（C3）
+
+**結論：−1a 可以驗收。** M1–M4 都已解決，三個 commit 沒有引入需要擋驗收的問題，只剩 3 條可以之後再補的小建議。
+
+我只讀沒改。在 HEAD（90876d2）上重跑：check-arch 9901 項全過，check-engine 31471 項全過，diff-recs 6 個快照檔全過。
+
+## M1–M4 逐條確認
+
+- **M1 已解決。** PRD 第 3 節改成「有明確型態來源就用它，沒有才推導」。自己煮依難度、自訂食物算外食都標成 −1a 過渡，也寫了 Phase 0／Phase 2 之後怎麼判定。decisions #34 已補。`contentFromRec` 在時段偏好是快煮或開伙、而且沒退回一般推薦時用偏好，其餘才推導，跟文件一致。
+- **M2 已解決。** 斷言改成比對「不能傳陣列」的錯誤訊息，另加合法物件的對照。我逐一推演：拿掉 `assertRecord` 後，4 條斷言會分別得到驗證訊息或 `indexedDB is not defined`，都不含「不能傳陣列」，所以會失敗。
+- **M3 已解決。** 現在會驗 `created_at`、元件種類、各種元件的必填欄位（ingredient 的 axis／ref／scale，product 的 ref／qty／snapshot，estimate 的 name／snapshot）、`archetype_id`／`method_id`、`implicit` 存在，check-engine 補了 18 個破損案例。我查過現有資料，沒有 kcal 是 null 的品項，所以 product 快照「kcal 必須是數字」這條不會誤擋現在的「自己選」。
+- **M4 已解決。** 審核紀錄已在 b768eaf 入庫。目前工作區有未提交的第二輪段落，要記得連同這份回覆一起 commit。
+
+## 三個 commit 有沒有引入新問題
+
+**db.js 升級與錯誤處理**
+- 改成依 `oldVersion` 分段升級，`onversionchange` 會關閉連線並清掉快取的 Promise。進行中的交易在連線關閉後會同步丟錯並 reject，不會卡住。
+- 錯誤處理改成用 `event.target.error`，`abort` 包了 try，`markRecipesShown` 會擋沒帶今天日期的呼叫。這些都正確。
+- **小問題（不擋驗收）：** `onblocked` 直接 reject。但依規格，被擋住的 open 請求等別的分頁關掉之後仍會成功，這條連線就沒人使用、一直開著。它有掛 `onversionchange`，所以不會擋到下一次升級，影響很小。可以在 `onsuccess` 判斷「已經 reject 過就 `db.close()`」。
+
+**check-arch 新 regex**
+我拿 22 個寫法實測讀時鐘的 regex：
+- 抓得到：`new Date()`、`new Date;`、`new Date`（後面沒括號）、`Date()`、`performance.now`。
+- 不會誤判：`new Date(x)`、`new Date (x)`、跨行的 `new\nDate(x)`、`Date.UTC`、`Date.parse`、`toDate(x)`。
+- 還漏的邊角寫法：只取參照不呼叫的 `const f = Date.now;`、`Reflect.construct(Date, [])`、`new (Date)()`。第一種最可能真的出現，把 regex 裡 `Date\.now\s*\(` 的 `\s*\(` 拿掉就能補上。
+- 其他：
+  - 瀏覽器環境關鍵字檢查有排除屬性存取（`.location` 這類）。engine 如果有區域變數叫 `location` 或 `navigator` 會被誤判，但偏嚴格可以接受。
+  - 掛 window 的檢查把 `self.x =` 也算進去，同樣偏嚴格。
+  - `--staged` 現在比對暫存區的 index.html，css／data 變更也要換版本字串，都正確。import map 清單那幾項仍讀工作區，只有部分暫存時才可能不準，可以接受。
+
+**catalog 的 JSON 版本字串**
+從 `import.meta.url` 取 `?v=`：瀏覽器裡有值；Node（diff-recs、check-engine）裡是 null，不會加查詢字串，假的 fetch 也就不會壞。正確。
+
+**logTotal 收斂：行為不變**
+- `logTotal` 就是 `Number(l.totals[field]) || 0`，跟被取代的 7 處算法逐字等價。`todayIntake`（跳過 null）刻意沒改，也對。
+- pool 改用 `sumProducts`，kcal 從直接相加變成 `Number()||0`，只在 kcal 是 NaN 時才會有差，而台式品項缺區間的早就被「區間太寬」條件擋掉了。
+- pool、matrix、tdee 三個快照從 0020b71 到 HEAD 完全沒變；recs 在 24c686d 也沒變，佐證行為不變。
+
+**ui 快照改名**
+我把 0020b71 的 ui.txt 做 4 個 class 名稱替換（feast-item-card→item-card、feast-item-picker→item-grid、feast-cancel→undo-btn、rec-reservation-note→rec-logged-note），結果跟 24c686d 逐字相同，證實只差這四個名稱。js／css／index.html 已經沒有 feast 或 reservation 的 class，只剩 db.js 一行歷史註解。
+
+**90876d2 的快照變動**
+- picker／recs 寫入行多了型態／來源／內容。
+- log 與 undo 流程的重建結果改變，是因為假資料庫現在真的記錄「今天顯示過」，跟真實行為一致，屬於預期內的變化。
+- 內容的抽查結果都合理：
+  - 自煮的主要槽位存了 `*1.2`。
+  - 下午茶沒有主餐，看第一件（台式飲料），記成 delivery。
+  - 宵夜看主餐（超商），記成 convenience。
+- **小問題：** `flow/dislike-dinner`、`flow/chip-dinner-protein` 的結果跟 `flow/rebuild-same-day` 逐字相同。同一天重建本來就會把三個時段全部換掉，這個效果蓋掉了倒讚和「順便不要」的效果，所以這兩個流程其實驗不到倒讚或不吃清單有沒有生效。建議這兩個流程先把 feedback 裡「今天顯示過」清掉再操作，或直接斷言被倒讚的 id、被排除的蛋白質沒有出現在結果裡。
+
+**其他零星確認**
+- matcher 對 null profile 安全。
+- 體重 ≤0 改成提示「請填寫日期與體重」。
+- S/M/L 熱量常數已放進 `core/config.js` 並寫進 PRD 第 9 節。
+- `$` 已搬到 `ui/dom.js`，core 不再碰 DOM。
+- 時段清單改成 import `SLOTS`。
+- `onDislikeClick` 改成回傳 Promise，點擊處理不看回傳值，行為不變。
+
+**結論：−1a 可以驗收。**（`onblocked` 連線沒關、漏抓 `Date.now` 參照、倒讚與「順便不要」流程被重建效果遮蔽，這三條可以之後再補。）

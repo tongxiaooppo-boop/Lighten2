@@ -142,7 +142,7 @@ for (const f of files) {
 
 console.log("[engine、core 不讀時鐘、不碰瀏覽器環境 C1.1]");
 // 讀時鐘：Date.now()、new Date()、new Date;、Date()（不帶 new 回傳現在時間字串）、performance.now()
-const CLOCK_RE = /Date\.now\s*\(|new\s+Date\s*(\(\s*\)|(?![\s(]))|(?<![\w$.])(?<!new\s+)Date\s*\(|performance\s*\.\s*now/g;
+const CLOCK_RE = /Date\.now\b|new\s+Date\s*(\(\s*\)|(?![\s(]))|(?<![\w$.])(?<!new\s+)Date\s*\(|performance\s*\.\s*now/g;
 const BROWSER_RE = /(?<![\w$.])(document|window|localStorage|sessionStorage|indexedDB|navigator|location|globalThis)(?![\w$])/g;
 for (const f of files.filter((x) => x.layer === "engine" || x.layer === "core")) {
   let m;

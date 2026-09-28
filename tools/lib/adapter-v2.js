@@ -109,6 +109,11 @@ module.exports = async function createV2Adapter(ROOT) {
       io = {};
       return r;
     },
+    // 清掉「今天顯示過」（shown_count/last_shown_date），保留倒讚/喜歡
+    clearShown() {
+      const fb = globalThis.__fakeDbState.feedback;
+      Object.keys(fb).forEach((id) => { delete fb[id].last_shown_date; delete fb[id].shown_count; });
+    },
     dailyLogsFor: (date) => clone(globalThis.__fakeDbState.dailyLogs.filter((l) => l.log_date === date)),
 
     // ---------- engine 層 ----------

@@ -308,20 +308,29 @@ async function snapToday() {
   A.takeDom();
 
   // 倒讚、「順便不要」、同一天重建（切回分頁）：卡片顯示過就會記「今天顯示過」，重建時被降權
+  // 倒讚與「順便不要」先清掉「今天顯示過」，不然會被同日重建的降權效果蓋掉；另外直接斷言被排除的東西沒有再出現
   const flows = {
-    "dislike-dinner": async () => { await A.dislike("dinner"); },
-    "chip-dinner-protein": async () => {
-      const r = A.currentRecs().dinner;
-      await A.dislikeChip("protein", r.protein_name, r.protein_name);
+    "dislike-dinner": async (before) => {
+      A.clearShown();
+      await A.dislike("dinner");
+      const after = A.currentRecs();
+      emit("recs", "flow/dislike-dinner/excluded", SLOTS.every((s) => !after[s] || after[s].id !== before.dinner.id) ? "ok" : "倒讚的組合又出現了");
+    },
+    "chip-dinner-protein": async (before) => {
+      A.clearShown();
+      const p = before.dinner.protein_name;
+      await A.dislikeChip("protein", p, p);
+      const after = A.currentRecs();
+      emit("recs", "flow/chip-dinner-protein/excluded", SLOTS.every((s) => !after[s] || after[s].protein_name !== p) ? "ok" : "不吃的蛋白質又出現了");
     },
     "rebuild-same-day": async () => { await A.todayPage(); },
   };
   for (const name of Object.keys(flows)) {
     env.setNow(NOW_DAY);
     A.setDb({ profile: P.M, dailyLogs: history(7), tdeeState: tdeeState({ goal_mode: null }) });
-    await A.todayPage();
+    const before = await A.todayPage();
     A.takeEngineIO(); A.takeWrites(); A.takeDom();
-    await flows[name]();
+    await flows[name](before);
     const r2 = A.currentRecs();
     A.takeEngineIO(); A.takeDom();
     A.takeWrites().forEach((w, i) => emit("recs", "flow/" + name + "/write" + i, normWrite(w)));
