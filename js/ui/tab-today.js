@@ -18,18 +18,19 @@ import { renderHero } from "./today-hero.js";
 import { openManualPicker, initManualPicker } from "./manual-picker.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
 
-// 蛋白質來源 → 食材縮圖（對照 data/protein_sources.json 的 name；查不到就不顯示圖片，正常降級）
+// 蛋白質食材 id → 食材縮圖（用 id 對照，食材改名不影響；查不到就用時段插畫墊底）。
+// Phase 0 品項卡片改純文字時，推薦卡片只保留 5 張時段插畫（PRD 第 8 節），這張表會移除。
 const PROTEIN_IMAGE = {
-  "雞胸肉": "images/food/chicken-breast.jpg",
-  "雞蛋": "images/food/egg.jpg",
-  "希臘優格": "images/food/greek-yogurt.jpg",
-  "鮭魚": "images/food/salmon.jpg",
-  "牛肉": "images/food/beef.jpg",
-  "雞腿肉": "images/food/chicken-thigh.jpg",
-  "鯛魚": "images/food/tilapia.jpg",
-  "板豆腐": "images/food/tofu.jpg",
-  "蝦仁": "images/food/shrimp.jpg",
-  "無糖豆漿": "images/food/soy-milk.jpg",
+  chicken_breast: "images/food/chicken-breast.jpg",
+  egg: "images/food/egg.jpg",
+  greek_yogurt: "images/food/greek-yogurt.jpg",
+  salmon: "images/food/salmon.jpg",
+  beef_shank: "images/food/beef.jpg",
+  chicken_thigh: "images/food/chicken-thigh.jpg",
+  tilapia_fillet: "images/food/tilapia.jpg",
+  firm_tofu: "images/food/tofu.jpg",
+  shrimp: "images/food/shrimp.jpg",
+  soy_milk: "images/food/soy-milk.jpg",
 };
 
 // 時段 → 預設插畫（找不到具體食物照片時墊底用）。5 張同一套手繪風格，只有時段場景不同。
@@ -114,7 +115,7 @@ function renderRecs(recs, profile, logsBySlot) {
       body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>';
       return;
     }
-    const imgSrc = PROTEIN_IMAGE[rec.protein_name] || MEAL_DEFAULT_IMAGE[slot];
+    const imgSrc = PROTEIN_IMAGE[rec.protein_id] || MEAL_DEFAULT_IMAGE[slot];
     const imgHtml = imgSrc
       ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name || SLOT_LABELS[slot] || "") + '" loading="lazy">'
       : "";
