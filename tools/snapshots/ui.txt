@@ -1264,6 +1264,12 @@ picker/items/breakfast/drink-only/dom03	#manual-picker-items-mode (untouched)
 picker/items/breakfast/drink-only/dom04	#manual-picker-main-hint hidden
 picker/items/breakfast/drink-only/dom05	#manual-picker-submit (untouched)
 picker/items/breakfast/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/breakfast/drink-tfda/dom00	#manual-picker-compose-mode hidden
+picker/items/breakfast/drink-tfda/dom01	#manual-picker-gap html="<p>這組合約 172 kcal，這個時段配額約 0 kcal（+172），仍可送出。</p>"
+picker/items/breakfast/drink-tfda/dom03	#manual-picker-items-mode (untouched)
+picker/items/breakfast/drink-tfda/dom04	#manual-picker-main-hint hidden
+picker/items/breakfast/drink-tfda/dom05	#manual-picker-submit (untouched)
+picker/items/breakfast/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
 picker/items/breakfast/custom-null/dom00	#manual-picker-compose-mode hidden
 picker/items/breakfast/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 0 kcal（+935），仍可送出。</p>"
 picker/items/breakfast/custom-null/dom03	#manual-picker-items-mode (untouched)
@@ -1312,6 +1318,12 @@ picker/items/lunch/drink-only/dom03	#manual-picker-items-mode (untouched)
 picker/items/lunch/drink-only/dom04	#manual-picker-main-hint hidden
 picker/items/lunch/drink-only/dom05	#manual-picker-submit (untouched)
 picker/items/lunch/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/lunch/drink-tfda/dom00	#manual-picker-compose-mode hidden
+picker/items/lunch/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
+picker/items/lunch/drink-tfda/dom03	#manual-picker-items-mode (untouched)
+picker/items/lunch/drink-tfda/dom04	#manual-picker-main-hint hidden
+picker/items/lunch/drink-tfda/dom05	#manual-picker-submit (untouched)
+picker/items/lunch/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
 picker/items/lunch/custom-null/dom00	#manual-picker-compose-mode hidden
 picker/items/lunch/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p>"
 picker/items/lunch/custom-null/dom03	#manual-picker-items-mode (untouched)
@@ -1360,6 +1372,12 @@ picker/items/afternoon_tea/drink-only/dom03	#manual-picker-items-mode (untouched
 picker/items/afternoon_tea/drink-only/dom04	#manual-picker-main-hint hidden
 picker/items/afternoon_tea/drink-only/dom05	#manual-picker-submit (untouched)
 picker/items/afternoon_tea/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/afternoon_tea/drink-tfda/dom00	#manual-picker-compose-mode hidden
+picker/items/afternoon_tea/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
+picker/items/afternoon_tea/drink-tfda/dom03	#manual-picker-items-mode (untouched)
+picker/items/afternoon_tea/drink-tfda/dom04	#manual-picker-main-hint hidden
+picker/items/afternoon_tea/drink-tfda/dom05	#manual-picker-submit (untouched)
+picker/items/afternoon_tea/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
 picker/items/afternoon_tea/custom-null/dom00	#manual-picker-compose-mode hidden
 picker/items/afternoon_tea/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p>"
 picker/items/afternoon_tea/custom-null/dom03	#manual-picker-items-mode (untouched)
@@ -1408,6 +1426,12 @@ picker/items/dinner/drink-only/dom03	#manual-picker-items-mode (untouched)
 picker/items/dinner/drink-only/dom04	#manual-picker-main-hint hidden
 picker/items/dinner/drink-only/dom05	#manual-picker-submit (untouched)
 picker/items/dinner/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/dinner/drink-tfda/dom00	#manual-picker-compose-mode hidden
+picker/items/dinner/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
+picker/items/dinner/drink-tfda/dom03	#manual-picker-items-mode (untouched)
+picker/items/dinner/drink-tfda/dom04	#manual-picker-main-hint hidden
+picker/items/dinner/drink-tfda/dom05	#manual-picker-submit (untouched)
+picker/items/dinner/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
 picker/items/dinner/custom-null/dom00	#manual-picker-compose-mode hidden
 picker/items/dinner/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p>"
 picker/items/dinner/custom-null/dom03	#manual-picker-items-mode (untouched)
@@ -1456,6 +1480,12 @@ picker/items/snack/drink-only/dom03	#manual-picker-items-mode (untouched)
 picker/items/snack/drink-only/dom04	#manual-picker-main-hint hidden
 picker/items/snack/drink-only/dom05	#manual-picker-submit (untouched)
 picker/items/snack/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/snack/drink-tfda/dom00	#manual-picker-compose-mode hidden
+picker/items/snack/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
+picker/items/snack/drink-tfda/dom03	#manual-picker-items-mode (untouched)
+picker/items/snack/drink-tfda/dom04	#manual-picker-main-hint hidden
+picker/items/snack/drink-tfda/dom05	#manual-picker-submit (untouched)
+picker/items/snack/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
 picker/items/snack/custom-null/dom00	#manual-picker-compose-mode hidden
 picker/items/snack/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p>"
 picker/items/snack/custom-null/dom03	#manual-picker-items-mode (untouched)

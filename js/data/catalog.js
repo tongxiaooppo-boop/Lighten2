@@ -62,6 +62,7 @@ export function fromCustomFood(f) {
     kcal: f.kcal != null ? f.kcal : null, kcal_low: null, kcal_high: null, kcal_rep: null,
     protein_g: f.protein_g != null ? f.protein_g : null, carb_g: f.carb_g != null ? f.carb_g : null,
     fat_g: f.fat_g != null ? f.fat_g : null, fiber_g: f.fiber_g != null ? f.fiber_g : null,
+    sat_fat_g: orNull(f.sat_fat_g), sodium_mg: orNull(f.sodium_mg),
     tier: "🟢", diet_tags: [], allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
     note: null, is_taiwan: false, is_custom: true,
   };

@@ -29,14 +29,12 @@ const TAIWAN_ITEM_IMAGE = {
 // 「整套便當」分類：自己選要排除
 const WHOLE_MEAL_CATEGORIES = ["健身餐盒", "蔬食餐盒", "減醣餐盒", "連鎖健康餐盒", "宅配健身餐"];
 
+// 直接帶 catalog 品項的全部欄位（章程 C2：逐欄抄會漏掉新加的欄位），只加上 picker 專用的欄位
 function toPickerItem(p) {
-  return {
-    uid: p.uid, id: p.source_id, name: p.name, role: p.role, valid_slots: p.valid_slots, channel: p.channel,
-    kcal: p.kcal, protein_g: p.protein_g, carb_g: p.carb_g, fat_g: p.fat_g, fiber_g: p.fiber_g,
-    allergen_tags: p.allergen_tags, diet_tags: p.diet_tags, components: [p.uid],
-    is_custom: !!p.is_custom, is_taiwan: p.is_taiwan,
+  return Object.assign({}, p, {
+    id: p.source_id, components: [p.uid], is_custom: !!p.is_custom,
     image: p.is_taiwan ? TAIWAN_ITEM_IMAGE[p.source_id] || null : null,
-  };
+  });
 }
 
 // 順序：台式外食、超商/連鎖、我的品項。excludeWholeMeals：台式只留飲料、超商排除整套便當。
