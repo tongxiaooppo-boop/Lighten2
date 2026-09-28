@@ -90,7 +90,7 @@ export function passesHardFilters(item, profile) {
 }
 
 // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
-//   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用食材 id（章程 C2：改名後仍然命中）
+//   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用食材 id（章程 C2：改名後仍然命中；比對只看 key）
 //   - 現成品項：type='item'，key 用成分 uid（item.components）
 function findDislikedHit(item, disliked) {
   const keys = [];
@@ -108,7 +108,8 @@ function findDislikedHit(item, disliked) {
   for (let i = 0; i < disliked.length; i++) {
     const d = disliked[i];
     for (let j = 0; j < keys.length; j++) {
-      if (d && d.type === keys[j].type && d.key === keys[j].key) {
+      // 只比 key：食材與品項 id 全資料庫唯一，換軸或改名都不影響（decisions #40）
+      if (d && d.key === keys[j].key) {
         return d.label || d.key;
       }
     }
