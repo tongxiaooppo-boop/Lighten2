@@ -5,7 +5,7 @@
 ## 1. 專案
 
 - 「輕盈計畫」2.0（Lighten2）：個人減脂飲食追蹤 App，純前端 vanilla JS（ES modules）＋IndexedDB，沒有後端、單人使用。
-- GitHub：`https://github.com/tongxiaooppo-boop/Lighten2`（remote `origin`）。本機 `D:\ok\lighten`，分支 `master`。v1 保存在 tag `v1-final`。
+- GitHub：`https://github.com/tongxiaooppo-boop/Lighten2`（remote `origin`）；網頁 https://tongxiaooppo-boop.github.io/Lighten2/ （GitHub Pages，2026-09-29 開啟，推送 master 就更新）。本機 `D:\ok\lighten`，分支 `master`。v1 保存在 tag `v1-final`。
 - **由 Opus 直接寫程式**，不交 Cline。沒有任何使用者資料需要遷移（decisions #9）。
 - 使用者要 Opus 以**資深營養師**的角度判斷食物資料（樣品選擇、生熟、份量、過敏原）。
 
@@ -33,7 +33,7 @@
 | `node tools/smoke-browser.mjs` | 無頭 Edge 實際操作 App（約 30 秒；Phase 驗收時跑，−1b 已跑過 14 項全過） |
 
 - pre-commit hook 約 8 秒。禁止 `--no-verify`。
-- GitHub Actions 還沒推上去跑過：**推送前要先問使用者**。本機領先 origin 很多個 commit。
+- 推送前要先問使用者。2026-09-29 已推送，CI（check）通過。
 - Windows 上寫多行 Python/JS 時 heredoc 常被引號打斷：先用 Write 寫到 scratchpad 再執行。
 
 ## 4. 下一步
