@@ -1,0 +1,219 @@
+open/M/breakfast/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_bx05,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/M/breakfast/blocked	
+open/M/breakfast/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/M/lunch/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/M/lunch/blocked	
+open/M/lunch/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/M/afternoon_tea/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/M/afternoon_tea/blocked	
+open/M/afternoon_tea/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/M/dinner/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/M/dinner/blocked	
+open/M/dinner/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/M/snack/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_bx05,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/M/snack/blocked	
+open/M/snack/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/VEG/breakfast/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_sl03,conv_bx05,conv_pk03,conv_pk04
+open/VEG/breakfast/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr05:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_bx04:飲食限制未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEG/breakfast/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk04
+open/VEG/lunch/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_sl03,conv_pk03,conv_pk04
+open/VEG/lunch/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr05:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_bx04:飲食限制未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEG/lunch/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk04
+open/VEG/afternoon_tea/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk03,conv_pk04
+open/VEG/afternoon_tea/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr05:含過敏原,conv_pk01:成分未確認,conv_pk02:成分未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEG/afternoon_tea/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk04
+open/VEG/dinner/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_sl03,conv_pk03,conv_pk04
+open/VEG/dinner/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr05:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_bx04:飲食限制未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEG/dinner/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk04
+open/VEG/snack/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_bx05,conv_pk03,conv_pk04
+open/VEG/snack/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr05:含過敏原,conv_bx04:飲食限制未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEG/snack/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr06,conv_pk04
+open/VEGAN/breakfast/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl02,conv_sl04,conv_bx05,conv_pk03,conv_pk04
+open/VEGAN/breakfast/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr06:飲食限制未確認,conv_sl01:飲食限制未確認,conv_sl03:飲食限制未確認,conv_bx04:飲食限制未確認,conv_pk01:飲食限制未確認,conv_pk02:飲食限制未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEGAN/breakfast/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/VEGAN/lunch/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl02,conv_sl04,conv_pk03,conv_pk04
+open/VEGAN/lunch/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr06:飲食限制未確認,conv_sl01:飲食限制未確認,conv_sl03:飲食限制未確認,conv_bx04:飲食限制未確認,conv_pk01:飲食限制未確認,conv_pk02:飲食限制未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEGAN/lunch/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/VEGAN/afternoon_tea/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk03,conv_pk04
+open/VEGAN/afternoon_tea/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr06:飲食限制未確認,conv_pk01:飲食限制未確認,conv_pk02:飲食限制未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEGAN/afternoon_tea/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/VEGAN/dinner/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl02,conv_sl04,conv_pk03,conv_pk04
+open/VEGAN/dinner/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr06:飲食限制未確認,conv_sl01:飲食限制未確認,conv_sl03:飲食限制未確認,conv_bx04:飲食限制未確認,conv_pk01:飲食限制未確認,conv_pk02:飲食限制未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEGAN/dinner/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/VEGAN/snack/pass	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_bx05,conv_pk03,conv_pk04
+open/VEGAN/snack/blocked	tw_bf02:飲食限制未確認,tw_dr01:飲食限制未確認,tw_dr02:飲食限制未確認,tw_dr03:飲食限制未確認,tw_dr04:飲食限制未確認,tw_dr05:飲食限制未確認,tw_dr06:飲食限制未確認,tw_dr07:飲食限制未確認,tw_dr08:飲食限制未確認,tw_dr09:飲食限制未確認,tw_dr10:飲食限制未確認,conv_dr06:飲食限制未確認,conv_bx04:飲食限制未確認,conv_pk01:飲食限制未確認,conv_pk02:飲食限制未確認,custom_a:飲食限制未確認,custom_b:飲食限制未確認
+open/VEGAN/snack/drinks	conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/ALLERGY/breakfast/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_bx05,conv_pk04,custom_a,custom_b
+open/ALLERGY/breakfast/blocked	tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl03:含過敏原,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk03:含過敏原
+open/ALLERGY/breakfast/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04
+open/ALLERGY/lunch/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_pk04,custom_a,custom_b
+open/ALLERGY/lunch/blocked	tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl03:含過敏原,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk03:含過敏原
+open/ALLERGY/lunch/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04
+open/ALLERGY/afternoon_tea/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04,custom_a,custom_b
+open/ALLERGY/afternoon_tea/blocked	tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk03:含過敏原
+open/ALLERGY/afternoon_tea/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04
+open/ALLERGY/dinner/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_pk04,custom_a,custom_b
+open/ALLERGY/dinner/blocked	tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl03:含過敏原,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk03:含過敏原
+open/ALLERGY/dinner/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04
+open/ALLERGY/snack/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_bx05,conv_pk04,custom_a,custom_b
+open/ALLERGY/snack/blocked	tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk03:含過敏原
+open/ALLERGY/snack/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr08,tw_dr09,tw_dr10,conv_dr04,conv_dr05,conv_dr06,conv_pk04
+open/LEGACY_ALLERGY/breakfast/pass	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl03,conv_bx04,conv_bx05,conv_pk03,conv_pk04,custom_a,custom_b
+open/LEGACY_ALLERGY/breakfast/blocked	tw_bf02:含過敏原,tw_dr01:含過敏原,tw_dr02:含過敏原,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認
+open/LEGACY_ALLERGY/breakfast/drinks	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/LEGACY_ALLERGY/lunch/pass	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl03,conv_bx04,conv_pk03,conv_pk04,custom_a,custom_b
+open/LEGACY_ALLERGY/lunch/blocked	tw_bf02:含過敏原,tw_dr01:含過敏原,tw_dr02:含過敏原,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認
+open/LEGACY_ALLERGY/lunch/drinks	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/LEGACY_ALLERGY/afternoon_tea/pass	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk03,conv_pk04,custom_a,custom_b
+open/LEGACY_ALLERGY/afternoon_tea/blocked	tw_bf02:含過敏原,tw_dr01:含過敏原,tw_dr02:含過敏原,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:含過敏原,conv_pk01:成分未確認,conv_pk02:成分未確認
+open/LEGACY_ALLERGY/afternoon_tea/drinks	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/LEGACY_ALLERGY/dinner/pass	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_sl03,conv_bx04,conv_pk03,conv_pk04,custom_a,custom_b
+open/LEGACY_ALLERGY/dinner/blocked	tw_bf02:含過敏原,tw_dr01:含過敏原,tw_dr02:含過敏原,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:含過敏原,conv_sl01:成分未確認,conv_sl02:成分未確認,conv_sl04:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認
+open/LEGACY_ALLERGY/dinner/drinks	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/LEGACY_ALLERGY/snack/pass	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_bx04,conv_bx05,conv_pk03,conv_pk04,custom_a,custom_b
+open/LEGACY_ALLERGY/snack/blocked	tw_bf02:含過敏原,tw_dr01:含過敏原,tw_dr02:含過敏原,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:含過敏原,conv_pk01:成分未確認,conv_pk02:成分未確認
+open/LEGACY_ALLERGY/snack/drinks	tw_dr03,tw_dr04,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04
+open/DISLIKE/breakfast/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_bx05,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/DISLIKE/breakfast/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/breakfast/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/DISLIKE/lunch/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/DISLIKE/lunch/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/lunch/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/DISLIKE/afternoon_tea/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/DISLIKE/afternoon_tea/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/afternoon_tea/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/DISLIKE/dinner/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/DISLIKE/dinner/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/dinner/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+open/DISLIKE/snack/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_bx04,conv_bx05,conv_pk01,conv_pk02,conv_pk03,conv_pk04,custom_a,custom_b
+open/DISLIKE/snack/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/snack/drinks	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04
+items/breakfast/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
+items/breakfast/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8
+items/breakfast/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
+items/breakfast/main+drink+snack	conv_bx04+tw_bf02+conv_pk03 kcal=392.5 P=33.5 C=30.7 F=13.9 Fb=4.5
+items/breakfast/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
+items/breakfast/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
+items/breakfast/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
+items/breakfast/none	 kcal=0 P=0 C=0 F=0 Fb=0
+items/breakfast/submit0	addDailyLog breakfast "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/lunch/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
+items/lunch/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8
+items/lunch/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
+items/lunch/main+drink+snack	conv_bx04+tw_bf02+conv_pk03 kcal=392.5 P=33.5 C=30.7 F=13.9 Fb=4.5
+items/lunch/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
+items/lunch/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
+items/lunch/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
+items/lunch/none	 kcal=0 P=0 C=0 F=0 Fb=0
+items/lunch/submit0	addDailyLog lunch "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/afternoon_tea/main	 kcal=0 P=0 C=0 F=0 Fb=0
+items/afternoon_tea/main+side	custom_a kcal=650 P=30 C=null F=20 Fb=5
+items/afternoon_tea/main+side+drink	custom_a+tw_bf02 kcal=785 P=36 C=null F=23.8 Fb=6
+items/afternoon_tea/main+drink+snack	tw_bf02+conv_pk03 kcal=272.5 P=10.5 C=30.7 F=11.1 Fb=4.5
+items/afternoon_tea/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
+items/afternoon_tea/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
+items/afternoon_tea/custom-carb-null	custom_a kcal=650 P=30 C=null F=20 Fb=5
+items/afternoon_tea/none	 kcal=0 P=0 C=0 F=0 Fb=0
+items/afternoon_tea/submit0	addDailyLog afternoon_tea "燕麥奶／牛奶（一杯約240ml）＋自製便當" kcal=785 P=36 C=null F=23.8 Fb=6 source=manual_combo item=null comps=["tw_bf02","custom_a"]
+items/dinner/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
+items/dinner/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8
+items/dinner/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8
+items/dinner/main+drink+snack	conv_bx04+tw_bf02+conv_pk03 kcal=392.5 P=33.5 C=30.7 F=13.9 Fb=4.5
+items/dinner/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
+items/dinner/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
+items/dinner/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
+items/dinner/none	 kcal=0 P=0 C=0 F=0 Fb=0
+items/dinner/submit0	addDailyLog dinner "燕麥奶／牛奶（一杯約240ml）＋香草烤雞沙拉／雞胸肉沙拉＋即食舒肥雞胸肉（單包）" kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 source=manual_combo item=null comps=["tw_bf02","conv_sl01","conv_bx04"]
+items/snack/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0
+items/snack/main+side	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
+items/snack/main+side+drink	conv_bx04+custom_a+tw_bf02 kcal=905 P=59 C=null F=26.6 Fb=6
+items/snack/main+drink+snack	conv_bx04+tw_bf02+conv_pk03 kcal=392.5 P=33.5 C=30.7 F=13.9 Fb=4.5
+items/snack/drink-only	tw_bf02 kcal=135 P=6 C=19.2 F=3.8 Fb=1
+items/snack/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null Fb=null
+items/snack/custom-carb-null	conv_bx04+custom_a kcal=770 P=53 C=null F=22.8 Fb=5
+items/snack/none	 kcal=0 P=0 C=0 F=0 Fb=0
+items/snack/submit0	addDailyLog snack "燕麥奶／牛奶（一杯約240ml）＋即食舒肥雞胸肉（單包）＋自製便當" kcal=905 P=59 C=null F=26.6 Fb=6 source=manual_combo item=null comps=["tw_bf02","conv_bx04","custom_a"]
+compose/breakfast/bowl_oat/s1	kcal=262.6 P=14.7 C=32.2 F=9.5 Fb=5.5
+compose/breakfast/bowl_oat/s0.5	kcal=180.8 P=12.3 C=18.8 F=7.5 Fb=3.3
+compose/breakfast/bowl_oat/s1.3	kcal=311.7 P=16.2 C=40.2 F=10.8 Fb=6.8
+compose/breakfast/bowl_oat/s2	kcal=426.2 P=19.6 C=58.9 F=13.6 Fb=9.8
+compose/breakfast/bowl_oat/no-veg-sauce	kcal=262.6 P=14.7 C=32.2 F=9.5 Fb=5.5
+compose/breakfast/bowl_oat/drink	kcal=397.6 P=20.7 C=51.4 F=13.3 Fb=6.5
+compose/breakfast/bowl_oat/no-method	kcal=262.6 P=14.7 C=32.2 F=9.5 Fb=5.5
+compose/breakfast/bowl_oat/last-protein	kcal=252.1 P=20.1 C=32.2 F=4.7 Fb=4.3
+compose/breakfast/egg_pan/s1	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/breakfast/egg_pan/s0.5	kcal=93 P=8.3 C=5.1 F=4.9 Fb=2
+compose/breakfast/egg_pan/s1.3	kcal=205 P=18.7 C=5.9 F=12.5 Fb=2
+compose/breakfast/egg_pan/s2	kcal=303 P=27.8 C=6.7 F=19.1 Fb=2
+compose/breakfast/egg_pan/no-veg-sauce	kcal=140 P=13 C=1.1 F=9.5 Fb=0
+compose/breakfast/egg_pan/drink	kcal=298 P=20.8 C=24.8 F=13.4 Fb=3
+compose/breakfast/egg_pan/no-method	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/breakfast/egg_pan/last-protein	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/breakfast/no-cook-unsafe	#manual-picker-main-hint text="免開火不能搭配需要加熱的食材，請換烹調法或換食材。"
+compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=430.3 P=21.7 C=56.7 F=14.1 Fb=7.3 source=manual_composed item=null comps=["bowl_oat","ps_soy_milk","st_oats","sm_no_cook","tw_bf02"]
+compose/lunch/egg_pan/s1	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/lunch/egg_pan/s0.5	kcal=93 P=8.3 C=5.1 F=4.9 Fb=2
+compose/lunch/egg_pan/s1.3	kcal=205 P=18.7 C=5.9 F=12.5 Fb=2
+compose/lunch/egg_pan/s2	kcal=303 P=27.8 C=6.7 F=19.1 Fb=2
+compose/lunch/egg_pan/no-veg-sauce	kcal=140 P=13 C=1.1 F=9.5 Fb=0
+compose/lunch/egg_pan/drink	kcal=298 P=20.8 C=24.8 F=13.4 Fb=3
+compose/lunch/egg_pan/no-method	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/lunch/egg_pan/last-protein	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/lunch/protein_stir_fry/s1	kcal=221.6 P=30.8 C=12 F=6.3 Fb=5.5
+compose/lunch/protein_stir_fry/s0.5	kcal=204.4 P=29.4 C=8.6 F=6.2 Fb=4
+compose/lunch/protein_stir_fry/s1.3	kcal=232 P=31.6 C=14 F=6.3 Fb=6.4
+compose/lunch/protein_stir_fry/s2	kcal=256.1 P=33.4 C=18.7 F=6.4 Fb=8.5
+compose/lunch/protein_stir_fry/no-veg-sauce	kcal=194.1 P=28.6 C=6.8 F=6 Fb=3
+compose/lunch/protein_stir_fry/drink	kcal=356.6 P=36.8 C=31.2 F=10.1 Fb=6.5
+compose/lunch/protein_stir_fry/no-method	kcal=221.6 P=30.8 C=12 F=6.3 Fb=5.5
+compose/lunch/protein_stir_fry/last-protein	kcal=216.7 P=31 C=12 F=5.3 Fb=5.5
+compose/lunch/grain_bowl_baked/s1	kcal=409.8 P=37.2 C=52.1 F=5 Fb=4.5
+compose/lunch/grain_bowl_baked/s0.5	kcal=303.3 P=34.7 C=29.9 F=4.2 Fb=3.3
+compose/lunch/grain_bowl_baked/s1.3	kcal=473.7 P=38.7 C=65.4 F=5.4 Fb=5.2
+compose/lunch/grain_bowl_baked/s2	kcal=622.8 P=42.1 C=96.5 F=6.5 Fb=6.9
+compose/lunch/grain_bowl_baked/no-veg-sauce	kcal=369 P=34.2 C=44.4 F=4.9 Fb=2.4
+compose/lunch/grain_bowl_baked/drink	kcal=544.8 P=43.2 C=71.3 F=8.8 Fb=5.5
+compose/lunch/grain_bowl_baked/no-method	kcal=409.8 P=37.2 C=52.1 F=5 Fb=4.5
+compose/lunch/grain_bowl_baked/last-protein	kcal=397.8 P=22.3 C=55 F=9.9 Fb=6.9
+compose/lunch/warm_salad/s1	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
+compose/lunch/warm_salad/s0.5	kcal=233.2 P=29.2 C=17.5 F=5.2 Fb=3.9
+compose/lunch/warm_salad/s1.3	kcal=322 P=31.2 C=38.2 F=5.4 Fb=6.9
+compose/lunch/warm_salad/s2	kcal=399.7 P=33 C=56.4 F=5.6 Fb=9.5
+compose/lunch/warm_salad/no-veg-sauce	kcal=265.7 P=28.7 C=26 F=5.2 Fb=3.8
+compose/lunch/warm_salad/drink	kcal=423.7 P=36.5 C=49.7 F=9.1 Fb=6.8
+compose/lunch/warm_salad/no-method	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
+compose/lunch/warm_salad/last-protein	kcal=278 P=18.8 C=33.3 F=8.7 Fb=8.2
+compose/lunch/submit0	addDailyLog lunch "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3 source=manual_composed item=null comps=["egg_pan","ps_egg","broccoli","sm_pan_fry","tw_bf02"]
+compose/dinner/egg_pan/s1	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/dinner/egg_pan/s0.5	kcal=93 P=8.3 C=5.1 F=4.9 Fb=2
+compose/dinner/egg_pan/s1.3	kcal=205 P=18.7 C=5.9 F=12.5 Fb=2
+compose/dinner/egg_pan/s2	kcal=303 P=27.8 C=6.7 F=19.1 Fb=2
+compose/dinner/egg_pan/no-veg-sauce	kcal=140 P=13 C=1.1 F=9.5 Fb=0
+compose/dinner/egg_pan/drink	kcal=298 P=20.8 C=24.8 F=13.4 Fb=3
+compose/dinner/egg_pan/no-method	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/dinner/egg_pan/last-protein	kcal=163 P=14.8 C=5.6 F=9.6 Fb=2
+compose/dinner/protein_stir_fry/s1	kcal=221.6 P=30.8 C=12 F=6.3 Fb=5.5
+compose/dinner/protein_stir_fry/s0.5	kcal=204.4 P=29.4 C=8.6 F=6.2 Fb=4
+compose/dinner/protein_stir_fry/s1.3	kcal=232 P=31.6 C=14 F=6.3 Fb=6.4
+compose/dinner/protein_stir_fry/s2	kcal=256.1 P=33.4 C=18.7 F=6.4 Fb=8.5
+compose/dinner/protein_stir_fry/no-veg-sauce	kcal=194.1 P=28.6 C=6.8 F=6 Fb=3
+compose/dinner/protein_stir_fry/drink	kcal=356.6 P=36.8 C=31.2 F=10.1 Fb=6.5
+compose/dinner/protein_stir_fry/no-method	kcal=221.6 P=30.8 C=12 F=6.3 Fb=5.5
+compose/dinner/protein_stir_fry/last-protein	kcal=216.7 P=31 C=12 F=5.3 Fb=5.5
+compose/dinner/grain_bowl_baked/s1	kcal=409.8 P=37.2 C=52.1 F=5 Fb=4.5
+compose/dinner/grain_bowl_baked/s0.5	kcal=303.3 P=34.7 C=29.9 F=4.2 Fb=3.3
+compose/dinner/grain_bowl_baked/s1.3	kcal=473.7 P=38.7 C=65.4 F=5.4 Fb=5.2
+compose/dinner/grain_bowl_baked/s2	kcal=622.8 P=42.1 C=96.5 F=6.5 Fb=6.9
+compose/dinner/grain_bowl_baked/no-veg-sauce	kcal=369 P=34.2 C=44.4 F=4.9 Fb=2.4
+compose/dinner/grain_bowl_baked/drink	kcal=544.8 P=43.2 C=71.3 F=8.8 Fb=5.5
+compose/dinner/grain_bowl_baked/no-method	kcal=409.8 P=37.2 C=52.1 F=5 Fb=4.5
+compose/dinner/grain_bowl_baked/last-protein	kcal=397.8 P=22.3 C=55 F=9.9 Fb=6.9
+compose/dinner/warm_salad/s1	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
+compose/dinner/warm_salad/s0.5	kcal=233.2 P=29.2 C=17.5 F=5.2 Fb=3.9
+compose/dinner/warm_salad/s1.3	kcal=322 P=31.2 C=38.2 F=5.4 Fb=6.9
+compose/dinner/warm_salad/s2	kcal=399.7 P=33 C=56.4 F=5.6 Fb=9.5
+compose/dinner/warm_salad/no-veg-sauce	kcal=265.7 P=28.7 C=26 F=5.2 Fb=3.8
+compose/dinner/warm_salad/drink	kcal=423.7 P=36.5 C=49.7 F=9.1 Fb=6.8
+compose/dinner/warm_salad/no-method	kcal=288.7 P=30.5 C=30.5 F=5.3 Fb=5.8
+compose/dinner/warm_salad/last-protein	kcal=278 P=18.8 C=33.3 F=8.7 Fb=8.2
+compose/dinner/submit0	addDailyLog dinner "煎蛋類＋雞蛋＋花椰菜＋燕麥奶／牛奶（一杯約240ml）" kcal=326 P=23.4 C=25 F=15.3 Fb=3 source=manual_composed item=null comps=["egg_pan","ps_egg","broccoli","sm_pan_fry","tw_bf02"]
