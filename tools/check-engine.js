@@ -408,6 +408,18 @@ async function main() {
     // 推薦記錄下來的 MealContent 帶實際採用的用油與調味
     const rc = mc.contentFromRec(Object.assign({}, lessPool, { primary_scale: 1, source_pref: "cook_full" }), catalog.productsByUid);
     check(rc.implicit && rc.implicit.oil_g === 5 && rc.implicit.seasoning === lessPool.implicit.seasoning, "推薦記錄的 implicit 要是實際採用的克數與程度");
+
+    // 溫沙拉未含沙拉醬：候選池與推薦結果都帶骨架的 not_included，畫面照它註明（decisions #38、章程 B7.5）
+    const salads = composed.filter((c) => c.archetype_id === "warm_salad");
+    check(salads.length > 0 && salads.every((c) => (c.not_included || []).join() === "沙拉醬"), "溫沙拉的候選要帶 not_included: [沙拉醬]");
+    check(composed.filter((c) => c.archetype_id !== "warm_salad").every((c) => c.not_included === null), "其他骨架不該有 not_included");
+    const perSlot = {}, prefs = {};
+    SLOTS.forEach((s) => { perSlot[s] = 500; prefs[s] = "auto"; });
+    const saladRecs = M.recommend.getTodayRecommendation({
+      pool: salads, feedbackMap: {}, remainingBudget: { perSlotSuggestion: perSlot }, hardConstraints: { proteinGapToday: 30, fiberGapThisWeek: 10 },
+      mealPrefs: prefs, dietRestriction: "一般", allergens: [], skipSlots: {}, lowCarb: false, nowMs: Date.now(),
+    });
+    check(saladRecs.lunch && (saladRecs.lunch.not_included || []).join() === "沙拉醬", "推薦結果要保留溫沙拉的 not_included（卡片靠它顯示「未含沙拉醬」）");
   }
 
   // ---------- 4i. 「自己選」的品項帶齊 catalog 的營養欄位（章程 C2；−1b 驗收審核 A1） ----------

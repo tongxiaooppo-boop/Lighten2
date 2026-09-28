@@ -4,7 +4,7 @@
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays, mondayOf } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
-import { $ } from "./dom.js";
+import { $, notIncludedText } from "./dom.js";
 import {
   getProfile, saveProfile, getDailyLogs, addDailyLog, undoDailyLog,
   getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown,
@@ -132,7 +132,8 @@ function renderRecs(recs, profile, logsBySlot) {
       contentNote +
       '<div class="rec-meta">' +
       escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
-      '<span class="rec-base">（基準 ' + rec.kcal + " kcal" + (rec.implicit && rec.implicit.oil_g > 0 ? "，含用油約 " + rec.implicit.oil_g + "g" : "") + "）</span>" +
+      '<span class="rec-base">（基準 ' + rec.kcal + " kcal" + (rec.implicit && rec.implicit.oil_g > 0 ? "，含用油約 " + rec.implicit.oil_g + "g" : "") +
+      (notIncludedText(rec.not_included) ? "，" + escapeHtml(notIncludedText(rec.not_included)) : "") + "）</span>" +
       (rec.budget != null ? '<span class="rec-base"> · 配額 ' + Math.round(rec.budget) + " kcal</span>" : "") +
       "</div>" +
       dislikeChipsHtml(rec) +

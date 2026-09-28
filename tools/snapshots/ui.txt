@@ -1667,35 +1667,35 @@ picker/compose/lunch/grain_bowl_baked/last-protein/dom06	#manual-picker-summary 
 picker/compose/lunch/warm_salad/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
 picker/compose/lunch/warm_salad/s1/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg"
+picker/compose/lunch/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.4g</p><p>纖維缺口約 6.5g</p>"
 picker/compose/lunch/warm_salad/s0.5/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg"
+picker/compose/lunch/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 21.2g</p><p>纖維缺口約 3.5g</p>"
 picker/compose/lunch/warm_salad/s1.3/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg"
+picker/compose/lunch/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.2g</p><p>纖維缺口約 0.9g</p>"
 picker/compose/lunch/warm_salad/s2/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg"
+picker/compose/lunch/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.4g</p><p>纖維缺口約 7.4g</p>"
 picker/compose/lunch/warm_salad/no-veg-sauce/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg"
+picker/compose/lunch/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16g</p><p>纖維缺口約 3.6g</p>"
 picker/compose/lunch/warm_salad/drink/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料）"
+picker/compose/lunch/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料） · 未含沙拉醬"
 picker/compose/lunch/warm_salad/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
 picker/compose/lunch/warm_salad/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
 picker/compose/lunch/warm_salad/no-method/dom05	#manual-picker-submit disabled
-picker/compose/lunch/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg"
+picker/compose/lunch/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
 picker/compose/lunch/warm_salad/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 33.3g</p><p>纖維缺口約 2.2g</p>"
 picker/compose/lunch/warm_salad/last-protein/dom04	#manual-picker-main-hint hidden
 picker/compose/lunch/warm_salad/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg"
+picker/compose/lunch/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg · 未含沙拉醬"
 picker/compose/dinner/egg_pan/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
 picker/compose/dinner/egg_pan/s1/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/egg_pan/s1/dom05	#manual-picker-submit (untouched)
@@ -1795,35 +1795,35 @@ picker/compose/dinner/grain_bowl_baked/last-protein/dom06	#manual-picker-summary
 picker/compose/dinner/warm_salad/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
 picker/compose/dinner/warm_salad/s1/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg"
+picker/compose/dinner/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.4g</p><p>纖維缺口約 6.5g</p>"
 picker/compose/dinner/warm_salad/s0.5/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg"
+picker/compose/dinner/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 21.2g</p><p>纖維缺口約 3.5g</p>"
 picker/compose/dinner/warm_salad/s1.3/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg"
+picker/compose/dinner/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.2g</p><p>纖維缺口約 0.9g</p>"
 picker/compose/dinner/warm_salad/s2/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg"
+picker/compose/dinner/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.4g</p><p>纖維缺口約 7.4g</p>"
 picker/compose/dinner/warm_salad/no-veg-sauce/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg"
+picker/compose/dinner/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16g</p><p>纖維缺口約 3.6g</p>"
 picker/compose/dinner/warm_salad/drink/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料）"
+picker/compose/dinner/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料） · 未含沙拉醬"
 picker/compose/dinner/warm_salad/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
 picker/compose/dinner/warm_salad/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
 picker/compose/dinner/warm_salad/no-method/dom05	#manual-picker-submit disabled
-picker/compose/dinner/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg"
+picker/compose/dinner/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
 picker/compose/dinner/warm_salad/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 33.3g</p><p>纖維缺口約 2.2g</p>"
 picker/compose/dinner/warm_salad/last-protein/dom04	#manual-picker-main-hint hidden
 picker/compose/dinner/warm_salad/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg"
+picker/compose/dinner/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg · 未含沙拉醬"
 week/none/dom00	#week-cal-summary text="本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）"
 week/none/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週二 09/22</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週三 09/23</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div>"
 week/none/dom02	#week-fiber text="膳食纖維：—"
