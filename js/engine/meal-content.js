@@ -187,17 +187,20 @@ function cookMealType(maxTierRank) {
 }
 
 // 推薦組合 → MealContent。productsByUid：catalog 的現成品項查表（快照用）。
+// 型態：時段偏好是快煮/開伙、而且沒有退回一般推薦時，就是那個偏好；否則（auto 或退回）才依難度推導（PRD 第 3 節）。
 export function contentFromRec(rec, productsByUid) {
   if (rec.is_composed) {
     const comps = [];
     [["protein", rec.protein_id], ["staple", rec.staple_id], ["vegetable", rec.vegetable_id], ["seasoning", rec.sauce_id]].forEach(function (a) {
       if (!a[1]) return;
       const c = { kind: "ingredient", axis: a[0], ref: a[1] };
-      if (a[0] === rec.primary_axis) { c.is_primary = true; c.scale = rec.scale; }
+      if (a[0] === rec.primary_axis) { c.is_primary = true; c.scale = rec.primary_scale != null ? rec.primary_scale : rec.scale; }
       comps.push(c);
     });
+    const pref = rec.source_pref;
+    const fromPref = !rec.fallback_to_auto && (pref === "cook_quick" || pref === "cook_full");
     return {
-      meal_type: cookMealType(rec.tier_rank),
+      meal_type: fromPref ? pref : cookMealType(rec.tier_rank),
       archetype_id: rec.archetype_id, method_id: rec.method_id,
       components: comps, implicit: null,
     };
@@ -210,7 +213,8 @@ export function contentFromRec(rec, productsByUid) {
   };
 }
 
-// 自己選的現成品項 → MealContent。型態看第一個主餐（沒有主餐看第一件）的來源；我的品項算外食（別人做的）。
+// 自己選的現成品項 → MealContent。型態看第一個主餐（沒有主餐看第一件）的來源。
+// −1a 過渡：v1 的自訂食物沒有 channel，暫算外食；Phase 0 起「我的品項」用自己的 channel（PRD 10.1）。
 export function contentFromProducts(items) {
   const lead = items.filter(function (it) { return it.role === "main"; })[0] || items[0];
   return {
@@ -222,6 +226,7 @@ export function contentFromProducts(items) {
 }
 
 // 自己煮 → MealContent。c = { archetype, protein, staple, vegetable, seasoning, method, drink, primaryScale }
+// −1a 過渡：v1 的自己煮沒有快煮/開伙的選擇，依難度推導；Phase 0 起用自煮分頁的子切換值。
 export function contentFromCompose(c, primary) {
   const comps = [];
   const ingredients = [["protein", c.protein], ["staple", c.staple], ["vegetable", c.vegetable], ["seasoning", c.seasoning]];

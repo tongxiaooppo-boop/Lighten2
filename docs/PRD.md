@@ -100,7 +100,7 @@ MealContent = {
 
 | 欄位 | 計畫（`meal_plan.content`） | 紀錄（`daily_log.content`） |
 |---|---|---|
-| `ingredient` 的份量 | 不存；當天才依剩餘預算算主要槽位縮放 | 存 `scale`（實際吃的倍數） |
+| `ingredient` 的份量 | 不存；當天才依剩餘預算算主要槽位縮放 | 主要槽位的元件存 `scale`（實際吃的倍數，不取整；只有主要槽位會縮放） |
 | `product` / `estimate` 的 `snapshot` | 建立計畫時就存（品項之後被改被刪，計畫不跟著變） | 存 |
 | `implicit` | 存使用者選的用油/調味（沒選則存 null，當天套用預設） | 存實際採用的克數與程度 |
 | 整餐營養合計 | 不存（未來預算未知） | 存 `totals`（快照，食材資料之後修正也不回溯改紀錄） |
@@ -114,14 +114,16 @@ MealContent = {
 **daily_log 一筆的欄位**（Phase −1a 實作定案，decisions #33）：`{ id, log_date, slot, meal_type, source, name, content, totals, created_at }`
 
 - `name`：記錄當下的顯示名稱，跟 `totals` 一樣是快照（品項之後改名或下架，紀錄照樣顯示當時的名稱）。
-- `meal_type` 怎麼決定：
-  - 推薦的自組食譜：食材與烹調法的難度都 ≤🟡 是 `cook_quick`，否則 `cook_full`。
+- `meal_type` 怎麼決定（原則：有明確的型態來源就用它，沒有才推導）：
+  - 推薦的自組食譜：時段偏好是 `cook_quick`／`cook_full` 而且沒有退回一般推薦時，就是那個偏好；偏好是 auto 或退回時，才依食材與烹調法難度推導（都 ≤🟡 是 `cook_quick`，否則 `cook_full`）。
   - 推薦的現成品項組合：依來源（超商 `convenience`、外食與宅配餐盒 `delivery`；推薦組合不跨來源）。
-  - 自己選的現成品項：看第一個主餐（沒有主餐看第一件）的來源；「我的品項」算外食（別人做的）。
-  - 自己煮：同推薦的自組食譜，依所選食材與烹調法的難度。
+  - 自己選的現成品項：看第一個主餐（沒有主餐看第一件）的來源。
+  - **−1a 過渡、Phase 0 改掉**：自己煮依難度推導（v1 沒有快煮/開伙的選擇；Phase 0 起用自煮分頁的子切換值）；v1 的自訂食物沒有 `channel`，暫算外食（Phase 0 起「我的品項」用自己的 `channel`，第 10.1 節）。
+  - Phase 2 起「照計畫記下」用計畫的有效型態（第 1 節解析規則）。
+  - 型態一旦寫進紀錄就不再推導（第 11.2 節從紀錄存成組合時沿用紀錄的型態）。
 - `source`：`rec_accepted`（記錄推薦）、`manual`（自己選）；`from_plan`、`backfill` 留給 Phase 2、3。
-- 推薦的自組食譜只有主要槽位的元件存 `scale`；−1a 的 `implicit` 一律 `null`（用油與調味在 −1b 加入）。
-- `data/db.js` 寫入前驗證以上欄位（`totals` 的營養欄位缺值要寫 `null`，不能省略欄位）。
+- −1a 的 `implicit` 一律 `null`（用油與調味在 −1b 加入）。
+- `data/db.js` 寫入前驗證以上欄位與 `content` 的結構（元件種類、各種元件的必填欄位、`implicit` 欄位存在；`totals` 的營養欄位缺值要寫 `null`，不能省略欄位）。
 
 **預算規則**（沿用 v1 大餐預約的精神，泛化到所有計畫）：
 - `product`／`estimate` 元件：熱量固定（用快照），**預先佔用**當天預算。
