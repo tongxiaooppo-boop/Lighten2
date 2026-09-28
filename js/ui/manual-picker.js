@@ -3,6 +3,7 @@
 
 import { SLOT_LABELS } from "../core/slots.js";
 import { escapeHtml } from "../core/html.js";
+import { NO_COOK_METHOD_ID } from "../core/config.js";
 import { $ } from "./dom.js";
 import { getProfile, getDailyLogs, getCustomFoods, addDailyLog } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
@@ -110,8 +111,8 @@ export function currentComposeTotals() {
 }
 
 function composeBlockedReason(it, axisType, c) {
-  // 免開火食安：選了 sm_no_cook，需煮熟的食材擋掉（跟推薦候選池同一條規則）
-  if (c.method && c.method.id === "sm_no_cook" && it.requires_cooking) return "這個食材需要加熱";
+  // 免開火食安：選了免開火，需煮熟的食材擋掉（跟推薦候選池同一條規則）
+  if (c.method && c.method.id === NO_COOK_METHOD_ID && it.requires_cooking) return "這個食材需要加熱";
   const res = composePassFilter(it, axisType);
   if (!res.ok) return res.reason;
   return null;
@@ -213,8 +214,8 @@ function composeMissingReason() {
   if (!c.protein) return "請選蛋白質";
   if (composeHasStapleSlot() && !c.staple) return "請選主食";
   if (!c.method) return "請選烹調法";
-  // 免開火食安：選了 sm_no_cook，任何已選食材需要加熱就要擋（跟推薦候選池同一條規則）。
-  if (c.method.id === "sm_no_cook") {
+  // 免開火食安：選了免開火，任何已選食材需要加熱就要擋（跟推薦候選池同一條規則）。
+  if (c.method.id === NO_COOK_METHOD_ID) {
     const needsCooking = [c.protein, c.staple, c.vegetable, c.seasoning].some(function (it) { return it && it.requires_cooking; });
     if (needsCooking) return "免開火不能搭配需要加熱的食材，請換烹調法或換食材。";
   }

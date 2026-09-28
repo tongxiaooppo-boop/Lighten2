@@ -26,6 +26,9 @@ export const LOW_CARB_MEAL_MAX_G = 30;
 // 纖維週日均下限（25–35g 取下限 25 當硬約束）
 export const FIBER_FLOOR_G = 25;
 
+// 免開火烹調法的食材 id：這個烹調法不能搭配需要煮熟的食材（章程 C4.3，推薦候選池與自己選共用）
+export const NO_COOK_METHOD_ID = "method_no_cook";
+
 export const TIER_RANK = { "🟢": 0, "🟡": 1, "🔴": 2 };
 export const RANK_TO_TIER = { 0: "🟢", 1: "🟡", 2: "🔴" };
 

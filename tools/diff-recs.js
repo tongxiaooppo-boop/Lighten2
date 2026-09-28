@@ -106,7 +106,7 @@ const P = {
   LEGACY_ALLERGY: Object.assign({}, BASE_PROFILE, { allergens: "蝦、牛奶" }),
   ALLERGY: Object.assign({}, BASE_PROFILE, { allergens: ["蛋", "黃豆", "麩質"] }),
   DISLIKE: Object.assign({}, BASE_PROFILE, { disliked_ingredients: [
-    { type: "protein", key: "ps_chicken_breast", label: "雞胸肉" },
+    { type: "protein", key: "chicken_breast", label: "雞胸肉" },
     { type: "vegetable", key: "broccoli", label: "花椰菜" },
     { type: "item", key: "conv_dr01", label: "統一陽光 高纖無糖豆漿" },
   ] }),
@@ -496,11 +496,11 @@ async function snapPicker() {
       }
     }
     // 免開火＋需要加熱的食材：擋下送出
-    const noCook = archetypes.find((a) => (a.methods || []).indexOf("sm_no_cook") !== -1);
+    const noCook = archetypes.find((a) => (a.methods || []).indexOf("method_no_cook") !== -1);
     // 骨架 allow 裡沒有需要加熱的蛋白質，直接指定一個（模擬選擇器以外的來源帶入，驗證送出前的食安檢查）
     const cookNeeded = noCook && ax.proteins.find((p) => p.requires_cooking);
     if (noCook && cookNeeded) {
-      A.pickerCompose({ archetype: noCook.id, protein: cookNeeded.id, staple: ((noCook.staple && noCook.staple.allow) || [])[0], method: "sm_no_cook" });
+      A.pickerCompose({ archetype: noCook.id, protein: cookNeeded.id, staple: ((noCook.staple && noCook.staple.allow) || [])[0], method: "method_no_cook" });
       A.takeDom().forEach((line) => { if (line.indexOf("#manual-picker-main-hint") === 0) emit("picker", "compose/" + slot + "/no-cook-unsafe", line); });
     }
     // 送出一組自己煮
