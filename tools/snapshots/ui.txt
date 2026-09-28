@@ -1806,15 +1806,15 @@ week/partial-night/dom04	#week-protein text="蛋白質：週平均 90 g／目標
 week/partial-night/dom05	#week-status (untouched)
 week/nullmacro/dom00	#week-cal-summary text="本週平均熱量在目標範圍內（2 個完整記錄日平均 1982／目標 1896 kcal）"
 week/nullmacro/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value\">1842 kcal</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週二 09/22</span><span class=\"week-day-value\">2121 kcal</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週三 09/23</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div>"
-week/nullmacro/dom02	#week-fiber text="膳食纖維：週平均 22.5 g／目標 30 g（達成率 75%）"
+week/nullmacro/dom02	#week-fiber text="膳食纖維：週平均 24 g／目標 30 g（達成率 80%）（1 天有資料）"
 week/nullmacro/dom03	#week-flex text="近7天平均 1927／目標 1896 kcal"
-week/nullmacro/dom04	#week-protein text="蛋白質：週平均 90 g／目標 144 g（達成率 63%）"
+week/nullmacro/dom04	#week-protein text="蛋白質：週平均 90 g／目標 144 g（達成率 63%）（1 天有資料）"
 week/nullmacro/dom05	#week-status (untouched)
 week/nullmacro-night/dom00	#week-cal-summary text="本週平均熱量在目標範圍內（2 個完整記錄日平均 1982／目標 1896 kcal）"
 week/nullmacro-night/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value\">1842 kcal</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週二 09/22</span><span class=\"week-day-value\">2121 kcal</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週三 09/23</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div>"
-week/nullmacro-night/dom02	#week-fiber text="膳食纖維：週平均 22.5 g／目標 30 g（達成率 75%）"
+week/nullmacro-night/dom02	#week-fiber text="膳食纖維：週平均 24 g／目標 30 g（達成率 80%）（1 天有資料）"
 week/nullmacro-night/dom03	#week-flex text="近7天平均 1927／目標 1896 kcal"
-week/nullmacro-night/dom04	#week-protein text="蛋白質：週平均 90 g／目標 144 g（達成率 63%）"
+week/nullmacro-night/dom04	#week-protein text="蛋白質：週平均 90 g／目標 144 g（達成率 63%）（1 天有資料）"
 week/nullmacro-night/dom05	#week-status (untouched)
 week/monday/dom00	#week-cal-summary text="本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）"
 week/monday/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value\">1842 kcal</span></div>"

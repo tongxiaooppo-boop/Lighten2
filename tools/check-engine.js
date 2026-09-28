@@ -68,6 +68,9 @@ async function main() {
     tdee: await imp("js/engine/tdee.js"),
     dates: await imp("js/core/dates.js"),
     config: await imp("js/core/config.js"),
+    mc: await imp("js/engine/meal-content.js"),
+    budget: await imp("js/engine/budget.js"),
+    matcher: await imp("js/engine/matcher.js"),
   };
   const catalog = M.catalog.buildCatalog({
     proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
@@ -250,6 +253,49 @@ async function main() {
       "不吃清單用 id「" + target.id + "」，食材改名後沒有命中");
     const others = renamedPool.filter((c) => c.is_composed && c.protein_id !== target.id).slice(0, 50);
     check(others.every((c) => M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok), "不吃清單誤擋了其他蛋白質的組合");
+  }
+
+  // ---------- 4e. null 傳染（章程 C4.5）：缺資料不當 0 ----------
+  console.log("[null 傳染]");
+  {
+    const mc = M.mc;
+    const ing = (o) => Object.assign({ id: "x", name: "x", serving_g: 100, kcal_100g: 100, protein_100g: 10, carb_100g: 10, fat_100g: 1, fiber_100g: 1 }, o);
+    check(mc.ingredientContribution(ing({ protein_100g: null })).protein_g === null, "食材蛋白質未知，一份的蛋白質要是 null");
+    check(mc.ingredientContribution(ing({})).protein_g === 10, "食材蛋白質已知時照常計算");
+    const t = mc.composeTotals({ protein: ing({ fiber_100g: null }), staple: ing({ id: "s" }), primaryScale: 1 }, null);
+    check(t.fiber_g === null, "自己煮：任一食材纖維未知，合計纖維要是 null（實際 " + t.fiber_g + "）");
+    check(t.protein_g === 20, "自己煮：已知欄位照常加總（實際 " + t.protein_g + "）");
+
+    const conv = convenienceData.map((it) => it.id === "conv_bx04" ? Object.assign({}, it, { protein_g: null, fiber_g: null }) : it);
+    const nullCatalog = M.catalog.buildCatalog({
+      proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
+      rawIngredients: readJson("raw_ingredients.json"), convenienceItems: conv, taiwanItems: taiwanData,
+      archetypes: readJson("dish_archetypes.json"),
+    });
+    const withIt = M.pool.buildCandidatePool(nullCatalog).filter((c) => c.components.indexOf("conv_bx04") !== -1);
+    check(withIt.length > 0, "測試前提：候選池要有含 conv_bx04 的組合");
+    check(withIt.every((c) => c.protein_g === null && c.fiber_g === null), "現成品項蛋白質/纖維未知，含它的推薦組合要是 null，不能當 0");
+
+    const combo = { is_composed: true, kcal: 500, protein_g: null, carb_g: 50, fat_g: 10, fiber_g: 5,
+      primary_kcal: 200, primary_protein_g: 5, primary_carb_g: 40, primary_fat_g: 1, primary_fiber_g: 2 };
+    const eff = mc.achievableNutrition(combo, 600);
+    check(eff.protein_g === null, "縮放時蛋白質未知要維持 null（實際 " + eff.protein_g + "）");
+    check(eff.carb_g === 50 - 40 + 40 * eff.scale, "縮放時已知欄位照常計算");
+
+    const L = (date, slot, p, fb) => ({ log_date: date, slot: slot, totals: { kcal: 500, protein_g: p, carb_g: 50, fat_g: 10, fiber_g: fb } });
+    check(mc.sumLogTotals([L("2026-09-22", "lunch", 20, 5), L("2026-09-22", "dinner", null, 5)], "protein_g") === null, "紀錄合計：任一筆蛋白質未知，合計要是 null");
+    check(mc.sumLogTotals([L("2026-09-22", "lunch", 20, 5), L("2026-09-22", "dinner", 30, 5)], "protein_g") === 50, "紀錄合計：都已知時照常加總");
+    const week = M.budget.summarizeWeek([
+      L("2026-09-21", "breakfast", 20, 5), L("2026-09-21", "lunch", 20, null), L("2026-09-21", "dinner", 20, 5),
+      L("2026-09-22", "breakfast", 30, 6), L("2026-09-22", "lunch", 30, 6), L("2026-09-22", "dinner", 30, 6),
+    ], null, "2026-09-23");
+    check(week.byDate["2026-09-21"].fiber === null, "本週總覽：某天有一餐纖維未知，那天的纖維要是 null（實際 " + week.byDate["2026-09-21"].fiber + "）");
+    check(week.avgFiber === 18 && week.fiberDays === 1, "本週總覽：纖維平均只算纖維已知的完整記錄日（實際 " + week.avgFiber + "，" + week.fiberDays + " 天）");
+    check(week.avgProtein === 75 && week.proteinDays === 2, "本週總覽：蛋白質平均照常（實際 " + week.avgProtein + "）");
+    // 缺口：未知的量不能算成「已經吃到」，只加已知部分（缺口偏大、往安全方向）
+    const gap = M.matcher.checkHardConstraints([L("2026-09-23", "breakfast", 20, 5), L("2026-09-23", "lunch", null, 5)],
+      { weight_kg: 80, goal_mode: "減脂", enabled_slots: null }, "2026-09-23");
+    check(gap.proteinGapToday === 80 * 1.8 - 20, "蛋白質缺口：未知的一餐不算已吃到（實際 " + gap.proteinGapToday + "）");
   }
 
   // ---------- 5. 體重趨勢斜率估計 ----------

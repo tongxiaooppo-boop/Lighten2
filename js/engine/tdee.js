@@ -12,7 +12,7 @@ import { dateAddDays, diffDays } from "../core/dates.js";
 import { round1 } from "../core/num.js";
 import { calculateTargets } from "./nutrition.js";
 import { isCompleteLogDay } from "./budget.js";
-import { logTotal } from "./meal-content.js";
+import { logKcal } from "./meal-content.js";
 
 const ALPHA = 0.1;            // 每日 EWMA 係數
 const MAX_GAP_DAYS = 7;       // 缺測天數上限，用來限制補量權重
@@ -310,7 +310,7 @@ export function evaluateCalibration(prevState, profile, weightLogs, dailyLogs, t
     if (completeDays > 0) {
       let total = 0;
       completeDates.forEach(function (d) {
-        total += byDate[d].reduce(function (s, l) { return s + logTotal(l, "kcal"); }, 0);
+        total += byDate[d].reduce(function (s, l) { return s + logKcal(l); }, 0);
       });
       avgIntake = total / completeDays;
     }

@@ -5,7 +5,7 @@
 import { SLOTS, SLOT_WEIGHTS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays } from "../core/dates.js";
 import { round1 } from "../core/num.js";
-import { logTotal } from "./meal-content.js";
+import { logKcal, sumLogTotals, sumKnownLogTotals } from "./meal-content.js";
 
 // 分配邏輯：
 // - 已吃餐次：配額回傳 0（不再顯示）。
@@ -29,7 +29,7 @@ export function recalcTodayBudget(targetKcal, todayLogs, enabledSlots) {
   logs.forEach(function (log) {
     if (!log || !SLOT_WEIGHTS.hasOwnProperty(log.slot)) return;
     eatenSlots[log.slot] = true;
-    eatenKcal[log.slot] += logTotal(log, "kcal");
+    eatenKcal[log.slot] += logKcal(log);
   });
 
   const totalEaten = SLOTS.reduce(function (sum, s) {
@@ -112,7 +112,7 @@ export function computeRecentAvgVsTarget(logs, targetKcal, enabledSlots, days, t
   let totalKcal = 0;
   completeDates.forEach(function (d) {
     totalKcal += byDate[d].reduce(function (s, l) {
-      return s + logTotal(l, "kcal");
+      return s + logKcal(l);
     }, 0);
   });
 
@@ -145,14 +145,16 @@ export function slotNutrientShare(targets, todayLogs, enabledSlots, slot) {
   const t = targets || {};
   const logs = Array.isArray(todayLogs) ? todayLogs : [];
 
-  const eaten = { kcal: 0, protein: 0, fiber: 0 };
+  // 蛋白質/纖維未知的一餐不算「已經吃到」（只加已知部分，缺口偏大、往安全方向）
+  const valid = logs.filter(Boolean);
+  const eaten = {
+    kcal: valid.reduce(function (s, l) { return s + logKcal(l); }, 0),
+    protein: sumKnownLogTotals(valid, "protein_g").sum,
+    fiber: sumKnownLogTotals(valid, "fiber_g").sum,
+  };
   const eatenSlots = {};
-  logs.forEach(function (l) {
-    if (!l) return;
+  valid.forEach(function (l) {
     if (l.slot) eatenSlots[l.slot] = true;
-    eaten.kcal += logTotal(l, "kcal");
-    eaten.protein += logTotal(l, "protein_g");
-    eaten.fiber += logTotal(l, "fiber_g");
   });
 
   if (eatenSlots[slot]) return { kcalShare: 0, proteinShare: 0, fiberShare: 0 };
@@ -178,17 +180,21 @@ export function slotNutrientShare(targets, todayLogs, enabledSlots, slot) {
 
 // 本週總覽：每天的熱量/蛋白質/纖維加總，以及「完整記錄日（不含今天）」的平均。
 // 平均只算完整記錄日且不含今天，跟「近7天平均」同一套規則。
+// 某天有一餐蛋白質（或纖維）未知，那天的這一欄是 null，平均只算這一欄已知的日子（xxxDays＝算進去的天數）。
 export function summarizeWeek(logs, enabledSlots, today) {
-  const byDate = {};
   const logsByDate = {};
   logs.forEach(function (l) {
-    const d = l.log_date;
-    if (!byDate[d]) byDate[d] = { kcal: 0, protein: 0, fiber: 0 };
-    byDate[d].kcal += logTotal(l, "kcal");
-    byDate[d].protein += logTotal(l, "protein_g");
-    byDate[d].fiber += logTotal(l, "fiber_g");
-    if (!logsByDate[d]) logsByDate[d] = [];
-    logsByDate[d].push(l);
+    if (!logsByDate[l.log_date]) logsByDate[l.log_date] = [];
+    logsByDate[l.log_date].push(l);
+  });
+  const byDate = {};
+  Object.keys(logsByDate).forEach(function (d) {
+    const dayLogs = logsByDate[d];
+    byDate[d] = {
+      kcal: dayLogs.reduce(function (s, l) { return s + logKcal(l); }, 0),
+      protein: sumLogTotals(dayLogs, "protein_g"),
+      fiber: sumLogTotals(dayLogs, "fiber_g"),
+    };
   });
 
   const completeDates = Object.keys(logsByDate).filter(function (d) {
@@ -196,8 +202,13 @@ export function summarizeWeek(logs, enabledSlots, today) {
   });
   const nComplete = completeDates.length;
   function avgOf(key) {
-    if (nComplete === 0) return 0;
-    return completeDates.reduce(function (s, d) { return s + byDate[d][key]; }, 0) / nComplete;
+    const known = completeDates.filter(function (d) { return byDate[d][key] != null; });
+    if (known.length === 0) return { avg: nComplete === 0 ? 0 : null, days: 0 };
+    return { avg: known.reduce(function (s, d) { return s + byDate[d][key]; }, 0) / known.length, days: known.length };
   }
-  return { byDate: byDate, nComplete: nComplete, avgKcal: avgOf("kcal"), avgProtein: avgOf("protein"), avgFiber: avgOf("fiber") };
+  const kcal = avgOf("kcal"), protein = avgOf("protein"), fiber = avgOf("fiber");
+  return {
+    byDate: byDate, nComplete: nComplete, avgKcal: kcal.avg,
+    avgProtein: protein.avg, proteinDays: protein.days, avgFiber: fiber.avg, fiberDays: fiber.days,
+  };
 }

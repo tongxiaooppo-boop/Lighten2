@@ -63,8 +63,9 @@ function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
     const days = recencyMap["veg:" + combo.vegetable_id].days;
     if (days < 3) s -= (3 - days) * 10; // 蔬菜也做一樣的降權，權重比蛋白質輕
   }
-  if (constraints.proteinGapToday > 0) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
-  if (constraints.fiberGapThisWeek > 0) s += Math.min(combo.fiber_g, constraints.fiberGapThisWeek) * 2;
+  // 蛋白質/纖維未知（null）的組合拿不到這兩項加分，不猜它有多少
+  if (constraints.proteinGapToday > 0 && combo.protein_g != null) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
+  if (constraints.fiberGapThisWeek > 0 && combo.fiber_g != null) s += Math.min(combo.fiber_g, constraints.fiberGapThisWeek) * 2;
   if (budget > 0) {
     const eff = achievableNutrition(combo, budget, maxScale);
     s -= Math.abs(budget / eff.kcal - 1) * 50; // 用「縮放後貼近預算的實際熱量」評分，不是天然份量的熱量
