@@ -105,22 +105,19 @@ export async function renderWeek() {
     }
   }
 
-  const proteinPct = pct(week.avgProtein, targets.protein_g);
-  const fiberPct = pct(week.avgFiber, targets.fiber_g);
-
+  // 平均只算這一欄有資料的完整記錄日；有日子因為缺資料沒算進去時，註明算了幾天
+  function nutrientLine(label, avg, days, target) {
+    if (nComplete === 0) return label + "：—";
+    if (avg == null) return label + "：—（完整記錄日的紀錄都沒有這項資料）";
+    const p = pct(avg, target);
+    return label + "：週平均 " + round1(avg) + " g／目標 " + round1(target) + " g" +
+      (p == null ? "" : "（達成率 " + p + "%）") +
+      (days < nComplete ? "（" + days + " 天有資料）" : "");
+  }
   const proteinEl = $("#week-protein");
-  if (proteinEl && nComplete === 0) proteinEl.textContent = "蛋白質：—";
-  else if (proteinEl) {
-    proteinEl.textContent = "蛋白質：週平均 " + round1(week.avgProtein) + " g／目標 " + round1(targets.protein_g) + " g" +
-      (proteinPct == null ? "" : "（達成率 " + proteinPct + "%）");
-  }
-
+  if (proteinEl) proteinEl.textContent = nutrientLine("蛋白質", week.avgProtein, week.proteinDays, targets.protein_g);
   const fiberEl = $("#week-fiber");
-  if (fiberEl && nComplete === 0) fiberEl.textContent = "膳食纖維：—";
-  else if (fiberEl) {
-    fiberEl.textContent = "膳食纖維：週平均 " + round1(week.avgFiber) + " g／目標 " + round1(targets.fiber_g) + " g" +
-      (fiberPct == null ? "" : "（達成率 " + fiberPct + "%）");
-  }
+  if (fiberEl) fiberEl.textContent = nutrientLine("膳食纖維", week.avgFiber, week.fiberDays, targets.fiber_g);
 
   const flexEl = $("#week-flex");
   if (flexEl) {

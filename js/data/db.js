@@ -6,6 +6,7 @@
 
 import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
+import { isNum } from "../core/num.js";
 
 const DB_NAME = "lighten2";
 const DB_VERSION = 1;
@@ -118,7 +119,6 @@ function isDateStr(v) {
 const COMPONENT_KINDS = ["ingredient", "product", "estimate"];
 const INGREDIENT_AXES = ["protein", "staple", "vegetable", "seasoning"];
 
-function isNum(v) { return typeof v === "number" && isFinite(v); }
 
 function snapshotProblem(snap) {
   return !snap || typeof snap !== "object" || !isNum(snap.kcal);

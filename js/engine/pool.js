@@ -8,7 +8,11 @@ import { SLOTS } from "../core/slots.js";
 import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
-import { num, sumProducts, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
+import { sumProducts, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
+
+function r1(v) {
+  return v == null ? null : round1(v);
+}
 
 function byId(list, id) {
   for (let i = 0; i < list.length; i++) {
@@ -91,10 +95,10 @@ function composedCombos(catalog) {
                 vegetable_name: v ? v.name : null,
                 sauce_name: season ? season.name : m.name,
                 kcal: round1(total.kcal),
-                protein_g: round1(total.protein_g),
-                carb_g: round1(total.carb_g),
-                fat_g: round1(total.fat_g),
-                fiber_g: round1(total.fiber_g),
+                protein_g: r1(total.protein_g),
+                carb_g: r1(total.carb_g),
+                fat_g: r1(total.fat_g),
+                fiber_g: r1(total.fiber_g),
                 primary_kcal: primaryContribution.kcal,
                 primary_protein_g: primaryContribution.protein_g,
                 primary_carb_g: primaryContribution.carb_g,
@@ -133,13 +137,12 @@ function contentNote(note) {
   return note.slice(idx + 1).trim() || null;
 }
 
-// 候選池裡的成分：營養值用 num()（缺值當 0；v1 行為，−1b 改成 null 傳染）
+// 候選池裡的成分：營養值未知就是 null，組合時 null 傳染（章程 C4.5）；熱量一定有值（沒有熱量的品項不進池）
 function toMember(p) {
   return {
     uid: p.uid, source_id: p.source_id, name: p.name, role: p.role, valid_slots: p.valid_slots,
     contains_drink: p.contains_drink, channel: p.channel,
-    kcal: p.is_taiwan ? p.kcal : num(p.kcal), protein_g: num(p.protein_g),
-    carb_g: p.carb_g != null ? num(p.carb_g) : null, fat_g: p.fat_g != null ? num(p.fat_g) : null, fiber_g: num(p.fiber_g),
+    kcal: p.kcal, protein_g: p.protein_g, carb_g: p.carb_g, fat_g: p.fat_g, fiber_g: p.fiber_g,
     tier_rank: p.is_taiwan ? 0 : tierRank(p.tier), diet_tags: p.diet_tags,
     allergen_tags: p.allergen_tags,
     note: p.is_taiwan ? null : contentNote(p.note), is_taiwan: p.is_taiwan,

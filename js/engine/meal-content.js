@@ -1,19 +1,21 @@
 // 輕盈計畫 — 一餐內容（唯一來源，章程 C2）：營養計算（含縮放、null 規則）、MealContent 與 daily_log 的建立。
 // 推薦組合、「自己選」的現成品項與自己煮、今日/本週的攝取加總都走這裡；ui/ 不自己加總營養（章程 C4.11）。
 //
-// ⚠️ Phase −1a 只搬家、不改算法（快照逐字比對）。下列 v1 行為刻意保留，−1b 修正：
-//   - 食材營養用 num()：缺值當 0（章程 C4.5 要求 null 傳染）
-//   - 自己煮的食材用 `|| 0`，飲料缺值才 null 傳染
-//   - 今日 hero 的加總跳過 null（涵蓋率另外警語）；本週加總用 Number() || 0
-//   - 用油、調味的隱含成分還沒有（implicit: null）
+// null 規則（章程 C4.5）：缺資料是 null，加總時 null 傳染，不當 0。
+//   - 顯示用的合計（sumLogTotals、自己煮與現成品項的合計、推薦組合）：任一項未知 → null
+//   - 缺口計算（sumKnownLogTotals）：未知的量不能算成「已經吃到」，只加已知部分，缺口因此偏大（往安全方向）
+//   - 今日 hero 另有涵蓋率警語（todayIntake）
+// ⚠️ 用油、調味的隱含成分還沒有（implicit: null），−1b 後續加入。
 
 import { PRIMARY_SLOT_SCALE_RANGE, tierRank } from "../core/config.js";
-import { round1 } from "../core/num.js";
+import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
+const CONTRIB_FIELDS = ["kcal"].concat(NUTRIENT_FIELDS);
 
-export function num(v) {
-  return typeof v === "number" && isFinite(v) ? v : 0;
+
+function round1OrNull(v) {
+  return v == null ? null : round1(v);
 }
 
 // 組合裡只要任一成員該欄位是 null，整個組合這欄就是 null；否則才正常加總。
@@ -24,26 +26,30 @@ export function sumOrNull(members, field) {
 
 // ---------- 自組食譜（推薦候選） ----------
 
-// 一個食材的天然一份（或指定克數）營養值。
+// 一個食材的天然一份（或指定克數）營養值；每 100g 的值未知時那一欄是 null。
 export function ingredientContribution(it, servingG) {
   const r = (servingG != null ? servingG : (it.serving_g != null ? it.serving_g : 100)) / 100;
+  const per = function (v) { return isNum(v) ? v * r : null; };
   return {
-    kcal: num(it.kcal_100g) * r,
-    protein_g: num(it.protein_100g) * r,
-    carb_g: num(it.carb_100g) * r,
-    fat_g: num(it.fat_100g) * r,
-    fiber_g: num(it.fiber_100g) * r,
+    kcal: per(it.kcal_100g),
+    protein_g: per(it.protein_100g),
+    carb_g: per(it.carb_100g),
+    fat_g: per(it.fat_100g),
+    fiber_g: per(it.fiber_100g),
   };
 }
 
 export const ZERO_CONTRIBUTION = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
 
+// 逐欄加總，任一部分是 null 那一欄就是 null
 export function addContributions(parts) {
-  return parts.reduce(function (acc, part) {
-    acc.kcal += part.kcal; acc.protein_g += part.protein_g; acc.carb_g += part.carb_g;
-    acc.fat_g += part.fat_g; acc.fiber_g += part.fiber_g;
-    return acc;
-  }, { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 });
+  const acc = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
+  parts.forEach(function (part) {
+    CONTRIB_FIELDS.forEach(function (k) {
+      acc[k] = acc[k] == null || part[k] == null ? null : acc[k] + part[k];
+    });
+  });
+  return acc;
 }
 
 // 自組食譜可以靠「主要槽位」（有主食槽用主食，沒有的用蛋白質）在 PRIMARY_SLOT_SCALE_RANGE
@@ -58,13 +64,17 @@ export function achievableNutrition(c, budget, maxScale) {
   let scale = (budget - fixedKcal) / c.primary_kcal;
   scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, Math.min(PRIMARY_SLOT_SCALE_RANGE.max, scale));
   if (maxScale != null && scale > maxScale) scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, maxScale);
+  // 主要槽位是合計的一部分：合計已知時主要槽位一定已知；合計未知就維持 null
+  const scaled = function (total, primary) {
+    return total == null || primary == null ? null : round1((total - primary) + primary * scale);
+  };
   return {
     scale: scale,
     kcal: round1(fixedKcal + c.primary_kcal * scale),
-    protein_g: round1((c.protein_g - c.primary_protein_g) + c.primary_protein_g * scale),
-    carb_g: round1((c.carb_g - c.primary_carb_g) + c.primary_carb_g * scale),
-    fat_g: round1((c.fat_g - c.primary_fat_g) + c.primary_fat_g * scale),
-    fiber_g: round1((c.fiber_g - c.primary_fiber_g) + c.primary_fiber_g * scale),
+    protein_g: scaled(c.protein_g, c.primary_protein_g),
+    carb_g: scaled(c.carb_g, c.primary_carb_g),
+    fat_g: scaled(c.fat_g, c.primary_fat_g),
+    fiber_g: scaled(c.fiber_g, c.primary_fiber_g),
   };
 }
 
@@ -79,9 +89,10 @@ export function lowCarbMaxScale(c, maxCarbG) {
 
 // ---------- 現成品項多選（自己選） ----------
 
+// 熱量是現成品項與我的品項的必填欄位（章程 B4、B8），不會是 null
 export function sumProducts(items) {
   return {
-    kcal: round1(items.reduce(function (s, it) { return s + (Number(it.kcal) || 0); }, 0)),
+    kcal: round1(items.reduce(function (s, it) { return s + it.kcal; }, 0)),
     protein_g: sumOrNull(items, "protein_g"),
     carb_g: sumOrNull(items, "carb_g"),
     fat_g: sumOrNull(items, "fat_g"),
@@ -117,46 +128,50 @@ export function suggestFillers(passItems, selItems, gap, field, share) {
 
 // ---------- 自己煮（自己選） ----------
 
-function composeContribution(it, scale) {
-  const serving = it.serving_g != null ? it.serving_g : 100;
-  const r = serving / 100 * (scale || 1);
-  return {
-    kcal: (it.kcal_100g || 0) * r, protein_g: (it.protein_100g || 0) * r,
-    carb_g: (it.carb_100g || 0) * r, fat_g: (it.fat_100g || 0) * r, fiber_g: (it.fiber_100g || 0) * r,
-  };
-}
-
 // c = { protein, staple, vegetable, seasoning, drink, primaryScale }；primary＝被縮放的那個食材（主食或蛋白質）
-// 自組食材四項營養素當作都有值；飲料可能缺值，缺值時用 null 傳染（只拖累飲料部分）。
+// 食材與飲料任一項某欄未知，合計那一欄就是 null。
 export function composeTotals(c, primary) {
-  const parts = [c.protein, c.staple, c.vegetable, c.seasoning].filter(Boolean);
-  const total = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
-  parts.forEach(function (it) {
-    const contrib = composeContribution(it, it === primary ? c.primaryScale : 1);
-    total.kcal += contrib.kcal; total.protein_g += contrib.protein_g;
-    total.carb_g += contrib.carb_g; total.fat_g += contrib.fat_g; total.fiber_g += contrib.fiber_g;
+  const parts = [c.protein, c.staple, c.vegetable, c.seasoning].filter(Boolean).map(function (it) {
+    const serving = it.serving_g != null ? it.serving_g : 100;
+    return ingredientContribution(it, serving * (it === primary ? (c.primaryScale || 1) : 1));
   });
   if (c.drink) {
     const d = c.drink;
-    total.kcal += Number(d.kcal) || 0;
-    total.protein_g = d.protein_g == null ? null : total.protein_g + d.protein_g;
-    total.carb_g = d.carb_g == null ? null : total.carb_g + d.carb_g;
-    total.fat_g = d.fat_g == null ? null : total.fat_g + d.fat_g;
-    total.fiber_g = d.fiber_g == null ? null : total.fiber_g + d.fiber_g;
+    parts.push({ kcal: d.kcal, protein_g: d.protein_g, carb_g: d.carb_g, fat_g: d.fat_g, fiber_g: d.fiber_g });
   }
-  total.kcal = Math.round(total.kcal * 10) / 10;
-  NUTRIENT_FIELDS.forEach(function (k) {
-    if (total[k] != null) total[k] = Math.round(total[k] * 10) / 10;
-  });
+  const total = addContributions(parts);
+  CONTRIB_FIELDS.forEach(function (k) { total[k] = round1OrNull(total[k]); });
   return total;
 }
 
 // ---------- 紀錄的加總 ----------
 
-// 一筆紀錄某個營養欄位的值（缺值當 0；v1 的預算、缺口、平均都是這個口徑，−1b 修 null 規則時只改這裡）。
-// field：kcal、protein_g、carb_g、fat_g、fiber_g
-export function logTotal(l, field) {
-  return Number(l.totals[field]) || 0;
+// 一筆紀錄的熱量（daily_log 寫入驗證保證 totals.kcal 一定是數字）
+export function logKcal(l) {
+  return l.totals.kcal;
+}
+
+// 顯示用的合計：任一筆這欄未知 → null
+export function sumLogTotals(logs, field) {
+  let sum = 0;
+  for (let i = 0; i < logs.length; i++) {
+    const v = logs[i].totals[field];
+    if (v == null) return null;
+    sum += v;
+  }
+  return sum;
+}
+
+// 缺口計算用：只加已知部分，另外回報幾筆未知（未知的量不能算成「已經吃到」，缺口偏大、往安全方向）
+export function sumKnownLogTotals(logs, field) {
+  let sum = 0;
+  let missing = 0;
+  logs.forEach(function (l) {
+    const v = l.totals[field];
+    if (v == null) missing++;
+    else sum += v;
+  });
+  return { sum: sum, missing: missing };
 }
 
 // 今日已攝取（hero）：跳過 null（缺資料），不當 0 加；缺脂肪或碳水的紀錄另外算熱量給涵蓋率警語。
@@ -176,7 +191,7 @@ export function todayIntake(todayLogs) {
 }
 
 export function logsKcal(logs) {
-  return logs.reduce(function (sum, l) { return sum + logTotal(l, "kcal"); }, 0);
+  return logs.reduce(function (sum, l) { return sum + logKcal(l); }, 0);
 }
 
 // 今日建議卡片的熱量合計（額度用完、沒有推薦的時段不算）

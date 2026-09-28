@@ -6,7 +6,7 @@ import { FIBER_FLOOR_G } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { proteinPerKg } from "./nutrition.js";
 import { isCompleteLogDay } from "./budget.js";
-import { logTotal } from "./meal-content.js";
+import { sumKnownLogTotals, sumLogTotals } from "./meal-content.js";
 
 export function checkHardConstraints(weekLogs, profile, today) {
   const logs = Array.isArray(weekLogs) ? weekLogs : [];
@@ -14,34 +14,31 @@ export function checkHardConstraints(weekLogs, profile, today) {
 
   const proteinTarget = (profile ? proteinPerKg(profile) : 1.8) * weightKg;
 
-  let todayProtein = 0;
   const logsByDate = {};
 
   logs.forEach(function (log) {
     if (!log) return;
-    if (log.log_date === today) {
-      todayProtein += logTotal(log, "protein_g");
-    }
     if (log.log_date) {
       if (!logsByDate[log.log_date]) logsByDate[log.log_date] = [];
       logsByDate[log.log_date].push(log);
     }
   });
 
-  // 蛋白質缺口：目標 − 今日已攝取；已達標回傳 0（不做負缺口）
+  // 蛋白質缺口：目標 − 今日已攝取；已達標回傳 0（不做負缺口）。
+  // 蛋白質未知的一餐不算「已經吃到」（只加已知部分，缺口偏大、往安全方向）。
+  const todayProtein = sumKnownLogTotals(logsByDate[today] || [], "protein_g").sum;
   let proteinGapToday = proteinTarget - todayProtein;
   if (proteinGapToday < 0) proteinGapToday = 0;
 
   // 纖維週日均：只算「完整記錄日」（所有開啟時段都有記錄）且不含今天，跟 budget.js 的近7天平均同一套規則。
   const enabledSlots = profile ? profile.enabled_slots : null;
-  const dates = Object.keys(logsByDate).filter(function (d) {
+  // 某天有一餐纖維未知，那天的纖維就是未知，不列入平均。
+  const dayFibers = Object.keys(logsByDate).filter(function (d) {
     return d < today && isCompleteLogDay(logsByDate[d], enabledSlots);
-  });
+  }).map(function (d) { return sumLogTotals(logsByDate[d], "fiber_g"); }).filter(function (v) { return v != null; });
   const avgFiber =
-    dates.length > 0
-      ? dates.reduce(function (sum, d) {
-          return sum + logsByDate[d].reduce(function (s, l) { return s + logTotal(l, "fiber_g"); }, 0);
-        }, 0) / dates.length
+    dayFibers.length > 0
+      ? dayFibers.reduce(function (sum, v) { return sum + v; }, 0) / dayFibers.length
       : 0;
   const fiberGapThisWeek = avgFiber < FIBER_FLOOR_G ? FIBER_FLOOR_G - avgFiber : 0;
 
