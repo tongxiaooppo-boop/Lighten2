@@ -251,6 +251,10 @@ async function main() {
     check(hits.length > 0, "測試前提：候選池裡要有用到 " + target.id + " 的組合");
     check(hits.every((c) => !M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok),
       "不吃清單用 id「" + target.id + "」，食材改名後沒有命中");
+    // 換軸（例：毛豆仁從主食移到蛋白質，decisions #37）後，舊的 {type: 別的軸, key} 仍然命中：只比 key（decisions #40）
+    const otherAxis = [{ type: "staple", key: target.id, label: "換軸前存的" }];
+    check(hits.every((c) => !M.filters.passesHardFilters(c, { disliked_ingredients: otherAxis }).ok),
+      "不吃清單存的軸跟目前不同（換軸），仍然要命中 " + target.id);
     const others = renamedPool.filter((c) => c.is_composed && c.protein_id !== target.id).slice(0, 50);
     check(others.every((c) => M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok), "不吃清單誤擋了其他蛋白質的組合");
   }
