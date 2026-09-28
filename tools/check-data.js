@@ -233,6 +233,13 @@ function checkProducts(products, frozen, refs) {
         if (fieldSource(p, k).type === "derived" && p[k] !== expected[k]) err(w + "：" + k + " 是 " + p[k] + "，依 " + p.source.ref + " 應為 " + expected[k]);
       });
     }
+    // 巨量營養素驗算（章程 B5.4）：熱量與三大營養素都出自包裝標示或官網時才驗（有欄位是估算反推的就不驗）
+    if (["kcal", "protein_g", "carb_g", "fat_g"].every((k) => ["label", "official_web"].indexOf(fieldSource(p, k).type) !== -1)) {
+      const gap = macroGap(p);
+      if (Math.abs(gap) > 0.15 && !/熱量驗算/.test((p.note || "") + ((p.source || {}).note || ""))) {
+        err(w + "：熱量驗算差 " + Math.round(gap * 100) + "%（超過 15%），note 要寫「熱量驗算」說明原因（章程 B5.4）");
+      }
+    }
     // 外食的鈉與飽和脂肪沒有出處就是 null（章程 B5.8）
     ["sat_fat_g", "sodium_mg"].forEach((k) => {
       if (p[k] !== null && ["estimate", "label_unsourced"].indexOf(fieldSource(p, k).type) !== -1) err(w + "：" + k + " 沒有出處就寫 null，不填沒根據的數字（章程 B5.8）");
@@ -292,6 +299,18 @@ function checkToolRules(refs) {
   if (!throws(() => computePer100g(withOverride("fat_g", 1.0), refs))) err("工具自我檢查：field_sources.value 覆寫了 TFDA 有值的欄位（脂肪）卻沒報錯");
   if (!throws(() => computePer100g(withOverride("fiber_g", 5), refs))) err("工具自我檢查：TFDA 是 null 的欄位用 value 填了非 0 的數字卻沒報錯");
   if (throws(() => computePer100g(withOverride("fiber_g", 0), refs))) err("工具自我檢查：TFDA 是 null 的欄位填 0 應該允許");
+  // T8：label／official_web 出處的現成品項也要做巨量營養素驗算（章程 B5.4）
+  const probe = (patch) => {
+    const base = readJson("convenience_items.json").find((p) => p.id === "conv_dr01");
+    const before = errors.length, beforeWarn = warnings.length;
+    checkProducts([{ file: "selftest", p: Object.assign({}, base, patch) }], [], refs);
+    const found = errors.slice(before).some((m) => /熱量驗算/.test(m));
+    errors.length = before; warnings.length = beforeWarn; // 自我檢查產生的訊息不算資料問題
+    return found;
+  };
+  const label = { source: { type: "label", ref: "selftest" }, field_sources: {} };
+  if (!probe(Object.assign({}, label, { protein_g: 50 }))) err("工具自我檢查：包裝標示出處的品項蛋白質抄錯（熱量差很多）卻沒報錯");
+  if (probe(label)) err("工具自我檢查：包裝標示出處、數字正確的品項不該報熱量驗算");
 }
 
 function main() {
