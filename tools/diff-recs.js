@@ -113,6 +113,7 @@ const P = {
   DELIVERY: Object.assign({}, BASE_PROFILE, { meal_prefs: { breakfast: "delivery", lunch: "delivery", afternoon_tea: "delivery", dinner: "delivery", snack: "delivery" }, enabled_slots: ALL_ON }),
   QUICK: Object.assign({}, BASE_PROFILE, { meal_prefs: { breakfast: "cook_quick", lunch: "cook_quick", afternoon_tea: "cook_quick", dinner: "cook_quick", snack: "cook_quick" } }),
   LOWCARB: Object.assign({}, BASE_PROFILE, { low_carb: true }),
+  LESSOIL: Object.assign({}, BASE_PROFILE, { oil_habit: "less", meal_prefs: { breakfast: "cook_quick", lunch: "cook_quick", afternoon_tea: "auto", dinner: "cook_full", snack: "auto" } }),
   BULK: Object.assign({}, BASE_PROFILE, { weight_kg: 95, activity_mode: "中度", goal_mode: "增肌" }),
   OFF: Object.assign({}, BASE_PROFILE, { enabled_slots: { breakfast: false, lunch: true, afternoon_tea: false, dinner: true, snack: false },
     meal_prefs: { breakfast: "off", lunch: "convenience", afternoon_tea: "off", dinner: "cook_full", snack: "off" } }),

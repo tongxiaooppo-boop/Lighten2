@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>輕盈計畫 (Lighten Plan)</title>
-  <link rel="stylesheet" href="css/style.css?v=20260928-184818" />
+  <link rel="stylesheet" href="css/style.css?v=20260928-185250" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap" />
 </head>
@@ -80,6 +80,13 @@
                   <option value="無特殊限制">無特殊限制</option>
                 </select>
               </label>
+              <label>家裡用油習慣
+                <select name="oil_habit">
+                  <option value="normal">一般</option>
+                  <option value="less">少油（用油減半）</option>
+                </select>
+              </label>
+              <p class="taiwan-ref-note">自煮的熱量會算進煎炒用的油：煎約 5g、炒約 5g（有蔬菜再加 5g）。</p>
               <label class="allergen-option"><input type="checkbox" name="low_carb" /> 低碳</label>
               <p class="taiwan-ref-note">只影響今日建議：一餐碳水 30g 以內。自己選不受影響。</p>
             </div>
@@ -386,37 +393,37 @@
   <script type="importmap">
 {
   "imports": {
-    "./js/core/config.js": "./js/core/config.js?v=20260928-184818",
-    "./js/core/dates.js": "./js/core/dates.js?v=20260928-184818",
-    "./js/core/html.js": "./js/core/html.js?v=20260928-184818",
-    "./js/core/num.js": "./js/core/num.js?v=20260928-184818",
-    "./js/core/slots.js": "./js/core/slots.js?v=20260928-184818",
-    "./js/data/catalog.js": "./js/data/catalog.js?v=20260928-184818",
-    "./js/data/db.js": "./js/data/db.js?v=20260928-184818",
-    "./js/engine/budget.js": "./js/engine/budget.js?v=20260928-184818",
-    "./js/engine/filters.js": "./js/engine/filters.js?v=20260928-184818",
-    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20260928-184818",
-    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20260928-184818",
-    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20260928-184818",
-    "./js/engine/pool.js": "./js/engine/pool.js?v=20260928-184818",
-    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20260928-184818",
-    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20260928-184818",
-    "./js/engine/today.js": "./js/engine/today.js?v=20260928-184818",
-    "./js/ui/app.js": "./js/ui/app.js?v=20260928-184818",
-    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20260928-184818",
-    "./js/ui/clock.js": "./js/ui/clock.js?v=20260928-184818",
-    "./js/ui/dom.js": "./js/ui/dom.js?v=20260928-184818",
-    "./js/ui/item-picker.js": "./js/ui/item-picker.js?v=20260928-184818",
-    "./js/ui/manual-picker.js": "./js/ui/manual-picker.js?v=20260928-184818",
-    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20260928-184818",
-    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20260928-184818",
-    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20260928-184818",
-    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20260928-184818",
-    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20260928-184818",
-    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20260928-184818"
+    "./js/core/config.js": "./js/core/config.js?v=20260928-185250",
+    "./js/core/dates.js": "./js/core/dates.js?v=20260928-185250",
+    "./js/core/html.js": "./js/core/html.js?v=20260928-185250",
+    "./js/core/num.js": "./js/core/num.js?v=20260928-185250",
+    "./js/core/slots.js": "./js/core/slots.js?v=20260928-185250",
+    "./js/data/catalog.js": "./js/data/catalog.js?v=20260928-185250",
+    "./js/data/db.js": "./js/data/db.js?v=20260928-185250",
+    "./js/engine/budget.js": "./js/engine/budget.js?v=20260928-185250",
+    "./js/engine/filters.js": "./js/engine/filters.js?v=20260928-185250",
+    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20260928-185250",
+    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20260928-185250",
+    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20260928-185250",
+    "./js/engine/pool.js": "./js/engine/pool.js?v=20260928-185250",
+    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20260928-185250",
+    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20260928-185250",
+    "./js/engine/today.js": "./js/engine/today.js?v=20260928-185250",
+    "./js/ui/app.js": "./js/ui/app.js?v=20260928-185250",
+    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20260928-185250",
+    "./js/ui/clock.js": "./js/ui/clock.js?v=20260928-185250",
+    "./js/ui/dom.js": "./js/ui/dom.js?v=20260928-185250",
+    "./js/ui/item-picker.js": "./js/ui/item-picker.js?v=20260928-185250",
+    "./js/ui/manual-picker.js": "./js/ui/manual-picker.js?v=20260928-185250",
+    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20260928-185250",
+    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20260928-185250",
+    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20260928-185250",
+    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20260928-185250",
+    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20260928-185250",
+    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20260928-185250"
   }
 }
   </script>
-  <script type="module" src="js/ui/app.js?v=20260928-184818"></script>
+  <script type="module" src="js/ui/app.js?v=20260928-185250"></script>
 </body>
 </html>

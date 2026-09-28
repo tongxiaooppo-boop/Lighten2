@@ -34,6 +34,7 @@ export function planToday(o) {
     skipSlots: skipSlots,
     dislikedIngredients: profile.disliked_ingredients,
     lowCarb: !!profile.low_carb,
+    oilHabit: profile.oil_habit || "normal",
     loggedContents: o.todayLogs.map(function (l) { return l.content; }),
     nowMs: o.nowMs,
   });

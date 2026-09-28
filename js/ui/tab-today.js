@@ -132,7 +132,7 @@ function renderRecs(recs, profile, logsBySlot) {
       contentNote +
       '<div class="rec-meta">' +
       escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
-      '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>" +
+      '<span class="rec-base">（基準 ' + rec.kcal + " kcal" + (rec.implicit && rec.implicit.oil_g > 0 ? "，含用油約 " + rec.implicit.oil_g + "g" : "") + "）</span>" +
       (rec.budget != null ? '<span class="rec-base"> · 配額 ' + Math.round(rec.budget) + " kcal</span>" : "") +
       "</div>" +
       dislikeChipsHtml(rec) +

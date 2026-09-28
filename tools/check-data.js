@@ -64,9 +64,23 @@ function checkIngredients(list, refs) {
 
     if (ing.axis === "method") {
       if (!Array.isArray(ing.implicit)) err(w + "：烹調法要有 implicit 陣列（章程 B5.6）");
+      else ing.implicit.forEach((x) => {
+        if (!x || typeof x.ref !== "string" || !isNum(x.g) || x.g < 0 || !isNum(x.veg_add_g) || x.veg_add_g < 0) err(w + "：implicit 每項要有 ref、g、veg_add_g（非負）");
+        else if (!list.some((o) => o.id === x.ref && o.axis === "implicit")) err(w + "：implicit 引用的 " + x.ref + " 不是隱含成分");
+      });
       if (ing.per_100g !== null) err(w + "：烹調法沒有 per_100g（要是 null）");
+      if (src.type !== "assumption" || !src.ref) err(w + "：烹調法的用油量出處是 assumption，要寫依據");
       return;
     }
+
+    // 調味程度（章程 B5.7）：只有每份的鈉，出處是 assumption；只代表鹽等值的鈉，不帶過敏原（decisions #38）
+    if (ing.axis === "implicit" && ing.per_serving) {
+      if (!isNum(ing.per_serving.sodium_mg) || ing.per_serving.sodium_mg < 0) err(w + "：調味程度要有 per_serving.sodium_mg");
+      if (src.type !== "assumption" || !src.ref) err(w + "：調味程度的出處是 assumption，要寫依據");
+      if (!Array.isArray(ing.allergen_tags) || ing.allergen_tags.length > 0) err(w + "：隱含調味只代表鈉，allergen_tags 要是 []");
+      return;
+    }
+    if (ing.axis === "implicit" && ing.allergen_tags) checkAllergenTags(w, ing.allergen_tags, false);
 
     // 有營養值的食材
     if (BASES.indexOf(ing.basis) === -1) err(w + "：basis 不合法（" + ing.basis + "）");
@@ -237,6 +251,7 @@ function checkArchetypes(archetypes, ingredients) {
         else if (byId[id].axis !== AXIS_OF[axis]) err(w + "：" + axis + " 的 allow 引用了 axis=" + byId[id].axis + " 的 " + id);
       });
     });
+    if (typeof a.seasoned !== "boolean") err(w + "：要標 seasoned: true|false（章程 B7.2）");
     if (!Array.isArray(a.methods) || a.methods.length === 0) err(w + "：至少要有一個烹調法");
     (a.methods || []).forEach((id) => {
       referenced[id] = true;

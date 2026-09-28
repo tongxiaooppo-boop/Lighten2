@@ -8,7 +8,9 @@ import { SLOTS } from "../core/slots.js";
 import { WIDE_RANGE_RATIO, RANK_TO_TIER, NO_COOK_METHOD_ID, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
-import { sumProducts, ingredientContribution, addContributions, displayFields, ZERO_CONTRIBUTION } from "./meal-content.js";
+import {
+  sumProducts, ingredientContribution, addContributions, displayFields, defaultImplicit, implicitContribution, ZERO_CONTRIBUTION,
+} from "./meal-content.js";
 
 function r1(v) {
   return v == null ? null : round1(v);
@@ -68,11 +70,14 @@ function composedCombos(catalog) {
               const primaryItem = hasStapleSlot ? s : p;
               const primaryContribution = primaryItem ? ingredientContribution(primaryItem) : ZERO_CONTRIBUTION;
 
+              // 隱含成分以「一般」用油習慣建立，少油習慣在推薦時換算（meal-content withOilHabit）；不跟主要槽位縮放
+              const implicit = defaultImplicit(m, arche, !!v, !!season, "normal");
               const total = addContributions([
                 ingredientContribution(p),
                 s ? ingredientContribution(s) : null,
                 v ? ingredientContribution(v) : null,
                 season ? ingredientContribution(season) : null,
+                implicitContribution(implicit, catalog.implicit),
               ].filter(Boolean));
 
               const items = [p, s, v, season].filter(Boolean);
@@ -104,6 +109,8 @@ function composedCombos(catalog) {
                 primary_carb_g: primaryContribution.carb_g,
                 primary_fat_g: primaryContribution.fat_g,
                 primary_fiber_g: primaryContribution.fiber_g,
+                implicit: implicit,
+                implicit_items: catalog.implicit,
                 is_composed: true,
                 tier: RANK_TO_TIER[rank],
                 tier_rank: rank,

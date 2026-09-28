@@ -10,7 +10,7 @@ import { loadCatalog } from "../data/catalog.js";
 import { passesHardFilters } from "../engine/filters.js";
 import { slotNutrientShare } from "../engine/budget.js";
 import {
-  sumProducts, composeTotals, suggestFillers, slotGaps,
+  sumProducts, composeTotals, composeImplicit, suggestFillers, slotGaps,
   contentFromProducts, contentFromCompose, buildLogEntry, manualSelectionProblem, canAddManualItem,
 } from "../engine/meal-content.js";
 import { filterForSlot, cardHtml } from "./item-picker.js";
@@ -103,7 +103,8 @@ function composePrimaryItem() {
 }
 
 export function currentComposeTotals() {
-  return composeTotals(manualPicker.compose, composePrimaryItem());
+  const c = manualPicker.compose;
+  return composeTotals(c, composePrimaryItem(), composeImplicit(c, manualPicker.profile.oil_habit), c.axes.implicit);
 }
 
 function composeBlockedReason(it, axisType, c) {
@@ -355,11 +356,12 @@ export async function onManualSubmit() {
     if (missing) { alert(missing); return; }
     const c = manualPicker.compose;
     const primary = composePrimaryItem();
-    const totals = composeTotals(c, primary);
+    const implicit = composeImplicit(c, manualPicker.profile.oil_habit);
+    const totals = composeTotals(c, primary, implicit, c.axes.implicit);
     const nameParts = [c.archetype.name, c.protein.name, c.staple && c.staple.name, c.vegetable && c.vegetable.name, c.seasoning && c.seasoning.name, c.drink && c.drink.name].filter(Boolean);
     entry = buildLogEntry({
       date: todayStr(), slot: manualPicker.slot, source: "manual", name: nameParts.join("＋"),
-      content: contentFromCompose(c, primary), totals: totals, createdAt: nowIso(),
+      content: contentFromCompose(c, primary, implicit), totals: totals, createdAt: nowIso(),
     });
   } else {
     const selItems = manualSelectedItems();

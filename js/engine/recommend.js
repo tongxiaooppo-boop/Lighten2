@@ -15,7 +15,7 @@ import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G } from "../core/config.j
 import { round1 } from "../core/num.js";
 import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
-import { achievableNutrition, lowCarbMaxScale, displayFields } from "./meal-content.js";
+import { achievableNutrition, lowCarbMaxScale, displayFields, withOilHabit } from "./meal-content.js";
 import { slotShare } from "./budget.js";
 
 const PROTEIN_SATISFICE_G = 25; // 約一個手掌心蛋白質的量，達到這個量之後多蛋白質不再加分
@@ -114,11 +114,14 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
 //   dietRestriction / allergens / dislikedIngredients: profile 的硬性過濾設定
 //   skipSlots: { slot: true } 不需要推薦的時段（已記錄／已關閉），回傳 null 不佔剩餘熱量池
 //   lowCarb: 基本資料的低碳開關（只影響推薦）：一餐碳水 ≤ LOW_CARB_MEAL_MAX_G，自組食譜用它限制主要槽位縮放
+//   oilHabit: 基本資料「家裡用油習慣」（normal | less），自組食譜的用油依它換算
 //   loggedContents: 今天已記錄的每一餐 MealContent；吃過的蛋白質、餐型、品項佔住跨時段不重複的名額（decisions #39）
 //   nowMs: 現在時間（毫秒）
 // }
 export function getTodayRecommendation(o) {
-  const combos = o.pool;
+  const combos = o.oilHabit && o.oilHabit !== "normal"
+    ? o.pool.map(function (c) { return withOilHabit(c, o.oilHabit); })
+    : o.pool;
   const feedbackMap = o.feedbackMap || {};
   const constraints = o.hardConstraints || { proteinGapToday: 0, fiberGapThisWeek: 0 };
   const skip = o.skipSlots || {};

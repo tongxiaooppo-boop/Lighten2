@@ -2,6 +2,7 @@
   {
     "id": "bowl_oat",
     "name": "早餐碗",
+    "seasoned": false,
     "valid_slots": ["breakfast", "afternoon_tea", "snack"],
     "protein": { "allow": ["soy_milk", "greek_yogurt"] },
     "staple": { "allow": ["oats"] },
@@ -13,6 +14,7 @@
   {
     "id": "egg_pan",
     "name": "煎蛋類",
+    "seasoned": true,
     "valid_slots": ["breakfast", "lunch", "dinner", "snack"],
     "protein": { "allow": ["egg"] },
     "staple": { "allow": [] },
@@ -24,6 +26,7 @@
   {
     "id": "protein_stir_fry",
     "name": "炒類",
+    "seasoned": true,
     "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["beef_shank", "shrimp", "chicken_thigh", "edamame"] },
     "staple": { "allow": ["cauliflower_rice", "brown_rice_cooked"] },
@@ -35,6 +38,7 @@
   {
     "id": "grain_bowl_baked",
     "name": "烤／舒肥定食",
+    "seasoned": true,
     "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["chicken_breast", "salmon", "chicken_thigh", "tilapia_fillet", "firm_tofu"] },
     "staple": { "allow": ["brown_rice_cooked", "quinoa", "mixed_grain_rice_cooked", "sweet_potato"] },
@@ -46,12 +50,13 @@
   {
     "id": "warm_salad",
     "name": "溫沙拉",
+    "seasoned": true,
     "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["chicken_thigh", "chicken_breast", "firm_tofu"] },
     "staple": { "allow": ["pumpkin", "sweet_potato"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "cabbage", "cucumber", "tomato", "bell_pepper", "daikon", "lettuce_a", "onion", "snap_pea"] },
     "seasoning": { "allow": [] },
     "methods": ["method_pan_fry", "method_air_fry"],
-    "note": "出自「蒜香嫩煎雞腿肉溫沙拉」；根莖類配蛋白質＋生菜，沒有鹹味醬料槽；2026-09-25 蔬菜擴充：溫沙拉多為生食類蔬菜，加了大部分新增的免煮熟蔬菜"
+    "note": "出自「蒜香嫩煎雞腿肉溫沙拉」；根莖類配蛋白質＋生菜，沒有鹹味醬料槽；seasoned 只代表煎肉的調味，未含沙拉醬（decisions #38）；2026-09-25 蔬菜擴充：溫沙拉多為生食類蔬菜，加了大部分新增的免煮熟蔬菜"
   }
 ]
