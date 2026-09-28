@@ -156,7 +156,15 @@ module.exports = function createV1Adapter(ROOT) {
       dom.reset();
       freshTdee();
     },
-    takeWrites() { const w = writes.splice(0); return w; },
+    // 寫入紀錄轉成跟新格式共用的比對形狀（name＋totals）
+    takeWrites() {
+      return writes.splice(0).map((w) => {
+        if (w.op !== "addDailyLog") return w;
+        const e = w.entry;
+        return { op: w.op, entry: { slot: e.slot, name: e.item_name,
+          totals: { kcal: e.kcal, protein_g: e.protein_g, carb_g: e.carb_g, fat_g: e.fat_g, fiber_g: e.fiber_g } } };
+      });
+    },
     takeAlerts() { const a = alerts.splice(0); return a; },
     takeDom() { const d = dom.dump(); dom.reset(); return d; },
     takeEngineIO() { const r = io; io = {}; return r; },
