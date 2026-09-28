@@ -269,7 +269,7 @@ ui/  →  data/    →  core/
 8. **手動記錄規則**比推薦寬：只限制每個角色的數量上限，不要求必須有主餐（一杯拿鐵可以記成一餐），也不套用低碳〔機〕。
 9. 近 7 天平均、纖維缺口、校正引擎的攝取檢查，只算完整記錄日且不含今天〔機〕。
 10. 計畫層不存縮放後的熱量；只有 `daily_log` 算進任何統計〔機〕。
-11. 自煮一律包含用油與調味兩個隱含成分，推薦、自己選、計畫、採買清單都走 `engine/meal-content.js`〔機：check-engine 斷言隱含成分；check-arch 禁止 `ui/` 出現營養加總寫法（`kcal +=`、`protein_g +` 等；啟發式檢查，不是完整證明）；check-data／db 驗證自煮紀錄必有 `implicit`〕。
+11. 自煮一律包含用油與調味兩個隱含成分，推薦、自己選、計畫、採買清單都走 `engine/meal-content.js`〔機：check-engine 斷言隱含成分；check-arch 禁止 `ui/` 出現營養加總寫法（`kcal +=`、`protein_g +` 等；啟發式檢查，不是完整證明）；`data/db.js` 寫入驗證自煮紀錄必有 `implicit`〕。
 
 **核心原則**
 12. 運動與飲食脫鉤：讀取運動紀錄的函式只允許出現在 `ui/tab-exercise.js` 與 `data/db.js`〔機：check-arch grep〕；飲食畫面不出現運動內容，反之亦然〔人〕。
