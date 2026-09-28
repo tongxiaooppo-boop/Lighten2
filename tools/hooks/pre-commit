@@ -1,0 +1,11 @@
+#!/bin/sh
+# 輕盈計畫 pre-commit（章程 C6.1）。啟用：git config core.hooksPath tools/hooks
+# 禁止用 --no-verify 跳過。總時間目前約 5 秒；超過約 30 秒時，這裡只留快的檢查，完整版交給 CI。
+set -e
+cd "$(git rev-parse --show-toplevel)"
+start=$(date +%s)
+if [ -f tools/check-data.js ]; then node tools/check-data.js; fi
+node tools/check-engine.js
+node tools/check-arch.js --staged
+node tools/diff-recs.js
+echo "pre-commit 檢查通過（$(( $(date +%s) - start )) 秒）"

@@ -1,0 +1,29 @@
+# 第二道防線（章程 C6.2）：每次 push 跑跟 pre-commit 一樣的檢查。紅燈時下一個 commit 必須是修復。
+name: check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: check-data
+        run: if [ -f tools/check-data.js ]; then node tools/check-data.js; fi
+      - name: check-engine
+        run: node tools/check-engine.js
+      - name: check-arch
+        run: |
+          BASE="${{ github.event.before }}"
+          if [ -n "$BASE" ] && [ "$BASE" != "0000000000000000000000000000000000000000" ] && git cat-file -e "$BASE" 2>/dev/null; then
+            node tools/check-arch.js --base "$BASE"
+          else
+            node tools/check-arch.js
+          fi
+      - name: diff-recs
+        run: node tools/diff-recs.js --full
