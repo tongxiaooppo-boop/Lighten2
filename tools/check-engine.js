@@ -244,12 +244,21 @@ function checkTdeeSlope() {
 }
 
 // db.js 的寫入驗證在碰到 IndexedDB 之前就擋下，所以 Node 裡直接測得到。
+// Node 沒有 indexedDB，驗證通過的寫入也會失敗（indexedDB is not defined），所以一律比對錯誤訊息，
+// 並用「合法物件不會丟驗證錯誤」當對照，避免斷言空轉。
 async function checkDbValidation() {
   const db = M.db;
-  async function rejects(fn, label) {
-    let threw = false;
-    try { await fn(); } catch (e) { threw = true; }
-    check(threw, label);
+  async function errorOf(fn) {
+    try { await fn(); } catch (e) { return String(e && e.message); }
+    return null;
+  }
+  async function rejectsWith(fn, pattern, label) {
+    const msg = await errorOf(fn);
+    check(msg !== null && pattern.test(msg), label + "（實際：" + msg + "）");
+  }
+  async function notValidationError(fn, label) {
+    const msg = await errorOf(fn);
+    check(msg === null || !/\[db\.js\]/.test(msg), label + "（實際：" + msg + "）");
   }
   const content = {
     meal_type: "convenience", archetype_id: null, method_id: null,
@@ -259,25 +268,56 @@ async function checkDbValidation() {
     log_date: "2026-09-23", slot: "lunch", meal_type: "convenience", source: "manual", name: "x",
     content: content, totals: { kcal: 120, protein_g: 23, carb_g: null, fat_g: 2.8, fiber_g: 0 }, created_at: "2026-09-23T04:00:00.000Z",
   };
-  let ok = true;
-  try { db.validateDailyLog(good); } catch (e) { ok = false; console.log("    " + e.message); }
-  check(ok, "格式正確的 daily_log 被驗證擋下");
+  const cook = Object.assign({}, good, { meal_type: "cook_quick", content: {
+    meal_type: "cook_quick", archetype_id: "egg_pan", method_id: "sm_pan_fry",
+    components: [{ kind: "ingredient", axis: "protein", ref: "ps_egg", is_primary: true, scale: 1.25 }], implicit: null,
+  } });
+  const estimate = Object.assign({}, good, { meal_type: "delivery", content: {
+    meal_type: "delivery", archetype_id: null, method_id: null,
+    components: [{ kind: "estimate", name: "喜宴", size: "L", snapshot: { kcal: 1200 } }], implicit: null,
+  } });
 
-  await rejects(() => db.addDailyLog([good]), "addDailyLog 傳入陣列沒有報錯");
-  await rejects(() => db.addWeightLog([{ log_date: "2026-09-23", weight_kg: 70 }]), "addWeightLog 傳入陣列沒有報錯");
-  await rejects(() => db.addExerciseLog([{ log_date: "2026-09-23", activity_type: "快走" }]), "addExerciseLog 傳入陣列沒有報錯");
-  await rejects(() => db.saveProfile([{}]), "saveProfile 傳入陣列沒有報錯");
+  // 對照：合法的紀錄與物件不會丟驗證錯誤
+  [["現成品項", good], ["自煮", cook], ["估算", estimate]].forEach(function (g) {
+    let msg = null;
+    try { db.validateDailyLog(g[1]); } catch (e) { msg = e.message; }
+    check(msg === null, "格式正確的 daily_log（" + g[0] + "）被驗證擋下：" + msg);
+  });
+  await notValidationError(() => db.addWeightLog({ log_date: "2026-09-23", weight_kg: 70 }), "合法的 weight_log 被驗證擋下");
+  await notValidationError(() => db.addExerciseLog({ log_date: "2026-09-23", activity_type: "快走" }), "合法的 exercise_log 被驗證擋下");
+  await notValidationError(() => db.saveProfile({ age: 30 }), "合法的 profile 被驗證擋下");
+
+  // C1.5：一筆一個 key，傳入陣列要報錯
+  const ARRAY = /不能傳陣列/;
+  await rejectsWith(() => db.addDailyLog([good]), ARRAY, "addDailyLog 傳入陣列沒有報「不能傳陣列」");
+  await rejectsWith(() => db.addWeightLog([{ log_date: "2026-09-23", weight_kg: 70 }]), ARRAY, "addWeightLog 傳入陣列沒有報「不能傳陣列」");
+  await rejectsWith(() => db.addExerciseLog([{ log_date: "2026-09-23", activity_type: "快走" }]), ARRAY, "addExerciseLog 傳入陣列沒有報「不能傳陣列」");
+  await rejectsWith(() => db.saveProfile([{}]), ARRAY, "saveProfile 傳入陣列沒有報「不能傳陣列」");
+  await rejectsWith(() => db.markRecipesShown(["a"]), /日期/, "markRecipesShown 沒傳今天日期沒有報錯");
+
+  const withContent = (patch) => Object.assign({}, good, { content: Object.assign({}, content, patch) });
+  const withComp = (comp) => withContent({ components: [comp] });
   const broken = [
-    ["沒有 meal_type", Object.assign({}, good, { meal_type: undefined })],
-    ["meal_type 不在列舉", Object.assign({}, good, { meal_type: "cook" })],
-    ["source 不在列舉", Object.assign({}, good, { source: "custom" })],
-    ["content 沒有元件", Object.assign({}, good, { content: Object.assign({}, content, { components: [] }) })],
-    ["content 型態跟紀錄不一致", Object.assign({}, good, { meal_type: "delivery" })],
-    ["totals 沒有 kcal", Object.assign({}, good, { totals: { protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1 } })],
-    ["totals 營養欄位缺欄（要寫 null 不能省略）", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1 } })],
-    ["日期格式錯", Object.assign({}, good, { log_date: "2026/09/23" })],
+    ["沒有 meal_type", Object.assign({}, good, { meal_type: undefined }), /meal_type/],
+    ["meal_type 不在列舉", Object.assign({}, good, { meal_type: "cook" }), /meal_type/],
+    ["source 不在列舉", Object.assign({}, good, { source: "custom" }), /source/],
+    ["沒有 name", Object.assign({}, good, { name: "" }), /name/],
+    ["沒有 created_at", Object.assign({}, good, { created_at: undefined }), /created_at/],
+    ["日期格式錯", Object.assign({}, good, { log_date: "2026/09/23" }), /log_date/],
+    ["content 沒有元件", withContent({ components: [] }), /content\.components/],
+    ["content 型態跟紀錄不一致", Object.assign({}, good, { meal_type: "delivery" }), /content\.meal_type/],
+    ["content 沒有 implicit 欄位", Object.assign({}, good, { content: { meal_type: "convenience", archetype_id: null, method_id: null, components: content.components } }), /implicit/],
+    ["元件 kind 不合法", withComp({ kind: "dish", ref: "x" }), /kind/],
+    ["商品元件沒有 ref", withComp({ kind: "product", qty: 1, snapshot: { kcal: 1 } }), /ref/],
+    ["商品元件沒有 qty", withComp({ kind: "product", ref: "x", snapshot: { kcal: 1 } }), /qty/],
+    ["商品元件沒有快照", withComp({ kind: "product", ref: "x", qty: 1 }), /snapshot/],
+    ["食材元件 axis 不合法", withComp({ kind: "ingredient", axis: "method", ref: "x" }), /axis/],
+    ["食材元件沒有 ref", withComp({ kind: "ingredient", axis: "protein" }), /ref/],
+    ["估算元件沒有快照", withComp({ kind: "estimate", name: "喜宴" }), /snapshot/],
+    ["totals 沒有 kcal", Object.assign({}, good, { totals: { protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1 } }), /totals\.kcal/],
+    ["totals 營養欄位缺欄（要寫 null 不能省略）", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1 } }), /totals\.carb_g/],
   ];
-  for (const b of broken) await rejects(() => db.validateDailyLog(b[1]), "daily_log " + b[0] + " 沒有被擋下");
+  for (const b of broken) await rejectsWith(() => db.validateDailyLog(b[1]), b[2], "daily_log " + b[0] + " 沒有被擋下");
 }
 
 main().catch((err) => {

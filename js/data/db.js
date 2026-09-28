@@ -24,26 +24,33 @@ const STORE = {
 
 let _dbPromise = null;
 
+// 依舊版本分段升級：之後加 store（Phase 2 的 meal_plan、工作線 C 的 saved_meals）就在後面加一段、DB_VERSION +1。
+function upgrade(db, oldVersion) {
+  if (oldVersion < 1) {
+    db.createObjectStore(STORE.userProfile);
+    db.createObjectStore(STORE.weightLog, { keyPath: "log_date" });
+    db.createObjectStore(STORE.dailyLog, { keyPath: "id" }).createIndex("log_date", "log_date");
+    db.createObjectStore(STORE.exerciseLog, { keyPath: "id" }).createIndex("log_date", "log_date");
+    db.createObjectStore(STORE.customFoods, { keyPath: "id" });
+    db.createObjectStore(STORE.recipeFeedback);
+    db.createObjectStore(STORE.settings);
+  }
+}
+
 function openDb() {
   if (!_dbPromise) {
     _dbPromise = new Promise(function (resolve, reject) {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = function () {
+      req.onupgradeneeded = function (e) { upgrade(req.result, e.oldVersion); };
+      req.onsuccess = function () {
         const db = req.result;
-        if (!db.objectStoreNames.contains(STORE.userProfile)) db.createObjectStore(STORE.userProfile);
-        if (!db.objectStoreNames.contains(STORE.weightLog)) db.createObjectStore(STORE.weightLog, { keyPath: "log_date" });
-        if (!db.objectStoreNames.contains(STORE.dailyLog)) {
-          db.createObjectStore(STORE.dailyLog, { keyPath: "id" }).createIndex("log_date", "log_date");
-        }
-        if (!db.objectStoreNames.contains(STORE.exerciseLog)) {
-          db.createObjectStore(STORE.exerciseLog, { keyPath: "id" }).createIndex("log_date", "log_date");
-        }
-        if (!db.objectStoreNames.contains(STORE.customFoods)) db.createObjectStore(STORE.customFoods, { keyPath: "id" });
-        if (!db.objectStoreNames.contains(STORE.recipeFeedback)) db.createObjectStore(STORE.recipeFeedback);
-        if (!db.objectStoreNames.contains(STORE.settings)) db.createObjectStore(STORE.settings);
+        // 別的分頁要升級資料庫版本時，這邊主動關閉連線讓它升級，不要讓對方卡住；下次存取再重新開。
+        db.onversionchange = function () { db.close(); _dbPromise = null; };
+        resolve(db);
       };
-      req.onsuccess = function () { resolve(req.result); };
       req.onerror = function () { _dbPromise = null; reject(req.error); };
+      // 舊版本的分頁還開著、沒有關閉連線：不要無聲卡住，直接報錯讓畫面提示重新整理。
+      req.onblocked = function () { _dbPromise = null; reject(new Error("[db.js] 資料庫升級被其他開著的分頁擋住，請關閉其他分頁後重新整理")); };
     });
   }
   return _dbPromise;
@@ -64,10 +71,13 @@ async function withStores(names, mode, fn) {
     const stores = {};
     names.forEach(function (n) { stores[n] = tx.objectStore(n); });
     let result;
-    Promise.resolve(fn(stores)).then(function (r) { result = r; }, function (err) { tx.abort(); reject(err); });
+    Promise.resolve(fn(stores)).then(function (r) { result = r; }, function (err) {
+      try { tx.abort(); } catch (e) { /* transaction 已經結束 */ }
+      reject(err);
+    });
     tx.oncomplete = function () { resolve(result); };
-    tx.onerror = function () { reject(tx.error); };
-    tx.onabort = function () { reject(tx.error || new Error("transaction aborted")); };
+    tx.onerror = function (e) { reject((e && e.target && e.target.error) || tx.error); };
+    tx.onabort = function (e) { reject((e && e.target && e.target.error) || tx.error || new Error("[db.js] transaction aborted")); };
   });
 }
 
@@ -103,6 +113,41 @@ function isDateStr(v) {
 
 // ---------- 寫入驗證（不碰資料庫，check-engine 直接測） ----------
 
+const COMPONENT_KINDS = ["ingredient", "product", "estimate"];
+const INGREDIENT_AXES = ["protein", "staple", "vegetable", "seasoning"];
+
+function isNum(v) { return typeof v === "number" && isFinite(v); }
+
+function snapshotProblem(snap) {
+  return !snap || typeof snap !== "object" || !isNum(snap.kcal);
+}
+
+// 一個 MealContent（PRD 第 3 節）的結構檢查，回傳問題清單
+function contentProblems(c, mealType) {
+  const problems = [];
+  if (!c || typeof c !== "object" || !Array.isArray(c.components) || c.components.length === 0) return ["content.components"];
+  if (c.meal_type !== mealType) problems.push("content.meal_type");
+  if (!("archetype_id" in c) || !("method_id" in c)) problems.push("content.archetype_id/method_id");
+  if (!("implicit" in c) || (c.implicit !== null && typeof c.implicit !== "object")) problems.push("content.implicit");
+  c.components.forEach(function (comp, i) {
+    const at = "content.components[" + i + "]";
+    if (!comp || COMPONENT_KINDS.indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
+    if (comp.kind === "ingredient") {
+      if (INGREDIENT_AXES.indexOf(comp.axis) === -1) problems.push(at + ".axis");
+      if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
+      if ("scale" in comp && !isNum(comp.scale)) problems.push(at + ".scale");
+    } else if (comp.kind === "product") {
+      if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
+      if (!isNum(comp.qty) || comp.qty <= 0) problems.push(at + ".qty");
+      if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
+    } else {
+      if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
+      if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
+    }
+  });
+  return problems;
+}
+
 export function validateDailyLog(entry) {
   assertRecord(entry, "daily_log");
   const problems = [];
@@ -111,9 +156,8 @@ export function validateDailyLog(entry) {
   if (MEAL_TYPES.indexOf(entry.meal_type) === -1) problems.push("meal_type");
   if (LOG_SOURCES.indexOf(entry.source) === -1) problems.push("source");
   if (typeof entry.name !== "string" || entry.name === "") problems.push("name");
-  const c = entry.content;
-  if (!c || typeof c !== "object" || !Array.isArray(c.components) || c.components.length === 0) problems.push("content.components");
-  else if (c.meal_type !== entry.meal_type) problems.push("content.meal_type");
+  if (typeof entry.created_at !== "string" || isNaN(Date.parse(entry.created_at))) problems.push("created_at");
+  Array.prototype.push.apply(problems, contentProblems(entry.content, entry.meal_type));
   const t = entry.totals;
   if (!t || typeof t !== "object" || typeof t.kcal !== "number" || !isFinite(t.kcal)) problems.push("totals.kcal");
   else ["protein_g", "carb_g", "fat_g", "fiber_g"].forEach(function (k) {
@@ -211,6 +255,7 @@ export async function saveRecipeFeedback(id, rating) {
 // 畫面實際渲染出推薦卡片時呼叫：累加 shown_count、更新 last_shown_date，不動 rating；同一天重複渲染不重複累加。
 export async function markRecipesShown(ids, today) {
   if (!Array.isArray(ids)) throw new Error("[db.js] markRecipesShown 需要 id 陣列");
+  if (!isDateStr(today)) throw new Error("[db.js] markRecipesShown 需要今天的日期字串");
   return withStores([STORE.recipeFeedback], "readwrite", function (s) {
     const store = s[STORE.recipeFeedback];
     return Promise.all(ids.map(function (id) {

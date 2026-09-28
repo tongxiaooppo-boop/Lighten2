@@ -193,6 +193,7 @@ export function getTodayRecommendation(o) {
     result[slot] = Object.assign({}, top, {
       budget: round1(budget),
       scale: round1(eff.scale),
+      primary_scale: eff.scale, // 未取整的倍數：營養值是用它算的，記錄時存這個
       scaled_kcal: eff.kcal,
       protein_g: eff.protein_g,
       carb_g: eff.carb_g,
