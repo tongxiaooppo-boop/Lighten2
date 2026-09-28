@@ -5,7 +5,10 @@
 //   uid（超商＝原 id、台式外食＝"tw_"+id）、source_id、name、channel（convenience|delivery）、category、
 //   role、valid_slots、contains_drink、is_treat、kcal（外食沒有代表值時取區間中點）、kcal_low/high/rep、
 //   protein_g/carb_g/fat_g/fiber_g（缺值保留 null）、tier、diet_tags、allergen_tags（缺欄＝["未確認"]）、note、is_taiwan
-// −1a 只接上現有資料、不改資料；欄位規格（章程 B4）在 −1b 重建資料時定案。
+//
+// 食材（data/ingredients.json，章程 B4）依 axis 分成 proteins／staples／vegetables／sauces（醬料＋烹調法）四份清單，
+// 並攤平成 engine 用的形狀：kcal_100g、protein_100g、carb_100g、fat_100g、fiber_100g、sat_fat_100g、sodium_100g、
+// diet_tags（由 vegan／lacto_ovo 推導：全素 ⊃ 蛋奶素）；其餘欄位照抄。
 
 import { round1 } from "../core/num.js";
 import { SLOTS } from "../core/slots.js";
@@ -68,15 +71,33 @@ export function fromCustomFood(f) {
   };
 }
 
+function fromIngredient(it) {
+  const per = it.per_100g || {};
+  const v = function (k) { return per[k] != null ? per[k] : null; };
+  return Object.assign({}, it, {
+    kcal_100g: it.per_100g ? v("kcal") : 0, // 烹調法本身沒有營養值
+    protein_100g: it.per_100g ? v("protein_g") : 0,
+    carb_100g: it.per_100g ? v("carb_g") : 0,
+    fat_100g: it.per_100g ? v("fat_g") : 0,
+    fiber_100g: it.per_100g ? v("fiber_g") : 0,
+    sat_fat_100g: it.per_100g ? v("sat_fat_g") : 0,
+    sodium_100g: it.per_100g ? v("sodium_mg") : 0,
+    diet_tags: it.vegan ? ["全素"] : it.lacto_ovo ? ["蛋奶素"] : [],
+  });
+}
+
 export function buildCatalog(raw) {
   const products = raw.convenienceItems.map(fromConvenience).concat(raw.taiwanItems.map(fromTaiwan));
   const productsByUid = {};
   products.forEach(function (p) { productsByUid[p.uid] = p; });
+  const ingredients = raw.ingredients.map(fromIngredient);
+  const ofAxis = function (axes) { return ingredients.filter(function (it) { return axes.indexOf(it.axis) !== -1; }); };
   return {
-    proteins: raw.proteins,
-    staples: raw.staples,
-    sauces: raw.sauces,
-    vegetables: raw.rawIngredients.filter(function (it) { return it.category === "蔬菜"; }),
+    ingredients: ingredients,
+    proteins: ofAxis(["protein"]),
+    staples: ofAxis(["staple"]),
+    sauces: ofAxis(["seasoning", "method"]),
+    vegetables: ofAxis(["vegetable"]),
     archetypes: raw.archetypes,
     products: products,
     productsByUid: productsByUid,
@@ -89,18 +110,12 @@ let _catalog = null;
 export function loadCatalog() {
   if (!_catalog) {
     _catalog = Promise.all([
-      fetchJson("data/protein_sources.json"),
-      fetchJson("data/staples.json"),
-      fetchJson("data/sauce_methods.json"),
-      fetchJson("data/raw_ingredients.json"),
+      fetchJson("data/ingredients.json"),
       fetchJson("data/convenience_items.json"),
       fetchJson("data/taiwan_items.json"),
       fetchJson("data/dish_archetypes.json"),
     ]).then(function (r) {
-      return buildCatalog({
-        proteins: r[0], staples: r[1], sauces: r[2], rawIngredients: r[3],
-        convenienceItems: r[4], taiwanItems: r[5], archetypes: r[6],
-      });
+      return buildCatalog({ ingredients: r[0], convenienceItems: r[1], taiwanItems: r[2], archetypes: r[3] });
     }).catch(function (err) {
       _catalog = null;
       throw err;
