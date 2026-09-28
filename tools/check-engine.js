@@ -527,7 +527,7 @@ async function checkDbValidation() {
   };
   const cook = Object.assign({}, good, { meal_type: "cook_quick", content: {
     meal_type: "cook_quick", archetype_id: "egg_pan", method_id: "method_pan_fry",
-    components: [{ kind: "ingredient", axis: "protein", ref: "egg", is_primary: true, scale: 1.25 }], implicit: null,
+    components: [{ kind: "ingredient", axis: "protein", ref: "egg", is_primary: true, scale: 1.25 }], implicit: { oil_g: 5, seasoning: "normal" },
   } });
   const estimate = Object.assign({}, good, { meal_type: "delivery", content: {
     meal_type: "delivery", archetype_id: null, method_id: null,
@@ -564,6 +564,12 @@ async function checkDbValidation() {
     ["content 沒有元件", withContent({ components: [] }), /content\.components/],
     ["content 型態跟紀錄不一致", Object.assign({}, good, { meal_type: "delivery" }), /content\.meal_type/],
     ["content 沒有 implicit 欄位", Object.assign({}, good, { content: { meal_type: "convenience", archetype_id: null, method_id: null, components: content.components } }), /implicit/],
+    // 自煮一律包含用油與調味（章程 C4.11、−1b 驗收審核 A4）；−1a 的 implicit: null 過渡格式不再接受
+    ["自煮的 implicit 是 null", Object.assign({}, cook, { content: Object.assign({}, cook.content, { implicit: null }) }), /implicit/],
+    ["自煮的用油不是非負數", Object.assign({}, cook, { content: Object.assign({}, cook.content, { implicit: { oil_g: -5, seasoning: "normal" } }) }), /implicit/],
+    ["自煮沒有調味欄位", Object.assign({}, cook, { content: Object.assign({}, cook.content, { implicit: { oil_g: 5 } }) }), /implicit/],
+    ["自煮的調味不在列舉", Object.assign({}, cook, { content: Object.assign({}, cook.content, { implicit: { oil_g: 5, seasoning: "heavy" } }) }), /implicit/],
+    ["現成品項帶了 implicit", withContent({ implicit: { oil_g: 5, seasoning: "normal" } }), /implicit/],
     ["元件 kind 不合法", withComp({ kind: "dish", ref: "x" }), /kind/],
     ["商品元件沒有 ref", withComp({ kind: "product", qty: 1, snapshot: { kcal: 1 } }), /ref/],
     ["商品元件沒有 qty", withComp({ kind: "product", ref: "x", snapshot: { kcal: 1 } }), /qty/],

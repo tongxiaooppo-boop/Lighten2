@@ -120,6 +120,14 @@ const COMPONENT_KINDS = ["ingredient", "product", "estimate"];
 const INGREDIENT_AXES = ["protein", "staple", "vegetable", "seasoning"];
 
 
+const COOK_TYPES = ["cook_quick", "cook_full"];
+const SEASONING_LEVELS = ["light", "normal", null];
+
+function implicitProblem(imp) {
+  return !imp || typeof imp !== "object" || !isNum(imp.oil_g) || imp.oil_g < 0 ||
+    !("seasoning" in imp) || SEASONING_LEVELS.indexOf(imp.seasoning) === -1;
+}
+
 function snapshotProblem(snap) {
   return !snap || typeof snap !== "object" || !isNum(snap.kcal);
 }
@@ -130,7 +138,9 @@ function contentProblems(c, mealType) {
   if (!c || typeof c !== "object" || !Array.isArray(c.components) || c.components.length === 0) return ["content.components"];
   if (c.meal_type !== mealType) problems.push("content.meal_type");
   if (!("archetype_id" in c) || !("method_id" in c)) problems.push("content.archetype_id/method_id");
-  if (!("implicit" in c) || (c.implicit !== null && typeof c.implicit !== "object")) problems.push("content.implicit");
+  // 自煮一律帶實際採用的用油與調味（章程 C4.11），其他型態是 null
+  if (!("implicit" in c)) problems.push("content.implicit");
+  else if (COOK_TYPES.indexOf(mealType) !== -1 ? implicitProblem(c.implicit) : c.implicit !== null) problems.push("content.implicit");
   c.components.forEach(function (comp, i) {
     const at = "content.components[" + i + "]";
     if (!comp || COMPONENT_KINDS.indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
