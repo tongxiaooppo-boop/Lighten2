@@ -1,0 +1,482 @@
+today/M/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/base/skip	afternoon_tea,snack
+today/M/base/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/base/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/base/afternoon_tea	-
+today/M/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/base/snack	-
+today/M/base/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/base-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/base-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/base-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/base-night/skip	afternoon_tea,snack
+today/M/base-night/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/base-night/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/base-night/afternoon_tea	-
+today/M/base-night/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/base-night/snack	-
+today/M/base-night/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/no-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/no-history/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/no-history/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
+today/M/no-history/skip	afternoon_tea,snack
+today/M/no-history/breakfast	conv_bx05+conv_sl04+conv_dr01 scale=1 kcal=530 base=530 P=24.5 C=79.2 F=14.9 Fb=20.2 budget=474 src=convenience
+today/M/no-history/lunch	conv_bx10+conv_sl02+conv_dr03 scale=1 kcal=642 base=642 P=31.5 C=90 F=18.3 Fb=23.8 budget=683.1 src=convenience
+today/M/no-history/afternoon_tea	-
+today/M/no-history/dinner	grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=644.8 base=419.8 P=28.1 C=106.1 F=12.1 Fb=12.3 budget=724.1 src=cook_full
+today/M/no-history/snack	-
+today/M/no-history/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr01,conv_bx10+conv_sl02+conv_dr03,grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/low-fiber-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/low-fiber-history/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/low-fiber-history/hardConstraints	{"fiberGapThisWeek":14.5,"proteinGapToday":144}
+today/M/low-fiber-history/skip	afternoon_tea,snack
+today/M/low-fiber-history/breakfast	conv_bx04+conv_sl04+conv_dr02 scale=1 kcal=485 base=485 P=45 C=42 F=17 Fb=15 budget=474 src=convenience
+today/M/low-fiber-history/lunch	conv_bx09+conv_sl03+conv_dr01 scale=1 kcal=705 base=705 P=36 C=71 F=33.6 Fb=21.7 budget=705.6 src=convenience
+today/M/low-fiber-history/afternoon_tea	-
+today/M/low-fiber-history/dinner	grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=644.8 base=419.8 P=28.1 C=106.1 F=12.1 Fb=12.3 budget=706.1 src=cook_full
+today/M/low-fiber-history/snack	-
+today/M/low-fiber-history/write0	markRecipesShown conv_bx04+conv_sl04+conv_dr02,conv_bx09+conv_sl03+conv_dr01,grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/high-fiber-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/high-fiber-history/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/high-fiber-history/hardConstraints	{"fiberGapThisWeek":0,"proteinGapToday":144}
+today/M/high-fiber-history/skip	afternoon_tea,snack
+today/M/high-fiber-history/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/high-fiber-history/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/high-fiber-history/afternoon_tea	-
+today/M/high-fiber-history/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/high-fiber-history/snack	-
+today/M/high-fiber-history/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/two-complete-days/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/two-complete-days/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/two-complete-days/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
+today/M/two-complete-days/skip	afternoon_tea,snack
+today/M/two-complete-days/breakfast	conv_bx05+conv_sl04+conv_dr01 scale=1 kcal=530 base=530 P=24.5 C=79.2 F=14.9 Fb=20.2 budget=474 src=convenience
+today/M/two-complete-days/lunch	conv_bx10+conv_sl02+conv_dr03 scale=1 kcal=642 base=642 P=31.5 C=90 F=18.3 Fb=23.8 budget=683.1 src=convenience
+today/M/two-complete-days/afternoon_tea	-
+today/M/two-complete-days/dinner	grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=644.8 base=419.8 P=28.1 C=106.1 F=12.1 Fb=12.3 budget=724.1 src=cook_full
+today/M/two-complete-days/snack	-
+today/M/two-complete-days/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr01,conv_bx10+conv_sl02+conv_dr03,grain_bowl_baked_ps_firm_tofu_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/M/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/M/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/M/today-breakfast/breakfast	-
+today/M/today-breakfast/lunch	conv_bx03+conv_dr01+conv_pk03 scale=1 kcal=737.5 base=737.5 P=43.5 C=87.5 F=25.1 Fb=19 budget=738.1 src=convenience
+today/M/today-breakfast/afternoon_tea	-
+today/M/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=738.6 src=cook_full
+today/M/today-breakfast/snack	-
+today/M/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/today-bl/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/today-bl/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":596.1,"lunch":0,"snack":0},"remainingKcal":596.1}
+today/M/today-bl/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":87}
+today/M/today-bl/skip	afternoon_tea,breakfast,lunch,snack
+today/M/today-bl/breakfast	-
+today/M/today-bl/lunch	-
+today/M/today-bl/afternoon_tea	-
+today/M/today-bl/dinner	grain_bowl_baked_ps_chicken_breast_st_brown_rice_baby_corn_none_sm_air_fry scale=1.9 kcal=596.1 base=396 P=40.9 C=91.1 F=6.5 Fb=6.9 budget=596.1 src=cook_full
+today/M/today-bl/snack	-
+today/M/today-bl/write0	markRecipesShown grain_bowl_baked_ps_chicken_breast_st_brown_rice_baby_corn_none_sm_air_fry
+today/M/today-over/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/today-over/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":0,"lunch":0,"snack":0},"remainingKcal":0}
+today/M/today-over/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":74}
+today/M/today-over/skip	afternoon_tea,breakfast,lunch,snack
+today/M/today-over/breakfast	-
+today/M/today-over/lunch	-
+today/M/today-over/afternoon_tea	-
+today/M/today-over/dinner	lowBudget budget=0
+today/M/today-over/snack	-
+today/M/today-nullmacro/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/today-nullmacro/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":698.1,"lunch":698.1,"snack":0},"remainingKcal":1396.1}
+today/M/today-nullmacro/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/today-nullmacro/skip	afternoon_tea,breakfast,snack
+today/M/today-nullmacro/breakfast	-
+today/M/today-nullmacro/lunch	conv_bx01+conv_sl02+conv_dr01 scale=1 kcal=698 base=698 P=47.5 C=89.1 F=19.1 Fb=20 budget=698.1 src=convenience
+today/M/today-nullmacro/afternoon_tea	-
+today/M/today-nullmacro/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=698.1 src=cook_full
+today/M/today-nullmacro/snack	-
+today/M/today-nullmacro/write0	markRecipesShown conv_bx01+conv_sl02+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/today-all/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/today-all/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":0,"lunch":0,"snack":0},"remainingKcal":126.1}
+today/M/today-all/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":47}
+today/M/today-all/skip	afternoon_tea,breakfast,dinner,lunch,snack
+today/M/today-all/breakfast	-
+today/M/today-all/lunch	-
+today/M/today-all/afternoon_tea	-
+today/M/today-all/dinner	-
+today/M/today-all/snack	-
+today/M/offset-minus/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":183.4,"fat_g":48.5,"fiber_g":30,"flooredWarning":false,"netCarb_g":153.4,"offsetKcal":-150,"protein_g":144,"targetKcal":1746.1,"tdee":2370.2}
+today/M/offset-minus/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":436.5,"dinner":654.8,"lunch":654.8,"snack":0},"remainingKcal":1746.1}
+today/M/offset-minus/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/offset-minus/skip	afternoon_tea,snack
+today/M/offset-minus/breakfast	conv_bx04+conv_dr06+conv_pk03 scale=1 kcal=437.5 base=437.5 P=50 C=23.5 F=15.1 Fb=4.5 budget=436.5 src=convenience
+today/M/offset-minus/lunch	conv_bx02+conv_sl02+conv_dr04 scale=1 kcal=655 base=655 P=32.3 C=78.4 F=24.3 Fb=12 budget=654.3 src=convenience
+today/M/offset-minus/afternoon_tea	-
+today/M/offset-minus/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=653.6 base=431.8 P=42.9 C=102.5 F=7.2 Fb=9.9 budget=653.6 src=cook_full
+today/M/offset-minus/snack	-
+today/M/offset-minus/write0	markRecipesShown conv_bx04+conv_dr06+conv_pk03,conv_bx02+conv_sl02+conv_dr04,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/offset-plus-effective-tomorrow/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/offset-plus-effective-tomorrow/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/offset-plus-effective-tomorrow/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/offset-plus-effective-tomorrow/skip	afternoon_tea,snack
+today/M/offset-plus-effective-tomorrow/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/offset-plus-effective-tomorrow/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/offset-plus-effective-tomorrow/afternoon_tea	-
+today/M/offset-plus-effective-tomorrow/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/offset-plus-effective-tomorrow/snack	-
+today/M/offset-plus-effective-tomorrow/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/offset-announce/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":183.4,"fat_g":48.5,"fiber_g":30,"flooredWarning":false,"netCarb_g":153.4,"offsetKcal":-150,"protein_g":144,"targetKcal":1746.1,"tdee":2370.2}
+today/M/offset-announce/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":436.5,"dinner":654.8,"lunch":654.8,"snack":0},"remainingKcal":1746.1}
+today/M/offset-announce/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/offset-announce/skip	afternoon_tea,snack
+today/M/offset-announce/breakfast	conv_bx04+conv_dr06+conv_pk03 scale=1 kcal=437.5 base=437.5 P=50 C=23.5 F=15.1 Fb=4.5 budget=436.5 src=convenience
+today/M/offset-announce/lunch	conv_bx02+conv_sl02+conv_dr04 scale=1 kcal=655 base=655 P=32.3 C=78.4 F=24.3 Fb=12 budget=654.3 src=convenience
+today/M/offset-announce/afternoon_tea	-
+today/M/offset-announce/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=653.6 base=431.8 P=42.9 C=102.5 F=7.2 Fb=9.9 budget=653.6 src=cook_full
+today/M/offset-announce/snack	-
+today/M/offset-announce/write0	markRecipesShown conv_bx04+conv_dr06+conv_pk03,conv_bx02+conv_sl02+conv_dr04,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/pending/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/pending/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/pending/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/pending/skip	afternoon_tea,snack
+today/M/pending/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/pending/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/pending/afternoon_tea	-
+today/M/pending/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/pending/snack	-
+today/M/pending/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/F/base/targets	{"baseTargetKcal":1546.8,"bmr":1289,"carb_g":182,"fat_g":43,"fiber_g":30,"flooredWarning":false,"netCarb_g":152,"offsetKcal":0,"protein_g":108,"targetKcal":1546.8,"tdee":1546.8}
+today/F/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":154.7,"breakfast":309.4,"dinner":464,"lunch":464,"snack":154.7},"remainingKcal":1546.8}
+today/F/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":108}
+today/F/base/skip	
+today/F/base/breakfast	conv_bx05+conv_sl02+conv_dr01 scale=1 kcal=377 base=377 P=19.5 C=59.7 F=9.1 Fb=19.2 budget=309.4 src=auto
+today/F/base/lunch	conv_bx13+conv_sl01+conv_dr02 scale=1 kcal=465 base=465 P=34 C=44.9 F=18.3 Fb=18.8 budget=438.7 src=auto
+today/F/base/afternoon_tea	lowBudget budget=141
+today/F/base/dinner	conv_bx10+conv_sl04+conv_dr03 scale=1 kcal=795 base=795 P=36.5 C=109.5 F=24.1 Fb=24.8 budget=528.6 src=auto
+today/F/base/snack	lowBudget budget=0
+today/F/base/write0	markRecipesShown conv_bx05+conv_sl02+conv_dr01,conv_bx13+conv_sl01+conv_dr02,conv_bx10+conv_sl04+conv_dr03
+today/F/today-breakfast/targets	{"baseTargetKcal":1546.8,"bmr":1289,"carb_g":182,"fat_g":43,"fiber_g":30,"flooredWarning":false,"netCarb_g":152,"offsetKcal":0,"protein_g":108,"targetKcal":1546.8,"tdee":1546.8}
+today/F/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":140.9,"breakfast":0,"dinner":422.6,"lunch":422.6,"snack":140.9},"remainingKcal":1126.8}
+today/F/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":86}
+today/F/today-breakfast/skip	breakfast
+today/F/today-breakfast/breakfast	-
+today/F/today-breakfast/lunch	conv_bx13+conv_sl02+conv_dr01 scale=1 kcal=417 base=417 P=24.5 C=46.5 F=17.3 Fb=21.2 budget=422.6 src=auto
+today/F/today-breakfast/afternoon_tea	lowBudget budget=142
+today/F/today-breakfast/dinner	conv_bx11+conv_sl01+conv_dr02 scale=1 kcal=565 base=565 P=46.5 C=47.4 F=22.6 Fb=19.8 budget=532.3 src=auto
+today/F/today-breakfast/snack	lowBudget budget=144.8
+today/F/today-breakfast/write0	markRecipesShown conv_bx13+conv_sl02+conv_dr01,conv_bx11+conv_sl01+conv_dr02
+today/VEG/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/VEG/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":189.6,"breakfast":379.2,"dinner":568.8,"lunch":568.8,"snack":189.6},"remainingKcal":1896.1}
+today/VEG/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
+today/VEG/base/skip	
+today/VEG/base/breakfast	conv_bx05+conv_dr01+conv_pk03 scale=1 kcal=457.5 base=457.5 P=21.5 C=62.7 F=15.2 Fb=17.7 budget=379.2 src=convenience
+today/VEG/base/lunch	grain_bowl_baked_ps_firm_tofu_st_quinoa_okra_sm_teriyaki_sm_microwave scale=1.9 kcal=539.5 base=374.8 P=30.2 C=74.2 F=13.9 Fb=13.7 budget=539.5 src=cook_quick
+today/VEG/base/afternoon_tea	conv_dr03 scale=1 kcal=185 base=185 P=13 C=18 F=8.1 Fb=9 budget=179.8 src=auto
+today/VEG/base/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=535.6 src=cook_full
+today/VEG/base/snack	bowl_oat_ps_greek_yogurt_st_oats_none_none_sm_microwave scale=1.9 kcal=402.1 base=252.1 P=24.5 C=56.7 F=8.5 Fb=8.2 budget=402.1 src=auto
+today/VEG/base/write0	markRecipesShown conv_bx05+conv_dr01+conv_pk03,grain_bowl_baked_ps_firm_tofu_st_quinoa_okra_sm_teriyaki_sm_microwave,conv_dr03,egg_pan_ps_egg_none_onion_none_sm_pan_fry,bowl_oat_ps_greek_yogurt_st_oats_none_none_sm_microwave
+today/VEG/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/VEG/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":184.5,"breakfast":0,"dinner":553.5,"lunch":553.5,"snack":184.5},"remainingKcal":1476.1}
+today/VEG/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":122}
+today/VEG/today-breakfast/skip	breakfast
+today/VEG/today-breakfast/breakfast	-
+today/VEG/today-breakfast/lunch	grain_bowl_baked_ps_firm_tofu_st_quinoa_okra_sm_teriyaki_sm_microwave scale=2 kcal=553.5 base=374.8 P=30.8 C=76.7 F=14.1 Fb=14.1 budget=553.5 src=cook_quick
+today/VEG/today-breakfast/afternoon_tea	conv_dr03 scale=1 kcal=185 base=185 P=13 C=18 F=8.1 Fb=9 budget=184.5 src=auto
+today/VEG/today-breakfast/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=553.2 src=cook_full
+today/VEG/today-breakfast/snack	conv_bx05+conv_dr01+conv_pk03 scale=1 kcal=457.5 base=457.5 P=21.5 C=62.7 F=15.2 Fb=17.7 budget=425.6 src=auto
+today/VEG/today-breakfast/write0	markRecipesShown grain_bowl_baked_ps_firm_tofu_st_quinoa_okra_sm_teriyaki_sm_microwave,conv_dr03,egg_pan_ps_egg_none_onion_none_sm_pan_fry,conv_bx05+conv_dr01+conv_pk03
+today/VEGAN/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/VEGAN/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/VEGAN/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/VEGAN/base/skip	afternoon_tea,snack
+today/VEGAN/base/breakfast	conv_bx05+conv_dr01+conv_pk03 scale=1 kcal=457.5 base=457.5 P=21.5 C=62.7 F=15.2 Fb=17.7 budget=474 src=auto
+today/VEGAN/base/lunch	conv_bx09+conv_sl04+conv_dr04 scale=1 kcal=730 base=730 P=24.5 C=86.8 F=31.3 Fb=17 budget=719.3 src=auto
+today/VEGAN/base/afternoon_tea	-
+today/VEGAN/base/dinner	conv_bx08+conv_sl02+conv_dr03 scale=1 kcal=692 base=692 P=29 C=94.5 F=22.8 Fb=21 budget=708.6 src=auto
+today/VEGAN/base/snack	-
+today/VEGAN/base/write0	markRecipesShown conv_bx05+conv_dr01+conv_pk03,conv_bx09+conv_sl04+conv_dr04,conv_bx08+conv_sl02+conv_dr03
+today/VEGAN/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/VEGAN/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/VEGAN/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/VEGAN/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/VEGAN/today-breakfast/breakfast	-
+today/VEGAN/today-breakfast/lunch	conv_bx09+conv_sl04+conv_pk04 scale=1 kcal=735 base=735 P=25 C=90 F=30.3 Fb=17 budget=738.1 src=auto
+today/VEGAN/today-breakfast/afternoon_tea	-
+today/VEGAN/today-breakfast/dinner	conv_bx08+conv_dr02+conv_pk03 scale=1 kcal=742.5 base=742.5 P=32.5 C=93.5 F=28 Fb=19.5 budget=741.1 src=auto
+today/VEGAN/today-breakfast/snack	-
+today/VEGAN/today-breakfast/write0	markRecipesShown conv_bx09+conv_sl04+conv_pk04,conv_bx08+conv_dr02+conv_pk03
+today/LEGACY_ALLERGY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LEGACY_ALLERGY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/LEGACY_ALLERGY/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/LEGACY_ALLERGY/base/skip	afternoon_tea,snack
+today/LEGACY_ALLERGY/base/breakfast	conv_bx04+conv_sl03+conv_dr03 scale=1 kcal=470 base=470 P=42 C=32.5 F=20.1 Fb=12 budget=474 src=convenience
+today/LEGACY_ALLERGY/base/lunch	conv_bx10+conv_dr01+conv_pk03 scale=1 kcal=697.5 base=697.5 P=35.5 C=89 F=23.9 Fb=23.5 budget=713.1 src=convenience
+today/LEGACY_ALLERGY/base/afternoon_tea	-
+today/LEGACY_ALLERGY/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=728.6 src=cook_full
+today/LEGACY_ALLERGY/base/snack	-
+today/LEGACY_ALLERGY/base/write0	markRecipesShown conv_bx04+conv_sl03+conv_dr03,conv_bx10+conv_dr01+conv_pk03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/LEGACY_ALLERGY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LEGACY_ALLERGY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/LEGACY_ALLERGY/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/LEGACY_ALLERGY/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/LEGACY_ALLERGY/today-breakfast/breakfast	-
+today/LEGACY_ALLERGY/today-breakfast/lunch	conv_bx02+conv_pk04+conv_pk03 scale=1 kcal=740.5 base=740.5 P=34.8 C=84.6 F=29.4 Fb=10.5 budget=738.1 src=convenience
+today/LEGACY_ALLERGY/today-breakfast/afternoon_tea	-
+today/LEGACY_ALLERGY/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=735.6 src=cook_full
+today/LEGACY_ALLERGY/today-breakfast/snack	-
+today/LEGACY_ALLERGY/today-breakfast/write0	markRecipesShown conv_bx02+conv_pk04+conv_pk03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/ALLERGY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/ALLERGY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/ALLERGY/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/ALLERGY/base/skip	afternoon_tea,snack
+today/ALLERGY/base/breakfast	conv_bx05+conv_dr06 scale=1 kcal=340 base=340 P=24.5 C=49.2 F=5.3 Fb=5 budget=474 src=convenience
+today/ALLERGY/base/lunch	conv_bx13+conv_dr05 scale=1 kcal=355 base=355 P=11 C=45.6 F=11.4 Fb=9.3 budget=778.1 src=convenience
+today/ALLERGY/base/afternoon_tea	-
+today/ALLERGY/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_none_sm_air_fry scale=2 kcal=662.4 base=437.4 P=37.1 C=100.6 F=11.4 Fb=9.2 budget=1201.1 src=cook_full
+today/ALLERGY/base/snack	-
+today/ALLERGY/base/write0	markRecipesShown conv_bx05+conv_dr06,conv_bx13+conv_dr05,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_none_sm_air_fry
+today/ALLERGY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/ALLERGY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/ALLERGY/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/ALLERGY/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/ALLERGY/today-breakfast/breakfast	-
+today/ALLERGY/today-breakfast/lunch	conv_bx13+conv_dr06 scale=1 kcal=380 base=380 P=29.5 C=36 F=13.5 Fb=7 budget=738.1 src=convenience
+today/ALLERGY/today-breakfast/afternoon_tea	-
+today/ALLERGY/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_none_sm_air_fry scale=2 kcal=662.4 base=437.4 P=37.1 C=100.6 F=11.4 Fb=9.2 budget=1096.1 src=cook_full
+today/ALLERGY/today-breakfast/snack	-
+today/ALLERGY/today-breakfast/write0	markRecipesShown conv_bx13+conv_dr06,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_none_sm_air_fry
+today/DISLIKE/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/DISLIKE/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/DISLIKE/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/DISLIKE/base/skip	afternoon_tea,snack
+today/DISLIKE/base/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/DISLIKE/base/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=710.6 src=convenience
+today/DISLIKE/base/afternoon_tea	-
+today/DISLIKE/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
+today/DISLIKE/base/snack	-
+today/DISLIKE/base/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/DISLIKE/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/DISLIKE/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/DISLIKE/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/DISLIKE/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/DISLIKE/today-breakfast/breakfast	-
+today/DISLIKE/today-breakfast/lunch	conv_bx08+conv_sl01+conv_dr06 scale=1 kcal=740 base=740 P=48.5 C=86.9 F=21.1 Fb=11.8 budget=738.1 src=convenience
+today/DISLIKE/today-breakfast/afternoon_tea	-
+today/DISLIKE/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=736.1 src=cook_full
+today/DISLIKE/today-breakfast/snack	-
+today/DISLIKE/today-breakfast/write0	markRecipesShown conv_bx08+conv_sl01+conv_dr06,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/DELIVERY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/DELIVERY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":189.6,"breakfast":379.2,"dinner":568.8,"lunch":568.8,"snack":189.6},"remainingKcal":1896.1}
+today/DELIVERY/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
+today/DELIVERY/base/skip	
+today/DELIVERY/base/breakfast	tw_bf04+tw_dr06 scale=1 kcal=455 base=455 P=25.9 C=48 F=17.7 Fb=5.8 budget=379.2 src=delivery
+today/DELIVERY/base/lunch	conv_ch01 scale=1 kcal=485 base=485 P=31.5 C=58 F=13.5 Fb=6 budget=540.4 src=delivery
+today/DELIVERY/base/afternoon_tea	tw_dr05 scale=1 kcal=172 base=172 P=11.9 C=14 F=7.6 Fb=0 budget=191.2 src=delivery
+today/DELIVERY/base/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=73.6 F=19.3 Fb=2.5 budget=588.1 src=delivery
+today/DELIVERY/base/snack	tw_sn10 scale=1 kcal=400 base=400 P=30 C=54.9 F=6.7 Fb=2 budget=204.1 src=delivery
+today/DELIVERY/base/write0	markRecipesShown tw_bf04+tw_dr06,conv_ch01,tw_dr05,tw_fw08,tw_sn10
+today/DELIVERY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/DELIVERY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":184.5,"breakfast":0,"dinner":553.5,"lunch":553.5,"snack":184.5},"remainingKcal":1476.1}
+today/DELIVERY/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":122}
+today/DELIVERY/today-breakfast/skip	breakfast
+today/DELIVERY/today-breakfast/breakfast	-
+today/DELIVERY/today-breakfast/lunch	conv_ch01 scale=1 kcal=485 base=485 P=31.5 C=58 F=13.5 Fb=6 budget=553.5 src=delivery
+today/DELIVERY/today-breakfast/afternoon_tea	tw_tc08+tw_dr06 scale=1 kcal=225 base=225 P=17.9 C=23 F=6.8 Fb=5.3 budget=198.2 src=delivery
+today/DELIVERY/today-breakfast/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=73.6 F=19.3 Fb=2.5 budget=574.6 src=delivery
+today/DELIVERY/today-breakfast/snack	tw_sn10 scale=1 kcal=400 base=400 P=30 C=54.9 F=6.7 Fb=2 budget=186.1 src=delivery
+today/DELIVERY/today-breakfast/write0	markRecipesShown conv_ch01,tw_tc08+tw_dr06,tw_fw08,tw_sn10
+today/QUICK/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/QUICK/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/QUICK/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/QUICK/base/skip	afternoon_tea,snack
+today/QUICK/base/breakfast	bowl_oat_ps_greek_yogurt_st_oats_none_none_sm_microwave scale=2 kcal=415.7 base=252.1 P=24.9 C=59 F=8.8 Fb=8.6 budget=474 src=cook_quick
+today/QUICK/base/lunch	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=665.8 base=440.8 P=43.8 C=103.8 F=7.2 Fb=9.3 budget=740.2 src=cook_quick
+today/QUICK/base/afternoon_tea	-
+today/QUICK/base/dinner	protein_stir_fry_ps_beef_st_brown_rice_snap_pea_sm_kimchi_sm_stir_fry scale=2 kcal=632.1 base=419.1 P=39 C=97.1 F=9.2 Fb=7.9 budget=814.6 src=cook_quick
+today/QUICK/base/snack	-
+today/QUICK/base/write0	markRecipesShown bowl_oat_ps_greek_yogurt_st_oats_none_none_sm_microwave,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave,protein_stir_fry_ps_beef_st_brown_rice_snap_pea_sm_kimchi_sm_stir_fry
+today/QUICK/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/QUICK/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/QUICK/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/QUICK/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/QUICK/today-breakfast/breakfast	-
+today/QUICK/today-breakfast/lunch	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=665.8 base=440.8 P=43.8 C=103.8 F=7.2 Fb=9.3 budget=738.1 src=cook_quick
+today/QUICK/today-breakfast/afternoon_tea	-
+today/QUICK/today-breakfast/dinner	protein_stir_fry_ps_beef_st_brown_rice_snap_pea_sm_kimchi_sm_stir_fry scale=2 kcal=632.1 base=419.1 P=39 C=97.1 F=9.2 Fb=7.9 budget=810.3 src=cook_quick
+today/QUICK/today-breakfast/snack	-
+today/QUICK/today-breakfast/write0	markRecipesShown grain_bowl_baked_ps_chicken_breast_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave,protein_stir_fry_ps_beef_st_brown_rice_snap_pea_sm_kimchi_sm_stir_fry
+today/LOWCARB/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LOWCARB/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/LOWCARB/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/LOWCARB/base/skip	afternoon_tea,snack
+today/LOWCARB/base/breakfast	conv_bx04 scale=1 kcal=120 base=120 P=23 C=0 F=2.8 Fb=0 budget=474 src=convenience
+today/LOWCARB/base/lunch	conv_bx11 scale=1 kcal=300 base=300 P=19.5 C=26.5 F=12.8 Fb=7 budget=888.1 src=convenience
+today/LOWCARB/base/afternoon_tea	-
+today/LOWCARB/base/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=1476.1 src=cook_full
+today/LOWCARB/base/snack	-
+today/LOWCARB/base/write0	markRecipesShown conv_bx04,conv_bx11,egg_pan_ps_egg_none_onion_none_sm_pan_fry
+today/LOWCARB/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LOWCARB/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/LOWCARB/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/LOWCARB/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/LOWCARB/today-breakfast/breakfast	-
+today/LOWCARB/today-breakfast/lunch	conv_bx11 scale=1 kcal=300 base=300 P=19.5 C=26.5 F=12.8 Fb=7 budget=738.1 src=convenience
+today/LOWCARB/today-breakfast/afternoon_tea	-
+today/LOWCARB/today-breakfast/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=1176.1 src=cook_full
+today/LOWCARB/today-breakfast/snack	-
+today/LOWCARB/today-breakfast/write0	markRecipesShown conv_bx11,egg_pan_ps_egg_none_onion_none_sm_pan_fry
+today/BULK/base/targets	{"baseTargetKcal":3194.7,"bmr":1873.8,"carb_g":409,"fat_g":88.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":379,"offsetKcal":0,"protein_g":190,"targetKcal":3194.7,"tdee":2904.3}
+today/BULK/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":798.7,"dinner":1198,"lunch":1198,"snack":0},"remainingKcal":3194.7}
+today/BULK/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":190}
+today/BULK/base/skip	afternoon_tea,snack
+today/BULK/base/breakfast	conv_bx05+conv_sl04+conv_dr06 scale=1 kcal=550 base=550 P=32 C=77.2 F=12.3 Fb=11 budget=798.7 src=convenience
+today/BULK/base/lunch	conv_bx01+conv_sl03+conv_dr03 scale=1 kcal=831 base=831 P=49 C=99.1 F=27.6 Fb=16.8 budget=1322.4 src=convenience
+today/BULK/base/afternoon_tea	-
+today/BULK/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=1813.7 src=cook_full
+today/BULK/base/snack	-
+today/BULK/base/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr06,conv_bx01+conv_sl03+conv_dr03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/BULK/today-breakfast/targets	{"baseTargetKcal":3194.7,"bmr":1873.8,"carb_g":409,"fat_g":88.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":379,"offsetKcal":0,"protein_g":190,"targetKcal":3194.7,"tdee":2904.3}
+today/BULK/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":1387.4,"lunch":1387.4,"snack":0},"remainingKcal":2774.7}
+today/BULK/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":168}
+today/BULK/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/BULK/today-breakfast/breakfast	-
+today/BULK/today-breakfast/lunch	conv_bx01+conv_sl04+conv_dr03 scale=1 kcal=876 base=876 P=50.5 C=112.6 F=25.4 Fb=19.8 budget=1387.4 src=convenience
+today/BULK/today-breakfast/afternoon_tea	-
+today/BULK/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=1898.7 src=cook_full
+today/BULK/today-breakfast/snack	-
+today/BULK/today-breakfast/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/OFF/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/OFF/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":948.1,"lunch":948.1,"snack":0},"remainingKcal":1896.1}
+today/OFF/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/OFF/base/skip	afternoon_tea,breakfast,snack
+today/OFF/base/breakfast	-
+today/OFF/base/lunch	conv_bx01+conv_sl04+conv_dr03 scale=1 kcal=876 base=876 P=50.5 C=112.6 F=25.4 Fb=19.8 budget=948.1 src=convenience
+today/OFF/base/afternoon_tea	-
+today/OFF/base/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=1020.1 src=cook_full
+today/OFF/base/snack	-
+today/OFF/base/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/OFF/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/OFF/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/OFF/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/OFF/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/OFF/today-breakfast/breakfast	-
+today/OFF/today-breakfast/lunch	conv_bx03+conv_dr01+conv_pk03 scale=1 kcal=737.5 base=737.5 P=43.5 C=87.5 F=25.1 Fb=19 budget=738.1 src=convenience
+today/OFF/today-breakfast/afternoon_tea	-
+today/OFF/today-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=738.6 src=cook_full
+today/OFF/today-breakfast/snack	-
+today/OFF/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/fb-dislikeTop/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-dislikeTop/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-dislikeTop/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-dislikeTop/skip	afternoon_tea,snack
+today/M/fb-dislikeTop/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-dislikeTop/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-dislikeTop/afternoon_tea	-
+today/M/fb-dislikeTop/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
+today/M/fb-dislikeTop/snack	-
+today/M/fb-dislikeTop/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave
+today/M/fb-dislikeTop-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-dislikeTop-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-dislikeTop-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-dislikeTop-night/skip	afternoon_tea,snack
+today/M/fb-dislikeTop-night/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-dislikeTop-night/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-dislikeTop-night/afternoon_tea	-
+today/M/fb-dislikeTop-night/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
+today/M/fb-dislikeTop-night/snack	-
+today/M/fb-dislikeTop-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave
+today/M/fb-likeAlt/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-likeAlt/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-likeAlt/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-likeAlt/skip	afternoon_tea,snack
+today/M/fb-likeAlt/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/fb-likeAlt/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/fb-likeAlt/afternoon_tea	-
+today/M/fb-likeAlt/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/fb-likeAlt/snack	-
+today/M/fb-likeAlt/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/fb-likeAlt-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-likeAlt-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-likeAlt-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-likeAlt-night/skip	afternoon_tea,snack
+today/M/fb-likeAlt-night/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+today/M/fb-likeAlt-night/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+today/M/fb-likeAlt-night/afternoon_tea	-
+today/M/fb-likeAlt-night/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+today/M/fb-likeAlt-night/snack	-
+today/M/fb-likeAlt-night/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+today/M/fb-shownToday/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownToday/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownToday/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownToday/skip	afternoon_tea,snack
+today/M/fb-shownToday/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownToday/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownToday/afternoon_tea	-
+today/M/fb-shownToday/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=656.8 base=431.8 P=43 C=103.2 F=7.2 Fb=9.9 budget=708.6 src=cook_full
+today/M/fb-shownToday/snack	-
+today/M/fb-shownToday/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/fb-shownToday-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownToday-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownToday-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownToday-night/skip	afternoon_tea,snack
+today/M/fb-shownToday-night/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownToday-night/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownToday-night/afternoon_tea	-
+today/M/fb-shownToday-night/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=656.8 base=431.8 P=43 C=103.2 F=7.2 Fb=9.9 budget=708.6 src=cook_full
+today/M/fb-shownToday-night/snack	-
+today/M/fb-shownToday-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/fb-shownYesterday/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownYesterday/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownYesterday/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownYesterday/skip	afternoon_tea,snack
+today/M/fb-shownYesterday/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownYesterday/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownYesterday/afternoon_tea	-
+today/M/fb-shownYesterday/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=656.8 base=431.8 P=43 C=103.2 F=7.2 Fb=9.9 budget=708.6 src=cook_full
+today/M/fb-shownYesterday/snack	-
+today/M/fb-shownYesterday/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/fb-shownYesterday-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownYesterday-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownYesterday-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownYesterday-night/skip	afternoon_tea,snack
+today/M/fb-shownYesterday-night/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownYesterday-night/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownYesterday-night/afternoon_tea	-
+today/M/fb-shownYesterday-night/dinner	grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry scale=2 kcal=656.8 base=431.8 P=43 C=103.2 F=7.2 Fb=9.9 budget=708.6 src=cook_full
+today/M/fb-shownYesterday-night/snack	-
+today/M/fb-shownYesterday-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_chicken_breast_st_mixed_grain_okra_sm_teriyaki_sm_air_fry
+today/M/fb-shownOften/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownOften/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownOften/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownOften/skip	afternoon_tea,snack
+today/M/fb-shownOften/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownOften/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownOften/afternoon_tea	-
+today/M/fb-shownOften/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
+today/M/fb-shownOften/snack	-
+today/M/fb-shownOften/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave
+today/M/fb-shownOften-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/M/fb-shownOften-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/M/fb-shownOften-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/M/fb-shownOften-night/skip	afternoon_tea,snack
+today/M/fb-shownOften-night/breakfast	conv_bx05+conv_dr06+conv_pk03 scale=1 kcal=477.5 base=477.5 P=29 C=60.7 F=12.6 Fb=8.5 budget=474 src=convenience
+today/M/fb-shownOften-night/lunch	conv_bx06+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51 C=79.4 F=22.2 Fb=19.7 budget=709.3 src=convenience
+today/M/fb-shownOften-night/afternoon_tea	-
+today/M/fb-shownOften-night/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=708.6 src=cook_full
+today/M/fb-shownOften-night/snack	-
+today/M/fb-shownOften-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_microwave
+flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 高纖藜麥／穀物沙拉盒 ＋ Plenti／Oatly 濃縮燕麥奶" kcal=475 P=33 C=47.5 F=16.3 Fb=8.5 source=custom item=null comps=["conv_bx04","conv_sl04","conv_pk04"]
+flow/log-breakfast/write1	markRecipesShown conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+flow/log-breakfast/breakfast	-
+flow/log-breakfast/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+flow/log-breakfast/afternoon_tea	-
+flow/log-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+flow/log-breakfast/snack	-
+flow/undo-breakfast/write0	removeDailyLog {"id":"day_1","op":"removeDailyLog"}
+flow/undo-breakfast/write1	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry
+flow/undo-breakfast/breakfast	conv_bx04+conv_sl04+conv_pk04 scale=1 kcal=475 base=475 P=33 C=47.5 F=16.3 Fb=8.5 budget=474 src=convenience
+flow/undo-breakfast/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
+flow/undo-breakfast/afternoon_tea	-
+flow/undo-breakfast/dinner	grain_bowl_baked_ps_salmon_st_mixed_grain_snap_pea_sm_teriyaki_sm_air_fry scale=2 kcal=680.2 base=455.2 P=38.3 C=103.8 F=11.4 Fb=9.3 budget=711.1 src=cook_full
+flow/undo-breakfast/snack	-
