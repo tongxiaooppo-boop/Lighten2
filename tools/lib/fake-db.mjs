@@ -50,8 +50,15 @@ export async function saveRecipeFeedback(id, rating) {
   S().feedback[id] = Object.assign({}, ex, { recipe_template_id: id, rating: rating, shown_count: (ex.shown_count || 0) + 1 });
   S().writes.push({ op: "saveRecipeFeedback", id: id, rating: rating });
 }
-export async function markRecipesShown(ids) {
+// 照 db.js 的語意寫入：累加 shown_count、更新 last_shown_date，同一天不重複累加
+export async function markRecipesShown(ids, today) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(today))) throw new Error("[fake-db] markRecipesShown 需要今天的日期字串");
   S().writes.push({ op: "markRecipesShown", ids: ids.slice() });
+  ids.forEach((id) => {
+    const ex = S().feedback[id] || {};
+    if (ex.last_shown_date === today) return;
+    S().feedback[id] = Object.assign({}, ex, { recipe_template_id: id, shown_count: (ex.shown_count || 0) + 1, last_shown_date: today });
+  });
 }
 
 export async function getCustomFoods() {

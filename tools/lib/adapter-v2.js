@@ -94,7 +94,8 @@ module.exports = async function createV2Adapter(ROOT) {
     takeWrites() {
       return globalThis.__fakeDbState.writes.splice(0).map((w) => {
         if (w.op !== "addDailyLog") return w;
-        return { op: w.op, entry: { slot: w.entry.slot, name: w.entry.name, totals: w.entry.totals } };
+        const e = w.entry;
+        return { op: w.op, entry: { slot: e.slot, name: e.name, totals: e.totals, meal_type: e.meal_type, source: e.source, content: e.content } };
       });
     },
     takeAlerts() { return alerts.splice(0); },
@@ -148,6 +149,12 @@ module.exports = async function createV2Adapter(ROOT) {
     currentRecs: () => today.getCurrentRecs(),
     async logRec(slot) { await today.onLogRecClick(slot, today.getCurrentRecs()[slot], fakeBtn()); io.fromToday = true; },
     async undo(logId) { await today.onUndoClick(logId, fakeBtn()); io.fromToday = true; },
+    async dislike(slot) { await today.onDislikeClick(today.getCurrentRecs()[slot].id); io.fromToday = true; },
+    async dislikeChip(type, key, label) {
+      const attrs = { "data-type": type, "data-key": key, "data-label": label };
+      await today.onDislikeChipClick({ getAttribute: (k) => attrs[k] });
+      io.fromToday = true;
+    },
 
     // ---------- 自己選 ----------
     async pickerOpen(slot) {
