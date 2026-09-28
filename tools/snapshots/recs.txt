@@ -190,12 +190,12 @@ today/VEGAN/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"f
 today/VEGAN/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/VEGAN/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/VEGAN/base/skip	afternoon_tea,snack
-today/VEGAN/base/breakfast	conv_bx05+conv_dr01+conv_pk03 scale=1 kcal=457.5 base=457.5 P=21.5 C=62.7 F=15.2 Fb=17.7 budget=474 src=auto
-today/VEGAN/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.4 kcal=719.3 base=597 P=28.6 C=104.8 F=22 Fb=16.8 budget=719.3 src=auto
+today/VEGAN/base/breakfast	bowl_oat_soy_milk_oats_none_none_method_microwave scale=2 kcal=430 base=267.5 P=20.4 C=56.5 F=13.3 Fb=12.3 budget=474 src=auto
+today/VEGAN/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.5 kcal=733.1 base=597 P=28.9 C=107.7 F=22.1 Fb=17 budget=733.1 src=auto
 today/VEGAN/base/afternoon_tea	-
-today/VEGAN/base/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry scale=1.8 kcal=719.3 base=495.5 P=30.2 C=120.2 F=12.6 Fb=11.8 budget=719.3 src=auto
+today/VEGAN/base/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry scale=1.9 kcal=733 base=495.5 P=30.5 C=123 F=12.8 Fb=12 budget=733 src=auto
 today/VEGAN/base/snack	-
-today/VEGAN/base/write0	markRecipesShown conv_bx05+conv_dr01+conv_pk03,protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry,grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry
+today/VEGAN/base/write0	markRecipesShown bowl_oat_soy_milk_oats_none_none_method_microwave,protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry,grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry
 today/VEGAN/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/VEGAN/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/VEGAN/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
