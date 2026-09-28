@@ -138,6 +138,73 @@ function checkIngredients(list, refs) {
   return ids;
 }
 
+// ---------- 現成品項（章程 B4、B3） ----------
+const PRODUCT_SOURCES = ["label", "official_web", "derived", "estimate", "label_unsourced"];
+const PRODUCT_FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+
+function fieldSource(p, k) {
+  return (p.field_sources && p.field_sources[k]) || p.source || {};
+}
+
+function checkProducts(products, frozen) {
+  const ids = {};
+  const labelUnsourced = [];
+  products.forEach(({ file, p }) => {
+    const w = file + " " + (p.id || "(沒有 id)");
+    if (typeof p.id !== "string" || p.id === "") err(w + "：缺 id");
+    if (ids[file + p.id]) err(w + "：id 重複");
+    ids[file + p.id] = true;
+    if (typeof p.name !== "string" || p.name.trim() === "") err(w + "：缺 name");
+    if (["convenience", "delivery"].indexOf(p.channel) === -1) err(w + "：channel 不合法");
+    if (["main", "side", "snack", "drink"].indexOf(p.role) === -1) err(w + "：role 不合法");
+    if (!Array.isArray(p.valid_slots) || p.valid_slots.length === 0 || p.valid_slots.some((s) => SLOTS.indexOf(s) === -1)) err(w + "：valid_slots 不合法");
+    if (p.role === "drink" && p.contains_drink) err(w + "：飲料不能再標 contains_drink");
+    ["contains_drink", "is_treat", "vegan", "lacto_ovo"].forEach((k) => { if (typeof p[k] !== "boolean") err(w + "：" + k + " 必須是 true/false"); });
+    if (p.vegan && !p.lacto_ovo) err(w + "：全素一定也是蛋奶素");
+    if (!isNum(p.kcal) || p.kcal < 0) err(w + "：kcal 要是非負數（章程 B5.2）");
+    if (["stated", "midpoint"].indexOf(p.kcal_basis) === -1) err(w + "：kcal_basis 要是 stated 或 midpoint");
+    if (p.kcal_range !== null) {
+      const r = p.kcal_range;
+      if (!Array.isArray(r) || r.length !== 2 || !r.every(isNum) || !(r[0] <= p.kcal && p.kcal <= r[1])) err(w + "：kcal_range 要是 [低, 高] 且 低 ≤ kcal ≤ 高");
+    } else if (p.kcal_basis === "midpoint") {
+      err(w + "：由區間取中點的品項要有 kcal_range");
+    }
+    PRODUCT_FIELDS.forEach((k) => {
+      if (!(k in p)) err(w + "：缺 " + k + "（未知寫 null，不能省略）");
+      else if (p[k] !== null && (!isNum(p[k]) || p[k] < 0)) err(w + "：" + k + " 要是非負數或 null");
+    });
+    checkAllergenTags(w, p.allergen_tags, true);
+    if (!p.source || PRODUCT_SOURCES.indexOf(p.source.type) === -1) err(w + "：source.type 不合法（" + (p.source && p.source.type) + "）");
+    Object.keys(p.field_sources || {}).forEach((k) => {
+      const f = p.field_sources[k];
+      if (PRODUCT_FIELDS.indexOf(k) === -1) err(w + "：field_sources 有不認得的欄位 " + k);
+      if (!f || PRODUCT_SOURCES.indexOf(f.type) === -1) err(w + "：field_sources." + k + " 的 type 不合法");
+    });
+    PRODUCT_FIELDS.forEach((k) => {
+      const t = fieldSource(p, k).type;
+      if (p[k] !== null && t === "label_unsourced") labelUnsourced.push(p.id + "." + k);
+      if ((t === "label" || t === "official_web") && !fieldSource(p, k).ref) err(w + "：" + k + " 的出處是 " + t + "，ref 要寫照片檔名或網址");
+    });
+    // 外食的鈉與飽和脂肪沒有出處就是 null（章程 B5.8）
+    ["sat_fat_g", "sodium_mg"].forEach((k) => {
+      if (p[k] !== null && ["estimate", "label_unsourced"].indexOf(fieldSource(p, k).type) !== -1) err(w + "：" + k + " 沒有出處就寫 null，不填沒根據的數字（章程 B5.8）");
+    });
+  });
+  // label_unsourced 只准減少不准新增（章程 B3）
+  const allowed = {};
+  frozen.forEach((f) => { allowed[f] = true; });
+  labelUnsourced.forEach((f) => { if (!allowed[f]) err("「" + f + "」是 label_unsourced，但不在凍結清單 data/reference/label_unsourced_frozen.json（只准減少不准新增）"); });
+  // 查證優先順序（章程 B12 警告）
+  const nEstimate = products.reduce((n, { p }) => n + PRODUCT_FIELDS.filter((k) => p[k] !== null && fieldSource(p, k).type === "estimate").length, 0);
+  warn("現成品項：label_unsourced " + labelUnsourced.length + " 欄、estimate " + nEstimate + " 欄待查證（清單：node tools/check-data.js --list）");
+  if (process.argv.indexOf("--list") !== -1) {
+    products.forEach(({ p }) => PRODUCT_FIELDS.forEach((k) => {
+      const t = fieldSource(p, k).type;
+      if (p[k] !== null && (t === "estimate" || t === "label_unsourced")) console.log("    " + t + "\t" + p.id + "." + k + "\t" + p.name);
+    }));
+  }
+}
+
 // ---------- 餐型骨架（章程 B7） ----------
 function checkArchetypes(archetypes, ingredients) {
   const byId = {};
@@ -172,6 +239,12 @@ function main() {
   checkIngredients(ingredients, refs);
   console.log("[餐型骨架]");
   checkArchetypes(readJson("dish_archetypes.json"), ingredients);
+  console.log("[現成品項]");
+  checkProducts(
+    readJson("convenience_items.json").map((p) => ({ file: "convenience_items", p: p }))
+      .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
+    readJson("reference/label_unsourced_frozen.json").fields
+  );
 
   warnings.forEach((m) => console.log("  ⚠ " + m));
   errors.forEach((m) => console.log("  ✗ " + m));

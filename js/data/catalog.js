@@ -10,7 +10,6 @@
 // 並攤平成 engine 用的形狀：kcal_100g、protein_100g、carb_100g、fat_100g、fiber_100g、sat_fat_100g、sodium_100g、
 // diet_tags（由 vegan／lacto_ovo 推導：全素 ⊃ 蛋奶素）；其餘欄位照抄。
 
-import { round1 } from "../core/num.js";
 import { SLOTS } from "../core/slots.js";
 import { UNVERIFIED_ALLERGEN as UNVERIFIED } from "../core/config.js";
 
@@ -23,36 +22,33 @@ async function fetchJson(url) {
   return await res.json();
 }
 
-function fromConvenience(it) {
-  return {
-    uid: it.id, source_id: it.id, name: it.name,
-    channel: it.channel === "delivery" ? "delivery" : "convenience",
-    category: it.category || null, role: it.role, valid_slots: it.valid_slots || [],
-    contains_drink: !!it.contains_drink, is_treat: !!it.is_treat,
-    kcal: it.kcal != null ? it.kcal : null, kcal_low: null, kcal_high: null, kcal_rep: it.kcal != null ? it.kcal : null,
-    protein_g: it.protein_g != null ? it.protein_g : null, carb_g: it.carb_g != null ? it.carb_g : null,
-    fat_g: it.fat_g != null ? it.fat_g : null, fiber_g: it.fiber_g != null ? it.fiber_g : null,
-    tier: it.tier, diet_tags: it.diet_tags || [],
-    allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED],
-    note: it.note || null, is_taiwan: false,
-  };
+function orNull(v) {
+  return v != null ? v : null;
 }
 
-function fromTaiwan(it) {
+// 飲食限制標記（全素 ⊃ 蛋奶素）：要正面宣告才算（章程 B6.5）
+function dietTags(it) {
+  return it.vegan ? ["全素"] : it.lacto_ovo ? ["蛋奶素"] : [];
+}
+
+// 現成品項（章程 B4）。isTaiwan：台式外食（taiwan_items.json），uid 加 "tw_" 前綴避免跟超商 id 撞到。
+// kcal_rep：熱量是明確的代表值才有（kcal_basis=stated）；由區間取中點的是 null，區間太寬時不進推薦池（pool.js）。
+function fromProduct(it, isTaiwan) {
+  const range = Array.isArray(it.kcal_range) ? it.kcal_range : null;
   return {
-    uid: "tw_" + it.id, source_id: it.id, name: it.name,
-    channel: "delivery",
-    category: it.category || null, role: it.role, valid_slots: it.valid_slots || [],
+    uid: isTaiwan ? "tw_" + it.id : it.id, source_id: it.id, name: it.name,
+    channel: it.channel, vendor: orNull(it.vendor),
+    category: orNull(it.category), role: it.role, valid_slots: it.valid_slots || [],
     contains_drink: !!it.contains_drink, is_treat: !!it.is_treat,
-    kcal: it.kcal_rep != null ? it.kcal_rep : round1((it.kcal_low + it.kcal_high) / 2),
-    kcal_low: it.kcal_low != null ? it.kcal_low : null, kcal_high: it.kcal_high != null ? it.kcal_high : null,
-    kcal_rep: it.kcal_rep != null ? it.kcal_rep : null,
-    protein_g: it.protein_g != null ? it.protein_g : null, carb_g: it.carb_g != null ? it.carb_g : null,
-    fat_g: it.fat_g != null ? it.fat_g : null, fiber_g: it.fiber_g != null ? it.fiber_g : null,
-    tier: "🟢", // 外食品項對使用者來說零烹調成本
-    diet_tags: [], // 台式品項沒有飲食限制標記：有設定飲食限制的使用者一律看不到，刻意的保守預設
+    kcal: orNull(it.kcal),
+    kcal_low: range ? range[0] : null, kcal_high: range ? range[1] : null,
+    kcal_rep: it.kcal_basis === "stated" ? orNull(it.kcal) : null,
+    protein_g: orNull(it.protein_g), carb_g: orNull(it.carb_g), fat_g: orNull(it.fat_g), fiber_g: orNull(it.fiber_g),
+    sat_fat_g: orNull(it.sat_fat_g), sodium_mg: orNull(it.sodium_mg),
+    tier: "🟢", // 現成品項對使用者來說零烹調成本
+    diet_tags: dietTags(it),
     allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED],
-    note: null, is_taiwan: true,
+    note: isTaiwan ? null : orNull(it.note), is_taiwan: isTaiwan,
   };
 }
 
@@ -82,12 +78,13 @@ function fromIngredient(it) {
     fiber_100g: it.per_100g ? v("fiber_g") : 0,
     sat_fat_100g: it.per_100g ? v("sat_fat_g") : 0,
     sodium_100g: it.per_100g ? v("sodium_mg") : 0,
-    diet_tags: it.vegan ? ["全素"] : it.lacto_ovo ? ["蛋奶素"] : [],
+    diet_tags: dietTags(it),
   });
 }
 
 export function buildCatalog(raw) {
-  const products = raw.convenienceItems.map(fromConvenience).concat(raw.taiwanItems.map(fromTaiwan));
+  const products = raw.convenienceItems.map(function (it) { return fromProduct(it, false); })
+    .concat(raw.taiwanItems.map(function (it) { return fromProduct(it, true); }));
   const productsByUid = {};
   products.forEach(function (p) { productsByUid[p.uid] = p; });
   const ingredients = raw.ingredients.map(fromIngredient);
