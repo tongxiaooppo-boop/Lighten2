@@ -13,6 +13,11 @@ export function sodiumText(value, partial, withReference) {
     (partial ? "（部分品項無資料）" : "");
 }
 
+// 骨架算不到的東西（章程 B7.5）：["沙拉醬"] →「未含沙拉醬」；沒有就是空字串
+export function notIncludedText(list) {
+  return Array.isArray(list) && list.length > 0 ? "未含" + list.join("、") : "";
+}
+
 export function satFatText(value, partial) {
   if (value == null) return "飽和脂肪 無資料";
   return "飽和脂肪 約 " + Math.round(value * 10) / 10 + " g" + (partial ? "（部分品項無資料）" : "");

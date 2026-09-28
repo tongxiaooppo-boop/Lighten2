@@ -94,6 +94,7 @@ function composedCombos(catalog) {
                 sauce_id: season ? season.id : null,
                 primary_axis: hasStapleSlot ? "staple" : "protein",
                 valid_slots: arche.valid_slots || null, // 餐型自己標適用時段
+                not_included: arche.not_included || null, // 骨架算不到的東西，畫面註明「未含 X」（章程 B7.5）
                 name: nameParts.join(" + "),
                 protein_name: p.name,
                 staple_name: s ? s.name : null,

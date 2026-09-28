@@ -51,6 +51,7 @@
     "id": "warm_salad",
     "name": "溫沙拉",
     "seasoned": true,
+    "not_included": ["沙拉醬"],
     "valid_slots": ["lunch", "dinner"],
     "protein": { "allow": ["chicken_thigh", "chicken_breast", "firm_tofu"] },
     "staple": { "allow": ["pumpkin", "sweet_potato"] },

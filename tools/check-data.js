@@ -252,6 +252,8 @@ function checkArchetypes(archetypes, ingredients) {
       });
     });
     if (typeof a.seasoned !== "boolean") err(w + "：要標 seasoned: true|false（章程 B7.2）");
+    if (a.not_included !== undefined && !(Array.isArray(a.not_included) && a.not_included.length > 0 && a.not_included.every((x) => typeof x === "string" && x.trim())))
+      err(w + "：not_included 要是非空字串陣列（章程 B7.5）");
     if (!Array.isArray(a.methods) || a.methods.length === 0) err(w + "：至少要有一個烹調法");
     (a.methods || []).forEach((id) => {
       referenced[id] = true;
