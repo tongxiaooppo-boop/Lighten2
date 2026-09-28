@@ -283,8 +283,21 @@ function checkArchetypes(archetypes, ingredients) {
   });
 }
 
+// 工具自我檢查：規則本身要擋得住刻意改壞的資料（−1b 驗收審核第 4 節）
+function checkToolRules(refs) {
+  const throws = (fn) => { try { fn(); return false; } catch (e) { return true; } };
+  const chicken = { id: "selftest", source: { type: "tfda", ref: "I04024" } };
+  const withOverride = (k, value) => Object.assign({}, chicken, { field_sources: { [k]: { type: "derived", value: value, note: "x" } } });
+  // T1–T3：field_sources.value 只准用在參考資料是 null 的欄位，且只能填 0（章程 B5.1）
+  if (!throws(() => computePer100g(withOverride("fat_g", 1.0), refs))) err("工具自我檢查：field_sources.value 覆寫了 TFDA 有值的欄位（脂肪）卻沒報錯");
+  if (!throws(() => computePer100g(withOverride("fiber_g", 5), refs))) err("工具自我檢查：TFDA 是 null 的欄位用 value 填了非 0 的數字卻沒報錯");
+  if (throws(() => computePer100g(withOverride("fiber_g", 0), refs))) err("工具自我檢查：TFDA 是 null 的欄位填 0 應該允許");
+}
+
 function main() {
   const refs = loadReferences();
+  console.log("[工具自我檢查]");
+  checkToolRules(refs);
   const ingredients = readJson("ingredients.json");
   console.log("[食材]");
   checkIngredients(ingredients, refs);
