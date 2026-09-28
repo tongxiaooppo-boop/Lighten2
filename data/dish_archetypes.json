@@ -25,12 +25,12 @@
     "id": "protein_stir_fry",
     "name": "炒類",
     "valid_slots": ["lunch", "dinner"],
-    "protein": { "allow": ["beef_shank", "shrimp", "chicken_thigh"] },
-    "staple": { "allow": ["cauliflower_rice", "brown_rice_cooked", "edamame"] },
+    "protein": { "allow": ["beef_shank", "shrimp", "chicken_thigh", "edamame"] },
+    "staple": { "allow": ["cauliflower_rice", "brown_rice_cooked"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "onion", "bell_pepper", "bean_sprout", "eggplant", "luffa", "wood_ear", "shiitake", "snap_pea", "okra", "baby_corn"] },
     "seasoning": { "allow": ["kimchi"] },
     "methods": ["method_stir_fry"],
-    "note": "出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」；一定要熱炒，蔬菜/泡菜都是選填加分項不是必要；2026-09-25 蔬菜擴充：熱炒是台式蔬菜使用量最大的餐型，加了大部分新增的需煮熟蔬菜"
+    "note": "出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」（毛豆仁 2026-09-28 移到蛋白質軸，跟蝦仁擇一，decisions #37）；一定要熱炒，蔬菜/泡菜都是選填加分項不是必要；2026-09-25 蔬菜擴充：熱炒是台式蔬菜使用量最大的餐型，加了大部分新增的需煮熟蔬菜"
   },
   {
     "id": "grain_bowl_baked",
