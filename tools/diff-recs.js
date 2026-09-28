@@ -208,7 +208,7 @@ async function snapMatrix() {
   const DIETS = ["一般", "全素", "蛋奶素", "低碳"];
   const SOURCES = ["auto", "convenience", "delivery", "cook_quick", "cook_full"];
   const BUDGETS = [150, 300, 500, 800];
-  const ALLERGENS = [[], ["甲殼類"], ["魚"], ["蛋"], ["乳製品"], ["堅果"], ["麩質"], ["黃豆"], ["芝麻"], "蝦、牛奶"];
+  const ALLERGENS = [[], ["甲殼類"], ["魚"], ["蛋"], ["乳製品"], ["堅果"], ["麩質"], ["黃豆"], ["芝麻"], "蝦、牛奶", ["花生"], ["軟體動物"]];
   for (const diet of DIETS) for (const source of SOURCES) for (const budget of BUDGETS) for (const al of ALLERGENS) {
     const prefs = {}, perSlot = {};
     SLOTS.forEach((s) => { prefs[s] = source; perSlot[s] = budget; });

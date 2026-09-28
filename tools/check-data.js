@@ -174,6 +174,14 @@ function checkProducts(products, frozen) {
       else if (p[k] !== null && (!isNum(p[k]) || p[k] < 0)) err(w + "：" + k + " 要是非負數或 null");
     });
     checkAllergenTags(w, p.allergen_tags, true);
+    // 複合料理（章程 B6.3）：要標 composite；沒標「未確認」時要有官方成分表出處
+    if (typeof p.composite !== "boolean") err(w + "：要標 composite: true|false（章程 B6.3）");
+    if (p.composite && Array.isArray(p.allergen_tags) && p.allergen_tags.indexOf(UNVERIFIED) === -1 &&
+        ["label", "official_web"].indexOf((p.source || {}).type) === -1) {
+      err(w + "：複合料理沒標「未確認」，要有包裝或官網成分表的出處");
+    }
+    // 燕麥屬含麩質穀物（章程 B6.2）
+    if (/燕麥/.test(p.name) && !(p.allergen_tags || []).some((t) => t === "麩質" || t === UNVERIFIED)) err(w + "：燕麥要標麩質（章程 B6.2）");
     if (!p.source || PRODUCT_SOURCES.indexOf(p.source.type) === -1) err(w + "：source.type 不合法（" + (p.source && p.source.type) + "）");
     Object.keys(p.field_sources || {}).forEach((k) => {
       const f = p.field_sources[k];

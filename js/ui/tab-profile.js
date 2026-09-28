@@ -3,6 +3,7 @@
 import { SLOTS, isSlotEnabled, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
 import { dateAddDays } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
+import { ALLERGEN_OPTIONS } from "../core/config.js";
 import { $ } from "./dom.js";
 import { getProfile, saveProfile, addWeightLog } from "../data/db.js";
 import { calculateTargets } from "../engine/nutrition.js";
@@ -331,7 +332,17 @@ async function onWeightSubmit(e) {
   }
 }
 
+// 過敏原勾選框由固定詞彙產生（唯一來源 core/config.js，章程 C2）
+function renderAllergenOptions() {
+  const box = document.getElementById("allergen-options");
+  if (!box) return;
+  box.innerHTML = ALLERGEN_OPTIONS.map(function (a) {
+    return '<label class="allergen-option"><input type="checkbox" name="allergens" value="' + escapeHtml(a) + '" /> ' + escapeHtml(a) + "</label>";
+  }).join("");
+}
+
 export async function initProfileTab() {
+  renderAllergenOptions();
   const dateInput = document.querySelector("#weight-form input[name='log_date']");
   if (dateInput) dateInput.value = todayStr();
 
