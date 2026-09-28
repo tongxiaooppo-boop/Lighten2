@@ -49,6 +49,44 @@ function checkDietTags(where, it) {
     tags.filter((t) => NOT_LACTO_OVO.indexOf(t) !== -1).forEach((t) => err(where + "：標蛋奶素卻含「" + t + "」（章程 B6.8）"));
     if (unverified && !/素食依據：/.test(it.note || "")) err(where + "：過敏原未確認又標蛋奶素，note 要寫「素食依據：」（章程 B6.8）");
   }
+  // 過敏原詞彙沒有畜禽肉：名稱或 note 有肉類字眼又標素，要寫依據（啟發式）
+  const meatWord = MEAT_WORDS.exec(((it.name || "") + " " + (it.note || "")).replace(NOT_MEAT_WORDS, ""));
+  if ((it.vegan || it.lacto_ovo) && meatWord && !/素食依據：/.test(it.note || "")) {
+    err(where + "：名稱或 note 有「" + meatWord[0] + "」又標素，note 要寫「素食依據：」（章程 B6.8）");
+  }
+}
+const MEAT_WORDS = /雞|豬|牛|羊|鴨|肉|排骨|火腿|培根|魚|蝦/;
+const NOT_MEAT_WORDS = /雞蛋|牛奶|牛乳|植物肉|素肉|果肉|肉桂/g;
+
+// TFDA 內容物描述有沒有完整列出成分（章程 B6.3）：括號裡用逗號列出成分，而且任何成分清單都沒有「等」
+// （TFDA 常見「樣品狀態:…(A,B等); 前處理描述:…」，清單以「等」結尾但整段描述不是）
+function listsCompleteIngredients(desc) {
+  return /[（(][^）)]*[,，][^）)]*[）)]/.test(desc) && !/等\s*([）)]|$)/.test(desc);
+}
+
+// 二手官方數字凍結（章程 B2.2）：frozen＝{ "檔名.id": { 欄位: 值 } }，productByKey＝同樣 key 的品項
+function checkOfficialFrozen(frozen, productByKey) {
+  Object.keys(frozen).forEach((key) => {
+    const p = productByKey[key];
+    if (!p) { err("官方數字凍結清單的「" + key + "」找不到品項（章程 B2.2）"); return; }
+    Object.keys(frozen[key]).forEach((k) => {
+      if (p[k] !== frozen[key][k]) err(key + "." + k + " 是 " + p[k] + "，凍結的官方數字是 " + frozen[key][k] + "（要改請同一個 commit 改 data/reference/official_values_frozen.json 並說明，章程 B2.2）");
+    });
+    // 清單沒列碳水＝碳水由凍結數字反推，出處不能改標 estimate 繞過公式檢查
+    const carbSrc = (p.field_sources || {}).carb_g;
+    if (!("carb_g" in frozen[key]) && !(carbSrc && carbSrc.type === "derived")) {
+      err(key + ".carb_g 要維持由凍結的官方數字反推（field_sources.carb_g 標 derived），不能改標其他出處（章程 B2.2）");
+    }
+  });
+}
+
+// 不吃清單只比 key（decisions #40），前提是 id 全資料庫唯一。entries＝[[種類, uid], …]
+function checkUniqueIds(entries) {
+  const seen = {};
+  entries.forEach(([kind, uid]) => {
+    if (seen[uid]) err("id「" + uid + "」在" + seen[uid] + "與" + kind + "重複（不吃清單只比 key，id 要全資料庫唯一，decisions #40）");
+    else seen[uid] = kind;
+  });
 }
 
 // 巨量營養素驗算（章程 B5.4）：蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9 跟熱量差距
@@ -153,10 +191,7 @@ function checkIngredients(list, refs) {
       if (typeof ing.composite !== "boolean") err(w + "：醬料要標 composite: true|false");
       if (ing.composite && (ing.allergen_tags || []).indexOf(UNVERIFIED) === -1) {
         const r = src.type === "tfda" ? refs.tfda[src.ref] : null;
-        const desc = (r && r["內容物描述"]) || "";
-        // 括號裡用逗號列出成分，而且不是以「等」結尾（「…等」代表沒列完，B6.3）
-        const listsIngredients = /[（(][^）)]*[,，][^）)]*[）)]/.test(desc) && !/等[）)]?s*$/.test(desc);
-        if (!listsIngredients) err(w + "：複合料理沒標「未確認」，出處要是內容物描述列有成分的 TFDA 樣品（或包裝/官網成分表）");
+        if (!listsCompleteIngredients((r && r["內容物描述"]) || "")) err(w + "：複合料理沒標「未確認」，出處要是內容物描述列有成分的 TFDA 樣品（或包裝/官網成分表）");
       }
     }
 
@@ -209,7 +244,7 @@ function checkProducts(products, frozen, refs) {
     checkAllergenTags(w, p.allergen_tags, true);
     checkDietTags(w, p);
     // note 只放「資料來源；內容描述」，AI 的數字不是出處、不寫進 note（章程 B2.3、B2.6）
-    if (/AI/.test(p.note || "")) err(w + "：note 不得出現 AI 回答的內容，出處寫在 source／field_sources（章程 B2.6）");
+    if (/AI|Claude|GPT|Gemini/i.test(p.note || "")) err(w + "：note 不得出現 AI 回答的內容，出處寫在 source／field_sources（章程 B2.6）");
     // 複合料理（章程 B6.3）：要標 composite；沒標「未確認」時要有官方成分表出處
     if (typeof p.composite !== "boolean") err(w + "：要標 composite: true|false（章程 B6.3）");
     if (p.composite && Array.isArray(p.allergen_tags) && p.allergen_tags.indexOf(UNVERIFIED) === -1 &&
@@ -310,18 +345,51 @@ function checkToolRules(refs) {
   if (!throws(() => computePer100g(withOverride("fat_g", 1.0), refs))) err("工具自我檢查：field_sources.value 覆寫了 TFDA 有值的欄位（脂肪）卻沒報錯");
   if (!throws(() => computePer100g(withOverride("fiber_g", 5), refs))) err("工具自我檢查：TFDA 是 null 的欄位用 value 填了非 0 的數字卻沒報錯");
   if (throws(() => computePer100g(withOverride("fiber_g", 0), refs))) err("工具自我檢查：TFDA 是 null 的欄位填 0 應該允許");
-  // T8：label／official_web 出處的現成品項也要做巨量營養素驗算（章程 B5.4）
-  const probe = (patch) => {
-    const base = readJson("convenience_items.json").find((p) => p.id === "conv_dr01");
+  // 跑一次檢查函式，回傳有沒有出現符合 pattern 的錯誤；自我檢查產生的訊息不算資料問題
+  const reports = (pattern, fn) => {
     const before = errors.length, beforeWarn = warnings.length;
-    checkProducts([{ file: "selftest", p: Object.assign({}, base, patch) }], [], refs);
-    const found = errors.slice(before).some((m) => /熱量驗算/.test(m));
-    errors.length = before; warnings.length = beforeWarn; // 自我檢查產生的訊息不算資料問題
+    try { fn(); } catch (e) { errors.push(String(e.message)); }
+    const found = errors.slice(before).some((m) => pattern.test(m));
+    errors.length = before; warnings.length = beforeWarn;
     return found;
   };
-  const label = { source: { type: "label", ref: "selftest" }, field_sources: {} };
-  if (!probe(Object.assign({}, label, { protein_g: 50 }))) err("工具自我檢查：包裝標示出處的品項蛋白質抄錯（熱量差很多）卻沒報錯");
-  if (probe(label)) err("工具自我檢查：包裝標示出處、數字正確的品項不該報熱量驗算");
+  // 寫死的測試品項（不綁真實資料，品項下架不會讓自我檢查誤報）
+  const PRODUCT = {
+    id: "selftest_p", name: "測試豆漿", channel: "convenience", vendor: null, category: "飲品", role: "drink",
+    valid_slots: ["breakfast"], contains_drink: false, is_treat: false, kcal: 160, kcal_basis: "stated", kcal_range: null,
+    protein_g: 15, carb_g: 14, fat_g: 7.6, fiber_g: 10.2, sat_fat_g: null, sodium_mg: null,
+    allergen_tags: ["黃豆"], composite: false, vegan: true, lacto_ovo: true,
+    source: { type: "label", ref: "selftest" }, field_sources: {}, verified_at: null, note: "自我檢查",
+  };
+  const product = (patch) => () => checkProducts([{ file: "selftest", p: Object.assign({}, PRODUCT, patch) }], [], refs);
+  // T8：label／official_web 出處的現成品項也要做巨量營養素驗算（章程 B5.4）
+  if (!reports(/熱量驗算/, product({ protein_g: 50 }))) err("工具自我檢查：包裝標示出處的品項蛋白質抄錯（熱量差很多）卻沒報錯");
+  if (reports(/熱量驗算/, product({}))) err("工具自我檢查：包裝標示出處、數字正確的品項不該報熱量驗算");
+  // T4：反推的碳水要合公式（章程 B2.2）
+  const derivedCarb = { source: { type: "estimate", ref: "selftest" }, kcal: 343, protein_g: 18, fat_g: 16,
+    field_sources: { carb_g: { type: "derived", ref: "（熱量 − 蛋白質×4 − 脂肪×9）÷ 4" } } };
+  if (!reports(/反推公式/, product(Object.assign({}, derivedCarb, { carb_g: 80 })))) err("工具自我檢查：反推的碳水跟公式不符卻沒報錯");
+  if (reports(/反推公式/, product(Object.assign({}, derivedCarb, { carb_g: 31.8 })))) err("工具自我檢查：反推碳水四捨五入到 0.05 以內不該報錯");
+  // B2.6：note 不得出現 AI 回答（不分大小寫、各家名稱）
+  ["Google Ai 估算：鈉380mg", "ChatGPT 估算", "Claude依網路資料整理", "Gemini 回覆"].forEach((note) => {
+    if (!reports(/B2\.6/, product({ note: note }))) err("工具自我檢查：note 寫「" + note + "」卻沒報錯");
+  });
+  // B6.8：過敏原詞彙沒有畜禽肉，名稱含肉類字眼又標素要有「素食依據：」
+  if (!reports(/素食依據/, product({ name: "排骨便當", allergen_tags: [], vegan: false, lacto_ovo: true }))) err("工具自我檢查：排骨便當標蛋奶素卻沒報錯");
+  if (reports(/素食依據/, product({ name: "植物肉便當", allergen_tags: [], vegan: false, lacto_ovo: true, note: "素食依據：素食系列" }))) err("工具自我檢查：寫了素食依據的品項不該報錯");
+  // B6.3：成分清單裡出現「等」就不算列完，不論在描述的哪裡（TFDA 常見「樣品狀態:…(A,B等); 前處理描述:…」）
+  if (listsCompleteIngredients("樣品狀態:醬油(水,脫水性植物蛋白質,鹽等); 前處理描述:混合均勻")) err("工具自我檢查：成分清單以「等」結尾（不在描述最後）卻被當成列完");
+  if (listsCompleteIngredients("前處理描述:混合均勻(醬油,味醂,糖等)")) err("工具自我檢查：描述最後的「…等)」卻被當成列完");
+  if (!listsCompleteIngredients("前處理描述:混合均勻(醬油,味醂,糖)")) err("工具自我檢查：完整列出成分的描述卻不被接受");
+  // T14、3.8：官方數字凍結，反推碳水不能改標 estimate 繞過
+  const frozenKey = { "selftest.x": { kcal: 343, protein_g: 18, fat_g: 16 } };
+  const frozenItem = (patch) => ({ "selftest.x": Object.assign({}, PRODUCT, derivedCarb, { carb_g: 31.8 }, patch) });
+  if (!reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({ protein_g: 10 })))) err("工具自我檢查：凍結的官方蛋白質被改掉卻沒報錯");
+  if (!reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({ field_sources: { carb_g: { type: "estimate", ref: "x" } } })))) err("工具自我檢查：凍結品項的反推碳水改標 estimate 卻沒報錯");
+  if (reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({})))) err("工具自我檢查：凍結品項沒被改卻報錯");
+  // T13：id 全資料庫唯一
+  if (!reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["超商", "egg"]]))) err("工具自我檢查：食材與超商 id 重複卻沒報錯");
+  if (reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["台式", "tw_egg"]]))) err("工具自我檢查：不同 id 卻報重複");
 }
 
 function main() {
@@ -341,31 +409,19 @@ function main() {
   checkArchetypes(readJson("dish_archetypes.json"), ingredients);
   console.log("[現成品項]");
   // 二手官方數字凍結（章程 B2.2）：要改必須同一個 commit 改清單
-  const officialFrozen = readJson("reference/official_values_frozen.json").values;
   const productByKey = {};
   ["convenience_items", "taiwan_items"].forEach((f) => readJson(f + ".json").forEach((p) => { productByKey[f + "." + p.id] = p; }));
-  Object.keys(officialFrozen).forEach((key) => {
-    const p = productByKey[key];
-    if (!p) { err("官方數字凍結清單的「" + key + "」找不到品項（章程 B2.2）"); return; }
-    Object.keys(officialFrozen[key]).forEach((k) => {
-      if (p[k] !== officialFrozen[key][k]) err(key + "." + k + " 是 " + p[k] + "，凍結的官方數字是 " + officialFrozen[key][k] + "（要改請同一個 commit 改 data/reference/official_values_frozen.json 並說明，章程 B2.2）");
-    });
-  });
+  checkOfficialFrozen(readJson("reference/official_values_frozen.json").values, productByKey);
   checkProducts(
     readJson("convenience_items.json").map((p) => ({ file: "convenience_items", p: p }))
       .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
     readJson("reference/label_unsourced_frozen.json").fields, refs
   );
 
-  // 不吃清單只比 key（decisions #40），前提是 id 全資料庫唯一：食材 id 跟現成品項 uid（台式加 tw_）不得重複
-  const seen = {};
-  ingredients.map((it) => ["食材", it.id])
+  // 食材 id 跟現成品項 uid（台式加 tw_）不得重複
+  checkUniqueIds(ingredients.map((it) => ["食材", it.id])
     .concat(readJson("convenience_items.json").map((p) => ["超商", p.id]))
-    .concat(readJson("taiwan_items.json").map((p) => ["台式", "tw_" + p.id]))
-    .forEach(([kind, uid]) => {
-      if (seen[uid]) err("id「" + uid + "」在" + seen[uid] + "與" + kind + "重複（不吃清單只比 key，id 要全資料庫唯一，decisions #40）");
-      else seen[uid] = kind;
-    });
+    .concat(readJson("taiwan_items.json").map((p) => ["台式", "tw_" + p.id])));
 
   warnings.forEach((m) => console.log("  ⚠ " + m));
   errors.forEach((m) => console.log("  ✗ " + m));

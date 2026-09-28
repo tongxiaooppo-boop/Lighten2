@@ -287,7 +287,8 @@ BANNED_WORDS.forEach((w) => check(indexHtml.indexOf(w) === -1, "index.html 出�
 // 啟發式檢查，不是完整證明（例如用字串拼出欄位名就繞得過）；目的是擋住順手寫出來的違規
 console.log("[鈉不參與評分 C4.14]");
 // 顯示欄位（飽和脂肪、鈉）只在 engine/meal-content.js 裡處理；其他 engine 模組只能把 displayFields(...) 的結果
-// 原封不動併進輸出物件（Object.assign 的後段參數），不能讀出來比較或評分（−1b 驗收審核）
+// 原封不動併進輸出物件（Object.assign 的後段參數），不能讀出來比較或評分（−1b 驗收審核）。
+// 寫法限制：displayFields(...) 要跟 Object.assign( 寫在同一行（或放在以「},」開頭的行），多行拆開會被誤擋。
 for (const f of files.filter((x) => x.layer === "engine" && !/meal-content\.js$/.test(x.rel))) {
   f.code.split("\n").forEach((line, i) => {
     checks++;
