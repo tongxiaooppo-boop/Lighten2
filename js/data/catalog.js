@@ -8,11 +8,15 @@
 // −1a 只接上現有資料、不改資料；欄位規格（章程 B4）在 −1b 重建資料時定案。
 
 import { round1 } from "../core/num.js";
+import { SLOTS } from "../core/slots.js";
 
 const UNVERIFIED = "未確認";
 
+// 種子 JSON 帶跟程式同一個版本字串（取自這個模組被 import map 對應到的網址 ?v=），部署後資料跟程式一起更新（章程 C1.6）
+const VERSION = new URL(import.meta.url).searchParams.get("v");
+
 async function fetchJson(url) {
-  const res = await fetch(url);
+  const res = await fetch(VERSION ? url + "?v=" + VERSION : url);
   if (!res.ok) throw new Error("[catalog.js] 載入種子資料失敗：" + url);
   return await res.json();
 }
@@ -54,7 +58,7 @@ function fromTaiwan(it) {
 export function fromCustomFood(f) {
   return {
     uid: f.id, source_id: f.id, name: f.name, channel: null, category: null,
-    role: "side", valid_slots: ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"],
+    role: "side", valid_slots: SLOTS.slice(),
     contains_drink: false, is_treat: false,
     kcal: f.kcal != null ? f.kcal : null, kcal_low: null, kcal_high: null, kcal_rep: null,
     protein_g: f.protein_g != null ? f.protein_g : null, carb_g: f.carb_g != null ? f.carb_g : null,

@@ -77,14 +77,14 @@ export function cardHtml(item, opts) {
   const o = opts || {};
   const blocked = o.blockedReason != null;
   const imgHtml = item.image
-    ? '<img class="feast-item-card-img" src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy">'
-    : '<div class="feast-item-card-img feast-item-card-img-empty" aria-hidden="true"></div>';
-  const cls = "feast-item-card" + (o.selected ? " selected" : "") + (blocked ? " is-blocked" : "");
-  const reasonHtml = blocked ? '<span class="feast-item-card-reason">' + escapeHtml(o.blockedReason) + "</span>" : "";
+    ? '<img class="item-card-img" src="' + item.image + '" alt="' + escapeHtml(item.name) + '" loading="lazy">'
+    : '<div class="item-card-img item-card-img-empty" aria-hidden="true"></div>';
+  const cls = "item-card" + (o.selected ? " selected" : "") + (blocked ? " is-blocked" : "");
+  const reasonHtml = blocked ? '<span class="item-card-reason">' + escapeHtml(o.blockedReason) + "</span>" : "";
   const kcalText = item.kcal != null ? "約 " + item.kcal + " kcal" : "";
   return '<button type="button" class="' + cls + '" data-item-id="' + escapeHtml(item.id) +
     '" data-uid="' + escapeHtml(item.uid) + '"' + (blocked ? " disabled" : "") + ">" +
-    imgHtml + '<span class="feast-item-card-name">' + escapeHtml(item.name) + "</span>" +
-    (kcalText ? '<span class="feast-item-card-kcal">' + escapeHtml(kcalText) + "</span>" : "") +
+    imgHtml + '<span class="item-card-name">' + escapeHtml(item.name) + "</span>" +
+    (kcalText ? '<span class="item-card-kcal">' + escapeHtml(kcalText) + "</span>" : "") +
     reasonHtml + "</button>";
 }

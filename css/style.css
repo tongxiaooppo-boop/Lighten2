@@ -455,7 +455,7 @@ body {
   margin: 0;
 }
 
-.rec-reservation-note {
+.rec-logged-note {
   color: #3A2E22;
   font-weight: 600;
   margin: 0 0 0.6rem;
@@ -547,7 +547,7 @@ body {
   overflow-y: auto;
   box-shadow: 0 12px 40px rgba(60, 40, 20, 0.25);
 }
-.manual-picker .feast-item-picker {
+.manual-picker .item-grid {
   max-height: 42vh;
   overflow-y: auto;
   padding: 0.2rem;
@@ -644,20 +644,20 @@ body {
   min-width: 3.2em;
 }
 
-.feast-cancel {
+.undo-btn {
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
   border-radius: 6px;
   cursor: pointer;
 }
 
-.feast-cancel {
+.undo-btn {
   border: 1px solid #d0a0a0;
   background-color: #fff;
   color: #a33;
 }
 
-.feast-cancel:hover {
+.undo-btn:hover {
   background-color: #fbf0f0;
 }
 
@@ -769,13 +769,13 @@ body {
   color: #8A7A63;
 }
 
-.feast-item-picker {
+.item-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
   gap: 0.6rem;
 }
 
-.feast-item-card {
+.item-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -789,50 +789,50 @@ body {
   text-align: center;
 }
 
-.feast-item-card:hover {
+.item-card:hover {
   border-color: #E0B98C;
 }
 
-.feast-item-card.selected {
+.item-card.selected {
   border-color: #C1652F;
   background-color: #FBF0E6;
 }
 
-.feast-item-card-img {
+.item-card-img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.feast-item-card-img-empty {
+.item-card-img-empty {
   width: 100%;
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   background-color: #F3E4D0;
 }
 
-.feast-item-card-name {
+.item-card-name {
   font-weight: 600;
   font-size: 0.85rem;
   overflow-wrap: break-word;
 }
 
-.feast-item-card-kcal {
+.item-card-kcal {
   font-size: 0.75rem;
   color: #8A7A63;
 }
 
 /* 硬性過濾擋掉的品項：灰階、不可點、顯示原因 */
-.feast-item-card.is-blocked {
+.item-card.is-blocked {
   opacity: 0.45;
   cursor: not-allowed;
   border-color: #E8E0D4;
 }
-.feast-item-card.is-blocked:hover {
+.item-card.is-blocked:hover {
   border-color: #E8E0D4;
 }
-.feast-item-card-reason {
+.item-card-reason {
   font-size: 0.7rem;
   color: #a33;
   overflow-wrap: break-word;
@@ -883,12 +883,12 @@ body {
   .primary-btn,
   .secondary-btn,
   .dislike-btn,
-  .feast-cancel {
+  .undo-btn {
     min-height: 44px;
   }
 
   .dislike-btn,
-  .feast-cancel {
+  .undo-btn {
     padding: 0.5rem 0.9rem;
   }
 
@@ -902,7 +902,7 @@ body {
   .rec-meta,
   .exercise-item-meta,
   .dislike-btn,
-  .feast-cancel {
+  .undo-btn {
     font-size: 0.9rem;
   }
 

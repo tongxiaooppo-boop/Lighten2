@@ -140,17 +140,20 @@ for (const f of files) {
   }
 }
 
-console.log("[engine 不讀時鐘 C1.1]");
-for (const f of files.filter((x) => x.layer === "engine")) {
-  const re = /Date\.now\s*\(|new\s+Date\s*\(\s*\)/g;
+console.log("[engine、core 不讀時鐘、不碰瀏覽器環境 C1.1]");
+// 讀時鐘：Date.now()、new Date()、new Date;、Date()（不帶 new 回傳現在時間字串）、performance.now()
+const CLOCK_RE = /Date\.now\s*\(|new\s+Date\s*(\(\s*\)|(?![\s(]))|(?<![\w$.])(?<!new\s+)Date\s*\(|performance\s*\.\s*now/g;
+const BROWSER_RE = /(?<![\w$.])(document|window|localStorage|sessionStorage|indexedDB|navigator|location|globalThis)(?![\w$])/g;
+for (const f of files.filter((x) => x.layer === "engine" || x.layer === "core")) {
   let m;
-  while ((m = re.exec(f.code))) fail(f.rel + ":" + lineOf(f.code, m.index) + " engine 讀了時鐘（" + m[0] + "），今天日期/現在時間要由呼叫端傳入");
-  checks++;
+  while ((m = CLOCK_RE.exec(f.code))) fail(f.rel + ":" + lineOf(f.code, m.index) + " " + f.layer + "/ 讀了時鐘（" + m[0].trim() + "），今天日期/現在時間要由呼叫端傳入");
+  while ((m = BROWSER_RE.exec(f.code))) fail(f.rel + ":" + lineOf(f.code, m.index) + " " + f.layer + "/ 碰了瀏覽器環境（" + m[1] + "），只有 data/ 與 ui/ 可以");
+  checks += 2;
 }
 
 console.log("[ES modules、不掛 window C1.3]");
 for (const f of files) {
-  const re = /\bwindow\s*\.\s*[\w$]+\s*=(?!=)|Object\.assign\(\s*window\b/g;
+  const re = /\b(window|globalThis|self)\s*(\.\s*[\w$]+|\[[^\]]*\])\s*=(?!=)|Object\.(assign|defineProperty|defineProperties)\(\s*(window|globalThis|self)\b/g;
   let m;
   while ((m = re.exec(f.code))) {
     if (f.rel === "js/ui/app.js") continue;
@@ -203,25 +206,28 @@ if (mapMatch) {
   }
 }
 
-// 這次改到 js/ 時，版本字串要換
+// 這次改到 js/、css/、data/ 時，提交的 index.html 版本字串要換（比對要提交的版本，不是工作區）
 const baseIdx = args.indexOf("--base");
 const staged = args.indexOf("--staged") !== -1;
 if ((staged || baseIdx !== -1) && mapVersion) {
   const git = (cmd) => execSync("git " + cmd, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
-  let changed = [], oldHtml = null;
+  let changed = [], oldHtml = null, newHtml = indexHtml;
   try {
     if (staged) {
       changed = git("diff --cached --name-only").split("\n").filter(Boolean);
       oldHtml = git("show HEAD:index.html");
+      newHtml = git("show :index.html"); // 暫存區：版本字串改了但沒 git add 也要擋
     } else {
       const base = args[baseIdx + 1];
       changed = git("diff --name-only " + base + " HEAD").split("\n").filter(Boolean);
       oldHtml = git("show " + base + ":index.html");
     }
   } catch (e) { oldHtml = null; }
-  if (oldHtml && changed.some((c) => /^js\//.test(c))) {
+  if (oldHtml && changed.some((c) => /^(js|css|data)\//.test(c))) {
     const old = /\.js\?v=([\w.-]+)"/.exec(oldHtml);
-    check(!old || old[1] !== mapVersion, "這次改到 js/，但 import map 版本字串沒換（跑 node tools/stamp-version.js）");
+    const cur = /\.js\?v=([\w.-]+)"/.exec(newHtml);
+    check(!old || (cur && old[1] !== cur[1]),
+      "這次改到 js/、css/ 或 data/，但要提交的 index.html 版本字串沒換（跑 node tools/stamp-version.js 再 git add index.html）");
   }
 }
 
