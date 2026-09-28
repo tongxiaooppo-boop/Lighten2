@@ -48,6 +48,9 @@ const UI_SUM_PATTERNS = [
   { re: /\b\w*(kcal|protein|carb|fat|fiber|sodium)\w*\s*\+=/i, why: "營養數值累加（+=）" },
   { re: new RegExp("\\+=\\s*[^;]*\\." + "\\w*" + NUTRIENT + "\\b"), why: "把營養欄位 += 進變數" },
   { re: new RegExp("\\.reduce\\([^;]*\\." + NUTRIENT + "\\b"), why: "用 reduce 加總營養欄位" },
+  // 營養欄位拿去做加法（字串串接不算：+ 的另一邊是字串字面量；行尾的 + 看不到另一邊，不算）
+  { re: new RegExp("\\." + NUTRIENT + "\\)?\\s*\\+(?![+=])(?!\\s*([\"'`]|$))"), why: "營養欄位做加法" },
+  { re: new RegExp("(?<![\"'`]\\s*)\\+\\s*\\(?\\s*(?:Number\\()?[\\w$.\\[\\]]+\\." + NUTRIENT + "\\b(?!\\s*\\+\\s*[\"'`])"), why: "加上營養欄位" },
 ];
 
 // ---------- 小工具 ----------

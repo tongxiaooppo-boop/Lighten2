@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>輕盈計畫 (Lighten Plan)</title>
-  <link rel="stylesheet" href="css/style.css?v=20260927d" />
+  <link rel="stylesheet" href="css/style.css?v=20260928-134926" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap" />
 </head>
@@ -16,7 +16,6 @@
   <nav class="tab-nav" aria-label="主要分頁">
     <button class="tab-btn" data-tab="profile">基本資料</button>
     <button class="tab-btn is-active" data-tab="today">今日建議</button>
-    <button class="tab-btn" data-tab="ledger">美饗日曆</button>
     <button class="tab-btn" data-tab="week">本週總覽</button>
     <button class="tab-btn" data-tab="exercise">運動紀錄</button>
     <button class="tab-btn" data-tab="shopping">採買清單</button>
@@ -103,7 +102,7 @@
 
         <fieldset>
           <legend>不吃的食材</legend>
-          <p class="taiwan-ref-note">在「今日建議」卡片按「順便不要」就會加進來；被擋掉的品項在推薦、美饗日曆、自己選時都會排除。</p>
+          <p class="taiwan-ref-note">在「今日建議」卡片按「順便不要」就會加進來；被擋掉的品項在推薦、自己選時都會排除。</p>
           <div id="disliked-ingredients-list" class="disliked-ingredients-list"></div>
         </fieldset>
 
@@ -283,85 +282,6 @@
         </article>
       </div>
     </section>
-    <section id="tab-ledger" class="tab-panel" data-panel="ledger" hidden>
-      <h2>美饗日曆</h2>
-      <p id="ledger-status" class="status-text" aria-live="polite"></p>
-
-      <section class="ledger-progress">
-        <h3>近7天平均</h3>
-        <p id="ledger-recent-avg" class="status-text">資料不足</p>
-        <p class="taiwan-ref-note">以昨天為起點，往前找「完整記錄日」（當天所有開啟時段都有記錄）計算近 7 天平均攝取熱量，與每日目標比較；今天還沒吃完不算在內。</p>
-      </section>
-
-      <section class="ledger-form">
-        <h3>預約大餐</h3>
-        <form id="feast-form" autocomplete="off" novalidate>
-          <div class="form-row">
-            <div class="form-field">
-              <label><input type="radio" name="feast_mode" value="reserve" checked /> 預約（稍後要吃）</label>
-            </div>
-            <div class="form-field">
-              <label><input type="radio" name="feast_mode" value="log" /> 已經吃了，直接記錄</label>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label>餐別
-                <select name="slot">
-                  <option value="lunch">午餐</option>
-                  <option value="afternoon_tea">下午茶</option>
-                  <option value="dinner">晚餐</option>
-                  <option value="breakfast">早餐</option>
-                  <option value="snack">宵夜</option>
-                </select>
-              </label>
-            </div>
-            <div class="form-field form-field-btn">
-              <button type="submit" class="primary-btn" id="feast-submit-btn">預約</button>
-            </div>
-          </div>
-          <div class="feast-date-field">
-            <p class="feast-date-label">日期</p>
-            <input type="hidden" name="plan_date" id="feast-date-value" />
-            <div class="feast-date-picker" id="feast-date-picker"></div>
-          </div>
-          <div class="feast-item-picker-field">
-            <p class="feast-item-picker-label">點選實際品項（會跟著上面「餐別」變化）</p>
-            <input type="hidden" name="item_id" id="feast-item-select" value="" />
-            <div class="feast-item-picker" id="feast-item-picker"></div>
-          </div>
-          <div class="form-row" id="feast-custom-row">
-            <div class="form-field">
-              <label>份量
-                <select name="size">
-                  <option value="S">小</option>
-                  <option value="M">中</option>
-                  <option value="L">大</option>
-                </select>
-              </label>
-            </div>
-            <div class="form-field">
-              <label>名稱（選填）<input type="text" name="custom_food_name" placeholder="例如：路邊攤水煎包" /></label>
-            </div>
-            <div class="form-field">
-              <label>熱量 (kcal)（跟著份量自動帶出，可自行修改）<input type="number" name="custom_food_kcal" min="0" step="1" inputmode="numeric" /></label>
-            </div>
-            <div class="form-field">
-              <label>蛋白質 (g) 選填<input type="number" name="custom_food_protein" min="0" step="0.1" inputmode="decimal" /></label>
-            </div>
-            <div class="form-field">
-              <label>膳食纖維 (g) 選填<input type="number" name="custom_food_fiber" min="0" step="0.1" inputmode="decimal" /></label>
-            </div>
-          </div>
-        </form>
-      </section>
-
-      <section class="ledger-list">
-        <h3>已預約清單</h3>
-        <div id="ledger-reservations"></div>
-      </section>
-
-    </section>
     <section id="tab-week" class="tab-panel" data-panel="week" hidden>
       <h2>本週總覽</h2>
       <p id="week-status" class="status-text" aria-live="polite"></p>
@@ -471,20 +391,39 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
-  <script src="js/database.js?v=20260927d"></script>
-  <script src="js/engine/nutrition.js?v=20260927d"></script>
-  <script src="js/engine/budget.js?v=20260927d"></script>
-  <script src="js/engine/matcher.js?v=20260927d"></script>
-  <script src="js/engine/recommend.js?v=20260927d"></script>
-  <script src="js/ui/item-picker.js?v=20260927d"></script>
-  <script src="js/engine/feast.js?v=20260927d"></script>
-  <script src="js/engine/tdee.js?v=20260927d"></script>
-  <script src="js/ui/tab-profile.js?v=20260927d"></script>
-  <script src="js/ui/tab-today.js?v=20260927d"></script>
-  <script src="js/ui/tab-ledger.js?v=20260927d"></script>
-  <script src="js/ui/tab-exercise.js?v=20260927d"></script>
-  <script src="js/ui/tab-week.js?v=20260927d"></script>
-  <script src="js/app.js?v=20260927d"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "./js/core/config.js": "./js/core/config.js?v=20260928-134926",
+    "./js/core/dates.js": "./js/core/dates.js?v=20260928-134926",
+    "./js/core/html.js": "./js/core/html.js?v=20260928-134926",
+    "./js/core/num.js": "./js/core/num.js?v=20260928-134926",
+    "./js/core/slots.js": "./js/core/slots.js?v=20260928-134926",
+    "./js/data/catalog.js": "./js/data/catalog.js?v=20260928-134926",
+    "./js/data/db.js": "./js/data/db.js?v=20260928-134926",
+    "./js/engine/budget.js": "./js/engine/budget.js?v=20260928-134926",
+    "./js/engine/filters.js": "./js/engine/filters.js?v=20260928-134926",
+    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20260928-134926",
+    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20260928-134926",
+    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20260928-134926",
+    "./js/engine/pool.js": "./js/engine/pool.js?v=20260928-134926",
+    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20260928-134926",
+    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20260928-134926",
+    "./js/engine/today.js": "./js/engine/today.js?v=20260928-134926",
+    "./js/ui/app.js": "./js/ui/app.js?v=20260928-134926",
+    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20260928-134926",
+    "./js/ui/clock.js": "./js/ui/clock.js?v=20260928-134926",
+    "./js/ui/item-picker.js": "./js/ui/item-picker.js?v=20260928-134926",
+    "./js/ui/manual-picker.js": "./js/ui/manual-picker.js?v=20260928-134926",
+    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20260928-134926",
+    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20260928-134926",
+    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20260928-134926",
+    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20260928-134926",
+    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20260928-134926",
+    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20260928-134926"
+  }
+}
+  </script>
+  <script type="module" src="js/ui/app.js?v=20260928-134926"></script>
 </body>
 </html>

@@ -29,9 +29,6 @@ body {
 .targets-result h3,
 .weight-widget h3,
 .rec-card h3,
-.ledger-progress h3,
-.ledger-form h3,
-.ledger-list h3,
 .exercise-streak h3,
 .exercise-form h3,
 .exercise-list h3,
@@ -97,12 +94,6 @@ body {
   flex-wrap: wrap;
   gap: 0.75rem 1.25rem;
   align-items: flex-end;
-}
-
-/* .form-row 的 display:flex 跟 [hidden] 的 UA 預設 display:none 優先度打平時，
-   樣式表裡宣告在後的 .form-row 會贏，導致 hidden 屬性關不掉畫面。用 id 選擇器強制蓋回去。 */
-#feast-custom-row[hidden] {
-  display: none;
 }
 
 .form-field {
@@ -178,98 +169,6 @@ body {
 
 .primary-btn:hover {
   background-color: #9E4F24;
-}
-
-/* 大餐預約日期選擇：inline 週捲動月曆格（取代原生 date input），可以直接看到範圍再挑日期，
-   哪些日期可選（預約=今天起、直接記錄=今天以前）用格子本身的樣式呈現，不用另外看說明文字。 */
-.feast-date-field {
-  margin: 0.75rem 0;
-}
-
-.feast-date-label {
-  margin: 0 0 0.35rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.feast-date-picker {
-  border: 1px solid #EFE3D2;
-  border-radius: 14px;
-  background-color: #ffffff;
-  padding: 0.7rem 0.6rem;
-}
-
-.fdp-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.fdp-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #8A7A63;
-}
-
-.fdp-nav-btn {
-  padding: 0.3rem 0.6rem;
-  font-size: 0.8rem;
-  border: 1px solid #EFE3D2;
-  border-radius: 6px;
-  background-color: #fff;
-  color: #3A2E22;
-  cursor: pointer;
-}
-
-.fdp-nav-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.fdp-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-}
-
-.fdp-dow {
-  text-align: center;
-  font-size: 0.7rem;
-  color: #8A7A63;
-  padding: 0.2rem 0;
-}
-
-.fdp-day {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #EFE3D2;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  background-color: #fff;
-  color: #3A2E22;
-  cursor: pointer;
-}
-
-.fdp-day.fdp-disabled {
-  opacity: 0.35;
-  cursor: default;
-  background-color: #FBF5ED;
-}
-
-.fdp-day.fdp-today {
-  border-color: #C1652F;
-  border-width: 2px;
-  font-weight: 700;
-}
-
-.fdp-day.fdp-selected {
-  background-color: #C1652F;
-  border-color: #C1652F;
-  color: #fff;
-  font-weight: 700;
 }
 
 .targets-result {
@@ -514,7 +413,6 @@ body {
   margin-bottom: 0.5rem;
 }
 
-
 .rec-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1rem;
@@ -746,72 +644,11 @@ body {
   min-width: 3.2em;
 }
 
-/* 週彈性帳本分頁 */
-.ledger-progress {
-  margin-bottom: 1.2rem;
-}
-
-.ledger-progress h3,
-.ledger-form h3,
-.ledger-list h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-}
-
-.ledger-form {
-  margin-bottom: 1.2rem;
-}
-
-.ledger-list {
-  margin-top: 1rem;
-}
-
-.ledger-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #EFE3D2;
-}
-
-.ledger-item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.ledger-item-title {
-  font-weight: 600;
-}
-
-.ledger-item-status {
-  font-size: 0.85rem;
-  color: #8A7A63;
-}
-
-.ledger-item-actions {
-  display: flex;
-  gap: 0.4rem;
-  flex: 0 0 auto;
-}
-
-.feast-confirm,
 .feast-cancel {
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.feast-confirm {
-  border: 1px solid #C1652F;
-  background-color: #fff;
-  color: #C1652F;
-}
-
-.feast-confirm:hover {
-  background-color: #F3E4D0;
 }
 
 .feast-cancel {
@@ -932,17 +769,6 @@ body {
   color: #8A7A63;
 }
 
-/* 預約大餐：可點擊的品項圖卡選單（取代原本純參考、不能點的卡片＋看不到圖的下拉） */
-.feast-item-picker-field {
-  margin: 0.8rem 0;
-}
-
-.feast-item-picker-label {
-  margin: 0 0 0.5rem;
-  font-size: 0.9rem;
-  color: #5A4C3A;
-}
-
 .feast-item-picker {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
@@ -984,13 +810,6 @@ body {
   aspect-ratio: 1 / 1;
   border-radius: 8px;
   background-color: #F3E4D0;
-}
-
-.feast-item-card-custom .feast-item-card-img {
-  object-fit: contain;
-  background-color: #F3E4D0;
-  padding: 0.4rem;
-  box-sizing: border-box;
 }
 
 .feast-item-card-name {
@@ -1064,13 +883,11 @@ body {
   .primary-btn,
   .secondary-btn,
   .dislike-btn,
-  .feast-confirm,
   .feast-cancel {
     min-height: 44px;
   }
 
   .dislike-btn,
-  .feast-confirm,
   .feast-cancel {
     padding: 0.5rem 0.9rem;
   }
@@ -1084,21 +901,17 @@ body {
   /* 字級可讀性：小字至少 14px（0.9rem） */
   .rec-meta,
   .exercise-item-meta,
-  .ledger-item-status,
   .dislike-btn,
-  .feast-confirm,
   .feast-cancel {
     font-size: 0.9rem;
   }
 
   /* 列表項：避免長文字造成橫向溢出 */
-  .ledger-item,
   .exercise-item,
   .week-day-item {
     align-items: flex-start;
   }
 
-  .ledger-item-info,
   .exercise-item-info,
   .week-day-label,
   .week-day-value {

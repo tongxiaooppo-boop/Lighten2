@@ -1,37 +1,26 @@
 // 輕盈計畫 — 推薦引擎／體重校正引擎斷言腳本
 // 用法：在 repo 根目錄執行 `node tools/check-engine.js`，全部通過 exit 0，任何一條失敗 exit 1。
-// 每次改 js/engine/recommend.js、js/engine/tdee.js 或 data/*.json 都要跑一次。
+// 每次改 js/engine/、js/data/ 或 data/*.json 都要跑一次（pre-commit hook 會跑）。
 // 來源：collab/opus-review-log/2026-09-27-full-project-audit.md 第 9 節。
-// 這支只測得到引擎邏輯；分頁切換、撤銷按鈕這類畫面流程要照同一份文件的手機實機腳本手動跑。
+// 這支只測得到引擎邏輯；分頁切換、撤銷按鈕這類畫面流程要照手機實機腳本手動跑。
+// 直接 import 跟瀏覽器同一批 ES modules（engine 是純函式，資料由這裡讀好傳入）。
 
 "use strict";
 
 const fs = require("fs");
 const path = require("path");
-const vm = require("vm");
+const { pathToFileURL } = require("url");
 
 const ROOT = path.join(__dirname, "..");
 const SLOTS = ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"];
 const MEAL_SLOTS = ["breakfast", "lunch", "dinner", "snack"];
 
-// ---------- 瀏覽器環境替身 ----------
-global.window = global;
-global.fetch = async function (url) {
-  const file = path.join(ROOT, url);
-  return { ok: fs.existsSync(file), json: async () => JSON.parse(fs.readFileSync(file, "utf8")) };
-};
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "data", f), "utf8"));
 const taiwanData = readJson("taiwan_items.json");
 const convenienceData = readJson("convenience_items.json");
-global.getTaiwanItems = async () => taiwanData;
-global.getAllRecipeFeedback = async () => ({});
 
-function load(rel) {
-  vm.runInThisContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), { filename: rel });
-}
-load("js/engine/nutrition.js");
-load("js/engine/budget.js");
-load("js/engine/recommend.js");
+const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);
+let M = null; // main() 裡載入
 
 // ---------- 成分資料對照（給斷言查 role / 標記用） ----------
 const itemByUid = {};
@@ -67,9 +56,29 @@ function mainCount(combo) {
 }
 
 async function main() {
+  M = {
+    catalog: await imp("js/data/catalog.js"),
+    db: await imp("js/data/db.js"),
+    pool: await imp("js/engine/pool.js"),
+    recommend: await imp("js/engine/recommend.js"),
+    filters: await imp("js/engine/filters.js"),
+    tdee: await imp("js/engine/tdee.js"),
+    dates: await imp("js/core/dates.js"),
+  };
+  const catalog = M.catalog.buildCatalog({
+    proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
+    rawIngredients: readJson("raw_ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"),
+  });
+  const candidatePool = M.pool.buildCandidatePool(catalog);
+  const recommendFor = (remainingBudget, constraints, prefs, diet, allergens, skip) => M.recommend.getTodayRecommendation({
+    pool: candidatePool, feedbackMap: {}, remainingBudget: remainingBudget, hardConstraints: constraints,
+    mealPrefs: prefs, dietRestriction: diet, allergens: allergens, skipSlots: skip, nowMs: Date.now(),
+  });
+
   // ---------- 1. 資料本身 ----------
   console.log("[資料]");
-  const ALLOWED_ALLERGENS = window.ALLERGEN_OPTIONS.concat(["未確認"]);
+  const ALLOWED_ALLERGENS = M.filters.ALLERGEN_OPTIONS.concat(["未確認"]);
   convenienceData.concat(taiwanData).forEach((it) => {
     check(["main", "side", "drink", "snack"].indexOf(it.role) !== -1, it.id + " 缺 role 或 role 不合法");
     check(Array.isArray(it.valid_slots) && it.valid_slots.length > 0 && it.valid_slots.every((s) => SLOTS.indexOf(s) !== -1),
@@ -86,7 +95,7 @@ async function main() {
 
   // ---------- 2. 整個候選池的結構規則 ----------
   console.log("[候選池結構]");
-  const pool = await window.buildRecommendCandidatePool();
+  const pool = candidatePool;
   check(pool.length > 0, "候選池是空的");
   const ids = {};
   pool.forEach((c) => {
@@ -115,7 +124,7 @@ async function main() {
   const DIETS = ["一般", "全素", "蛋奶素", "低碳"];
   const SOURCES = ["auto", "convenience", "delivery", "cook_quick", "cook_full"];
   const BUDGETS = [150, 300, 500, 800];
-  const ALLERGEN_CASES = [[]].concat(window.ALLERGEN_OPTIONS.map((a) => [a])).concat([["蝦、牛奶"]]);
+  const ALLERGEN_CASES = [[]].concat(M.filters.ALLERGEN_OPTIONS.map((a) => [a])).concat([["蝦、牛奶"]]);
   let scenarios = 0;
   const nullByDiet = {};
 
@@ -128,10 +137,10 @@ async function main() {
           const perSlot = {};
           SLOTS.forEach((s) => { prefs[s] = source; perSlot[s] = budget; });
           const allergenInput = typeof allergens[0] === "string" && allergens[0].indexOf("、") !== -1 ? allergens[0] : allergens;
-          const recs = await window.getTodayRecommendation(
+          const recs = recommendFor(
             { perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs, diet, allergenInput, {}
           );
-          const userAllergens = window.normalizeAllergens(allergenInput).list;
+          const userAllergens = M.filters.normalizeAllergens(allergenInput).list;
           const usedItems = {};
           const tag = diet + "/" + source + "/" + budget + "/" + JSON.stringify(allergenInput);
           SLOTS.forEach((slot) => {
@@ -140,7 +149,7 @@ async function main() {
               nullByDiet[diet + ":" + slot] = (nullByDiet[diet + ":" + slot] || 0) + 1;
               return;
             }
-            // 7a（2026-09-27）依序分配後，時段配額可能低於門檻，回傳 { lowBudget: true } 而非候選組合。
+            // 依序分配後，時段配額可能低於門檻，回傳 { lowBudget: true } 而非候選組合。
             // 這不是「找不到組合」，是「額度用完」，不做結構斷言。
             if (r.lowBudget) return;
             if (diet !== "一般") {
@@ -171,9 +180,9 @@ async function main() {
     });
   });
 
-  // ---------- 4. 已記錄／已預約的時段不產生推薦 ----------
+  // ---------- 4. 已記錄的時段不產生推薦 ----------
   console.log("[跳過時段]");
-  const skipRecs = await window.getTodayRecommendation(
+  const skipRecs = recommendFor(
     { perSlotSuggestion: { breakfast: 0, lunch: 500, afternoon_tea: 150, dinner: 500, snack: 150 } },
     { proteinGapToday: 30, fiberGapThisWeek: 10 }, null, "一般", [], { breakfast: true, dinner: true }
   );
@@ -183,7 +192,11 @@ async function main() {
 
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
-  await checkTdeeSlope();
+  checkTdeeSlope();
+
+  // ---------- 6. 資料庫寫入驗證（章程 C1.5：一筆一個 key，傳入陣列要報錯） ----------
+  console.log("[資料庫寫入驗證]");
+  await checkDbValidation();
 
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
@@ -192,10 +205,8 @@ async function main() {
 // 模擬新使用者：每兩天量一次體重，在「剛滿足資格門檻」（第 22、28 天）跟更久之後（第 42 天）估斜率。
 //   - 無雜訊的線性資料：估計值跟真實斜率誤差 < 0.1 kg/週（抓系統性偏差，例如 EWMA 暖機把斜率壓扁）
 //   - 有雜訊（±0.5kg）的資料：50 組不同雜訊的平均估計值誤差 < 0.1 kg/週（估計量不偏）
-async function checkTdeeSlope() {
-  function fmt(d) {
-    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-  }
+function checkTdeeSlope() {
+  const fmt = M.dates.fmtDate;
   // 固定種子的偽隨機雜訊，讓結果可重現
   let seed = 7;
   function noise() {
@@ -203,11 +214,9 @@ async function checkTdeeSlope() {
     return (seed / 2147483647) - 0.5; // ±0.5 kg
   }
 
-  load("js/engine/tdee.js");
   const profile = { age: 35, gender: "男", height_cm: 175, weight_kg: 90, activity_mode: "輕度", goal_mode: "減脂", enabled_slots: null };
 
-  async function estimate(truePerWeek, days, withNoise) {
-    let state = null;
+  function estimate(truePerWeek, days, withNoise) {
     const logs = [];
     const today = new Date();
     for (let i = days - 1; i >= 0; i -= 2) {
@@ -215,31 +224,60 @@ async function checkTdeeSlope() {
       const dayIndex = days - 1 - i;
       logs.push({ log_date: fmt(d), weight_kg: 90 + (truePerWeek / 7) * dayIndex + (withNoise ? noise() : 0) });
     }
-    global.getTdeeState = async () => state || {
-      version: 1, offset_kcal: 0, prev_offset_kcal: 0, effective_date: null, last_adjusted_date: null,
-      last_evaluated_date: null, goal_mode: null, mode_since_date: null, pending: null, dismissed_until: null,
-      announce_until: null, last_result: null, history: [],
-    };
-    global.saveTdeeState = async (s) => { state = s; return s; };
-    global.getWeightLogs = async () => logs;
-    global.getDailyLogs = async () => [];
-    const result = await window.runCalibrationNow(profile);
-    return result.last_result.slope_kg_per_week;
+    const result = M.tdee.evaluateCalibration(null, profile, logs, [], fmt(today), { force: true });
+    return result.state.last_result.slope_kg_per_week;
   }
 
   for (const truePerWeek of [-0.3, -0.5, -1.2, 0.4]) {
     for (const days of [22, 28, 42]) {
-      const clean = await estimate(truePerWeek, days, false);
+      const clean = estimate(truePerWeek, days, false);
       check(clean != null && Math.abs(clean - truePerWeek) < 0.1,
         "無雜訊：實際 " + truePerWeek + " kg/週、第 " + days + " 天估成 " + clean + " kg/週（誤差需 < 0.1）");
       let sum = 0;
       const RUNS = 50;
-      for (let k = 0; k < RUNS; k++) sum += await estimate(truePerWeek, days, true);
+      for (let k = 0; k < RUNS; k++) sum += estimate(truePerWeek, days, true);
       const mean = sum / RUNS;
       check(Math.abs(mean - truePerWeek) < 0.1,
         "有雜訊：實際 " + truePerWeek + " kg/週、第 " + days + " 天平均估成 " + mean.toFixed(2) + " kg/週（誤差需 < 0.1）");
     }
   }
+}
+
+// db.js 的寫入驗證在碰到 IndexedDB 之前就擋下，所以 Node 裡直接測得到。
+async function checkDbValidation() {
+  const db = M.db;
+  async function rejects(fn, label) {
+    let threw = false;
+    try { await fn(); } catch (e) { threw = true; }
+    check(threw, label);
+  }
+  const content = {
+    meal_type: "convenience", archetype_id: null, method_id: null,
+    components: [{ kind: "product", role: "main", ref: "conv_bx04", qty: 1, snapshot: { name: "x", kcal: 120 } }], implicit: null,
+  };
+  const good = {
+    log_date: "2026-09-23", slot: "lunch", meal_type: "convenience", source: "manual", name: "x",
+    content: content, totals: { kcal: 120, protein_g: 23, carb_g: null, fat_g: 2.8, fiber_g: 0 }, created_at: "2026-09-23T04:00:00.000Z",
+  };
+  let ok = true;
+  try { db.validateDailyLog(good); } catch (e) { ok = false; console.log("    " + e.message); }
+  check(ok, "格式正確的 daily_log 被驗證擋下");
+
+  await rejects(() => db.addDailyLog([good]), "addDailyLog 傳入陣列沒有報錯");
+  await rejects(() => db.addWeightLog([{ log_date: "2026-09-23", weight_kg: 70 }]), "addWeightLog 傳入陣列沒有報錯");
+  await rejects(() => db.addExerciseLog([{ log_date: "2026-09-23", activity_type: "快走" }]), "addExerciseLog 傳入陣列沒有報錯");
+  await rejects(() => db.saveProfile([{}]), "saveProfile 傳入陣列沒有報錯");
+  const broken = [
+    ["沒有 meal_type", Object.assign({}, good, { meal_type: undefined })],
+    ["meal_type 不在列舉", Object.assign({}, good, { meal_type: "cook" })],
+    ["source 不在列舉", Object.assign({}, good, { source: "custom" })],
+    ["content 沒有元件", Object.assign({}, good, { content: Object.assign({}, content, { components: [] }) })],
+    ["content 型態跟紀錄不一致", Object.assign({}, good, { meal_type: "delivery" })],
+    ["totals 沒有 kcal", Object.assign({}, good, { totals: { protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1 } })],
+    ["totals 營養欄位缺欄（要寫 null 不能省略）", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1 } })],
+    ["日期格式錯", Object.assign({}, good, { log_date: "2026/09/23" })],
+  ];
+  for (const b of broken) await rejects(() => db.validateDailyLog(b[1]), "daily_log " + b[0] + " 沒有被擋下");
 }
 
 main().catch((err) => {
