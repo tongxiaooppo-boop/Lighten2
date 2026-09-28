@@ -89,8 +89,11 @@ export function buildCatalog(raw) {
   products.forEach(function (p) { productsByUid[p.uid] = p; });
   const ingredients = raw.ingredients.map(fromIngredient);
   const ofAxis = function (axes) { return ingredients.filter(function (it) { return axes.indexOf(it.axis) !== -1; }); };
+  const implicit = {};
+  ofAxis(["implicit"]).forEach(function (it) { implicit[it.id] = it; });
   return {
     ingredients: ingredients,
+    implicit: implicit, // 自煮的隱含成分（用油、調味程度），依 id 查
     proteins: ofAxis(["protein"]),
     staples: ofAxis(["staple"]),
     sauces: ofAxis(["seasoning", "method"]),

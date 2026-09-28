@@ -373,6 +373,43 @@ async function main() {
     });
   }
 
+  // ---------- 4h. 自煮的隱含成分：用油與調味（章程 B5.6–B5.7、C4.11） ----------
+  console.log("[用油與調味]");
+  {
+    const mc = M.mc;
+    const byId = (id) => catalog.ingredients.find((x) => x.id === id);
+    const arch = (id) => catalog.archetypes.find((a) => a.id === id);
+    const stir = byId("method_stir_fry"), pan = byId("method_pan_fry"), air = byId("method_air_fry"), nocook = byId("method_no_cook");
+    const imp = (m, a, veg, sauce, habit) => mc.defaultImplicit(m, arch(a), veg, sauce, habit);
+    check(imp(stir, "protein_stir_fry", true, false, "normal").oil_g === 10, "炒＋有蔬菜：用油 5＋5＝10g");
+    check(imp(stir, "protein_stir_fry", false, false, "normal").oil_g === 5, "炒、沒有蔬菜：用油 5g");
+    check(imp(stir, "protein_stir_fry", true, false, "less").oil_g === 5, "少油習慣：炒＋蔬菜減半成 5g");
+    check(imp(pan, "egg_pan", true, false, "normal").oil_g === 5, "煎：用油 5g（有蔬菜也不加）");
+    check(imp(air, "grain_bowl_baked", true, false, "normal").oil_g === 0, "氣炸：用油 0");
+    check(imp(nocook, "bowl_oat", false, false, "normal").oil_g === 0, "免開火：用油 0");
+    check(imp(stir, "protein_stir_fry", true, false, "normal").seasoning === "normal", "有調味的骨架、沒選醬料：預設一般");
+    check(imp(stir, "protein_stir_fry", true, true, "normal").seasoning === "light", "有調味的骨架、選了醬料：預設清淡（decisions #28）");
+    check(imp(nocook, "bowl_oat", false, false, "normal").seasoning === null, "燕麥碗不加調味");
+    const ic = mc.implicitContribution({ oil_g: 10, seasoning: "normal" }, catalog.implicit);
+    check(Math.abs(ic.kcal - 88.4) < 0.05 && ic.fat_g === 10 && ic.sodium_mg === 700, "10g 油＋一般調味 ＝ 88.4 kcal、脂肪 10g、鈉 700 mg（實際 " + JSON.stringify(ic) + "）");
+
+    // 候選池：每個自組食譜都帶隱含成分，熱量含用油（C4.11）
+    const composed = candidatePool.filter((c) => c.is_composed);
+    check(composed.every((c) => c.implicit && typeof c.implicit.oil_g === "number" && "seasoning" in c.implicit), "有自組食譜沒有 implicit");
+    const stirCombo = composed.find((c) => c.method_id === "method_stir_fry" && c.vegetable_id);
+    check(stirCombo && stirCombo.implicit.oil_g === 10, "炒＋蔬菜的候選用油要是 10g");
+    // 用油不跟主要槽位縮放
+    const e1 = mc.achievableNutrition(stirCombo, 400), e2 = mc.achievableNutrition(stirCombo, 800);
+    const fixed = (e) => e.kcal - stirCombo.primary_kcal * e.scale;
+    check(Math.abs(fixed(e1) - fixed(e2)) < 0.2, "用油不能跟主要槽位一起縮放（固定部分 " + fixed(e1) + " vs " + fixed(e2) + "）");
+    // 少油習慣：推薦出來的份量用油減半
+    const lessPool = mc.withOilHabit(stirCombo, "less");
+    check(lessPool.implicit.oil_g === 5 && Math.abs((stirCombo.kcal - lessPool.kcal) - 44.2) < 0.1, "少油習慣：用油 10→5g、熱量少 44.2 kcal（實際 " + lessPool.implicit.oil_g + "g、差 " + (stirCombo.kcal - lessPool.kcal) + "）");
+    // 推薦記錄下來的 MealContent 帶實際採用的用油與調味
+    const rc = mc.contentFromRec(Object.assign({}, lessPool, { primary_scale: 1, source_pref: "cook_full" }), catalog.productsByUid);
+    check(rc.implicit && rc.implicit.oil_g === 5 && rc.implicit.seasoning === lessPool.implicit.seasoning, "推薦記錄的 implicit 要是實際採用的克數與程度");
+  }
+
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
   checkTdeeSlope();

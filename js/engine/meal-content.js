@@ -7,9 +7,11 @@
 //   - 今日 hero 另有涵蓋率警語（todayIntake）
 //   - 例外：鈉與飽和脂肪只用於顯示、不參與任何計算（章程 C4.5、C4.14）：有資料的部分照加，
 //     另外在 partial 記下哪些欄位有品項沒有資料；全部都沒資料才是 null。
-// ⚠️ 用油、調味的隱含成分還沒有（implicit: null），−1b 後續加入。
+//
+// 自煮一律帶隱含成分（章程 B5.6–B5.7、C4.11）：implicit = { oil_g, seasoning: "light" | "normal" | null }。
+// 用油與調味不跟主要槽位縮放；推薦、自己選、紀錄快照都用這裡的函式。
 
-import { PRIMARY_SLOT_SCALE_RANGE, MANUAL_ROLE_MAX, tierRank } from "../core/config.js";
+import { PRIMARY_SLOT_SCALE_RANGE, MANUAL_ROLE_MAX, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, tierRank } from "../core/config.js";
 import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
@@ -67,6 +69,49 @@ export function addContributions(parts) {
   DISPLAY_FIELDS.forEach(function (k) { acc[k] = known[k] > 0 ? sums[k] : null; });
   acc.partial = DISPLAY_FIELDS.filter(function (k) { return partial[k] && acc[k] != null; });
   return acc;
+}
+
+// ---------- 隱含成分：用油與調味（章程 B5.6–B5.7） ----------
+
+// 預設用油與調味：烹調法的 implicit（煎 5g、炒 5g＋有蔬菜 5g…）× 用油習慣（少油減半）；
+// 骨架 seasoned 時加調味，這一餐已選醬料就預設清淡、否則一般（decisions #28）。
+export function defaultImplicit(method, archetype, hasVegetable, hasSauce, oilHabit) {
+  const factor = OIL_HABIT_FACTOR[oilHabit] || 1;
+  const oil = ((method && method.implicit) || []).reduce(function (g, x) {
+    return x.ref === COOKING_OIL_ID ? g + x.g + (hasVegetable ? x.veg_add_g : 0) : g;
+  }, 0);
+  return {
+    oil_g: round1(oil * factor),
+    seasoning: archetype && archetype.seasoned ? (hasSauce ? "light" : "normal") : null,
+  };
+}
+
+// 隱含成分的營養值（固定，不縮放）。implicitItems：catalog.implicit（用油與調味程度的食材，依 id）
+export function implicitContribution(implicit, implicitItems) {
+  const parts = [];
+  if (implicit && implicit.oil_g > 0) parts.push(ingredientContribution(implicitItems[COOKING_OIL_ID], implicit.oil_g));
+  if (implicit && implicit.seasoning) {
+    const s = implicitItems[SEASONING_IDS[implicit.seasoning]];
+    parts.push({ kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: s.per_serving.sodium_mg });
+  }
+  const total = addContributions(parts);
+  // 沒有任何隱含成分時，顯示用欄位是 0 而不是「沒資料」
+  if (parts.length === 0) { total.sat_fat_g = 0; total.sodium_mg = 0; }
+  return total;
+}
+
+// 候選池以「一般」用油習慣建立；少油習慣時把自組食譜的用油換成實際克數（熱量、脂肪等跟著調整，主要槽位不動）。
+export function withOilHabit(c, oilHabit) {
+  const factor = OIL_HABIT_FACTOR[oilHabit] || 1;
+  if (!c.is_composed || !c.implicit || factor === 1 || !(c.implicit.oil_g > 0)) return c;
+  const oilItem = c.implicit_items[COOKING_OIL_ID];
+  const newOil = round1(c.implicit.oil_g * factor);
+  const delta = ingredientContribution(oilItem, newOil - c.implicit.oil_g);
+  const out = Object.assign({}, c, { implicit: Object.assign({}, c.implicit, { oil_g: newOil }) });
+  CONTRIB_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) {
+    if (out[k] != null && delta[k] != null) out[k] = round1(out[k] + delta[k]);
+  });
+  return out;
 }
 
 // 自組食譜可以靠「主要槽位」（有主食槽用主食，沒有的用蛋白質）在 PRIMARY_SLOT_SCALE_RANGE
@@ -180,13 +225,20 @@ export function suggestFillers(passItems, selItems, gap, field, share) {
 
 // ---------- 自己煮（自己選） ----------
 
+// 自己煮的隱含成分：目前一律用預設（用油與調味的選項在 Phase 0 的自煮分頁）
+export function composeImplicit(c, oilHabit) {
+  return defaultImplicit(c.method, c.archetype, !!c.vegetable, !!c.seasoning, oilHabit);
+}
+
 // c = { protein, staple, vegetable, seasoning, drink, primaryScale }；primary＝被縮放的那個食材（主食或蛋白質）
+// implicit：composeImplicit 的結果；implicitItems：catalog.implicit。
 // 食材與飲料任一項某欄未知，合計那一欄就是 null。
-export function composeTotals(c, primary) {
+export function composeTotals(c, primary, implicit, implicitItems) {
   const parts = [c.protein, c.staple, c.vegetable, c.seasoning].filter(Boolean).map(function (it) {
     const serving = it.serving_g != null ? it.serving_g : 100;
     return ingredientContribution(it, serving * (it === primary ? (c.primaryScale || 1) : 1));
   });
+  parts.push(implicitContribution(implicit, implicitItems));
   if (c.drink) {
     const d = c.drink;
     parts.push({ kcal: d.kcal, protein_g: d.protein_g, carb_g: d.carb_g, fat_g: d.fat_g, fiber_g: d.fiber_g, sat_fat_g: d.sat_fat_g, sodium_mg: d.sodium_mg });
@@ -314,7 +366,7 @@ export function contentFromRec(rec, productsByUid) {
     return {
       meal_type: fromPref ? pref : cookMealType(rec.tier_rank),
       archetype_id: rec.archetype_id, method_id: rec.method_id,
-      components: comps, implicit: null,
+      components: comps, implicit: rec.implicit ? { oil_g: rec.implicit.oil_g, seasoning: rec.implicit.seasoning } : null,
     };
   }
   return {
@@ -337,9 +389,9 @@ export function contentFromProducts(items) {
   };
 }
 
-// 自己煮 → MealContent。c = { archetype, protein, staple, vegetable, seasoning, method, drink, primaryScale }
+// 自己煮 → MealContent。c = { archetype, protein, staple, vegetable, seasoning, method, drink, primaryScale }；implicit：實際採用的用油與調味
 // −1a 過渡：v1 的自己煮沒有快煮/開伙的選擇，依難度推導；Phase 0 起用自煮分頁的子切換值。
-export function contentFromCompose(c, primary) {
+export function contentFromCompose(c, primary, implicit) {
   const comps = [];
   const ingredients = [["protein", c.protein], ["staple", c.staple], ["vegetable", c.vegetable], ["seasoning", c.seasoning]];
   ingredients.forEach(function (a) {
@@ -356,7 +408,7 @@ export function contentFromCompose(c, primary) {
     meal_type: cookMealType(rank),
     archetype_id: c.archetype ? c.archetype.id : null,
     method_id: c.method ? c.method.id : null,
-    components: comps, implicit: null,
+    components: comps, implicit: { oil_g: implicit.oil_g, seasoning: implicit.seasoning },
   };
 }
 

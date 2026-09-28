@@ -25,7 +25,7 @@ today/M/no-history/skip	afternoon_tea,snack
 today/M/no-history/breakfast	conv_bx05+conv_sl04+conv_dr01 scale=1 kcal=530 base=530 P=24.5 C=79.2 F=14.9 Fb=20.2 budget=474 src=convenience
 today/M/no-history/lunch	conv_bx10+conv_sl02+conv_dr03 scale=1 kcal=642 base=642 P=31.5 C=90 F=18.3 Fb=23.8 budget=683.1 src=convenience
 today/M/no-history/afternoon_tea	-
-today/M/no-history/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=1.8 kcal=724.1 base=516.2 P=29.8 C=124.6 F=12.5 Fb=22.6 budget=724.1 src=cook_full
+today/M/no-history/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=1.4 kcal=724.1 base=604.5 P=28 C=106.1 F=22 Fb=21.5 budget=724.1 src=cook_full
 today/M/no-history/snack	-
 today/M/no-history/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr01,conv_bx10+conv_sl02+conv_dr03,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry
 today/M/low-fiber-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
@@ -35,7 +35,7 @@ today/M/low-fiber-history/skip	afternoon_tea,snack
 today/M/low-fiber-history/breakfast	conv_bx04+conv_sl04+conv_dr02 scale=1 kcal=485 base=485 P=45 C=42 F=17 Fb=15 budget=474 src=convenience
 today/M/low-fiber-history/lunch	conv_bx09+conv_sl03+conv_dr01 scale=1 kcal=705 base=705 P=36 C=71 F=33.6 Fb=21.7 budget=705.6 src=convenience
 today/M/low-fiber-history/afternoon_tea	-
-today/M/low-fiber-history/dinner	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.7 kcal=706.1 base=519.2 P=30.5 C=120.2 F=12.5 Fb=18.5 budget=706.1 src=cook_full
+today/M/low-fiber-history/dinner	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.4 kcal=706.1 base=607.5 P=28.7 C=101.6 F=21.9 Fb=17.3 budget=706.1 src=cook_full
 today/M/low-fiber-history/snack	-
 today/M/low-fiber-history/write0	markRecipesShown conv_bx04+conv_sl04+conv_dr02,conv_bx09+conv_sl03+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
 today/M/high-fiber-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
@@ -55,7 +55,7 @@ today/M/two-complete-days/skip	afternoon_tea,snack
 today/M/two-complete-days/breakfast	conv_bx05+conv_sl04+conv_dr01 scale=1 kcal=530 base=530 P=24.5 C=79.2 F=14.9 Fb=20.2 budget=474 src=convenience
 today/M/two-complete-days/lunch	conv_bx10+conv_sl02+conv_dr03 scale=1 kcal=642 base=642 P=31.5 C=90 F=18.3 Fb=23.8 budget=683.1 src=convenience
 today/M/two-complete-days/afternoon_tea	-
-today/M/two-complete-days/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=1.8 kcal=724.1 base=516.2 P=29.8 C=124.6 F=12.5 Fb=22.6 budget=724.1 src=cook_full
+today/M/two-complete-days/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=1.4 kcal=724.1 base=604.5 P=28 C=106.1 F=22 Fb=21.5 budget=724.1 src=cook_full
 today/M/two-complete-days/snack	-
 today/M/two-complete-days/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr01,conv_bx10+conv_sl02+conv_dr03,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry
 today/M/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
@@ -65,9 +65,9 @@ today/M/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/M/today-breakfast/breakfast	-
 today/M/today-breakfast/lunch	conv_bx03+conv_dr01+conv_pk03 scale=1 kcal=737.5 base=737.5 P=43.5 C=87.5 F=25.1 Fb=19 budget=738.1 src=convenience
 today/M/today-breakfast/afternoon_tea	-
-today/M/today-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry scale=1.9 kcal=738.6 base=506.4 P=42.9 C=123.8 F=6.3 Fb=8.5 budget=738.6 src=cook_full
+today/M/today-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.6 base=505.2 P=42.3 C=113.5 F=11.2 Fb=8.5 budget=738.6 src=cook_full
 today/M/today-breakfast/snack	-
-today/M/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry
+today/M/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry
 today/M/today-bl/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/M/today-bl/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":596.1,"lunch":0,"snack":0},"remainingKcal":596.1}
 today/M/today-bl/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":87}
@@ -151,11 +151,11 @@ today/F/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":154.7,"breakf
 today/F/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":108}
 today/F/base/skip	
 today/F/base/breakfast	conv_bx05+conv_sl02+conv_dr01 scale=1 kcal=377 base=377 P=19.5 C=59.7 F=9.1 Fb=19.2 budget=309.4 src=auto
-today/F/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=0.7 kcal=438.7 base=516.2 P=24 C=64.6 F=10.6 Fb=19 budget=438.7 src=auto
-today/F/base/afternoon_tea	lowBudget budget=146.2
-today/F/base/dinner	conv_bx13+conv_sl04+conv_dr02 scale=1 kcal=565 base=565 P=29 C=66 F=22.7 Fb=21 budget=548.3 src=auto
-today/F/base/snack	bowl_oat_soy_milk_oats_none_none_method_microwave scale=0.5 kcal=186.2 base=267.5 P=13.2 C=15.7 F=7.6 Fb=6 budget=166.1 src=auto
-today/F/base/write0	markRecipesShown conv_bx05+conv_sl02+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry,conv_bx13+conv_sl04+conv_dr02,bowl_oat_soy_milk_oats_none_none_method_microwave
+today/F/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=0.5 kcal=467.9 base=604.5 P=22.8 C=52.2 F=20.3 Fb=18.3 budget=438.7 src=auto
+today/F/base/afternoon_tea	lowBudget budget=140.4
+today/F/base/dinner	conv_bx13+conv_sl04+conv_dr02 scale=1 kcal=565 base=565 P=29 C=66 F=22.7 Fb=21 budget=526.4 src=auto
+today/F/base/snack	lowBudget budget=136.9
+today/F/base/write0	markRecipesShown conv_bx05+conv_sl02+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry,conv_bx13+conv_sl04+conv_dr02
 today/F/today-breakfast/targets	{"baseTargetKcal":1546.8,"bmr":1289,"carb_g":182,"fat_g":43,"fiber_g":30,"flooredWarning":false,"netCarb_g":152,"offsetKcal":0,"protein_g":108,"targetKcal":1546.8,"tdee":1546.8}
 today/F/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":140.9,"breakfast":0,"dinner":422.6,"lunch":422.6,"snack":140.9},"remainingKcal":1126.8}
 today/F/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":86}
@@ -163,7 +163,7 @@ today/F/today-breakfast/skip	breakfast
 today/F/today-breakfast/breakfast	-
 today/F/today-breakfast/lunch	conv_bx13+conv_sl02+conv_dr01 scale=1 kcal=417 base=417 P=24.5 C=46.5 F=17.3 Fb=21.2 budget=422.6 src=auto
 today/F/today-breakfast/afternoon_tea	lowBudget budget=142
-today/F/today-breakfast/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=1.1 kcal=532.3 base=516.2 P=25.9 C=84.3 F=11.2 Fb=20.2 budget=532.3 src=auto
+today/F/today-breakfast/dinner	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry scale=0.7 kcal=532.3 base=604.5 P=24.1 C=65.7 F=20.7 Fb=19.1 budget=532.3 src=auto
 today/F/today-breakfast/snack	bowl_oat_soy_milk_oats_none_none_method_microwave scale=0.5 kcal=186.2 base=267.5 P=13.2 C=15.7 F=7.6 Fb=6 budget=177.5 src=auto
 today/F/today-breakfast/write0	markRecipesShown conv_bx13+conv_sl02+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry,bowl_oat_soy_milk_oats_none_none_method_microwave
 today/VEG/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
@@ -171,17 +171,17 @@ today/VEG/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":189.6,"brea
 today/VEG/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
 today/VEG/base/skip	
 today/VEG/base/breakfast	conv_bx05+conv_dr03 scale=1 kcal=345 base=345 P=15 C=55.2 F=8.4 Fb=13 budget=379.2 src=convenience
-today/VEG/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_none_method_stir_fry scale=1.3 kcal=581.7 base=505.6 P=26.5 C=95.2 F=11.5 Fb=20.1 budget=581.7 src=cook_quick
+today/VEG/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_none_method_stir_fry scale=1 kcal=581.7 base=594 P=24.7 C=76.6 F=20.9 Fb=18.9 budget=581.7 src=cook_quick
 today/VEG/base/afternoon_tea	bowl_oat_soy_milk_oats_none_none_method_microwave scale=0.5 kcal=193.9 base=267.5 P=13.4 C=17 F=7.8 Fb=6.2 budget=193.9 src=auto
 today/VEG/base/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_okra_teriyaki_sauce_method_air_fry scale=1.3 kcal=581.6 base=493.2 P=25.7 C=93.6 F=11.2 Fb=10.9 budget=581.6 src=cook_full
-today/VEG/base/snack	egg_pan_egg_none_broccoli_none_method_pan_fry scale=1.2 kcal=193.9 base=173.3 P=18 C=8.3 F=10.7 Fb=2.8 budget=193.9 src=auto
+today/VEG/base/snack	egg_pan_egg_none_broccoli_none_method_pan_fry scale=0.8 kcal=193.9 base=217.5 P=13.9 C=7.8 F=12.7 Fb=2.8 budget=193.9 src=auto
 today/VEG/base/write0	markRecipesShown conv_bx05+conv_dr03,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_none_method_stir_fry,bowl_oat_soy_milk_oats_none_none_method_microwave,grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_okra_teriyaki_sauce_method_air_fry,egg_pan_egg_none_broccoli_none_method_pan_fry
 today/VEG/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/VEG/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":184.5,"breakfast":0,"dinner":553.5,"lunch":553.5,"snack":184.5},"remainingKcal":1476.1}
 today/VEG/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":122}
 today/VEG/today-breakfast/skip	breakfast
 today/VEG/today-breakfast/breakfast	-
-today/VEG/today-breakfast/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_none_method_stir_fry scale=1.2 kcal=553.5 base=505.6 P=26 C=89.3 F=11.3 Fb=19.7 budget=553.5 src=cook_quick
+today/VEG/today-breakfast/lunch	protein_stir_fry_edamame_brown_rice_cooked_wood_ear_none_method_stir_fry scale=0.9 kcal=553.5 base=594 P=24.2 C=70.7 F=20.7 Fb=18.6 budget=553.5 src=cook_quick
 today/VEG/today-breakfast/afternoon_tea	conv_dr03 scale=1 kcal=185 base=185 P=13 C=18 F=8.1 Fb=9 budget=184.5 src=auto
 today/VEG/today-breakfast/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_okra_teriyaki_sauce_method_air_fry scale=1.2 kcal=553.2 base=493.2 P=25 C=87.8 F=11 Fb=10.5 budget=553.2 src=cook_full
 today/VEG/today-breakfast/snack	bowl_oat_soy_milk_oats_none_none_method_microwave scale=0.5 kcal=186.2 base=267.5 P=13.2 C=15.7 F=7.6 Fb=6 budget=184.4 src=auto
@@ -191,7 +191,7 @@ today/VEGAN/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakf
 today/VEGAN/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/VEGAN/base/skip	afternoon_tea,snack
 today/VEGAN/base/breakfast	conv_bx05+conv_dr01+conv_pk03 scale=1 kcal=457.5 base=457.5 P=21.5 C=62.7 F=15.2 Fb=17.7 budget=474 src=auto
-today/VEGAN/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.8 kcal=719.3 base=508.6 P=30.4 C=123.4 F=12.5 Fb=18 budget=719.3 src=auto
+today/VEGAN/base/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.4 kcal=719.3 base=597 P=28.6 C=104.8 F=22 Fb=16.8 budget=719.3 src=auto
 today/VEGAN/base/afternoon_tea	-
 today/VEGAN/base/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry scale=1.8 kcal=719.3 base=495.5 P=30.2 C=120.2 F=12.6 Fb=11.8 budget=719.3 src=auto
 today/VEGAN/base/snack	-
@@ -201,7 +201,7 @@ today/VEGAN/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea
 today/VEGAN/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
 today/VEGAN/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/VEGAN/today-breakfast/breakfast	-
-today/VEGAN/today-breakfast/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.8 kcal=738.1 base=508.6 P=30.8 C=127.4 F=12.6 Fb=18.2 budget=738.1 src=auto
+today/VEGAN/today-breakfast/lunch	protein_stir_fry_edamame_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.5 kcal=738.1 base=597 P=29 C=108.8 F=22.1 Fb=17.1 budget=738.1 src=auto
 today/VEGAN/today-breakfast/afternoon_tea	-
 today/VEGAN/today-breakfast/dinner	grain_bowl_baked_firm_tofu_mixed_grain_rice_cooked_broccoli_teriyaki_sauce_method_air_fry scale=1.9 kcal=738 base=495.5 P=30.6 C=124 F=12.8 Fb=12 budget=738 src=auto
 today/VEGAN/today-breakfast/snack	-
@@ -211,41 +211,41 @@ today/LEGACY_ALLERGY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":
 today/LEGACY_ALLERGY/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/LEGACY_ALLERGY/base/skip	afternoon_tea,snack
 today/LEGACY_ALLERGY/base/breakfast	conv_bx05+conv_dr03 scale=1 kcal=345 base=345 P=15 C=55.2 F=8.4 Fb=13 budget=474 src=convenience
-today/LEGACY_ALLERGY/base/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry scale=2 kcal=775.6 base=506.4 P=43.7 C=131.6 F=6.6 Fb=9 budget=775.6 src=convenience fallback
+today/LEGACY_ALLERGY/base/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=2 kcal=775.6 base=505.2 P=43.1 C=121.3 F=11.5 Fb=9 budget=775.6 src=convenience fallback
 today/LEGACY_ALLERGY/base/afternoon_tea	-
-today/LEGACY_ALLERGY/base/dinner	protein_stir_fry_chicken_thigh_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.9 kcal=775.5 base=520.7 P=38.3 C=118 F=15.3 Fb=8.8 budget=775.5 src=cook_full
+today/LEGACY_ALLERGY/base/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.8 kcal=775.5 base=562 P=35.4 C=109.3 F=20.6 Fb=8.3 budget=775.5 src=cook_full
 today/LEGACY_ALLERGY/base/snack	-
-today/LEGACY_ALLERGY/base/write0	markRecipesShown conv_bx05+conv_dr03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry,protein_stir_fry_chicken_thigh_brown_rice_cooked_baby_corn_none_method_stir_fry
+today/LEGACY_ALLERGY/base/write0	markRecipesShown conv_bx05+conv_dr03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry
 today/LEGACY_ALLERGY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/LEGACY_ALLERGY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/LEGACY_ALLERGY/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
 today/LEGACY_ALLERGY/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/LEGACY_ALLERGY/today-breakfast/breakfast	-
-today/LEGACY_ALLERGY/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry scale=1.8 kcal=738.1 base=506.4 P=42.9 C=123.7 F=6.3 Fb=8.5 budget=738.1 src=convenience fallback
+today/LEGACY_ALLERGY/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.1 base=505.2 P=42.3 C=113.4 F=11.2 Fb=8.5 budget=738.1 src=convenience fallback
 today/LEGACY_ALLERGY/today-breakfast/afternoon_tea	-
-today/LEGACY_ALLERGY/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry scale=2 kcal=738 base=473.6 P=36.5 C=120 F=10.9 Fb=8.9 budget=738 src=cook_full
+today/LEGACY_ALLERGY/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.6 kcal=738 base=562 P=34.7 C=101.4 F=20.4 Fb=7.8 budget=738 src=cook_full
 today/LEGACY_ALLERGY/today-breakfast/snack	-
-today/LEGACY_ALLERGY/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry
+today/LEGACY_ALLERGY/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry
 today/ALLERGY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/ALLERGY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/ALLERGY/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/ALLERGY/base/skip	afternoon_tea,snack
 today/ALLERGY/base/breakfast	conv_bx05 scale=1 kcal=160 base=160 P=2 C=37.2 F=0.3 Fb=4 budget=474 src=convenience
-today/ALLERGY/base/lunch	protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry scale=2 kcal=813.3 base=540.1 P=40.5 C=124 F=15.5 Fb=10.5 budget=868.1 src=convenience fallback
+today/ALLERGY/base/lunch	protein_stir_fry_chicken_thigh_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.9 kcal=868.1 base=619.6 P=38.7 C=118.5 F=25.3 Fb=9.5 budget=868.1 src=convenience fallback
 today/ALLERGY/base/afternoon_tea	-
-today/ALLERGY/base/dinner	grain_bowl_baked_salmon_brown_rice_cooked_snap_pea_none_method_air_fry scale=2 kcal=797.1 base=523.9 P=39 C=122.4 F=15.2 Fb=9.7 budget=922.8 src=cook_full
+today/ALLERGY/base/dinner	grain_bowl_baked_salmon_brown_rice_cooked_snap_pea_none_method_pan_fry scale=2 kcal=841.3 base=568.1 P=39 C=122.4 F=20.2 Fb=9.7 budget=868 src=cook_full
 today/ALLERGY/base/snack	-
-today/ALLERGY/base/write0	markRecipesShown conv_bx05,protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry,grain_bowl_baked_salmon_brown_rice_cooked_snap_pea_none_method_air_fry
+today/ALLERGY/base/write0	markRecipesShown conv_bx05,protein_stir_fry_chicken_thigh_brown_rice_cooked_baby_corn_kimchi_method_stir_fry,grain_bowl_baked_salmon_brown_rice_cooked_snap_pea_none_method_pan_fry
 today/ALLERGY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/ALLERGY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/ALLERGY/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
 today/ALLERGY/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/ALLERGY/today-breakfast/breakfast	-
-today/ALLERGY/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_broccoli_none_method_air_fry scale=2 kcal=738.1 base=465.5 P=44.7 C=121.3 F=6.7 Fb=9.7 budget=738.1 src=convenience fallback
+today/ALLERGY/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.1 base=505.2 P=42.3 C=113.4 F=11.2 Fb=8.5 budget=738.1 src=convenience fallback
 today/ALLERGY/today-breakfast/afternoon_tea	-
-today/ALLERGY/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.9 kcal=738 base=484.1 P=36.9 C=119.6 F=11 Fb=9.6 budget=738 src=cook_full
+today/ALLERGY/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.6 kcal=738 base=572.5 P=35.1 C=101 F=20.4 Fb=8.5 budget=738 src=cook_full
 today/ALLERGY/today-breakfast/snack	-
-today/ALLERGY/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_broccoli_none_method_air_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
+today/ALLERGY/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
 today/DISLIKE/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/DISLIKE/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/DISLIKE/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
@@ -293,7 +293,7 @@ today/QUICK/base/skip	afternoon_tea,snack
 today/QUICK/base/breakfast	bowl_oat_greek_yogurt_oats_none_none_method_microwave scale=2 kcal=434.5 base=272 P=24.6 C=60.2 F=10.5 Fb=8.4 budget=474 src=cook_quick
 today/QUICK/base/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave scale=2 kcal=730.8 base=461 P=43.1 C=121.1 F=6.5 Fb=9 budget=730.8 src=cook_quick
 today/QUICK/base/afternoon_tea	-
-today/QUICK/base/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.9 kcal=730.8 base=484.1 P=36.7 C=118.1 F=10.9 Fb=9.5 budget=730.8 src=cook_quick
+today/QUICK/base/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.6 kcal=730.8 base=572.5 P=34.9 C=99.5 F=20.3 Fb=8.4 budget=730.8 src=cook_quick
 today/QUICK/base/snack	-
 today/QUICK/base/write0	markRecipesShown bowl_oat_greek_yogurt_oats_none_none_method_microwave,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
 today/QUICK/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
@@ -301,11 +301,11 @@ today/QUICK/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea
 today/QUICK/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
 today/QUICK/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/QUICK/today-breakfast/breakfast	-
-today/QUICK/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_microwave scale=1.8 kcal=738.1 base=506.4 P=42.9 C=123.7 F=6.3 Fb=8.5 budget=738.1 src=cook_quick
+today/QUICK/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.1 base=505.2 P=42.3 C=113.4 F=11.2 Fb=8.5 budget=738.1 src=cook_quick
 today/QUICK/today-breakfast/afternoon_tea	-
-today/QUICK/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.9 kcal=738 base=484.1 P=36.9 C=119.6 F=11 Fb=9.6 budget=738 src=cook_quick
+today/QUICK/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.6 kcal=738 base=572.5 P=35.1 C=101 F=20.4 Fb=8.5 budget=738 src=cook_quick
 today/QUICK/today-breakfast/snack	-
-today/QUICK/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_microwave,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
+today/QUICK/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
 today/LOWCARB/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/LOWCARB/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/LOWCARB/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
@@ -313,9 +313,9 @@ today/LOWCARB/base/skip	afternoon_tea,snack
 today/LOWCARB/base/breakfast	conv_bx04+conv_sl03+conv_dr06 scale=1 kcal=465 base=465 P=51.5 C=26.5 F=17 Fb=4 budget=474 src=convenience
 today/LOWCARB/base/lunch	conv_bx07+conv_pk01+conv_pk03 scale=1 kcal=512.5 base=512.5 P=51.5 C=30 F=19.9 Fb=9 budget=715.6 src=convenience
 today/LOWCARB/base/afternoon_tea	-
-today/LOWCARB/base/dinner	grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_air_fry scale=0.9 kcal=388.3 base=402.5 P=32.9 C=30 F=14.6 Fb=5.3 budget=918.6 src=cook_full
+today/LOWCARB/base/dinner	grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_pan_fry scale=0.9 kcal=432.5 base=446.7 P=32.9 C=30 F=19.6 Fb=5.3 budget=918.6 src=cook_full
 today/LOWCARB/base/snack	-
-today/LOWCARB/base/write0	markRecipesShown conv_bx04+conv_sl03+conv_dr06,conv_bx07+conv_pk01+conv_pk03,grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_air_fry
+today/LOWCARB/base/write0	markRecipesShown conv_bx04+conv_sl03+conv_dr06,conv_bx07+conv_pk01+conv_pk03,grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_pan_fry
 today/LOWCARB/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/LOWCARB/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/LOWCARB/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
@@ -323,9 +323,29 @@ today/LOWCARB/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/LOWCARB/today-breakfast/breakfast	-
 today/LOWCARB/today-breakfast/lunch	conv_bx07+conv_pk01+conv_pk03 scale=1 kcal=512.5 base=512.5 P=51.5 C=30 F=19.9 Fb=9 budget=738.1 src=convenience
 today/LOWCARB/today-breakfast/afternoon_tea	-
-today/LOWCARB/today-breakfast/dinner	grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_air_fry scale=0.9 kcal=388.3 base=402.5 P=32.9 C=30 F=14.6 Fb=5.3 budget=963.6 src=cook_full
+today/LOWCARB/today-breakfast/dinner	grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_pan_fry scale=0.9 kcal=432.5 base=446.7 P=32.9 C=30 F=19.6 Fb=5.3 budget=963.6 src=cook_full
 today/LOWCARB/today-breakfast/snack	-
-today/LOWCARB/today-breakfast/write0	markRecipesShown conv_bx07+conv_pk01+conv_pk03,grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_air_fry
+today/LOWCARB/today-breakfast/write0	markRecipesShown conv_bx07+conv_pk01+conv_pk03,grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_pan_fry
+today/LESSOIL/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LESSOIL/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
+today/LESSOIL/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
+today/LESSOIL/base/skip	afternoon_tea,snack
+today/LESSOIL/base/breakfast	bowl_oat_greek_yogurt_oats_none_none_method_microwave scale=2 kcal=434.5 base=272 P=24.6 C=60.2 F=10.5 Fb=8.4 budget=474 src=cook_quick
+today/LESSOIL/base/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave scale=2 kcal=730.8 base=461 P=43.1 C=121.1 F=6.5 Fb=9 budget=730.8 src=cook_quick
+today/LESSOIL/base/afternoon_tea	-
+today/LESSOIL/base/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.7 kcal=730.8 base=528.3 P=35.8 C=108.8 F=15.6 Fb=9 budget=730.8 src=cook_full
+today/LESSOIL/base/snack	-
+today/LESSOIL/base/write0	markRecipesShown bowl_oat_greek_yogurt_oats_none_none_method_microwave,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
+today/LESSOIL/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
+today/LESSOIL/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
+today/LESSOIL/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
+today/LESSOIL/today-breakfast/skip	afternoon_tea,breakfast,snack
+today/LESSOIL/today-breakfast/breakfast	-
+today/LESSOIL/today-breakfast/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.1 base=483.1 P=42.8 C=118 F=8.9 Fb=8.8 budget=738.1 src=cook_quick
+today/LESSOIL/today-breakfast/afternoon_tea	-
+today/LESSOIL/today-breakfast/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry scale=1.8 kcal=738 base=528.3 P=36 C=110.3 F=15.7 Fb=9 budget=738 src=cook_full
+today/LESSOIL/today-breakfast/snack	-
+today/LESSOIL/today-breakfast/write0	markRecipesShown grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry,protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_kimchi_method_stir_fry
 today/BULK/base/targets	{"baseTargetKcal":3194.7,"bmr":1873.8,"carb_g":409,"fat_g":88.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":379,"offsetKcal":0,"protein_g":190,"targetKcal":3194.7,"tdee":2904.3}
 today/BULK/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":798.7,"dinner":1198,"lunch":1198,"snack":0},"remainingKcal":3194.7}
 today/BULK/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":190}
@@ -333,9 +353,9 @@ today/BULK/base/skip	afternoon_tea,snack
 today/BULK/base/breakfast	conv_bx05+conv_sl04+conv_dr06 scale=1 kcal=550 base=550 P=32 C=77.2 F=12.3 Fb=11 budget=798.7 src=convenience
 today/BULK/base/lunch	conv_bx01+conv_sl03+conv_dr03 scale=1 kcal=831 base=831 P=49 C=99.1 F=27.6 Fb=16.8 budget=1322.4 src=convenience
 today/BULK/base/afternoon_tea	-
-today/BULK/base/dinner	grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry scale=2 kcal=848.2 base=575 P=40.5 C=132.9 F=15.5 Fb=9.7 budget=1813.7 src=cook_full
+today/BULK/base/dinner	protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry scale=2 kcal=901.7 base=628.5 P=40.5 C=124 F=25.5 Fb=10.5 budget=1813.7 src=cook_full
 today/BULK/base/snack	-
-today/BULK/base/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr06,conv_bx01+conv_sl03+conv_dr03,grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry
+today/BULK/base/write0	markRecipesShown conv_bx05+conv_sl04+conv_dr06,conv_bx01+conv_sl03+conv_dr03,protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry
 today/BULK/today-breakfast/targets	{"baseTargetKcal":3194.7,"bmr":1873.8,"carb_g":409,"fat_g":88.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":379,"offsetKcal":0,"protein_g":190,"targetKcal":3194.7,"tdee":2904.3}
 today/BULK/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":1387.4,"lunch":1387.4,"snack":0},"remainingKcal":2774.7}
 today/BULK/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":168}
@@ -343,9 +363,9 @@ today/BULK/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/BULK/today-breakfast/breakfast	-
 today/BULK/today-breakfast/lunch	conv_bx01+conv_sl04+conv_dr03 scale=1 kcal=876 base=876 P=50.5 C=112.6 F=25.4 Fb=19.8 budget=1387.4 src=convenience
 today/BULK/today-breakfast/afternoon_tea	-
-today/BULK/today-breakfast/dinner	grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry scale=2 kcal=848.2 base=575 P=40.5 C=132.9 F=15.5 Fb=9.7 budget=1898.7 src=cook_full
+today/BULK/today-breakfast/dinner	protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry scale=2 kcal=901.7 base=628.5 P=40.5 C=124 F=25.5 Fb=10.5 budget=1898.7 src=cook_full
 today/BULK/today-breakfast/snack	-
-today/BULK/today-breakfast/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry
+today/BULK/today-breakfast/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry
 today/OFF/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/OFF/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":948.1,"lunch":948.1,"snack":0},"remainingKcal":1896.1}
 today/OFF/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
@@ -353,9 +373,9 @@ today/OFF/base/skip	afternoon_tea,breakfast,snack
 today/OFF/base/breakfast	-
 today/OFF/base/lunch	conv_bx01+conv_sl04+conv_dr03 scale=1 kcal=876 base=876 P=50.5 C=112.6 F=25.4 Fb=19.8 budget=948.1 src=convenience
 today/OFF/base/afternoon_tea	-
-today/OFF/base/dinner	grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry scale=2 kcal=848.2 base=575 P=40.5 C=132.9 F=15.5 Fb=9.7 budget=1020.1 src=cook_full
+today/OFF/base/dinner	protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry scale=2 kcal=901.7 base=628.5 P=40.5 C=124 F=25.5 Fb=10.5 budget=1020.1 src=cook_full
 today/OFF/base/snack	-
-today/OFF/base/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,grain_bowl_baked_chicken_thigh_brown_rice_cooked_snap_pea_teriyaki_sauce_method_air_fry
+today/OFF/base/write0	markRecipesShown conv_bx01+conv_sl04+conv_dr03,protein_stir_fry_chicken_thigh_brown_rice_cooked_snap_pea_kimchi_method_stir_fry
 today/OFF/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/OFF/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/OFF/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
@@ -363,9 +383,9 @@ today/OFF/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/OFF/today-breakfast/breakfast	-
 today/OFF/today-breakfast/lunch	conv_bx03+conv_dr01+conv_pk03 scale=1 kcal=737.5 base=737.5 P=43.5 C=87.5 F=25.1 Fb=19 budget=738.1 src=convenience
 today/OFF/today-breakfast/afternoon_tea	-
-today/OFF/today-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry scale=1.9 kcal=738.6 base=506.4 P=42.9 C=123.8 F=6.3 Fb=8.5 budget=738.6 src=cook_full
+today/OFF/today-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=1.9 kcal=738.6 base=505.2 P=42.3 C=113.5 F=11.2 Fb=8.5 budget=738.6 src=cook_full
 today/OFF/today-breakfast/snack	-
-today/OFF/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_teriyaki_sauce_method_air_fry
+today/OFF/today-breakfast/write0	markRecipesShown conv_bx03+conv_dr01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry
 today/M/fb-dislikeTop/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/M/fb-dislikeTop/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/fb-dislikeTop/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}

@@ -27,6 +27,11 @@ export const LOW_CARB_MEAL_MAX_G = 30;
 // 手動記錄（自己選）每個角色的數量上限；不要求必須有主餐（章程 C4.8、decisions #20）。推薦生成另有更嚴的規則（C4.7，pool.js）
 export const MANUAL_ROLE_MAX = { main: 1, side: 1, drink: 1, snack: 1 };
 
+// 自煮的隱含成分（章程 B5.6–B5.7）：用油食材 id、基本資料「家裡用油習慣」的倍數、調味程度對應的食材 id
+export const COOKING_OIL_ID = "cooking_oil";
+export const OIL_HABIT_FACTOR = { normal: 1, less: 0.5 };
+export const SEASONING_IDS = { light: "seasoning_light", normal: "seasoning_normal" };
+
 // 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」，不上色、不警告、不參與推薦（章程 C4.14、decisions #14）
 export const SODIUM_REFERENCE_MG = 2400;
 
