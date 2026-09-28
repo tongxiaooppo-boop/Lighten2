@@ -11,7 +11,7 @@ import { passesHardFilters } from "../engine/filters.js";
 import { slotNutrientShare } from "../engine/budget.js";
 import {
   sumProducts, composeTotals, suggestFillers, slotGaps,
-  contentFromProducts, contentFromCompose, buildLogEntry,
+  contentFromProducts, contentFromCompose, buildLogEntry, manualSelectionProblem, canAddManualItem,
 } from "../engine/meal-content.js";
 import { filterForSlot, cardHtml } from "./item-picker.js";
 import { getCalibratedTargets } from "./calibration.js";
@@ -22,10 +22,6 @@ export const manualPicker = {
   onLogged: null,
   compose: { axes: null, archetype: null, protein: null, staple: null, vegetable: null, seasoning: null, method: null, primaryScale: 1, drink: null, drinkItems: [] },
 };
-
-function manualRoleLimits(slot) {
-  return { requireMain: slot !== "afternoon_tea", maxByRole: { main: 1, side: 1, drink: 1, snack: 1 } };
-}
 
 function manualSelectedItems() {
   const sel = manualPicker.selectedUids;
@@ -319,10 +315,7 @@ export function updateManualSummary() {
   if (isCompose) {
     missingReason = composeMissingReason();
   } else {
-    const limits = manualRoleLimits(manualPicker.slot);
-    const roleCount = { main: 0, side: 0, drink: 0, snack: 0 };
-    selItems.forEach(function (it) { roleCount[it.role] = (roleCount[it.role] || 0) + 1; });
-    if (limits.requireMain && roleCount.main === 0) missingReason = "這個時段需要選 1 個主餐才能送出。";
+    missingReason = manualSelectionProblem(selItems);
   }
   if (submitBtn) submitBtn.disabled = missingReason != null;
   if (hint) {
@@ -342,12 +335,8 @@ function onManualItemClick(e) {
   const it = manualPicker.passItems.filter(function (x) { return x.uid === uid; })[0];
   if (!it) return;
   const idx = manualPicker.selectedUids.indexOf(uid);
-  const limits = manualRoleLimits(manualPicker.slot);
   if (idx === -1) {
-    const roleCount = {};
-    manualSelectedItems().forEach(function (x) { roleCount[x.role] = (roleCount[x.role] || 0) + 1; });
-    const max = limits.maxByRole[it.role] || 1;
-    if ((roleCount[it.role] || 0) >= max) {
+    if (!canAddManualItem(manualSelectedItems(), it)) {
       alert("這個時段的「" + roleLabel(it.role) + "」已經選過了，要不要先取消上一個？");
       return;
     }
@@ -373,7 +362,8 @@ export async function onManualSubmit() {
     });
   } else {
     const selItems = manualSelectedItems();
-    if (selItems.length === 0) { alert("請至少選一個品項。"); return; }
+    const problem = manualSelectionProblem(selItems);
+    if (problem) { alert(problem); return; }
     entry = buildLogEntry({
       date: todayStr(), slot: manualPicker.slot, source: "manual",
       name: selItems.map(function (it) { return it.name; }).join("＋"),
