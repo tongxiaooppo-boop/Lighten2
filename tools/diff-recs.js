@@ -310,6 +310,9 @@ async function tdeeScenario(name, s) {
   const t1 = await A.getCalibratedTargets(s.profile, addDays(DAY, 1));
   emit("tdee", name + "/targets-today", stable(t0));
   emit("tdee", name + "/targets-tomorrow", stable(t1));
+  A.takeDom();
+  await A.profileCard(s.profile);
+  A.takeDom().forEach((line, i) => emit("ui", "profile/" + name + "/dom" + String(i).padStart(2, "0"), line));
 }
 
 async function snapTdee() {
@@ -493,6 +496,23 @@ async function snapWeek() {
   A.takeDom().forEach((line, i) => emit("ui", "week/monday/dom" + String(i).padStart(2, "0"), line));
 }
 
+async function snapExercise() {
+  const ex = (d, type, min, intensity, id) => ({ id: id, log_date: d, activity_type: type, duration_min: min, intensity: intensity });
+  const cases = {
+    none: [],
+    week: [ex(addDays(DAY, -2), "快走", 40, "中", "e1"), ex(addDays(DAY, -1), "重訓", 50, "中", "e2"), ex(DAY, "慢跑", 30, "高", "e3"),
+      ex(DAY, "散步", 20, "低", "e4"), ex(addDays(DAY, -9), "游泳", 45, "中", "e5")],
+    streakBroken: [ex(addDays(DAY, -1), "瑜伽", 30, "低", "e6"), ex(addDays(DAY, -3), "快走", 30, "中", "e7")],
+  };
+  for (const name of Object.keys(cases)) {
+    env.setNow(NOW_DAY);
+    A.setDb({ exerciseLogs: cases[name] });
+    A.takeDom();
+    await A.exercisePage();
+    A.takeDom().forEach((line, i) => emit("ui", "exercise/" + name + "/dom" + String(i).padStart(2, "0"), line));
+  }
+}
+
 // ---------- 比對 ----------
 
 function parse(text) {
@@ -515,6 +535,7 @@ async function main() {
   await snapTdee();
   await snapPicker();
   await snapWeek();
+  await snapExercise();
 
   if (!fs.existsSync(SNAP_DIR)) fs.mkdirSync(SNAP_DIR);
   let failed = 0;

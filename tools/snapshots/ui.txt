@@ -908,6 +908,294 @@ flow/log-breakfast/dom15	#today-hero-nutrition-body html="<div class=\"today-her
 flow/log-breakfast/dom16	#today-hero-protein text="33 / 144g"
 flow/log-breakfast/dom17	#today-hero-week-avg text="近7天平均 1884／目標 1896 kcal"
 flow/log-breakfast/dom18	#today-status (untouched)
+profile/no-weights/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">需要近4週至少8次體重紀錄</div><div class=\"cal-status\">目前資料不足以判斷是否需要調整</div>"
+profile/no-weights/dom01	#calibration-card (untouched)
+profile/no-weights/dom02	#target-bmr text="1723.8"
+profile/no-weights/dom03	#target-carb text="211.5"
+profile/no-weights/dom04	#target-fat text="52.7"
+profile/no-weights/dom05	#target-fiber text="30"
+profile/no-weights/dom06	#target-kcal text="1896.1"
+profile/no-weights/dom07	#target-netcarb text="181.5"
+profile/no-weights/dom08	#target-protein text="144"
+profile/no-weights/dom09	#target-tdee text="2370.2"
+profile/no-weights/dom10	#target-warning hidden
+profile/no-weights/dom11	#targets-result (untouched)
+profile/stale/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">目前資料不足以判斷是否需要調整</div>"
+profile/stale/dom01	#calibration-card (untouched)
+profile/stale/dom02	#target-bmr text="1723.8"
+profile/stale/dom03	#target-carb text="211.5"
+profile/stale/dom04	#target-fat text="52.7"
+profile/stale/dom05	#target-fiber text="30"
+profile/stale/dom06	#target-kcal text="1896.1"
+profile/stale/dom07	#target-netcarb text="181.5"
+profile/stale/dom08	#target-protein text="144"
+profile/stale/dom09	#target-tdee text="2370.2"
+profile/stale/dom10	#target-warning hidden
+profile/stale/dom11	#targets-result (untouched)
+profile/few-weighins/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">目前資料不足以判斷是否需要調整</div>"
+profile/few-weighins/dom01	#calibration-card (untouched)
+profile/few-weighins/dom02	#target-bmr text="1723.8"
+profile/few-weighins/dom03	#target-carb text="211.5"
+profile/few-weighins/dom04	#target-fat text="52.7"
+profile/few-weighins/dom05	#target-fiber text="30"
+profile/few-weighins/dom06	#target-kcal text="1896.1"
+profile/few-weighins/dom07	#target-netcarb text="181.5"
+profile/few-weighins/dom08	#target-protein text="144"
+profile/few-weighins/dom09	#target-tdee text="2370.2"
+profile/few-weighins/dom10	#target-warning hidden
+profile/few-weighins/dom11	#targets-result (untouched)
+profile/cut-on-track/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.6 kg／週</div><div class=\"cal-status\">目前無需調整</div>"
+profile/cut-on-track/dom01	#calibration-card (untouched)
+profile/cut-on-track/dom02	#target-bmr text="1723.8"
+profile/cut-on-track/dom03	#target-carb text="211.5"
+profile/cut-on-track/dom04	#target-fat text="52.7"
+profile/cut-on-track/dom05	#target-fiber text="30"
+profile/cut-on-track/dom06	#target-kcal text="1896.1"
+profile/cut-on-track/dom07	#target-netcarb text="181.5"
+profile/cut-on-track/dom08	#target-protein text="144"
+profile/cut-on-track/dom09	#target-tdee text="2370.2"
+profile/cut-on-track/dom10	#target-warning hidden
+profile/cut-on-track/dom11	#targets-result (untouched)
+profile/cut-slow-log-short/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">完整記錄的天數還不夠，暫不調整</div>"
+profile/cut-slow-log-short/dom01	#calibration-card (untouched)
+profile/cut-slow-log-short/dom02	#target-bmr text="1723.8"
+profile/cut-slow-log-short/dom03	#target-carb text="211.5"
+profile/cut-slow-log-short/dom04	#target-fat text="52.7"
+profile/cut-slow-log-short/dom05	#target-fiber text="30"
+profile/cut-slow-log-short/dom06	#target-kcal text="1896.1"
+profile/cut-slow-log-short/dom07	#target-netcarb text="181.5"
+profile/cut-slow-log-short/dom08	#target-protein text="144"
+profile/cut-slow-log-short/dom09	#target-tdee text="2370.2"
+profile/cut-slow-log-short/dom10	#target-warning hidden
+profile/cut-slow-log-short/dom11	#targets-result (untouched)
+profile/cut-slow-adjusted/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">明天起：<span>1746 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/cut-slow-adjusted/dom01	#calibration-card (untouched)
+profile/cut-slow-adjusted/dom02	#target-bmr text="1723.8"
+profile/cut-slow-adjusted/dom03	#target-carb text="211.5"
+profile/cut-slow-adjusted/dom04	#target-fat text="52.7"
+profile/cut-slow-adjusted/dom05	#target-fiber text="30"
+profile/cut-slow-adjusted/dom06	#target-kcal text="1896.1"
+profile/cut-slow-adjusted/dom07	#target-netcarb text="181.5"
+profile/cut-slow-adjusted/dom08	#target-protein text="144"
+profile/cut-slow-adjusted/dom09	#target-tdee text="2370.2"
+profile/cut-slow-adjusted/dom10	#target-warning hidden
+profile/cut-slow-adjusted/dom11	#targets-result (untouched)
+profile/cut-slow-intake-high/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">近4週完整記錄日平均攝取 3594 kcal，目前目標 1896 kcal。平均攝取接近目標之前，系統不會調低目標。</div>"
+profile/cut-slow-intake-high/dom01	#calibration-card (untouched)
+profile/cut-slow-intake-high/dom02	#target-bmr text="1723.8"
+profile/cut-slow-intake-high/dom03	#target-carb text="211.5"
+profile/cut-slow-intake-high/dom04	#target-fat text="52.7"
+profile/cut-slow-intake-high/dom05	#target-fiber text="30"
+profile/cut-slow-intake-high/dom06	#target-kcal text="1896.1"
+profile/cut-slow-intake-high/dom07	#target-netcarb text="181.5"
+profile/cut-slow-intake-high/dom08	#target-protein text="144"
+profile/cut-slow-intake-high/dom09	#target-tdee text="2370.2"
+profile/cut-slow-intake-high/dom10	#target-warning hidden
+profile/cut-slow-intake-high/dom11	#targets-result (untouched)
+profile/cut-fast/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">明天起：<span>2046 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-1.4 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/cut-fast/dom01	#calibration-card (untouched)
+profile/cut-fast/dom02	#target-bmr text="1723.8"
+profile/cut-fast/dom03	#target-carb text="211.5"
+profile/cut-fast/dom04	#target-fat text="52.7"
+profile/cut-fast/dom05	#target-fiber text="30"
+profile/cut-fast/dom06	#target-kcal text="1896.1"
+profile/cut-fast/dom07	#target-netcarb text="181.5"
+profile/cut-fast/dom08	#target-protein text="144"
+profile/cut-fast/dom09	#target-tdee text="2370.2"
+profile/cut-fast/dom10	#target-warning hidden
+profile/cut-fast/dom11	#targets-result (untouched)
+profile/bulk-slow/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>3195 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>3195 kcal</span></div><div class=\"cal-target-row\">明天起：<span>3345 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：0 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/bulk-slow/dom01	#calibration-card (untouched)
+profile/bulk-slow/dom02	#target-bmr text="1873.8"
+profile/bulk-slow/dom03	#target-carb text="409"
+profile/bulk-slow/dom04	#target-fat text="88.7"
+profile/bulk-slow/dom05	#target-fiber text="30"
+profile/bulk-slow/dom06	#target-kcal text="3194.7"
+profile/bulk-slow/dom07	#target-netcarb text="379"
+profile/bulk-slow/dom08	#target-protein text="190"
+profile/bulk-slow/dom09	#target-tdee text="2904.3"
+profile/bulk-slow/dom10	#target-warning hidden
+profile/bulk-slow/dom11	#targets-result (untouched)
+profile/bulk-fast-log-short/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>3195 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>3195 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：+1.3 kg／週</div><div class=\"cal-status\">完整記錄的天數還不夠，暫不調整</div>"
+profile/bulk-fast-log-short/dom01	#calibration-card (untouched)
+profile/bulk-fast-log-short/dom02	#target-bmr text="1873.8"
+profile/bulk-fast-log-short/dom03	#target-carb text="409"
+profile/bulk-fast-log-short/dom04	#target-fat text="88.7"
+profile/bulk-fast-log-short/dom05	#target-fiber text="30"
+profile/bulk-fast-log-short/dom06	#target-kcal text="3194.7"
+profile/bulk-fast-log-short/dom07	#target-netcarb text="379"
+profile/bulk-fast-log-short/dom08	#target-protein text="190"
+profile/bulk-fast-log-short/dom09	#target-tdee text="2904.3"
+profile/bulk-fast-log-short/dom10	#target-warning hidden
+profile/bulk-fast-log-short/dom11	#targets-result (untouched)
+profile/bulk-fast/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>3195 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>3195 kcal</span></div><div class=\"cal-target-row\">明天起：<span>3045 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：+1.3 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/bulk-fast/dom01	#calibration-card (untouched)
+profile/bulk-fast/dom02	#target-bmr text="1873.8"
+profile/bulk-fast/dom03	#target-carb text="409"
+profile/bulk-fast/dom04	#target-fat text="88.7"
+profile/bulk-fast/dom05	#target-fiber text="30"
+profile/bulk-fast/dom06	#target-kcal text="3194.7"
+profile/bulk-fast/dom07	#target-netcarb text="379"
+profile/bulk-fast/dom08	#target-protein text="190"
+profile/bulk-fast/dom09	#target-tdee text="2904.3"
+profile/bulk-fast/dom10	#target-warning hidden
+profile/bulk-fast/dom11	#targets-result (untouched)
+profile/maintain-up-pending/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2370 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：+0.8 kg／週</div><div class=\"cal-pending\"><p>近4週體重平均每週上升 +0.8 kg。如果這是你預期中的變化（例如肌肉量增加），可以維持不變；如果不是，可以把每日目標調整 −150 kcal（明天起生效）。</p><button type=\"button\" class=\"primary-btn\" id=\"cal-apply\">套用</button> <button type=\"button\" class=\"secondary-btn\" id=\"cal-dismiss\">先不要</button></div>"
+profile/maintain-up-pending/dom01	#calibration-card (untouched)
+profile/maintain-up-pending/dom02	#target-bmr text="1723.8"
+profile/maintain-up-pending/dom03	#target-carb text="300.4"
+profile/maintain-up-pending/dom04	#target-fat text="65.8"
+profile/maintain-up-pending/dom05	#target-fiber text="30"
+profile/maintain-up-pending/dom06	#target-kcal text="2370.2"
+profile/maintain-up-pending/dom07	#target-netcarb text="270.4"
+profile/maintain-up-pending/dom08	#target-protein text="144"
+profile/maintain-up-pending/dom09	#target-tdee text="2370.2"
+profile/maintain-up-pending/dom10	#target-warning hidden
+profile/maintain-up-pending/dom11	#targets-result (untouched)
+profile/maintain-pending-confirm/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">明天起：<span>2220 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：+0.8 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/maintain-pending-confirm/dom01	#calibration-card (untouched)
+profile/maintain-pending-confirm/dom02	#target-bmr text="1723.8"
+profile/maintain-pending-confirm/dom03	#target-carb text="300.4"
+profile/maintain-pending-confirm/dom04	#target-fat text="65.8"
+profile/maintain-pending-confirm/dom05	#target-fiber text="30"
+profile/maintain-pending-confirm/dom06	#target-kcal text="2370.2"
+profile/maintain-pending-confirm/dom07	#target-netcarb text="270.4"
+profile/maintain-pending-confirm/dom08	#target-protein text="144"
+profile/maintain-pending-confirm/dom09	#target-tdee text="2370.2"
+profile/maintain-pending-confirm/dom10	#target-warning hidden
+profile/maintain-pending-confirm/dom11	#targets-result (untouched)
+profile/maintain-pending-dismiss/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2370 kcal</span></div></div><div class=\"cal-trend\">需要近4週至少8次體重紀錄</div><div class=\"cal-status\">14 天內不會再提醒這件事</div>"
+profile/maintain-pending-dismiss/dom01	#calibration-card (untouched)
+profile/maintain-pending-dismiss/dom02	#target-bmr text="1723.8"
+profile/maintain-pending-dismiss/dom03	#target-carb text="300.4"
+profile/maintain-pending-dismiss/dom04	#target-fat text="65.8"
+profile/maintain-pending-dismiss/dom05	#target-fiber text="30"
+profile/maintain-pending-dismiss/dom06	#target-kcal text="2370.2"
+profile/maintain-pending-dismiss/dom07	#target-netcarb text="270.4"
+profile/maintain-pending-dismiss/dom08	#target-protein text="144"
+profile/maintain-pending-dismiss/dom09	#target-tdee text="2370.2"
+profile/maintain-pending-dismiss/dom10	#target-warning hidden
+profile/maintain-pending-dismiss/dom11	#targets-result (untouched)
+profile/maintain-dismissed/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2370 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：+0.8 kg／週</div><div class=\"cal-status\">14 天內不會再提醒這件事</div>"
+profile/maintain-dismissed/dom01	#calibration-card (untouched)
+profile/maintain-dismissed/dom02	#target-bmr text="1723.8"
+profile/maintain-dismissed/dom03	#target-carb text="300.4"
+profile/maintain-dismissed/dom04	#target-fat text="65.8"
+profile/maintain-dismissed/dom05	#target-fiber text="30"
+profile/maintain-dismissed/dom06	#target-kcal text="2370.2"
+profile/maintain-dismissed/dom07	#target-netcarb text="270.4"
+profile/maintain-dismissed/dom08	#target-protein text="144"
+profile/maintain-dismissed/dom09	#target-tdee text="2370.2"
+profile/maintain-dismissed/dom10	#target-warning hidden
+profile/maintain-dismissed/dom11	#targets-result (untouched)
+profile/maintain-down/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">明天起：<span>2520 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.8 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/maintain-down/dom01	#calibration-card (untouched)
+profile/maintain-down/dom02	#target-bmr text="1723.8"
+profile/maintain-down/dom03	#target-carb text="300.4"
+profile/maintain-down/dom04	#target-fat text="65.8"
+profile/maintain-down/dom05	#target-fiber text="30"
+profile/maintain-down/dom06	#target-kcal text="2370.2"
+profile/maintain-down/dom07	#target-netcarb text="270.4"
+profile/maintain-down/dom08	#target-protein text="144"
+profile/maintain-down/dom09	#target-tdee text="2370.2"
+profile/maintain-down/dom10	#target-warning hidden
+profile/maintain-down/dom11	#targets-result (untouched)
+profile/cooldown/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>-150 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1746 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">已調整，下次可調整日期：2026-10-02</div><div class=\"cal-reset\"><button type=\"button\" class=\"secondary-btn\" id=\"cal-reset-btn\">重設校正</button></div>"
+profile/cooldown/dom01	#calibration-card (untouched)
+profile/cooldown/dom02	#target-bmr text="1723.8"
+profile/cooldown/dom03	#target-carb text="183.4"
+profile/cooldown/dom04	#target-fat text="48.5"
+profile/cooldown/dom05	#target-fiber text="30"
+profile/cooldown/dom06	#target-kcal text="1746.1"
+profile/cooldown/dom07	#target-netcarb text="153.4"
+profile/cooldown/dom08	#target-protein text="144"
+profile/cooldown/dom09	#target-tdee text="2370.2"
+profile/cooldown/dom10	#target-warning hidden
+profile/cooldown/dom11	#targets-result (untouched)
+profile/capped/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>-300 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1596 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">已達累計調整上限（±300 kcal）</div><div class=\"cal-reset\"><button type=\"button\" class=\"secondary-btn\" id=\"cal-reset-btn\">重設校正</button></div>"
+profile/capped/dom01	#calibration-card (untouched)
+profile/capped/dom02	#target-bmr text="1723.8"
+profile/capped/dom03	#target-carb text="155.3"
+profile/capped/dom04	#target-fat text="44.3"
+profile/capped/dom05	#target-fiber text="30"
+profile/capped/dom06	#target-kcal text="1596.1"
+profile/capped/dom07	#target-netcarb text="125.3"
+profile/capped/dom08	#target-protein text="144"
+profile/capped/dom09	#target-tdee text="2370.2"
+profile/capped/dom10	#target-warning hidden
+profile/capped/dom11	#targets-result (untouched)
+profile/at-floor/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1002 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1200 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-0.1 kg／週</div><div class=\"cal-status\">每日目標已到熱量安全下限，暫不調整</div>"
+profile/at-floor/dom01	#calibration-card (untouched)
+profile/at-floor/dom02	#target-bmr text="1044"
+profile/at-floor/dom03	#target-carb text="138.6"
+profile/at-floor/dom04	#target-fat text="33.3"
+profile/at-floor/dom05	#target-fiber text="30"
+profile/at-floor/dom06	#target-kcal text="1200"
+profile/at-floor/dom07	#target-netcarb text="108.6"
+profile/at-floor/dom08	#target-protein text="86.4"
+profile/at-floor/dom09	#target-tdee text="1252.8"
+profile/at-floor/dom10	#target-warning (untouched)
+profile/at-floor/dom11	#targets-result (untouched)
+profile/mode-change/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>2370 kcal</span></div><div class=\"cal-target-row\">校正值：<span>-150 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>2220 kcal</span></div></div><div class=\"cal-trend\">需要近4週至少8次體重紀錄</div><div class=\"cal-status\">目前資料不足以判斷是否需要調整</div><div class=\"cal-reset\"><button type=\"button\" class=\"secondary-btn\" id=\"cal-reset-btn\">重設校正</button></div>"
+profile/mode-change/dom01	#calibration-card (untouched)
+profile/mode-change/dom02	#target-bmr text="1723.8"
+profile/mode-change/dom03	#target-carb text="272.3"
+profile/mode-change/dom04	#target-fat text="61.7"
+profile/mode-change/dom05	#target-fiber text="30"
+profile/mode-change/dom06	#target-kcal text="2220.2"
+profile/mode-change/dom07	#target-netcarb text="242.3"
+profile/mode-change/dom08	#target-protein text="144"
+profile/mode-change/dom09	#target-tdee text="2370.2"
+profile/mode-change/dom10	#target-warning hidden
+profile/mode-change/dom11	#targets-result (untouched)
+profile/daily-already-evaluated/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div></div><div class=\"cal-trend\">需要近4週至少8次體重紀錄</div><div class=\"cal-status\"></div>"
+profile/daily-already-evaluated/dom01	#calibration-card (untouched)
+profile/daily-already-evaluated/dom02	#target-bmr text="1723.8"
+profile/daily-already-evaluated/dom03	#target-carb text="211.5"
+profile/daily-already-evaluated/dom04	#target-fat text="52.7"
+profile/daily-already-evaluated/dom05	#target-fiber text="30"
+profile/daily-already-evaluated/dom06	#target-kcal text="1896.1"
+profile/daily-already-evaluated/dom07	#target-netcarb text="181.5"
+profile/daily-already-evaluated/dom08	#target-protein text="144"
+profile/daily-already-evaluated/dom09	#target-tdee text="2370.2"
+profile/daily-already-evaluated/dom10	#target-warning hidden
+profile/daily-already-evaluated/dom11	#targets-result (untouched)
+profile/daily-not-yet/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">明天起：<span>2046 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-1.4 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/daily-not-yet/dom01	#calibration-card (untouched)
+profile/daily-not-yet/dom02	#target-bmr text="1723.8"
+profile/daily-not-yet/dom03	#target-carb text="211.5"
+profile/daily-not-yet/dom04	#target-fat text="52.7"
+profile/daily-not-yet/dom05	#target-fiber text="30"
+profile/daily-not-yet/dom06	#target-kcal text="1896.1"
+profile/daily-not-yet/dom07	#target-netcarb text="181.5"
+profile/daily-not-yet/dom08	#target-protein text="144"
+profile/daily-not-yet/dom09	#target-tdee text="2370.2"
+profile/daily-not-yet/dom10	#target-warning hidden
+profile/daily-not-yet/dom11	#targets-result (untouched)
+profile/reset/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>-300 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1596 kcal</span></div><div class=\"cal-target-row\">明天起：<span>1896 kcal</span></div></div><div class=\"cal-trend\">需要近4週至少8次體重紀錄</div><div class=\"cal-status\">目前無需調整</div><div class=\"cal-reset\"><button type=\"button\" class=\"secondary-btn\" id=\"cal-reset-btn\">重設校正</button></div>"
+profile/reset/dom01	#calibration-card (untouched)
+profile/reset/dom02	#target-bmr text="1723.8"
+profile/reset/dom03	#target-carb text="155.3"
+profile/reset/dom04	#target-fat text="44.3"
+profile/reset/dom05	#target-fiber text="30"
+profile/reset/dom06	#target-kcal text="1596.1"
+profile/reset/dom07	#target-netcarb text="125.3"
+profile/reset/dom08	#target-protein text="144"
+profile/reset/dom09	#target-tdee text="2370.2"
+profile/reset/dom10	#target-warning hidden
+profile/reset/dom11	#targets-result (untouched)
+profile/night-cut-fast/dom00	#calibration-body html="<div class=\"cal-targets\"><div class=\"cal-target-row\">公式目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">校正值：<span>+0 kcal</span></div><div class=\"cal-target-row\">目前每日目標：<span>1896 kcal</span></div><div class=\"cal-target-row\">明天起：<span>2046 kcal</span></div></div><div class=\"cal-trend\">近4週體重趨勢：-1.4 kg／週</div><div class=\"cal-status\">已自動調整每日目標</div>"
+profile/night-cut-fast/dom01	#calibration-card (untouched)
+profile/night-cut-fast/dom02	#target-bmr text="1723.8"
+profile/night-cut-fast/dom03	#target-carb text="211.5"
+profile/night-cut-fast/dom04	#target-fat text="52.7"
+profile/night-cut-fast/dom05	#target-fiber text="30"
+profile/night-cut-fast/dom06	#target-kcal text="1896.1"
+profile/night-cut-fast/dom07	#target-netcarb text="181.5"
+profile/night-cut-fast/dom08	#target-protein text="144"
+profile/night-cut-fast/dom09	#target-tdee text="2370.2"
+profile/night-cut-fast/dom10	#target-warning hidden
+profile/night-cut-fast/dom11	#targets-result (untouched)
 picker/items/breakfast/main/dom00	#manual-picker-compose-mode hidden
 picker/items/breakfast/main/dom01	#manual-picker-gap html="<p>這組合約 120 kcal，這個時段配額約 0 kcal（+120），仍可送出。</p>"
 picker/items/breakfast/main/dom03	#manual-picker-items-mode (untouched)
@@ -1534,3 +1822,15 @@ week/monday/dom02	#week-fiber text="膳食纖維：—"
 week/monday/dom03	#week-flex text="近7天平均 1905／目標 1896 kcal"
 week/monday/dom04	#week-protein text="蛋白質：—"
 week/monday/dom05	#week-status (untouched)
+exercise/none/dom00	#exercise-history html="<p class=\"rec-empty\">尚無運動紀錄</p>"
+exercise/none/dom01	#exercise-status (untouched)
+exercise/none/dom02	#exercise-streak text="尚未開始連續紀錄"
+exercise/none/dom03	#exercise-weekly-activity-text text="本週已活動 0 分鐘（目標 150 分鐘）・肌力訓練 0 天（目標 2 天）"
+exercise/week/dom00	#exercise-history html="<div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">散步</span><span class=\"exercise-item-meta\">2026-09-23 · 20 分鐘 · 低強度</span></div></div><div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">慢跑</span><span class=\"exercise-item-meta\">2026-09-23 · 30 分鐘 · 高強度</span></div></div><div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">重訓</span><span class=\"exercise-item-meta\">2026-09-22 · 50 分鐘 · 中強度</span></div></div><div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">快走</span><span class=\"exercise-item-meta\">2026-09-21 · 40 分鐘 · 中強度</span></div></div><div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">游泳</span><span class=\"exercise-item-meta\">2026-09-14 · 45 分鐘 · 中強度</span></div></div>"
+exercise/week/dom01	#exercise-status (untouched)
+exercise/week/dom02	#exercise-streak text="連續紀錄 3 天"
+exercise/week/dom03	#exercise-weekly-activity-text text="本週已活動 100 分鐘（目標 150 分鐘）・肌力訓練 1 天（目標 2 天）；另有輕度活動 20 分鐘"
+exercise/streakBroken/dom00	#exercise-history html="<div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">瑜伽</span><span class=\"exercise-item-meta\">2026-09-22 · 30 分鐘 · 低強度</span></div></div><div class=\"exercise-item\"><div class=\"exercise-item-info\"><span class=\"exercise-item-title\">快走</span><span class=\"exercise-item-meta\">2026-09-20 · 30 分鐘 · 中強度</span></div></div>"
+exercise/streakBroken/dom01	#exercise-status (untouched)
+exercise/streakBroken/dom02	#exercise-streak text="連續紀錄 1 天"
+exercise/streakBroken/dom03	#exercise-weekly-activity-text text="本週已活動 0 分鐘（目標 150 分鐘）・肌力訓練 0 天（目標 2 天）；另有輕度活動 30 分鐘"
