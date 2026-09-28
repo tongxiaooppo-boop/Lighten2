@@ -267,3 +267,26 @@ diff-recs 只保證「有變動會被看到」，不保證變動是對的：刻�
 其餘標【建議】的項目，可以在 −1b 順手做，或登記到 `docs/日後討論.md`。
 
 總結論：**−1b 需再修**。主體工作紮實、差異報告詳盡，但上面 6 項必改完成後才能驗收。
+
+---
+
+## 第二輪：送審問題（逐字，2026-09-29）
+
+你是 Lighten2（個人減脂飲食 App，純前端 vanilla JS＋IndexedDB，repo 在 `D:\ok\lighten`）Phase −1b 驗收審核的**第二輪核對**審核者，不是實作者。**只讀不改**任何 repo 檔案（要驗證可以用 `git archive HEAD` 複製到 scratchpad 底下改著試）。用中文回答。
+
+第一輪審核意見全文在 `collab/opus-review-log/2026-09-28-phase-1b-review.md`（「第一輪：審核回覆（逐字）」一節），結論是「需再修」，必改 6 項＋多項建議。實作者修正的 commit 範圍是 `84a216d..HEAD`（`git log 84a216d..HEAD`，約 20 個 commit，每個 commit 訊息都有差異報告）。
+
+請做：
+1. **必改清單逐條核對**（A1、A2、2.3 飲食限制、T1–T3、T8；C6.5 手機實機腳本由使用者跑，只需確認腳本已補上對應步驟）：每條一行，寫「已解決／部分／未解決」＋對應 commit＋你怎麼驗證的（例：把修正換回修正前跑斷言確實失敗、在 scratchpad 改壞資料確實被擋）。
+2. **建議項核對**：第一輪列的建議（A3、A4、T4、T5、T6、T13、T14、C4.14、C4.11 註明、2.1 note 措辭、2.2 糙米係數、2.4 label_unsourced、2.5 舊 note、6.5 外食升級登記、9895948）逐條一行：已做／已登記到 `docs/日後討論.md`／沒處理。
+3. **修正本身有沒有引入新問題**：特別看
+   - `js/ui/item-picker.js` 改成 `Object.assign({}, p, …)` 之後，picker 品項多帶的欄位（note、kcal_low/high、tier…）會不會影響 `passesHardFilters`、`manual-picker` 或寫進 daily_log 的快照
+   - `data/` 的飲食限制更正（台式飲料改全素/蛋奶素、超商素食系列改只標蛋奶素並寫「素食依據：」）營養師角度是否合理
+   - 泡菜、照燒醬加「未確認」、照燒醬改非素，對全素/蛋奶素/有過敏原設定的推薦影響（差異報告說只有「低碳／外食／300／麩質」的宵夜失去推薦）
+   - `tools/check-arch.js` C4.14 新規則的正規式、`tools/check-data.js` 新規則（B6.8、B2.6、B2.2 凍結清單、T8 自我檢查、跨檔 id）有沒有誤擋或漏洞
+   - 刪掉超商 note 的 AI 段落時，有沒有誤刪內容描述或殘句
+4. **章程遵守**：先改 PRD/章程再改程式（A1）、修 bug 先寫失敗斷言（C5.1）、每項各自更新快照並附差異報告（C6.3）、commit 訊息的差異報告有沒有與事實不符。
+
+在 repo 原地跑 `node tools/check-data.js`、`node tools/check-engine.js`、`node tools/check-arch.js`、`node tools/diff-recs.js` 確認全過。
+
+格式：每個發現標【一定要改】或【建議】，附檔案與行號、重現方式。最後一行寫總結論（−1b 可以驗收（待使用者跑完手機實機腳本）／需再修）。
