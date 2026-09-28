@@ -2,13 +2,10 @@
 // 推薦候選、「自己選」的現成品項與自己煮的食材三處共用，確保同一個設定下擋掉的品項一致。
 //
 // ⚠️ Phase −1a 刻意保留的 v1 行為（−1b 修正，修掉會讓快照對不上）：
-//   - 自訂食物（is_custom）略過過敏原檢查（章程 C4.1 要求拿掉這個例外）
 //   - 不吃清單的自組食譜食材以名稱比對（章程 C2 要求改成 id）
 
-// 過敏原固定詞彙（基本資料分頁的勾選框選項，資料裡的 allergen_tags 也只用這些詞）。
-export const ALLERGEN_OPTIONS = ["甲殼類", "魚", "蛋", "乳製品", "堅果", "麩質", "黃豆", "芝麻"];
-// 複合料理沒人逐項審過過敏原時標這個；使用者只要設了任何過敏原，這類品項一律排除。
-export const UNVERIFIED_ALLERGEN = "未確認";
+import { ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
+
 // 舊版是自由文字輸入，常見寫法對回固定詞彙（打「蝦」比對不到資料裡的「甲殼類」）。
 const ALLERGEN_SYNONYMS = {
   "蝦": "甲殼類", "蝦子": "甲殼類", "蝦仁": "甲殼類", "蟹": "甲殼類", "螃蟹": "甲殼類", "甲殼": "甲殼類",
@@ -69,10 +66,10 @@ function passesDiet(dietTagSets, dietRestriction) {
 export function passesHardFilters(item, profile) {
   const p = profile || {};
 
-  // 1. 過敏原：自訂食物略過（v1 行為，−1b 拿掉這個例外），其餘照常判斷。
+  // 1. 過敏原：沒有例外，自訂食物也一樣（章程 C4.1）；缺欄或 null 當未確認。
   const userAllergens = normalizeAllergens(p.allergens);
   const allergenTags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [UNVERIFIED_ALLERGEN];
-  if (!item.is_custom && !passesAllergens(allergenTags, userAllergens)) {
+  if (!passesAllergens(allergenTags, userAllergens)) {
     return { ok: false, reason: allergenTags.indexOf(UNVERIFIED_ALLERGEN) !== -1 ? "成分未確認" : "含過敏原" };
   }
 
@@ -119,7 +116,7 @@ function findDislikedHit(item, disliked) {
   return null;
 }
 
-// 組合的過敏原＝各成分過敏原的聯集（缺欄的成分被略過；v1 行為，−1b 改成「任一成分未確認則整組未確認」）
+// 組合的過敏原＝各成分過敏原的聯集；任一成分缺欄或是 null，整組含「未確認」（章程 B6.4）。
 export function unionTags() {
   const set = {};
   for (let i = 0; i < arguments.length; i++) {
@@ -128,6 +125,8 @@ export function unionTags() {
       tags.forEach(function (t) {
         if (t) set[t] = true;
       });
+    } else {
+      set[UNVERIFIED_ALLERGEN] = true;
     }
   }
   return Object.keys(set);

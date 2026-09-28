@@ -4,7 +4,7 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { MEAL_TYPES, LOG_SOURCES } from "../core/config.js";
+import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 
 const DB_NAME = "lighten2";
@@ -182,6 +182,29 @@ export function validateExerciseLog(entry) {
   }
 }
 
+const PRODUCT_ROLES = ["main", "side", "snack", "drink"];
+const PRODUCT_CHANNELS = ["convenience", "delivery"];
+const OPTIONAL_NUTRIENTS = ["protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+
+// 我的品項的最低驗證（章程 B8、PRD 10.1）。allergen_tags 必有此欄：null＝未確認（表單預設）、[]＝確認不含。
+export function validateCustomFood(food) {
+  assertRecord(food, "custom_foods");
+  const problems = [];
+  if (typeof food.name !== "string" || food.name.trim() === "") problems.push("name");
+  if (!isNum(food.kcal) || !(food.kcal > 0)) problems.push("kcal");
+  if (PRODUCT_ROLES.indexOf(food.role) === -1) problems.push("role");
+  if (PRODUCT_CHANNELS.indexOf(food.channel) === -1) problems.push("channel");
+  if (!Array.isArray(food.valid_slots) || food.valid_slots.length === 0 ||
+      food.valid_slots.some(function (s) { return SLOTS.indexOf(s) === -1; })) problems.push("valid_slots");
+  const tags = food.allergen_tags;
+  if (!("allergen_tags" in food) || (tags !== null && (!Array.isArray(tags) ||
+      tags.some(function (t) { return ALLERGEN_OPTIONS.indexOf(t) === -1 && t !== UNVERIFIED_ALLERGEN; })))) problems.push("allergen_tags");
+  OPTIONAL_NUTRIENTS.forEach(function (k) {
+    if (!(k in food) || (food[k] !== null && (!isNum(food[k]) || food[k] < 0))) problems.push(k);
+  });
+  if (problems.length > 0) throw new Error("[db.js] 我的品項格式不對：" + problems.join("、"));
+}
+
 // ---------- 1. user_profile（單例） ----------
 
 export async function getProfile() {
@@ -280,6 +303,18 @@ export async function getCustomFoods() {
   return withStores([STORE.customFoods], "readonly", function (s) {
     return reqPromise(s[STORE.customFoods].getAll());
   });
+}
+
+// 新增一筆我的品項（Phase 0 的快速新增表單呼叫）。回傳寫入的紀錄。
+export async function addCustomFood(food) {
+  validateCustomFood(food);
+  const now = new Date().toISOString();
+  const record = Object.assign({ copied_from: null, archived: false, created_at: now }, food,
+    { id: food.id || generateId("custom"), updated_at: now });
+  await withStores([STORE.customFoods], "readwrite", function (s) {
+    return reqPromise(s[STORE.customFoods].add(record));
+  });
+  return record;
 }
 
 // ---------- 6. daily_log（一筆一餐，格式見 PRD 第 3 節） ----------

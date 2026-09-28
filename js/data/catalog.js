@@ -9,8 +9,7 @@
 
 import { round1 } from "../core/num.js";
 import { SLOTS } from "../core/slots.js";
-
-const UNVERIFIED = "未確認";
+import { UNVERIFIED_ALLERGEN as UNVERIFIED } from "../core/config.js";
 
 // 種子 JSON 帶跟程式同一個版本字串（取自這個模組被 import map 對應到的網址 ?v=），部署後資料跟程式一起更新（章程 C1.6）
 const VERSION = new URL(import.meta.url).searchParams.get("v");
@@ -55,6 +54,7 @@ function fromTaiwan(it) {
 }
 
 // 使用者的「我的品項」（custom_foods store）→ 跟現成品項同形狀。v1 的自訂食物沒有角色與時段，一律當配菜、全時段。
+// allergen_tags 缺欄或 null＝未確認（PRD 10.4），有設過敏原的使用者會被擋。
 export function fromCustomFood(f) {
   return {
     uid: f.id, source_id: f.id, name: f.name, channel: null, category: null,
@@ -63,7 +63,8 @@ export function fromCustomFood(f) {
     kcal: f.kcal != null ? f.kcal : null, kcal_low: null, kcal_high: null, kcal_rep: null,
     protein_g: f.protein_g != null ? f.protein_g : null, carb_g: f.carb_g != null ? f.carb_g : null,
     fat_g: f.fat_g != null ? f.fat_g : null, fiber_g: f.fiber_g != null ? f.fiber_g : null,
-    tier: "🟢", diet_tags: [], allergen_tags: [], note: null, is_taiwan: false, is_custom: true,
+    tier: "🟢", diet_tags: [], allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
+    note: null, is_taiwan: false, is_custom: true,
   };
 }
 

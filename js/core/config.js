@@ -3,6 +3,11 @@
 // 一餐的型態（PRD 0.1 第 7 點）
 export const MEAL_TYPES = ["convenience", "delivery", "cook_quick", "cook_full"];
 
+// 過敏原固定詞彙（章程 B6.1）：基本資料的勾選框選項，資料與我的品項的 allergen_tags 也只用這些詞
+export const ALLERGEN_OPTIONS = ["甲殼類", "魚", "蛋", "乳製品", "堅果", "麩質", "黃豆", "芝麻"];
+// 沒逐項確認過成分時標這個；使用者只要設了任何過敏原，這類品項一律排除
+export const UNVERIFIED_ALLERGEN = "未確認";
+
 // daily_log.source
 export const LOG_SOURCES = ["rec_accepted", "manual", "from_plan", "backfill"];
 

@@ -67,6 +67,7 @@ async function main() {
     filters: await imp("js/engine/filters.js"),
     tdee: await imp("js/engine/tdee.js"),
     dates: await imp("js/core/dates.js"),
+    config: await imp("js/core/config.js"),
   };
   const catalog = M.catalog.buildCatalog({
     proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
@@ -81,7 +82,7 @@ async function main() {
 
   // ---------- 1. 資料本身 ----------
   console.log("[資料]");
-  const ALLOWED_ALLERGENS = M.filters.ALLERGEN_OPTIONS.concat(["未確認"]);
+  const ALLOWED_ALLERGENS = M.config.ALLERGEN_OPTIONS.concat(["未確認"]);
   convenienceData.concat(taiwanData).forEach((it) => {
     check(["main", "side", "drink", "snack"].indexOf(it.role) !== -1, it.id + " 缺 role 或 role 不合法");
     check(Array.isArray(it.valid_slots) && it.valid_slots.length > 0 && it.valid_slots.every((s) => SLOTS.indexOf(s) !== -1),
@@ -127,7 +128,7 @@ async function main() {
   const DIETS = ["一般", "全素", "蛋奶素", "低碳"];
   const SOURCES = ["auto", "convenience", "delivery", "cook_quick", "cook_full"];
   const BUDGETS = [150, 300, 500, 800];
-  const ALLERGEN_CASES = [[]].concat(M.filters.ALLERGEN_OPTIONS.map((a) => [a])).concat([["蝦、牛奶"]]);
+  const ALLERGEN_CASES = [[]].concat(M.config.ALLERGEN_OPTIONS.map((a) => [a])).concat([["蝦、牛奶"]]);
   let scenarios = 0;
   const nullByDiet = {};
 
@@ -203,6 +204,19 @@ async function main() {
     check(M.recommend.daysSince("2026-09-20", now) === 3, label + " " + h + " 點：3 天前顯示過應是 3（實際 " + M.recommend.daysSince("2026-09-20", now) + "）");
   });
   check(M.recommend.daysSince(null, at(2026, 9, 23, 10)) === Infinity, "沒有顯示紀錄應是 Infinity");
+
+  // ---------- 4c. 自訂食物與組合的過敏原（章程 C4.1、B6.4） ----------
+  console.log("[自訂食物與組合的過敏原]");
+  const allergic = { allergens: ["蛋"] };
+  const custom = (tags) => M.catalog.fromCustomFood(Object.assign({ id: "custom_x", name: "x", kcal: 100 }, tags === undefined ? {} : { allergen_tags: tags }));
+  check(!M.filters.passesHardFilters(custom(["蛋"]), allergic).ok, "自訂食物含使用者的過敏原卻沒被擋（不能有自訂食物例外）");
+  check(!M.filters.passesHardFilters(custom(null), allergic).ok, "自訂食物過敏原未確認（null）卻沒被擋");
+  check(!M.filters.passesHardFilters(custom(undefined), allergic).ok, "自訂食物沒有 allergen_tags 欄位卻沒被擋");
+  check(M.filters.passesHardFilters(custom([]), allergic).ok, "自訂食物確認不含過敏原（[]）卻被擋");
+  check(M.filters.passesHardFilters(custom(null), {}).ok, "沒設過敏原的使用者，未確認的自訂食物不該被擋");
+  check(M.filters.unionTags(["蛋"], undefined).indexOf("未確認") !== -1, "組合裡有成分缺 allergen_tags，整組要是未確認");
+  check(M.filters.unionTags(["蛋"], null).indexOf("未確認") !== -1, "組合裡有成分 allergen_tags 是 null，整組要是未確認");
+  check(M.filters.unionTags(["蛋"], []).join() === "蛋", "成分都有 allergen_tags 時是聯集");
 
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
@@ -332,6 +346,29 @@ async function checkDbValidation() {
     ["totals 營養欄位缺欄（要寫 null 不能省略）", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1 } }), /totals\.carb_g/],
   ];
   for (const b of broken) await rejectsWith(() => db.validateDailyLog(b[1]), b[2], "daily_log " + b[0] + " 沒有被擋下");
+
+  // 我的品項（章程 B8）：名稱、正數熱量、role、channel、allergen_tags 欄位必有（null＝未確認）、營養欄位缺值是 null
+  const food = { name: "新品飯糰", channel: "convenience", role: "main", valid_slots: ["breakfast"], kcal: 250,
+    protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null,
+    allergen_tags: null, vegan: false, lacto_ovo: false };
+  [["過敏原未確認", food], ["確認不含", Object.assign({}, food, { allergen_tags: [] })], ["含蛋", Object.assign({}, food, { allergen_tags: ["蛋"] })]].forEach(function (g) {
+    let msg = null;
+    try { db.validateCustomFood(g[1]); } catch (e) { msg = e.message; }
+    check(msg === null, "格式正確的我的品項（" + g[0] + "）被驗證擋下：" + msg);
+  });
+  await rejectsWith(() => db.addCustomFood([food]), ARRAY, "addCustomFood 傳入陣列沒有報「不能傳陣列」");
+  const brokenFoods = [
+    ["沒有名稱", Object.assign({}, food, { name: " " }), /name/],
+    ["熱量不是正數", Object.assign({}, food, { kcal: 0 }), /kcal/],
+    ["熱量沒填", Object.assign({}, food, { kcal: null }), /kcal/],
+    ["role 不合法", Object.assign({}, food, { role: "dessert" }), /role/],
+    ["channel 不合法", Object.assign({}, food, { channel: null }), /channel/],
+    ["沒有 allergen_tags 欄位", (() => { const f = Object.assign({}, food); delete f.allergen_tags; return f; })(), /allergen_tags/],
+    ["過敏原不在固定詞彙", Object.assign({}, food, { allergen_tags: ["蝦"] }), /allergen_tags/],
+    ["營養欄位省略（要寫 null）", (() => { const f = Object.assign({}, food); delete f.protein_g; return f; })(), /protein_g/],
+    ["營養欄位是負數", Object.assign({}, food, { fat_g: -1 }), /fat_g/],
+  ];
+  for (const b of brokenFoods) await rejectsWith(() => db.validateCustomFood(b[1]), b[2], "我的品項 " + b[0] + " 沒有被擋下");
 }
 
 main().catch((err) => {
