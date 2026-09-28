@@ -71,6 +71,8 @@ async function main() {
     mc: await imp("js/engine/meal-content.js"),
     budget: await imp("js/engine/budget.js"),
     matcher: await imp("js/engine/matcher.js"),
+    today: await imp("js/engine/today.js"),
+    nutrition: await imp("js/engine/nutrition.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -307,6 +309,54 @@ async function main() {
     check(mc.manualSelectionProblem([it("main", "a"), it("main", "b")]) !== null, "兩個主餐超過角色上限要擋");
     check(mc.canAddManualItem([it("drink", "a")], it("drink", "b")) === false, "已經選了飲料，再加一杯要擋");
     check(mc.canAddManualItem([it("drink", "a")], it("main", "b")) === true, "已經選了飲料，加主餐要可以");
+  }
+
+  // ---------- 4g. 同一天重建不換掉剛看到的建議（decisions #39） ----------
+  console.log("[同一天重建]");
+  {
+    const TODAY = "2026-09-23";
+    const nowMs = new Date(2026, 8, 23, 10, 0).getTime();
+    const yesterday = "2026-09-22";
+    // 近期降權以「今天開始時」計算：今天那一次不算
+    check(M.recommend.feedbackScore({ shown_count: 2, last_shown_date: yesterday }, nowMs) === -50, "昨天顯示過（共 2 天）要扣 40＋5×2＝50（實際 " + M.recommend.feedbackScore({ shown_count: 2, last_shown_date: yesterday }, nowMs) + "）");
+    check(M.recommend.feedbackScore({ shown_count: 2, last_shown_date: TODAY }, nowMs) === -5, "今天也顯示過（共 2 天）只扣今天以前那 1 天的 5 分（實際 " + M.recommend.feedbackScore({ shown_count: 2, last_shown_date: TODAY }, nowMs) + "）");
+    check(M.recommend.feedbackScore({ shown_count: 1, last_shown_date: "2026-09-25" }, nowMs) === 0, "顯示日期在未來（時鐘被調回去）當成今天（實際 " + M.recommend.feedbackScore({ shown_count: 1, last_shown_date: "2026-09-25" }, nowMs) + "）");
+    check(M.recommend.feedbackScore({ rating: "like", shown_count: 0 }, nowMs) === 40, "喜歡加 40");
+
+    const profiles = [
+      { age: 35, gender: "男", height_cm: 175, weight_kg: 80, activity_mode: "輕度", goal_mode: "減脂", meal_prefs: null, enabled_slots: null, diet_restriction: "一般", allergens: [], disliked_ingredients: [] },
+      { age: 30, gender: "女", height_cm: 160, weight_kg: 60, activity_mode: "久坐", goal_mode: "維持", meal_prefs: { breakfast: "auto", lunch: "auto", afternoon_tea: "auto", dinner: "auto", snack: "auto" }, enabled_slots: null, diet_restriction: "一般", allergens: [], disliked_ingredients: [] },
+      { age: 35, gender: "男", height_cm: 175, weight_kg: 80, activity_mode: "輕度", goal_mode: "減脂", meal_prefs: { breakfast: "cook_quick", lunch: "cook_quick", afternoon_tea: "auto", dinner: "cook_full", snack: "auto" }, enabled_slots: null, diet_restriction: "全素", allergens: [], disliked_ingredients: [] },
+    ];
+    const markShown = (fbMap, recs) => Object.keys(recs).forEach((slot) => {
+      const r = recs[slot];
+      if (!r || r.lowBudget) return;
+      const ex = fbMap[r.id] || {};
+      if (ex.last_shown_date === TODAY) return;
+      fbMap[r.id] = Object.assign({}, ex, { shown_count: (ex.shown_count || 0) + 1, last_shown_date: TODAY });
+    });
+    const ids = (recs) => SLOTS.map((s) => (recs[s] && !recs[s].lowBudget ? recs[s].id : "-")).join(" | ");
+    profiles.forEach((profile, pi) => {
+      const targets = M.nutrition.calculateTargets(profile);
+      const fb = {};
+      const plan = (todayLogs) => M.today.planToday({ profile, targets, todayLogs, weekLogs: todayLogs, feedbackMap: JSON.parse(JSON.stringify(fb)), pool: candidatePool, today: TODAY, nowMs });
+      const first = plan([]).recs;
+      markShown(fb, first);
+      const again = plan([]).recs;
+      check(ids(first) === ids(again), "profile " + pi + "：同一天再開一次今日建議，推薦整批換掉了（第一次 " + ids(first) + "；再一次 " + ids(again) + "）");
+      // 照推薦記錄早餐：午晚餐的額度不變，推薦也不該變
+      const b = first.breakfast;
+      if (b && !b.lowBudget) {
+        const log = { log_date: TODAY, slot: "breakfast", meal_type: "delivery", source: "rec_accepted", name: b.name,
+          content: M.mc.contentFromRec(b, catalog.productsByUid),
+          totals: { kcal: b.scaled_kcal, protein_g: b.protein_g, carb_g: b.carb_g, fat_g: b.fat_g, fiber_g: b.fiber_g } };
+        const after = plan([log]).recs;
+        ["lunch", "dinner"].forEach((slot) => {
+          const x = first[slot], y = after[slot];
+          check((x && x.id) === (y && y.id), "profile " + pi + "：記錄推薦的早餐之後，" + slot + " 換掉了（" + (x && x.id) + " → " + (y && y.id) + "）");
+        });
+      }
+    });
   }
 
   // ---------- 5. 體重趨勢斜率估計 ----------

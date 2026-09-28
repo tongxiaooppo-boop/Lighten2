@@ -314,13 +314,11 @@ async function snapToday() {
   // 倒讚與「順便不要」先清掉「今天顯示過」，不然會被同日重建的降權效果蓋掉；另外直接斷言被排除的東西沒有再出現
   const flows = {
     "dislike-dinner": async (before) => {
-      A.clearShown();
       await A.dislike("dinner");
       const after = A.currentRecs();
       emit("recs", "flow/dislike-dinner/excluded", SLOTS.every((s) => !after[s] || after[s].id !== before.dinner.id) ? "ok" : "倒讚的組合又出現了");
     },
     "chip-dinner-protein": async (before) => {
-      A.clearShown();
       const p = before.dinner.protein_id;
       await A.dislikeChip("protein", p, before.dinner.protein_name);
       const after = A.currentRecs();
