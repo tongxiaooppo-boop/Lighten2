@@ -268,6 +268,12 @@ function main() {
   const ingredients = readJson("ingredients.json");
   console.log("[食材]");
   checkIngredients(ingredients, refs);
+  // 食材 id 凍結（章程 B4）：凍結清單裡的 id 都要還在（改名＝舊 id 消失）
+  const existing = {};
+  ingredients.forEach((it) => { existing[it.id] = true; });
+  readJson("reference/ingredient_ids_frozen.json").ids.forEach((id) => {
+    if (!existing[id]) err("食材 id「" + id + "」已凍結，不得改名；要下架請同一個 commit 從 data/reference/ingredient_ids_frozen.json 刪掉並說明（章程 B4、B9）");
+  });
   console.log("[餐型骨架]");
   checkArchetypes(readJson("dish_archetypes.json"), ingredients);
   console.log("[現成品項]");
