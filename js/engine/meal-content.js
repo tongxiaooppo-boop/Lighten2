@@ -7,7 +7,7 @@
 //   - 今日 hero 另有涵蓋率警語（todayIntake）
 // ⚠️ 用油、調味的隱含成分還沒有（implicit: null），−1b 後續加入。
 
-import { PRIMARY_SLOT_SCALE_RANGE, tierRank } from "../core/config.js";
+import { PRIMARY_SLOT_SCALE_RANGE, MANUAL_ROLE_MAX, tierRank } from "../core/config.js";
 import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
@@ -98,6 +98,27 @@ export function sumProducts(items) {
     fat_g: sumOrNull(items, "fat_g"),
     fiber_g: sumOrNull(items, "fiber_g"),
   };
+}
+
+// ---------- 手動記錄規則（章程 C4.8） ----------
+// 比推薦寬：只限制每個角色的數量，不要求主餐（一杯拿鐵可以記成一餐），不看時段、不套用低碳。
+
+function roleCounts(items) {
+  const n = {};
+  items.forEach(function (it) { n[it.role] = (n[it.role] || 0) + 1; });
+  return n;
+}
+
+// 可以送出回傳 null，否則回傳原因
+export function manualSelectionProblem(items) {
+  if (items.length === 0) return "請至少選一個品項。";
+  const n = roleCounts(items);
+  const over = Object.keys(n).filter(function (r) { return n[r] > (MANUAL_ROLE_MAX[r] || 1); });
+  return over.length > 0 ? "每種角色最多選 1 個。" : null;
+}
+
+export function canAddManualItem(items, item) {
+  return (roleCounts(items)[item.role] || 0) < (MANUAL_ROLE_MAX[item.role] || 1);
 }
 
 // 自己選的單餐缺口提示：熱量超出份額多少、蛋白質/纖維還差多少（share 來自 budget.js slotNutrientShare）

@@ -295,6 +295,20 @@ async function main() {
     check(gap.proteinGapToday === 80 * 1.8 - 20, "蛋白質缺口：未知的一餐不算已吃到（實際 " + gap.proteinGapToday + "）");
   }
 
+  // ---------- 4f. 手動記錄規則（章程 C4.8）：只限制每個角色的數量，不要求主餐 ----------
+  console.log("[手動記錄規則]");
+  {
+    const mc = M.mc;
+    const it = (role, uid) => ({ uid: uid || role, role: role });
+    check(mc.manualSelectionProblem([it("drink")]) === null, "早餐只記一杯拿鐵（只有飲料、沒有主餐）要可以送出");
+    check(mc.manualSelectionProblem([it("snack")]) === null, "只記一份點心要可以送出");
+    check(mc.manualSelectionProblem([it("main"), it("side"), it("drink"), it("snack")]) === null, "四種角色各一件要可以送出（手動不限 3 件）");
+    check(mc.manualSelectionProblem([]) !== null, "什麼都沒選不能送出");
+    check(mc.manualSelectionProblem([it("main", "a"), it("main", "b")]) !== null, "兩個主餐超過角色上限要擋");
+    check(mc.canAddManualItem([it("drink", "a")], it("drink", "b")) === false, "已經選了飲料，再加一杯要擋");
+    check(mc.canAddManualItem([it("drink", "a")], it("main", "b")) === true, "已經選了飲料，加主餐要可以");
+  }
+
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
   checkTdeeSlope();

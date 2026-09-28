@@ -24,6 +24,9 @@ export const WIDE_RANGE_RATIO = 1.5;
 // 低碳（基本資料的獨立開關，只影響推薦）：一餐碳水上限（章程 B6.6、decisions #26）
 export const LOW_CARB_MEAL_MAX_G = 30;
 
+// 手動記錄（自己選）每個角色的數量上限；不要求必須有主餐（章程 C4.8、decisions #20）。推薦生成另有更嚴的規則（C4.7，pool.js）
+export const MANUAL_ROLE_MAX = { main: 1, side: 1, drink: 1, snack: 1 };
+
 // 纖維週日均下限（25–35g 取下限 25 當硬約束）
 export const FIBER_FLOOR_G = 25;
 
