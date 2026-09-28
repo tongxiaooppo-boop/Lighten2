@@ -207,7 +207,10 @@ export async function onLogRecClick(slot, rec, btnEl) {
     await addDailyLog(buildLogEntry({
       date: todayStr(), slot: slot, source: "rec_accepted", name: rec.name,
       content: contentFromRec(rec, catalog.productsByUid),
-      totals: { kcal: rec.scaled_kcal, protein_g: rec.protein_g, carb_g: rec.carb_g, fat_g: rec.fat_g, fiber_g: rec.fiber_g },
+      totals: {
+        kcal: rec.scaled_kcal, protein_g: rec.protein_g, carb_g: rec.carb_g, fat_g: rec.fat_g, fiber_g: rec.fiber_g,
+        sat_fat_g: rec.sat_fat_g, sodium_mg: rec.sodium_mg, partial: rec.partial,
+      },
       createdAt: nowIso(),
     }));
     await buildRecommendation();

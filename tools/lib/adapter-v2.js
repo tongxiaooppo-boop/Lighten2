@@ -54,12 +54,14 @@ module.exports = async function createV2Adapter(ROOT) {
   // v1 平面格式的測試紀錄 → daily_log 新格式（查不到明細的一餐＝估算元件）
   function toLog(l) {
     if (l.totals) return clone(l);
-    const totals = { kcal: l.kcal, protein_g: l.protein_g, carb_g: l.carb_g, fat_g: l.fat_g, fiber_g: l.fiber_g };
+    const totals = { kcal: l.kcal, protein_g: l.protein_g, carb_g: l.carb_g, fat_g: l.fat_g, fiber_g: l.fiber_g, sat_fat_g: null, sodium_mg: null, partial: [] };
     return {
       id: l.id, log_date: l.log_date, slot: l.slot, meal_type: "delivery", source: "manual", name: l.item_name,
       content: {
         meal_type: "delivery", archetype_id: null, method_id: null,
-        components: [{ kind: "estimate", name: l.item_name, size: null, snapshot: Object.assign({ sat_fat_g: null, sodium_mg: null }, totals) }],
+        components: [{ kind: "estimate", name: l.item_name, size: null, snapshot: {
+          kcal: totals.kcal, protein_g: totals.protein_g, carb_g: totals.carb_g, fat_g: totals.fat_g, fiber_g: totals.fiber_g, sat_fat_g: null, sodium_mg: null,
+        } }],
         implicit: null,
       },
       totals: totals, created_at: l.log_date + "T12:00:00.000Z",

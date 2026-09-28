@@ -162,9 +162,12 @@ export function validateDailyLog(entry) {
   Array.prototype.push.apply(problems, contentProblems(entry.content, entry.meal_type));
   const t = entry.totals;
   if (!t || typeof t !== "object" || typeof t.kcal !== "number" || !isFinite(t.kcal)) problems.push("totals.kcal");
-  else ["protein_g", "carb_g", "fat_g", "fiber_g"].forEach(function (k) {
-    if (!(k in t) || (t[k] !== null && (typeof t[k] !== "number" || !isFinite(t[k])))) problems.push("totals." + k);
-  });
+  else {
+    ["protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"].forEach(function (k) {
+      if (!(k in t) || (t[k] !== null && (typeof t[k] !== "number" || !isFinite(t[k])))) problems.push("totals." + k);
+    });
+    if (!Array.isArray(t.partial)) problems.push("totals.partial");
+  }
   if (problems.length > 0) throw new Error("[db.js] daily_log 格式不對：" + problems.join("、"));
 }
 

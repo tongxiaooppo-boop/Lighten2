@@ -2,9 +2,10 @@
 
 import { SLOTS, isSlotEnabled } from "../core/slots.js";
 import { shortDate } from "../core/dates.js";
-import { $ } from "./dom.js";
+import { escapeHtml } from "../core/html.js";
+import { $, sodiumText, satFatText } from "./dom.js";
 import { computeRecentAvgVsTarget } from "../engine/budget.js";
-import { todayIntake, recsKcalTotal } from "../engine/meal-content.js";
+import { todayIntake, recsKcalTotal, sumDisplayLogTotals } from "../engine/meal-content.js";
 import { loadTdeeState, getCalibratedTargets } from "./calibration.js";
 import { activateTab } from "./tabs.js";
 
@@ -40,6 +41,8 @@ export async function renderHero(remainingBudget, targets, todayLogs, recentLogs
 
   // 營養素明細（<details> 展開區塊）
   const nutritionEl = $("#today-hero-nutrition");
+  const sodium = sumDisplayLogTotals(todayLogs, "sodium_mg");
+  const satFat = sumDisplayLogTotals(todayLogs, "sat_fat_g");
   if (nutritionEl) {
     const body = $("#today-hero-nutrition-body");
     if (body) {
@@ -48,6 +51,7 @@ export async function renderHero(remainingBudget, targets, todayLogs, recentLogs
         '<div class="today-hero-stat"><span class="today-hero-stat-label">脂肪</span><span class="today-hero-stat-value">' + Math.round(eaten.fat_g) + " / " + Math.round(targets.fat_g) + "g（" + Math.round(eaten.fat_g * 9 / targets.targetKcal * 100) + "%）</span></div>" +
         '<div class="today-hero-stat"><span class="today-hero-stat-label">碳水（參考值）</span><span class="today-hero-stat-value">' + Math.round(eaten.carb_g) + " / " + Math.round(targets.carb_g) + "g（" + Math.round(eaten.carb_g * 4 / targets.targetKcal * 100) + "%）</span></div>" +
         '<div class="today-hero-stat"><span class="today-hero-stat-label">纖維</span><span class="today-hero-stat-value">' + Math.round(eaten.fiber_g) + " / " + Math.round(targets.fiber_g) + "g</span></div>" +
+        '<p class="today-hero-display">' + escapeHtml(sodiumText(sodium.value, sodium.partial, true)) + "　" + escapeHtml(satFatText(satFat.value, satFat.partial)) + "</p>" +
         '<p class="taiwan-ref-note">碳水是用目標熱量扣掉蛋白質、脂肪熱量後反推出來的，不是獨立設定的建議值。</p>';
     }
     nutritionEl.hidden = false;
