@@ -1,0 +1,11 @@
+{
+  "_source": "USDA FoodData Central（SR Legacy），只收 TFDA 沒有的食材（章程 B2：食材 tfda ＞ usda）",
+  "_fetched": "2026-09-28，api.nal.usda.gov/fdc/v1/foods/search",
+  "foods": [
+    {
+      "fdc_id": "170903",
+      "description": "Yogurt, Greek, plain, lowfat",
+      "per_100g": { "kcal": 73, "protein_g": 9.95, "carb_g": 3.94, "fat_g": 1.92, "fiber_g": 0, "sat_fat_g": 1.23, "sodium_mg": 34 }
+    }
+  ]
+}
