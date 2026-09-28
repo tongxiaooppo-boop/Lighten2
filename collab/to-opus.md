@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-28，Phase −1b 實作完成、驗收審核中）
+# 給接手的 Opus：Lighten2 交接（2026-09-28，Phase −1b 實作完成、驗收審核第一輪：需再修）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -38,8 +38,15 @@
 
 ## 4. 下一步
 
-1. **−1b 驗收審核**：上一個 session 已開獨立 Opus agent 審核，但 session 在回覆前結束，**回覆沒有存下來**。新 session 要重新開一個獨立 Opus agent，任務說明照 `collab/opus-review-log/2026-09-28-phase-1b-review.md` 的「第一輪：送審問題」（檔案裡已寫好，直接叫 agent 讀它）。回覆逐字貼進同一檔 → 修「一定要改」（修 bug 先寫失敗斷言）→ 第二輪核對 → 驗收。
-   - 如果使用者在舊 session 看到了審核回覆，請他貼過來，就不必重跑。
+1. **−1b 驗收審核第一輪已回覆：需再修**（全文逐字在 `collab/opus-review-log/2026-09-28-phase-1b-review.md`）。驗收前的必改清單：
+   1. **A1**：`js/ui/item-picker.js` 的 `toPickerItem` 逐欄抄營養欄位、漏了 `sat_fat_g`／`sodium_mg`，「自己選」的現成品項與自煮飲料的鈉整個遺失（寫進 daily_log 的也錯）。改成直接帶 catalog 品項全部欄位（C2），`catalog.js` 的 `fromCustomFood` 一起補；先寫會失敗的 check-engine 斷言（filterForSlot 產出的營養欄位要跟 catalog 相同、選 dr05 後鈉＝113.1）；commit 訊息更正 053d5d7「TFDA 飲品顯示實際鈉值」這句不實敘述。
+   2. **A2**：溫沙拉的推薦卡片與自煮合計要註明「未含沙拉醬」（decisions #38）。
+   3. **飲食限制標註**：`conv_pk03` Soyjoy、`conv_sl02` 改 vegan: false（Soyjoy 的 lacto_ovo 也保守改 false）；`conv_sl04`、`bx08`、`bx09`、`bx10`「未確認卻宣告全素」逐筆確認或改 false。
+   4. **T1–T3**：`tools/lib/ingredient-values.js` 的 `field_sources.value` 覆寫只准用在參考資料原值是 null 的欄位，且值為 0，否則報錯。
+   5. **T8**：check-data 對 label／official_web 出處的現成品項也做 B5.4 巨量營養素驗算。
+   6. **C6.5**：修完請使用者在手機跑完整的 `docs/手機實機腳本.md`，留紀錄。
+   - 建議項（可順手做或登記到 `docs/日後討論.md`）：推薦卡片 content note 顯示 AI 給的鈉數字（A3，要把內容描述跟資料沿革分開）；db 驗證要求自煮必有 implicit（A4）；vegan/過敏原一致性規則、TFDA 描述以「等」結尾視為不完整、跨檔 id 唯一、官方值凍結清單、check-arch C4.14 收緊；泡菜/照燒醬加「未確認」；木耳/泡菜 note 措辭、糙米 0.5 高估 10–25% 寫進 decisions；label_unsourced 中 .25/.75 纖維等 6 欄改 estimate；現成品項舊 note 清理；外食升級 derived 的清單登記去向。
+   - 修完後開第二輪核對（逐條一行確認已解決，附 commit），回覆一樣逐字存檔。
 2. 驗收後問使用者要不要推送到 GitHub（跑 CI）。
 3. 之後是 **Phase 0**（「自己選」改三分頁、我的品項快速新增、品項卡片純文字、自煮分頁的用油/調味選項）。
 4. `docs/日後討論.md` 有 −1b 審核登記的待評估項目（低碳下主食槽湊不到預算、超商組合隔天重複、shown_count 不衰減、煎蛋預設清淡、不加調味選項、溫沙拉沙拉醬），都要另外送 C3 審核。運動分頁「連續紀錄」仍暫緩。
