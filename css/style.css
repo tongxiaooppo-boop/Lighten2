@@ -775,18 +775,21 @@ body {
   gap: 0.6rem;
 }
 
+/* 品項卡片純文字（decisions #8）：名稱＋熱量，高度至少 44px 方便手指點 */
 .item-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 44px;
+  padding: 0.6rem 0.7rem;
   border: 2px solid #EFE3D2;
   border-radius: 12px;
   background-color: #ffffff;
   cursor: pointer;
   font-family: inherit;
-  text-align: center;
+  text-align: left;
 }
 
 .item-card:hover {
@@ -796,20 +799,6 @@ body {
 .item-card.selected {
   border-color: #C1652F;
   background-color: #FBF0E6;
-}
-
-.item-card-img {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.item-card-img-empty {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 8px;
-  background-color: #F3E4D0;
 }
 
 .item-card-name {

@@ -18,22 +18,7 @@ import { renderHero } from "./today-hero.js";
 import { openManualPicker, initManualPicker } from "./manual-picker.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
 
-// 蛋白質食材 id → 食材縮圖（用 id 對照，食材改名不影響；查不到就用時段插畫墊底）。
-// Phase 0 品項卡片改純文字時，推薦卡片只保留 5 張時段插畫（PRD 第 8 節），這張表會移除。
-const PROTEIN_IMAGE = {
-  chicken_breast: "images/food/chicken-breast.jpg",
-  egg: "images/food/egg.jpg",
-  greek_yogurt: "images/food/greek-yogurt.jpg",
-  salmon: "images/food/salmon.jpg",
-  beef_shank: "images/food/beef.jpg",
-  chicken_thigh: "images/food/chicken-thigh.jpg",
-  tilapia_fillet: "images/food/tilapia.jpg",
-  firm_tofu: "images/food/tofu.jpg",
-  shrimp: "images/food/shrimp.jpg",
-  soy_milk: "images/food/soy-milk.jpg",
-};
-
-// 時段 → 預設插畫（找不到具體食物照片時墊底用）。5 張同一套手繪風格，只有時段場景不同。
+// 時段 → 插畫（decisions #8：推薦卡片只用這 5 張，不逐品項配圖）。5 張同一套手繪風格，只有時段場景不同。
 const MEAL_DEFAULT_IMAGE = {
   breakfast: "images/gemini/meal-default-breakfast.jpg",
   lunch: "images/gemini/meal-default-lunch.jpg",
@@ -115,9 +100,9 @@ function renderRecs(recs, profile, logsBySlot) {
       body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>';
       return;
     }
-    const imgSrc = PROTEIN_IMAGE[rec.protein_id] || MEAL_DEFAULT_IMAGE[slot];
+    const imgSrc = MEAL_DEFAULT_IMAGE[slot];
     const imgHtml = imgSrc
-      ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(rec.protein_name || SLOT_LABELS[slot] || "") + '" loading="lazy">'
+      ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(SLOT_LABELS[slot] || "") + '" loading="lazy">'
       : "";
     const fallbackNote = rec.fallback_to_auto
       ? '<p class="rec-fallback-note">今天這個來源沒有合適的選擇，已改為一般推薦</p>'
