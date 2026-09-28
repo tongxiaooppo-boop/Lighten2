@@ -13,6 +13,7 @@
 import { SLOTS, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
 import { LOW_BUDGET_THRESHOLD_KCAL } from "../core/config.js";
 import { round1 } from "../core/num.js";
+import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
 import { achievableNutrition } from "./meal-content.js";
 import { slotShare } from "./budget.js";
@@ -39,13 +40,11 @@ function filterBySource(candidates, sourcePref) {
   return candidates;
 }
 
-// ⚠️ v1 的時區 bug（−1a 刻意保留，−1b 修）：new Date("YYYY-MM-DD") 被解析成 UTC 午夜（台灣早上 8 點），
-// 台灣 00:00–08:00 之間算出來的天數都少 1。
-function daysSince(dateStr, nowMs) {
-  if (!dateStr) return Infinity;
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return Infinity;
-  return Math.floor((nowMs - d.getTime()) / 86400000);
+// 顯示紀錄的日期（本地 "YYYY-MM-DD"）距離今天幾天：兩邊都用本地日期算。
+// v1 用 new Date("YYYY-MM-DD") 解析成 UTC 午夜，台灣 00:00–08:00 算出來少 1 天（今天顯示過變成 −1 天），−1b 修正。
+export function daysSince(dateStr, nowMs) {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return Infinity;
+  return diffDays(dateStr, fmtDate(new Date(nowMs)));
 }
 
 function score(combo, fb, constraints, budget, recencyMap, nowMs) {
