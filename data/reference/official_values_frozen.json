@@ -1,0 +1,40 @@
+{
+  "_note": "章程 B2.2：二手整理的官方數字（整筆標 estimate）不得被估算或反推值覆蓋；要改必須同一個 commit 改這份清單並說明理由。key＝檔名.id",
+  "values": {
+    "taiwan_items.bf11": {
+      "kcal": 343,
+      "protein_g": 18,
+      "fat_g": 16
+    },
+    "taiwan_items.bf12": {
+      "kcal": 389,
+      "protein_g": 22,
+      "fat_g": 20
+    },
+    "taiwan_items.bf13": {
+      "kcal": 425,
+      "protein_g": 22,
+      "fat_g": 23
+    },
+    "taiwan_items.bf14": {
+      "kcal": 433,
+      "protein_g": 24,
+      "fat_g": 19
+    },
+    "taiwan_items.fw06": {
+      "kcal": 294,
+      "protein_g": 22,
+      "fat_g": 13
+    },
+    "taiwan_items.fw07": {
+      "kcal": 410,
+      "protein_g": 25,
+      "fat_g": 13
+    },
+    "taiwan_items.fw08": {
+      "kcal": 580,
+      "protein_g": 28,
+      "fat_g": 34
+    }
+  }
+}

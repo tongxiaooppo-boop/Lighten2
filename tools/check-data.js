@@ -244,6 +244,13 @@ function checkProducts(products, frozen, refs) {
         err(w + "：熱量驗算差 " + Math.round(gap * 100) + "%（超過 15%），note 要寫「熱量驗算」說明原因（章程 B5.4）");
       }
     }
+    // 用官方熱量/蛋白質/脂肪反推的碳水要合公式（章程 B2.2）
+    const carbSrc = (p.field_sources || {}).carb_g;
+    if (carbSrc && carbSrc.type === "derived" && /熱量 − 蛋白質×4 − 脂肪×9/.test(carbSrc.ref || "") &&
+        [p.kcal, p.protein_g, p.fat_g, p.carb_g].every(isNum) &&
+        Math.abs(p.carb_g - (p.kcal - p.protein_g * 4 - p.fat_g * 9) / 4) > 0.05 + 1e-9) {
+      err(w + "：碳水 " + p.carb_g + " 跟反推公式不符（應為 " + Math.round((p.kcal - p.protein_g * 4 - p.fat_g * 9) / 4 * 10) / 10 + "，章程 B2.2）");
+    }
     // 外食的鈉與飽和脂肪沒有出處就是 null（章程 B5.8）
     ["sat_fat_g", "sodium_mg"].forEach((k) => {
       if (p[k] !== null && ["estimate", "label_unsourced"].indexOf(fieldSource(p, k).type) !== -1) err(w + "：" + k + " 沒有出處就寫 null，不填沒根據的數字（章程 B5.8）");
@@ -333,6 +340,17 @@ function main() {
   console.log("[餐型骨架]");
   checkArchetypes(readJson("dish_archetypes.json"), ingredients);
   console.log("[現成品項]");
+  // 二手官方數字凍結（章程 B2.2）：要改必須同一個 commit 改清單
+  const officialFrozen = readJson("reference/official_values_frozen.json").values;
+  const productByKey = {};
+  ["convenience_items", "taiwan_items"].forEach((f) => readJson(f + ".json").forEach((p) => { productByKey[f + "." + p.id] = p; }));
+  Object.keys(officialFrozen).forEach((key) => {
+    const p = productByKey[key];
+    if (!p) { err("官方數字凍結清單的「" + key + "」找不到品項（章程 B2.2）"); return; }
+    Object.keys(officialFrozen[key]).forEach((k) => {
+      if (p[k] !== officialFrozen[key][k]) err(key + "." + k + " 是 " + p[k] + "，凍結的官方數字是 " + officialFrozen[key][k] + "（要改請同一個 commit 改 data/reference/official_values_frozen.json 並說明，章程 B2.2）");
+    });
+  });
   checkProducts(
     readJson("convenience_items.json").map((p) => ({ file: "convenience_items", p: p }))
       .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
