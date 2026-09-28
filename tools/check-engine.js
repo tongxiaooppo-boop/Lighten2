@@ -75,9 +75,9 @@ async function main() {
     archetypes: readJson("dish_archetypes.json"),
   });
   const candidatePool = M.pool.buildCandidatePool(catalog);
-  const recommendFor = (remainingBudget, constraints, prefs, diet, allergens, skip) => M.recommend.getTodayRecommendation({
+  const recommendFor = (remainingBudget, constraints, prefs, diet, allergens, skip, lowCarb) => M.recommend.getTodayRecommendation({
     pool: candidatePool, feedbackMap: {}, remainingBudget: remainingBudget, hardConstraints: constraints,
-    mealPrefs: prefs, dietRestriction: diet, allergens: allergens, skipSlots: skip, nowMs: Date.now(),
+    mealPrefs: prefs, dietRestriction: diet, allergens: allergens, skipSlots: skip, lowCarb: !!lowCarb, nowMs: Date.now(),
   });
 
   // ---------- 1. 資料本身 ----------
@@ -125,13 +125,15 @@ async function main() {
 
   // ---------- 3. 各種使用者設定下的實際推薦 ----------
   console.log("[實際推薦]");
-  const DIETS = ["一般", "全素", "蛋奶素", "低碳"];
+  const DIETS = ["一般", "全素", "蛋奶素"];
+  const LOW_CARB_MAX = M.config.LOW_CARB_MEAL_MAX_G;
   const SOURCES = ["auto", "convenience", "delivery", "cook_quick", "cook_full"];
   const BUDGETS = [150, 300, 500, 800];
   const ALLERGEN_CASES = [[]].concat(M.config.ALLERGEN_OPTIONS.map((a) => [a])).concat([["蝦、牛奶"]]);
   let scenarios = 0;
   const nullByDiet = {};
 
+  for (const lowCarb of [false, true]) {
   for (const diet of DIETS) {
     for (const source of SOURCES) {
       for (const budget of BUDGETS) {
@@ -142,11 +144,11 @@ async function main() {
           SLOTS.forEach((s) => { prefs[s] = source; perSlot[s] = budget; });
           const allergenInput = typeof allergens[0] === "string" && allergens[0].indexOf("、") !== -1 ? allergens[0] : allergens;
           const recs = recommendFor(
-            { perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs, diet, allergenInput, {}
+            { perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs, diet, allergenInput, {}, lowCarb
           );
           const userAllergens = M.filters.normalizeAllergens(allergenInput).list;
           const usedItems = {};
-          const tag = diet + "/" + source + "/" + budget + "/" + JSON.stringify(allergenInput);
+          const tag = (lowCarb ? "低碳+" : "") + diet + "/" + source + "/" + budget + "/" + JSON.stringify(allergenInput);
           SLOTS.forEach((slot) => {
             const r = recs[slot];
             if (!r) {
@@ -156,6 +158,9 @@ async function main() {
             // 依序分配後，時段配額可能低於門檻，回傳 { lowBudget: true } 而非候選組合。
             // 這不是「找不到組合」，是「額度用完」，不做結構斷言。
             if (r.lowBudget) return;
+            if (lowCarb) {
+              check(r.carb_g != null && r.carb_g <= LOW_CARB_MAX + 1e-6, tag + " " + slot + " 開了低碳卻推薦碳水 " + r.carb_g + "g 的組合：" + r.name);
+            }
             if (diet !== "一般") {
               check(r.diet_tag_sets.length > 0 && r.diet_tag_sets.every((t) => tagOk(t, diet)), tag + " " + slot + " 推薦了不符合" + diet + "的成分：" + r.name);
             }
@@ -176,13 +181,22 @@ async function main() {
       }
     }
   }
+  }
   console.log("  跑了 " + scenarios + " 種設定組合");
+  const perDietSlot = scenarios / DIETS.length; // 每種 diet 在每個時段跑的設定數
   ["蛋奶素", "全素"].forEach((diet) => {
     ["lunch", "dinner"].forEach((slot) => {
-      // 每種 diet 在每個時段有 5 來源 × 4 預算 × 10 過敏原 = 200 組；不能整個時段全部拿不到推薦
-      check((nullByDiet[diet + ":" + slot] || 0) < 200, diet + " 使用者的" + slot + "在所有設定下都拿不到推薦");
+      // 不能整個時段在所有設定下全部拿不到推薦
+      check((nullByDiet[diet + ":" + slot] || 0) < perDietSlot, diet + " 使用者的" + slot + "在所有設定下都拿不到推薦");
     });
   });
+  // 低碳不是安全規則：開了低碳，午晚餐也要在一般設定下拿得到推薦
+  {
+    const prefs = {}, perSlot = {};
+    SLOTS.forEach((s) => { prefs[s] = "auto"; perSlot[s] = 500; });
+    const recs = recommendFor({ perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs, "一般", [], {}, true);
+    ["lunch", "dinner"].forEach((slot) => check(recs[slot] && !recs[slot].lowBudget, "開了低碳，一般設定的" + slot + "拿不到推薦"));
+  }
 
   // ---------- 4. 已記錄的時段不產生推薦 ----------
   console.log("[跳過時段]");

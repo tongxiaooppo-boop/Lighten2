@@ -118,12 +118,12 @@ module.exports = async function createV2Adapter(ROOT) {
 
     // ---------- engine 層 ----------
     pool: async () => pool.buildCandidatePool(await catalogMod.loadCatalog()),
-    async recommendRaw(remainingBudget, constraints, prefs, diet, allergens, skip, disliked) {
+    async recommendRaw(remainingBudget, constraints, prefs, diet, allergens, skip, disliked, lowCarb) {
       return recommend.getTodayRecommendation({
         pool: pool.buildCandidatePool(await catalogMod.loadCatalog()),
         feedbackMap: clone(globalThis.__fakeDbState.feedback),
         remainingBudget: remainingBudget, hardConstraints: constraints, mealPrefs: prefs,
-        dietRestriction: diet, allergens: allergens, skipSlots: skip, dislikedIngredients: disliked,
+        dietRestriction: diet, allergens: allergens, skipSlots: skip, dislikedIngredients: disliked, lowCarb: !!lowCarb,
         nowMs: clock.nowMs(),
       });
     },

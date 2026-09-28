@@ -20,6 +20,9 @@ export const LOW_BUDGET_THRESHOLD_KCAL = 150;
 // 沒有代表值、且熱量區間高/低 ≥ 1.5 倍的外食品項不進推薦池（手動選照樣可用）
 export const WIDE_RANGE_RATIO = 1.5;
 
+// 低碳（基本資料的獨立開關，只影響推薦）：一餐碳水上限（章程 B6.6、decisions #26）
+export const LOW_CARB_MEAL_MAX_G = 30;
+
 // 纖維週日均下限（25–35g 取下限 25 當硬約束）
 export const FIBER_FLOOR_G = 25;
 

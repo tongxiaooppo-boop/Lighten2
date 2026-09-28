@@ -11,11 +11,11 @@
 //   - 依序處理時段，前面時段挑到的真實熱量跟配額的差額帶到下一個時段
 
 import { SLOTS, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
-import { LOW_BUDGET_THRESHOLD_KCAL } from "../core/config.js";
+import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
-import { achievableNutrition } from "./meal-content.js";
+import { achievableNutrition, lowCarbMaxScale } from "./meal-content.js";
 import { slotShare } from "./budget.js";
 
 const PROTEIN_SATISFICE_G = 25; // 約一個手掌心蛋白質的量，達到這個量之後多蛋白質不再加分
@@ -47,7 +47,7 @@ export function daysSince(dateStr, nowMs) {
   return diffDays(dateStr, fmtDate(new Date(nowMs)));
 }
 
-function score(combo, fb, constraints, budget, recencyMap, nowMs) {
+function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
   let s = 0;
   if (fb) {
     if (fb.rating === "like") s += LIKE_BONUS;
@@ -66,7 +66,7 @@ function score(combo, fb, constraints, budget, recencyMap, nowMs) {
   if (constraints.proteinGapToday > 0) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
   if (constraints.fiberGapThisWeek > 0) s += Math.min(combo.fiber_g, constraints.fiberGapThisWeek) * 2;
   if (budget > 0) {
-    const eff = achievableNutrition(combo, budget);
+    const eff = achievableNutrition(combo, budget, maxScale);
     s -= Math.abs(budget / eff.kcal - 1) * 50; // 用「縮放後貼近預算的實際熱量」評分，不是天然份量的熱量
   }
   return s;
@@ -99,6 +99,7 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
 //   mealPrefs: profile.meal_prefs（可為 null）
 //   dietRestriction / allergens / dislikedIngredients: profile 的硬性過濾設定
 //   skipSlots: { slot: true } 不需要推薦的時段（已記錄／已關閉），回傳 null 不佔剩餘熱量池
+//   lowCarb: 基本資料的低碳開關（只影響推薦）：一餐碳水 ≤ LOW_CARB_MEAL_MAX_G，自組食譜用它限制主要槽位縮放
 //   nowMs: 現在時間（毫秒）
 // }
 export function getTodayRecommendation(o) {
@@ -108,6 +109,9 @@ export function getTodayRecommendation(o) {
   const skip = o.skipSlots || {};
   const filterProfile = { diet_restriction: o.dietRestriction, allergens: o.allergens, disliked_ingredients: o.dislikedIngredients };
   const recencyMap = buildRecencyMap(combos, feedbackMap, o.nowMs);
+  // 低碳：每個候選的最大縮放倍數（null＝不算低碳，直接排除）
+  const carbCap = {};
+  if (o.lowCarb) combos.forEach(function (c) { carbCap[c.id] = lowCarbMaxScale(c, LOW_CARB_MEAL_MAX_G); });
 
   // 同一天的各時段之間不重複：自組食譜不重複主蛋白質、同一餐型最多一次；現成品項任何成分只出現在一個時段
   const usedProteinIds = {};
@@ -143,6 +147,7 @@ export function getTodayRecommendation(o) {
     const baseCandidates = combos.filter(function (c) {
       if (c.tier_rank > maxRank) return false;
       if (c.valid_slots && c.valid_slots.indexOf(slot) === -1) return false;
+      if (o.lowCarb && carbCap[c.id] === null) return false;
       if (!passesHardFilters(c, filterProfile).ok) return false;
       const fb = feedbackMap[c.id];
       if (fb && fb.rating === "dislike") return false; // 倒讚永久排除
@@ -174,7 +179,7 @@ export function getTodayRecommendation(o) {
 
     // 分數先算好再排序，不要在比較函式裡重算（候選上千筆時會重算數十萬次）。
     const scored = candidates.map(function (c) {
-      return { c: c, s: score(c, feedbackMap[c.id], constraints, budget, recencyMap, o.nowMs) };
+      return { c: c, s: score(c, feedbackMap[c.id], constraints, budget, recencyMap, o.nowMs, o.lowCarb ? carbCap[c.id] : null) };
     });
     scored.sort(function (a, b) {
       if (b.s !== a.s) return b.s - a.s;
@@ -182,7 +187,7 @@ export function getTodayRecommendation(o) {
     });
 
     const top = scored[0].c;
-    const eff = achievableNutrition(top, budget);
+    const eff = achievableNutrition(top, budget, o.lowCarb ? carbCap[top.id] : null);
     if (top.is_composed) {
       if (top.protein_id) usedProteinIds[top.protein_id] = true;
       if (top.archetype_id) usedArchetypeIds[top.archetype_id] = true;

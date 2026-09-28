@@ -62,6 +62,7 @@ function readProfileForm() {
     body_fat_pct: toFloatOrNull(fd.get("body_fat_pct")),
     activity_mode: fd.get("activity_mode"),
     diet_restriction: fd.get("diet_restriction"),
+    low_carb: fd.get("low_carb") === "on",
     // 2026-09-27 整案審查 A2：改成固定詞彙勾選框（自由文字打「蝦」比對不到資料裡的「甲殼類」）
     allergens: fd.getAll("allergens"),
     // 「今日建議時段」與「今日建議來源」已合併成同一組下拉（選「不顯示建議」= off）。
@@ -103,6 +104,7 @@ function fillProfileForm(profile) {
   set("body_fat_pct", profile.body_fat_pct);
   set("activity_mode", profile.activity_mode);
   set("diet_restriction", profile.diet_restriction);
+  form.elements["low_carb"].checked = !!profile.low_carb;
   // 舊版存的是自由文字：能對回固定詞彙的直接勾上，對不回的提示使用者重新勾選。
   const allergens = normalizeAllergens(profile.allergens);
   Array.prototype.forEach.call(form.querySelectorAll("input[name='allergens']"), function (box) {

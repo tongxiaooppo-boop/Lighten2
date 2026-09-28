@@ -112,7 +112,7 @@ const P = {
   ] }),
   DELIVERY: Object.assign({}, BASE_PROFILE, { meal_prefs: { breakfast: "delivery", lunch: "delivery", afternoon_tea: "delivery", dinner: "delivery", snack: "delivery" }, enabled_slots: ALL_ON }),
   QUICK: Object.assign({}, BASE_PROFILE, { meal_prefs: { breakfast: "cook_quick", lunch: "cook_quick", afternoon_tea: "cook_quick", dinner: "cook_quick", snack: "cook_quick" } }),
-  LOWCARB: Object.assign({}, BASE_PROFILE, { diet_restriction: "低碳" }),
+  LOWCARB: Object.assign({}, BASE_PROFILE, { low_carb: true }),
   BULK: Object.assign({}, BASE_PROFILE, { weight_kg: 95, activity_mode: "中度", goal_mode: "增肌" }),
   OFF: Object.assign({}, BASE_PROFILE, { enabled_slots: { breakfast: false, lunch: true, afternoon_tea: false, dinner: true, snack: false },
     meal_prefs: { breakfast: "off", lunch: "convenience", afternoon_tea: "off", dinner: "cook_full", snack: "off" } }),
@@ -212,7 +212,10 @@ async function snapMatrix() {
   for (const diet of DIETS) for (const source of SOURCES) for (const budget of BUDGETS) for (const al of ALLERGENS) {
     const prefs = {}, perSlot = {};
     SLOTS.forEach((s) => { prefs[s] = source; perSlot[s] = budget; });
-    const recs = await A.recommendRaw({ perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs, diet, al, {});
+    // 「低碳」這一列是基本資料的低碳開關（decisions #26，不再是飲食型態），列名沿用以便對照
+    const lowCarb = diet === "低碳";
+    const recs = await A.recommendRaw({ perSlotSuggestion: perSlot }, { proteinGapToday: 30, fiberGapThisWeek: 10 }, prefs,
+      lowCarb ? "一般" : diet, al, {}, undefined, lowCarb);
     emit("matrix", [diet, source, budget, typeof al === "string" ? al : al.join("+") || "無"].join("/"),
       SLOTS.map((s) => {
         const r = recs[s];

@@ -33,6 +33,7 @@ export function planToday(o) {
     allergens: profile.allergens,
     skipSlots: skipSlots,
     dislikedIngredients: profile.disliked_ingredients,
+    lowCarb: !!profile.low_carb,
     nowMs: o.nowMs,
   });
 
