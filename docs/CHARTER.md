@@ -162,7 +162,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 1. **過敏原固定詞彙**：`甲殼類｜軟體動物｜魚｜蛋｜乳製品｜花生｜堅果｜麩質｜黃豆｜芝麻`，外加 `未確認`〔機〕。花生與堅果分開（台灣法規如此）；軟體動物指蚵、花枝、章魚、貝類。新增詞彙屬於 C3 需審核的變更。
 2. **含麩質穀物包含燕麥**（台灣過敏原標示規定）〔機：名稱含「燕麥」的食材與品項，`allergen_tags` 必須含「麩質」或「未確認」〕。
-3. **複合料理**（外食、餐盒、醬料）沒逐項確認成分的，一律含 `未確認`。品項與醬料要標 `composite: true|false`〔機：`composite: true` 的品項若 `allergen_tags` 不含未確認，必須有 `label`／`official_web` 出處證明是官方成分表〕。
+3. **複合料理**（外食、餐盒、醬料）沒逐項確認成分的，一律含 `未確認`。品項與醬料要標 `composite: true|false`〔機：`composite: true` 的品項若 `allergen_tags` 不含未確認，必須有 `label`／`official_web` 出處證明是官方成分表，或 `tfda` 出處且該樣品的內容物描述列有成分〕。
 4. **組合的過敏原**：任一成分 `allergen_tags` 缺欄或含 `未確認`，整組就是未確認〔機〕。
 5. **飲食限制**只有 `全素`、`蛋奶素` 兩種人工標註，而且要正面宣告：`vegan: true` 才算全素；全素自動滿足蛋奶素；沒標就是不符合〔機〕。
 6. **「低碳」「高蛋白」不人工標註**，由數值自動判定〔機〕：
@@ -282,7 +282,7 @@ ui/  →  data/    →  core/
 
 ## C6. 提交前的驗收
 
-1. **本機 pre-commit hook** 跑 `check-data`、`check-engine`、`check-arch`、`diff-recs`，不通過就不能提交〔機〕。hook 放在 repo 的 `tools/hooks/`，clone 後執行一次 `git config core.hooksPath tools/hooks` 啟用（交辦給 Cline 時寫明）。
+1. **本機 pre-commit hook** 跑 `check-data`、`check-engine`、`check-arch`、`diff-recs`，不通過就不能提交〔機〕。hook 放在 repo 的 `tools/hooks/`，clone 後執行一次 `git config core.hooksPath tools/hooks` 啟用（交辦給 Cline 時寫明）。hook 總時間超過約 30 秒時，hook 只跑較快的檢查，完整版交給 CI，避免有人用 `--no-verify` 跳過；禁止使用 `--no-verify`〔人〕。
 2. **GitHub Actions** 每次 push 再跑一次同樣的檢查，當第二道防線。CI 紅燈時，**下一個 commit 必須是修復**，修好前不做其他改動〔人〕。
 3. **`diff-recs` 的通過條件**：repo 裡有一份「預期推薦快照」（`tools/snapshots/`）；實際輸出跟它不同就失敗。刻意改變推薦結果時（例如 −1b 的修正），同一個 commit 更新快照檔，快照檔的差異就是給人看的差異報告〔機〕。
 4. 快照在 engine 介面層錄製：輸入是固定的 profile、各餐紀錄合計、倒讚紀錄與**固定的日期時間**；比對規範化後的輸出（選中的組合 id、四捨五入後的營養值、縮放倍數），不比整包 JSON。推薦與體重校正都要有快照〔機〕。
