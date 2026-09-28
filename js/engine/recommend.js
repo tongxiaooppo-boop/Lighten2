@@ -47,14 +47,27 @@ export function daysSince(dateStr, nowMs) {
   return diffDays(dateStr, fmtDate(new Date(nowMs)));
 }
 
-function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
+// 近期降權與累計扣分一律以「今天開始時」的狀態計算（decisions #39）：今天的顯示不算，
+// 否則剛顯示的建議在同一天任何一次重建（切分頁回來、記錄一餐後）都會被降權換掉。
+// 顯示日期是今天或未來（手機時鐘被調回去）都當成今天。
+function shownToday(fb, nowMs) {
+  return !!fb.last_shown_date && daysSince(fb.last_shown_date, nowMs) <= 0;
+}
+
+// 這個確切組合的回饋分數：喜歡加分、今天以前顯示過的天數（markRecipesShown 一天只加一次）與近期出現降權
+export function feedbackScore(fb, nowMs) {
+  if (!fb) return 0;
   let s = 0;
-  if (fb) {
-    if (fb.rating === "like") s += LIKE_BONUS;
-    s -= (fb.shown_count || 0) * 5;
-    const days = daysSince(fb.last_shown_date, nowMs);
-    if (days < 3) s -= (3 - days) * 20; // 這個確切組合近期出現過 → 降權
-  }
+  if (fb.rating === "like") s += LIKE_BONUS;
+  const today = shownToday(fb, nowMs);
+  s -= Math.max(0, (fb.shown_count || 0) - (today ? 1 : 0)) * 5;
+  const days = daysSince(fb.last_shown_date, nowMs);
+  if (!today && days < 3) s -= (3 - days) * 20; // 這個確切組合近期出現過 → 降權
+  return s;
+}
+
+function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
+  let s = feedbackScore(fb, nowMs);
   if (combo.is_composed && combo.protein_id && recencyMap && recencyMap[combo.protein_id]) {
     const days = recencyMap[combo.protein_id].days;
     if (days < 3) s -= (3 - days) * 20; // 這個蛋白質來源（不管配什麼菜/主食）近期出現過 → 降權
@@ -84,7 +97,7 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
   combos.forEach(function (c) {
     if (!c.is_composed) return;
     const fb = feedbackMap[c.id];
-    if (!fb) return;
+    if (!fb || shownToday(fb, nowMs)) return; // 先略過今天的顯示再取最小值，今天剛顯示的不會蓋掉昨天的紀錄
     const days = daysSince(fb.last_shown_date, nowMs);
     if (c.protein_id) record(c.protein_id, days);
     if (c.vegetable_id) record("veg:" + c.vegetable_id, days);
@@ -101,6 +114,7 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
 //   dietRestriction / allergens / dislikedIngredients: profile 的硬性過濾設定
 //   skipSlots: { slot: true } 不需要推薦的時段（已記錄／已關閉），回傳 null 不佔剩餘熱量池
 //   lowCarb: 基本資料的低碳開關（只影響推薦）：一餐碳水 ≤ LOW_CARB_MEAL_MAX_G，自組食譜用它限制主要槽位縮放
+//   loggedContents: 今天已記錄的每一餐 MealContent；吃過的蛋白質、餐型、品項佔住跨時段不重複的名額（decisions #39）
 //   nowMs: 現在時間（毫秒）
 // }
 export function getTodayRecommendation(o) {
@@ -118,6 +132,14 @@ export function getTodayRecommendation(o) {
   const usedProteinIds = {};
   const usedArchetypeIds = {};
   const usedItemIds = {};
+  (o.loggedContents || []).forEach(function (content) {
+    if (!content) return;
+    if (content.archetype_id) usedArchetypeIds[content.archetype_id] = true;
+    (content.components || []).forEach(function (c) {
+      if (c.kind === "ingredient" && c.axis === "protein") usedProteinIds[c.ref] = true;
+      else if (c.kind === "product") usedItemIds[c.ref] = true;
+    });
+  });
 
   const result = {};
   // 全天剩餘熱量池：budget.js 已算好。依序處理時前面時段超出的差額往後帶。

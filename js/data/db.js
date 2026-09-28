@@ -267,10 +267,10 @@ export async function saveRecipeFeedback(id, rating) {
     const store = s[STORE.recipeFeedback];
     return reqPromise(store.get(id)).then(function (existing) {
       const ex = existing || {};
+      // shown_count 只由 markRecipesShown 累加（＝顯示過的天數，推薦扣分依賴這個意義，decisions #39）
       const updated = Object.assign({}, ex, {
         recipe_template_id: id,
         rating: rating, // 'like' / 'dislike' / null
-        shown_count: (ex.shown_count || 0) + 1,
       });
       return reqPromise(store.put(updated, id)).then(function () { return updated; });
     });

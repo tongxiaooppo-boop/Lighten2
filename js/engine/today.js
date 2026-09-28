@@ -12,7 +12,7 @@ export function planToday(o) {
   const remainingBudget = recalcTodayBudget(o.targets.targetKcal, o.todayLogs, profile.enabled_slots);
   const hardConstraints = checkHardConstraints(o.weekLogs, profile, o.today);
 
-  // 已記錄、已關閉的時段都不需要推薦，也不該佔用跨時段不重複的名額。
+  // 已記錄、已關閉的時段都不需要推薦；已記錄的餐吃過的東西由 loggedContents 佔住跨時段不重複的名額（decisions #39）。
   const logsBySlot = {};
   o.todayLogs.forEach(function (l) {
     if (!logsBySlot[l.slot]) logsBySlot[l.slot] = [];
@@ -34,6 +34,7 @@ export function planToday(o) {
     skipSlots: skipSlots,
     dislikedIngredients: profile.disliked_ingredients,
     lowCarb: !!profile.low_carb,
+    loggedContents: o.todayLogs.map(function (l) { return l.content; }),
     nowMs: o.nowMs,
   });
 
