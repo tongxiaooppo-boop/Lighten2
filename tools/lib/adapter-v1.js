@@ -69,6 +69,7 @@ module.exports = function createV1Adapter(ROOT) {
       await global.removeDailyLog(id);
       return entry;
     },
+    getExerciseLogs: async (r) => clone(db.exerciseLogs.filter((e) => inDateRange(e.log_date, r))),
     getTdeeState: async () => clone(db.tdeeState) || defaultTdeeState(),
     saveTdeeState: async (s) => { db.tdeeState = clone(s); return s; },
   });
@@ -103,6 +104,8 @@ module.exports = function createV1Adapter(ROOT) {
     " updateManualSummary: updateManualSummary, composeTotals: composeTotals, onLogRecClick: onLogRecClick," +
     " onUndoClick: onUndoClick, onManualSubmit: onManualSubmit };");
   load("js/ui/tab-week.js", "window.__week = { render: render };");
+  load("js/ui/tab-profile.js", "window.__profile = { renderCalibrationCard: renderCalibrationCard, showTargets: showTargets };");
+  load("js/ui/tab-exercise.js", "window.__exercise = { render: render };");
 
   const T = global.__today;
 
@@ -145,6 +148,7 @@ module.exports = function createV1Adapter(ROOT) {
         feedback: clone(state.feedback) || {},
         customFoods: clone(state.customFoods) || [],
         tdeeState: clone(state.tdeeState) || null,
+        exerciseLogs: clone(state.exerciseLogs) || [],
       };
       writes.length = 0;
       alerts.length = 0;
@@ -229,7 +233,12 @@ module.exports = function createV1Adapter(ROOT) {
     },
     pickerSubmit: () => T.onManualSubmit(),
 
-    // ---------- 本週總覽 ----------
+    // ---------- 本週總覽、基本資料的校正卡片、運動 ----------
     weekPage: () => global.__week.render(),
+    async profileCard(profile) {
+      global.__profile.showTargets(await global.getCalibratedTargets(profile));
+      await global.__profile.renderCalibrationCard(profile);
+    },
+    exercisePage: () => global.__exercise.render(),
   };
 };
