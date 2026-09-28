@@ -35,6 +35,22 @@ function checkAllergenTags(where, tags, allowNull) {
   tags.forEach((t) => { if (ALLERGENS.indexOf(t) === -1 && t !== UNVERIFIED) err(where + "：過敏原「" + t + "」不在固定詞彙內"); });
 }
 
+// 飲食限制跟過敏原一致（章程 B6.8）。allergen_tags 是 null＝未確認
+const NOT_VEGAN = ["蛋", "乳製品", "魚", "甲殼類", "軟體動物"];
+const NOT_LACTO_OVO = ["魚", "甲殼類", "軟體動物"];
+function checkDietTags(where, it) {
+  const tags = Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED];
+  const unverified = tags.indexOf(UNVERIFIED) !== -1;
+  if (it.vegan) {
+    tags.filter((t) => NOT_VEGAN.indexOf(t) !== -1).forEach((t) => err(where + "：標全素卻含「" + t + "」（章程 B6.8）"));
+    if (unverified) err(where + "：過敏原未確認就不能宣告全素（章程 B6.8）");
+  }
+  if (it.lacto_ovo) {
+    tags.filter((t) => NOT_LACTO_OVO.indexOf(t) !== -1).forEach((t) => err(where + "：標蛋奶素卻含「" + t + "」（章程 B6.8）"));
+    if (unverified && !/素食依據：/.test(it.note || "")) err(where + "：過敏原未確認又標蛋奶素，note 要寫「素食依據：」（章程 B6.8）");
+  }
+}
+
 // 巨量營養素驗算（章程 B5.4）：蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9 跟熱量差距
 function macroGap(v) {
   if (![v.kcal, v.protein_g, v.carb_g, v.fat_g].every(isNum) || !(v.kcal > 0)) return 0;
@@ -58,6 +74,7 @@ function checkIngredients(list, refs) {
       if (ing.axis !== "implicit" && typeof ing[k] !== "boolean") err(w + "：" + k + " 必須是 true/false");
     });
     if (ing.axis !== "implicit") checkAllergenTags(w, ing.allergen_tags, false);
+    if (ing.axis !== "implicit") checkDietTags(w, ing);
     if (ing.vegan && !ing.lacto_ovo) err(w + "：全素一定也是蛋奶素（lacto_ovo 要是 true）");
     const src = ing.source;
     if (!src || typeof src.type !== "string") { err(w + "：缺 source"); return; }
@@ -188,6 +205,7 @@ function checkProducts(products, frozen, refs) {
       else if (p[k] !== null && (!isNum(p[k]) || p[k] < 0)) err(w + "：" + k + " 要是非負數或 null");
     });
     checkAllergenTags(w, p.allergen_tags, true);
+    checkDietTags(w, p);
     // 複合料理（章程 B6.3）：要標 composite；沒標「未確認」時要有官方成分表出處
     if (typeof p.composite !== "boolean") err(w + "：要標 composite: true|false（章程 B6.3）");
     if (p.composite && Array.isArray(p.allergen_tags) && p.allergen_tags.indexOf(UNVERIFIED) === -1 &&
