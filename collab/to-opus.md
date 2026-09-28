@@ -40,12 +40,13 @@
 
 另外兩項待處理：
 - **推薦重建就換掉**（`flow/rebuild-same-day` 快照）：卡片一顯示就記「今天顯示過」，同一天重建被降權。改評分屬章程 C3，要先送獨立審核。
-- **運動分頁「連續紀錄 N 天」**：跟章程 C4.13 精神衝突，已問使用者要拿掉或豁免，看對話最後的回覆。
+- **運動分頁「連續紀錄 N 天」**：使用者決定先搞定飲食、運動分頁之後再議，已記在 `docs/日後討論.md`，**現在不要動**。
 
 −1b 的資料重建（`tools/build-ingredients.js` 從 TFDA 產生、`data/reference/`、`tools/check-data.js`）是這一階段最大塊。`collab/tfdb-2025-simplified.json` 要先搬到 `data/reference/`。
 
 ## 5. 工作方式
 
+- 參考 repo 的可用點與暫緩問題記在 `docs/日後討論.md`（不是規格，到該階段再討論）。
 - 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #34）。先改 PRD、記 decisions，再改程式（A1）。
 - 重大設計、偏離 PRD 的格式、改推薦演算法：新開 Opus agent 獨立審核，**問答逐字存 `collab/opus-review-log/`**。
 - 使用者習慣：問題附建議，常回「照建議」；只把產品決定交給使用者。可以直接 commit 到 master，訊息結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`。
