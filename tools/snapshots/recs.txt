@@ -270,11 +270,11 @@ today/DELIVERY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5
 today/DELIVERY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":189.6,"breakfast":379.2,"dinner":568.8,"lunch":568.8,"snack":189.6},"remainingKcal":1896.1}
 today/DELIVERY/base/hardConstraints	{"fiberGapThisWeek":25,"proteinGapToday":144}
 today/DELIVERY/base/skip	
-today/DELIVERY/base/breakfast	tw_bf04+tw_dr06 scale=1 kcal=455 base=455 P=25.9 C=48 F=17.7 Fb=5.8 budget=379.2 src=delivery
+today/DELIVERY/base/breakfast	tw_bf04+tw_dr06 scale=1 kcal=455 base=455 P=25.9 C=44.1 F=19.4 Fb=5.8 budget=379.2 src=delivery
 today/DELIVERY/base/lunch	conv_ch01 scale=1 kcal=485 base=485 P=31.5 C=58 F=13.5 Fb=6 budget=540.4 src=delivery
-today/DELIVERY/base/afternoon_tea	tw_dr05 scale=1 kcal=172 base=172 P=11.9 C=14 F=7.6 Fb=0 budget=191.2 src=delivery
-today/DELIVERY/base/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=73.6 F=19.3 Fb=2.5 budget=588.1 src=delivery
-today/DELIVERY/base/snack	tw_sn10 scale=1 kcal=400 base=400 P=30 C=54.9 F=6.7 Fb=2 budget=204.1 src=delivery
+today/DELIVERY/base/afternoon_tea	tw_dr05 scale=1 kcal=171.8 base=171.8 P=11.9 C=13.5 F=7.8 Fb=0 budget=191.2 src=delivery
+today/DELIVERY/base/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=40.5 F=34 Fb=2.5 budget=588.2 src=delivery
+today/DELIVERY/base/snack	tw_sn10 scale=1 kcal=400 base=400 P=30 C=54.9 F=6.7 Fb=2 budget=204.3 src=delivery
 today/DELIVERY/base/write0	markRecipesShown tw_bf04+tw_dr06,conv_ch01,tw_dr05,tw_fw08,tw_sn10
 today/DELIVERY/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/DELIVERY/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":184.5,"breakfast":0,"dinner":553.5,"lunch":553.5,"snack":184.5},"remainingKcal":1476.1}
@@ -282,8 +282,8 @@ today/DELIVERY/today-breakfast/hardConstraints	{"fiberGapThisWeek":25,"proteinGa
 today/DELIVERY/today-breakfast/skip	breakfast
 today/DELIVERY/today-breakfast/breakfast	-
 today/DELIVERY/today-breakfast/lunch	conv_ch01 scale=1 kcal=485 base=485 P=31.5 C=58 F=13.5 Fb=6 budget=553.5 src=delivery
-today/DELIVERY/today-breakfast/afternoon_tea	tw_tc08+tw_dr06 scale=1 kcal=225 base=225 P=17.9 C=23 F=6.8 Fb=5.3 budget=198.2 src=delivery
-today/DELIVERY/today-breakfast/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=73.6 F=19.3 Fb=2.5 budget=574.6 src=delivery
+today/DELIVERY/today-breakfast/afternoon_tea	tw_tc08+tw_dr06 scale=1 kcal=225 base=225 P=17.9 C=19.1 F=8.5 Fb=5.3 budget=198.2 src=delivery
+today/DELIVERY/today-breakfast/dinner	tw_fw08 scale=1 kcal=580 base=580 P=28 C=40.5 F=34 Fb=2.5 budget=574.6 src=delivery
 today/DELIVERY/today-breakfast/snack	tw_sn10 scale=1 kcal=400 base=400 P=30 C=54.9 F=6.7 Fb=2 budget=186.1 src=delivery
 today/DELIVERY/today-breakfast/write0	markRecipesShown conv_ch01,tw_tc08+tw_dr06,tw_fw08,tw_sn10
 today/QUICK/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}

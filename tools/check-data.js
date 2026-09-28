@@ -146,7 +146,7 @@ function fieldSource(p, k) {
   return (p.field_sources && p.field_sources[k]) || p.source || {};
 }
 
-function checkProducts(products, frozen) {
+function checkProducts(products, frozen, refs) {
   const ids = {};
   const labelUnsourced = [];
   products.forEach(({ file, p }) => {
@@ -193,6 +193,14 @@ function checkProducts(products, frozen) {
       if (p[k] !== null && t === "label_unsourced") labelUnsourced.push(p.id + "." + k);
       if ((t === "label" || t === "official_web") && !fieldSource(p, k).ref) err(w + "：" + k + " 的出處是 " + t + "，ref 要寫照片檔名或網址");
     });
+    // 由 TFDA 換算的（derived「TFDA編號 × 倍數」）：derived 的欄位要跟參考資料完全相等
+    if ((p.source || {}).type === "derived" && DERIVED_REF.test(p.source.ref || "")) {
+      let expected = null;
+      try { expected = computePer100g({ id: p.id, source: p.source, field_sources: p.field_sources || {} }, refs); } catch (e) { err(w + "：" + e.message); }
+      if (expected) PRODUCT_FIELDS.forEach((k) => {
+        if (fieldSource(p, k).type === "derived" && p[k] !== expected[k]) err(w + "：" + k + " 是 " + p[k] + "，依 " + p.source.ref + " 應為 " + expected[k]);
+      });
+    }
     // 外食的鈉與飽和脂肪沒有出處就是 null（章程 B5.8）
     ["sat_fat_g", "sodium_mg"].forEach((k) => {
       if (p[k] !== null && ["estimate", "label_unsourced"].indexOf(fieldSource(p, k).type) !== -1) err(w + "：" + k + " 沒有出處就寫 null，不填沒根據的數字（章程 B5.8）");
@@ -251,7 +259,7 @@ function main() {
   checkProducts(
     readJson("convenience_items.json").map((p) => ({ file: "convenience_items", p: p }))
       .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
-    readJson("reference/label_unsourced_frozen.json").fields
+    readJson("reference/label_unsourced_frozen.json").fields, refs
   );
 
   warnings.forEach((m) => console.log("  ⚠ " + m));
