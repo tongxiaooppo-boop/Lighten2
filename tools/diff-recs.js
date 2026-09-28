@@ -106,8 +106,8 @@ const P = {
   LEGACY_ALLERGY: Object.assign({}, BASE_PROFILE, { allergens: "蝦、牛奶" }),
   ALLERGY: Object.assign({}, BASE_PROFILE, { allergens: ["蛋", "黃豆", "麩質"] }),
   DISLIKE: Object.assign({}, BASE_PROFILE, { disliked_ingredients: [
-    { type: "protein", key: "雞胸肉", label: "雞胸肉" },
-    { type: "vegetable", key: "青花菜", label: "青花菜" },
+    { type: "protein", key: "ps_chicken_breast", label: "雞胸肉" },
+    { type: "vegetable", key: "broccoli", label: "花椰菜" },
     { type: "item", key: "conv_dr01", label: "統一陽光 高纖無糖豆漿" },
   ] }),
   DELIVERY: Object.assign({}, BASE_PROFILE, { meal_prefs: { breakfast: "delivery", lunch: "delivery", afternoon_tea: "delivery", dinner: "delivery", snack: "delivery" }, enabled_slots: ALL_ON }),
@@ -318,10 +318,10 @@ async function snapToday() {
     },
     "chip-dinner-protein": async (before) => {
       A.clearShown();
-      const p = before.dinner.protein_name;
-      await A.dislikeChip("protein", p, p);
+      const p = before.dinner.protein_id;
+      await A.dislikeChip("protein", p, before.dinner.protein_name);
       const after = A.currentRecs();
-      emit("recs", "flow/chip-dinner-protein/excluded", SLOTS.every((s) => !after[s] || after[s].protein_name !== p) ? "ok" : "不吃的蛋白質又出現了");
+      emit("recs", "flow/chip-dinner-protein/excluded", SLOTS.every((s) => !after[s] || after[s].protein_id !== p) ? "ok" : "不吃的蛋白質又出現了");
     },
     "rebuild-same-day": async () => { await A.todayPage(); },
   };

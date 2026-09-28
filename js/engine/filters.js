@@ -1,8 +1,6 @@
 // 輕盈計畫 — 硬性過濾（唯一來源，章程 C2）：過敏原、飲食限制、不吃清單。
 // 推薦候選、「自己選」的現成品項與自己煮的食材三處共用，確保同一個設定下擋掉的品項一致。
 //
-// ⚠️ Phase −1a 刻意保留的 v1 行為（−1b 修正，修掉會讓快照對不上）：
-//   - 不吃清單的自組食譜食材以名稱比對（章程 C2 要求改成 id）
 
 import { ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
 
@@ -61,7 +59,7 @@ function passesDiet(dietTagSets, dietRestriction) {
   });
 }
 
-// 回傳 { ok, reason }。item 有兩種形狀：推薦的候選組合（有 diet_tag_sets/components/protein_name 等），
+// 回傳 { ok, reason }。item 有兩種形狀：推薦的候選組合（有 diet_tag_sets/components/protein_id 等），
 // 以及挑選器裡的單一品項（有 allergen_tags/diet_tags/uid），兩種都要能吃。
 export function passesHardFilters(item, profile) {
   const p = profile || {};
@@ -90,15 +88,15 @@ export function passesHardFilters(item, profile) {
 }
 
 // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
-//   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用名稱
+//   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用食材 id（章程 C2：改名後仍然命中）
 //   - 現成品項：type='item'，key 用成分 uid（item.components）
 function findDislikedHit(item, disliked) {
   const keys = [];
   if (item.is_composed) {
-    if (item.protein_name) keys.push({ type: "protein", key: item.protein_name });
-    if (item.staple_name) keys.push({ type: "staple", key: item.staple_name });
-    if (item.vegetable_name) keys.push({ type: "vegetable", key: item.vegetable_name });
-    if (item.sauce_name) keys.push({ type: "sauce", key: item.sauce_name });
+    if (item.protein_id) keys.push({ type: "protein", key: item.protein_id });
+    if (item.staple_id) keys.push({ type: "staple", key: item.staple_id });
+    if (item.vegetable_id) keys.push({ type: "vegetable", key: item.vegetable_id });
+    if (item.sauce_id) keys.push({ type: "sauce", key: item.sauce_id });
   } else {
     const comps = Array.isArray(item.components) && item.components.length > 0
       ? item.components

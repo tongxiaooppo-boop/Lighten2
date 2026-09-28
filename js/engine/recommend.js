@@ -55,12 +55,12 @@ function score(combo, fb, constraints, budget, recencyMap, nowMs) {
     const days = daysSince(fb.last_shown_date, nowMs);
     if (days < 3) s -= (3 - days) * 20; // 這個確切組合近期出現過 → 降權
   }
-  if (combo.is_composed && combo.protein_name && recencyMap && recencyMap[combo.protein_name]) {
-    const days = recencyMap[combo.protein_name].days;
+  if (combo.is_composed && combo.protein_id && recencyMap && recencyMap[combo.protein_id]) {
+    const days = recencyMap[combo.protein_id].days;
     if (days < 3) s -= (3 - days) * 20; // 這個蛋白質來源（不管配什麼菜/主食）近期出現過 → 降權
   }
-  if (combo.is_composed && combo.vegetable_name && recencyMap && recencyMap["veg:" + combo.vegetable_name]) {
-    const days = recencyMap["veg:" + combo.vegetable_name].days;
+  if (combo.is_composed && combo.vegetable_id && recencyMap && recencyMap["veg:" + combo.vegetable_id]) {
+    const days = recencyMap["veg:" + combo.vegetable_id].days;
     if (days < 3) s -= (3 - days) * 10; // 蔬菜也做一樣的降權，權重比蛋白質輕
   }
   if (constraints.proteinGapToday > 0) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
@@ -72,8 +72,8 @@ function score(combo, fb, constraints, budget, recencyMap, nowMs) {
   return s;
 }
 
-// 依「蛋白質來源」跟「蔬菜」分別聚合候選池裡最近一次出現的天數（蔬菜 key 加 "veg:" 前綴避免
-// 跟蛋白質名稱撞到）。只看自組食譜，超商/台式外送不受影響。
+// 依「蛋白質來源」跟「蔬菜」分別聚合候選池裡最近一次出現的天數（key 是食材 id；蔬菜加 "veg:" 前綴避免
+// 跟蛋白質撞到）。只看自組食譜，超商/台式外送不受影響。
 function buildRecencyMap(combos, feedbackMap, nowMs) {
   const recency = {};
   function record(key, days) {
@@ -85,8 +85,8 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
     const fb = feedbackMap[c.id];
     if (!fb) return;
     const days = daysSince(fb.last_shown_date, nowMs);
-    if (c.protein_name) record(c.protein_name, days);
-    if (c.vegetable_name) record("veg:" + c.vegetable_name, days);
+    if (c.protein_id) record(c.protein_id, days);
+    if (c.vegetable_id) record("veg:" + c.vegetable_id, days);
   });
   return recency;
 }
@@ -110,7 +110,7 @@ export function getTodayRecommendation(o) {
   const recencyMap = buildRecencyMap(combos, feedbackMap, o.nowMs);
 
   // 同一天的各時段之間不重複：自組食譜不重複主蛋白質、同一餐型最多一次；現成品項任何成分只出現在一個時段
-  const usedProteinNames = {};
+  const usedProteinIds = {};
   const usedArchetypeIds = {};
   const usedItemIds = {};
 
@@ -147,7 +147,7 @@ export function getTodayRecommendation(o) {
       const fb = feedbackMap[c.id];
       if (fb && fb.rating === "dislike") return false; // 倒讚永久排除
       if (c.is_composed) {
-        if (c.protein_name && usedProteinNames[c.protein_name]) return false;
+        if (c.protein_id && usedProteinIds[c.protein_id]) return false;
         if (c.archetype_id && usedArchetypeIds[c.archetype_id]) return false;
       } else if (c.components.some(function (id) { return usedItemIds[id]; })) {
         return false;
@@ -184,7 +184,7 @@ export function getTodayRecommendation(o) {
     const top = scored[0].c;
     const eff = achievableNutrition(top, budget);
     if (top.is_composed) {
-      if (top.protein_name) usedProteinNames[top.protein_name] = true;
+      if (top.protein_id) usedProteinIds[top.protein_id] = true;
       if (top.archetype_id) usedArchetypeIds[top.archetype_id] = true;
     } else {
       top.components.forEach(function (id) { usedItemIds[id] = true; });

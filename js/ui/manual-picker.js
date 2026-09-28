@@ -88,10 +88,10 @@ function pickIds(list, ids) {
 // 把單一食材包成跟推薦的自組食譜一樣的形狀再過硬性過濾，讓「不吃食材」清單能正確命中。
 function composePassFilter(candidate, axisType) {
   const wrapper = { is_composed: true, allergen_tags: candidate.allergen_tags || [], diet_tag_sets: [candidate.diet_tags || []] };
-  if (axisType === "protein") wrapper.protein_name = candidate.name;
-  else if (axisType === "staple") wrapper.staple_name = candidate.name;
-  else if (axisType === "vegetable") wrapper.vegetable_name = candidate.name;
-  else if (axisType === "sauce") wrapper.sauce_name = candidate.name;
+  if (axisType === "protein") wrapper.protein_id = candidate.id;
+  else if (axisType === "staple") wrapper.staple_id = candidate.id;
+  else if (axisType === "vegetable") wrapper.vegetable_id = candidate.id;
+  else if (axisType === "sauce") wrapper.sauce_id = candidate.id;
   return passesHardFilters(wrapper, manualPicker.profile);
 }
 

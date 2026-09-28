@@ -77,8 +77,8 @@ function loggedHtml(logs) {
 function dislikeChipsHtml(rec) {
   const entries = [];
   if (rec.is_composed) {
-    if (rec.protein_name) entries.push({ type: "protein", key: rec.protein_name, label: rec.protein_name });
-    if (rec.vegetable_name) entries.push({ type: "vegetable", key: rec.vegetable_name, label: rec.vegetable_name });
+    if (rec.protein_id) entries.push({ type: "protein", key: rec.protein_id, label: rec.protein_name });
+    if (rec.vegetable_id) entries.push({ type: "vegetable", key: rec.vegetable_id, label: rec.vegetable_name });
   } else if (Array.isArray(rec.component_labels)) {
     rec.component_labels.forEach(function (c) { entries.push({ type: "item", key: c.uid, label: c.label }); });
   }
