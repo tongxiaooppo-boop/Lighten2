@@ -166,7 +166,7 @@ compose/lunch/protein_stir_fry/s2	kcal=285.1 P=33.2 C=21.7 F=8 Fb=9.6
 compose/lunch/protein_stir_fry/no-veg-sauce	kcal=201.8 P=26.5 C=6.8 F=7.4 Fb=3
 compose/lunch/protein_stir_fry/drink	kcal=385.3 P=36.5 C=34.2 F=11.7 Fb=7.6
 compose/lunch/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6
-compose/lunch/protein_stir_fry/last-protein	kcal=297.4 P=32.4 C=15 F=12.2 Fb=6.6
+compose/lunch/protein_stir_fry/last-protein	kcal=285.3 P=25.5 C=29.7 F=9.8 Fb=16.4
 compose/lunch/grain_bowl_baked/s1	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3
 compose/lunch/grain_bowl_baked/s0.5	kcal=374.4 P=37.1 C=45.7 F=4.1 Fb=4.5
 compose/lunch/grain_bowl_baked/s1.3	kcal=592.9 P=41.5 C=91.7 F=5.6 Fb=7.3
@@ -199,7 +199,7 @@ compose/dinner/protein_stir_fry/s2	kcal=285.1 P=33.2 C=21.7 F=8 Fb=9.6
 compose/dinner/protein_stir_fry/no-veg-sauce	kcal=201.8 P=26.5 C=6.8 F=7.4 Fb=3
 compose/dinner/protein_stir_fry/drink	kcal=385.3 P=36.5 C=34.2 F=11.7 Fb=7.6
 compose/dinner/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6
-compose/dinner/protein_stir_fry/last-protein	kcal=297.4 P=32.4 C=15 F=12.2 Fb=6.6
+compose/dinner/protein_stir_fry/last-protein	kcal=285.3 P=25.5 C=29.7 F=9.8 Fb=16.4
 compose/dinner/grain_bowl_baked/s1	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3
 compose/dinner/grain_bowl_baked/s0.5	kcal=374.4 P=37.1 C=45.7 F=4.1 Fb=4.5
 compose/dinner/grain_bowl_baked/s1.3	kcal=592.9 P=41.5 C=91.7 F=5.6 Fb=7.3
