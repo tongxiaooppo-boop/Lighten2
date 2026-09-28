@@ -8,7 +8,7 @@ import { SLOTS } from "../core/slots.js";
 import { WIDE_RANGE_RATIO, RANK_TO_TIER, NO_COOK_METHOD_ID, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
-import { sumProducts, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
+import { sumProducts, ingredientContribution, addContributions, displayFields, ZERO_CONTRIBUTION } from "./meal-content.js";
 
 function r1(v) {
   return v == null ? null : round1(v);
@@ -79,7 +79,7 @@ function composedCombos(catalog) {
               const rank = Math.max(tierRank(m.prep_tier), items.reduce(function (r, it) { return Math.max(r, tierRank(it.prep_tier)); }, 0));
               const nameParts = [p.name, s && s.name, v && v.name, season && season.name].filter(Boolean);
 
-              combos.push({
+              combos.push(Object.assign({
                 id: arche.id + "_" + p.id + "_" + (s ? s.id : "none") + "_" + (v ? v.id : "none") + "_" + (season ? season.id : "none") + "_" + m.id,
                 archetype_id: arche.id,
                 method_id: m.id,
@@ -112,7 +112,7 @@ function composedCombos(catalog) {
                 allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags; }).concat([m.allergen_tags])),
                 is_convenience: false,
                 is_delivery: false,
-              });
+              }, displayFields(total, primaryContribution)));
             });
           });
         });
@@ -139,14 +139,14 @@ function contentNote(note) {
 
 // 候選池裡的成分：營養值未知就是 null，組合時 null 傳染（章程 C4.5）；熱量一定有值（沒有熱量的品項不進池）
 function toMember(p) {
-  return {
+  return Object.assign({
     uid: p.uid, source_id: p.source_id, name: p.name, role: p.role, valid_slots: p.valid_slots,
     contains_drink: p.contains_drink, channel: p.channel,
     kcal: p.kcal, protein_g: p.protein_g, carb_g: p.carb_g, fat_g: p.fat_g, fiber_g: p.fiber_g,
     tier_rank: p.is_taiwan ? 0 : tierRank(p.tier), diet_tags: p.diet_tags,
     allergen_tags: p.allergen_tags,
     note: p.is_taiwan ? null : contentNote(p.note), is_taiwan: p.is_taiwan,
-  };
+  }, displayFields(p));
 }
 
 function toItemCombo(members) {
@@ -154,7 +154,7 @@ function toItemCombo(members) {
   const notes = members.map(function (m) { return m.note; }).filter(Boolean);
   const single = members.length === 1 ? members[0] : null;
   const totals = sumProducts(members);
-  return {
+  return Object.assign({
     id: members.map(function (m) { return m.uid; }).join("+"),
     source_id: single && single.is_taiwan ? single.source_id : null,
     components: members.map(function (m) { return m.uid; }),
@@ -174,7 +174,7 @@ function toItemCombo(members) {
     is_convenience: members[0].channel === "convenience",
     is_delivery: members[0].channel === "delivery",
     valid_slots: [],
-  };
+  }, displayFields(totals));
 }
 
 // 依規則表對一組同來源的品項展開所有合法組合；同一個組合在多個時段合法時只產生一次，valid_slots 累加。

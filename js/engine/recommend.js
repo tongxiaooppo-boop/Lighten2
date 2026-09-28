@@ -15,7 +15,7 @@ import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G } from "../core/config.j
 import { round1 } from "../core/num.js";
 import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
-import { achievableNutrition, lowCarbMaxScale } from "./meal-content.js";
+import { achievableNutrition, lowCarbMaxScale, displayFields } from "./meal-content.js";
 import { slotShare } from "./budget.js";
 
 const PROTEIN_SATISFICE_G = 25; // 約一個手掌心蛋白質的量，達到這個量之後多蛋白質不再加分
@@ -217,7 +217,7 @@ export function getTodayRecommendation(o) {
     } else {
       top.components.forEach(function (id) { usedItemIds[id] = true; });
     }
-    result[slot] = Object.assign({}, top, {
+    result[slot] = Object.assign({}, top, displayFields(eff), {
       budget: round1(budget),
       scale: round1(eff.scale),
       primary_scale: eff.scale, // 未取整的倍數：營養值是用它算的，記錄時存這個

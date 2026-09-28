@@ -4,7 +4,7 @@
 import { SLOT_LABELS } from "../core/slots.js";
 import { escapeHtml } from "../core/html.js";
 import { NO_COOK_METHOD_ID } from "../core/config.js";
-import { $ } from "./dom.js";
+import { $, sodiumText } from "./dom.js";
 import { getProfile, getDailyLogs, getCustomFoods, addDailyLog } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { passesHardFilters } from "../engine/filters.js";
@@ -286,7 +286,8 @@ export function updateManualSummary() {
       " · 蛋白質 " + fmtNutrient(totals.protein_g) +
       " · 碳水 " + fmtNutrient(totals.carb_g) +
       " · 脂肪 " + fmtNutrient(totals.fat_g) +
-      " · 纖維 " + fmtNutrient(totals.fiber_g);
+      " · 纖維 " + fmtNutrient(totals.fiber_g) +
+      " · " + escapeHtml(sodiumText(totals.sodium_mg, totals.partial.indexOf("sodium_mg") !== -1, false));
   }
 
   const gapEl = $("#manual-picker-gap");

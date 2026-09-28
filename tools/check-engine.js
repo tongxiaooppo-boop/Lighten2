@@ -299,6 +299,16 @@ async function main() {
     const gap = M.matcher.checkHardConstraints([L("2026-09-23", "breakfast", 20, 5), L("2026-09-23", "lunch", null, 5)],
       { weight_kg: 80, goal_mode: "減脂", enabled_slots: null }, "2026-09-23");
     check(gap.proteinGapToday === 80 * 1.8 - 20, "蛋白質缺口：未知的一餐不算已吃到（實際 " + gap.proteinGapToday + "）");
+    // 例外：鈉與飽和脂肪只用於顯示，有資料的部分照加、另外記 partial（章程 C4.5）
+    const N = (na, partial) => ({ totals: { kcal: 1, sodium_mg: na, sat_fat_g: null, partial: partial || [] } });
+    const na1 = mc.sumDisplayLogTotals([N(300), N(null)], "sodium_mg");
+    check(na1.value === 300 && na1.partial === true, "鈉：一筆 300、一筆沒資料 → 約 300 且註明部分無資料（實際 " + JSON.stringify(na1) + "）");
+    const na2 = mc.sumDisplayLogTotals([N(300), N(200, ["sodium_mg"])], "sodium_mg");
+    check(na2.value === 500 && na2.partial === true, "鈉：紀錄本身是部分無資料，合計也要註明（實際 " + JSON.stringify(na2) + "）");
+    check(mc.sumDisplayLogTotals([N(null), N(null)], "sodium_mg").value === null, "鈉：全部沒資料是 null");
+    check(mc.sumDisplayLogTotals([N(300), N(200)], "sodium_mg").partial === false, "鈉：全部有資料不註明");
+    const ct = mc.composeTotals({ protein: ing({ sodium_100g: 50 }), staple: ing({ id: "s", sodium_100g: null }), primaryScale: 1 }, null);
+    check(ct.sodium_mg === 50 && ct.partial.indexOf("sodium_mg") !== -1 && ct.protein_g === 20, "自己煮：一個食材沒鈉資料，鈉照加有資料的部分並註明（實際 " + JSON.stringify(ct) + "）");
   }
 
   // ---------- 4f. 手動記錄規則（章程 C4.8）：只限制每個角色的數量，不要求主餐 ----------
@@ -439,7 +449,7 @@ async function checkDbValidation() {
   };
   const good = {
     log_date: "2026-09-23", slot: "lunch", meal_type: "convenience", source: "manual", name: "x",
-    content: content, totals: { kcal: 120, protein_g: 23, carb_g: null, fat_g: 2.8, fiber_g: 0 }, created_at: "2026-09-23T04:00:00.000Z",
+    content: content, totals: { kcal: 120, protein_g: 23, carb_g: null, fat_g: 2.8, fiber_g: 0, sat_fat_g: null, sodium_mg: 380, partial: [] }, created_at: "2026-09-23T04:00:00.000Z",
   };
   const cook = Object.assign({}, good, { meal_type: "cook_quick", content: {
     meal_type: "cook_quick", archetype_id: "egg_pan", method_id: "method_pan_fry",
@@ -489,6 +499,8 @@ async function checkDbValidation() {
     ["估算元件沒有快照", withComp({ kind: "estimate", name: "喜宴" }), /snapshot/],
     ["totals 沒有 kcal", Object.assign({}, good, { totals: { protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1 } }), /totals\.kcal/],
     ["totals 營養欄位缺欄（要寫 null 不能省略）", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1 } }), /totals\.carb_g/],
+    ["totals 沒有鈉欄位", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1, sat_fat_g: null, partial: [] } }), /totals\.sodium_mg/],
+    ["totals 沒有 partial", Object.assign({}, good, { totals: { kcal: 100, protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 1, sat_fat_g: null, sodium_mg: null } }), /totals\.partial/],
   ];
   for (const b of broken) await rejectsWith(() => db.validateDailyLog(b[1]), b[2], "daily_log " + b[0] + " 沒有被擋下");
 

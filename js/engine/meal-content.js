@@ -5,6 +5,8 @@
 //   - 顯示用的合計（sumLogTotals、自己煮與現成品項的合計、推薦組合）：任一項未知 → null
 //   - 缺口計算（sumKnownLogTotals）：未知的量不能算成「已經吃到」，只加已知部分，缺口因此偏大（往安全方向）
 //   - 今日 hero 另有涵蓋率警語（todayIntake）
+//   - 例外：鈉與飽和脂肪只用於顯示、不參與任何計算（章程 C4.5、C4.14）：有資料的部分照加，
+//     另外在 partial 記下哪些欄位有品項沒有資料；全部都沒資料才是 null。
 // ⚠️ 用油、調味的隱含成分還沒有（implicit: null），−1b 後續加入。
 
 import { PRIMARY_SLOT_SCALE_RANGE, MANUAL_ROLE_MAX, tierRank } from "../core/config.js";
@@ -12,6 +14,8 @@ import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
 const CONTRIB_FIELDS = ["kcal"].concat(NUTRIENT_FIELDS);
+// 只用於顯示的欄位（不 null 傳染）
+export const DISPLAY_FIELDS = ["sat_fat_g", "sodium_mg"];
 
 
 function round1OrNull(v) {
@@ -36,19 +40,32 @@ export function ingredientContribution(it, servingG) {
     carb_g: per(it.carb_100g),
     fat_g: per(it.fat_100g),
     fiber_g: per(it.fiber_100g),
+    sat_fat_g: per(it.sat_fat_100g),
+    sodium_mg: per(it.sodium_100g),
   };
 }
 
-export const ZERO_CONTRIBUTION = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
+export const ZERO_CONTRIBUTION = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: 0, partial: [] };
 
-// 逐欄加總，任一部分是 null 那一欄就是 null
+// 逐欄加總：營養素任一部分是 null 那一欄就是 null；鈉與飽和脂肪只加有資料的部分，缺資料的欄位記進 partial。
+// 部分本身也可以是加總過的結果（帶 partial）。
 export function addContributions(parts) {
   const acc = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 };
+  const known = { sat_fat_g: 0, sodium_mg: 0 };
+  const sums = { sat_fat_g: 0, sodium_mg: 0 };
+  const partial = {};
   parts.forEach(function (part) {
     CONTRIB_FIELDS.forEach(function (k) {
       acc[k] = acc[k] == null || part[k] == null ? null : acc[k] + part[k];
     });
+    DISPLAY_FIELDS.forEach(function (k) {
+      if (part[k] == null) partial[k] = true;
+      else { sums[k] += part[k]; known[k]++; }
+      if (part.partial && part.partial.indexOf(k) !== -1) partial[k] = true;
+    });
   });
+  DISPLAY_FIELDS.forEach(function (k) { acc[k] = known[k] > 0 ? sums[k] : null; });
+  acc.partial = DISPLAY_FIELDS.filter(function (k) { return partial[k] && acc[k] != null; });
   return acc;
 }
 
@@ -58,7 +75,8 @@ export function addContributions(parts) {
 // maxScale（選填）：低碳時「碳水 ≤ 上限」容許的最大倍數，縮放取兩者較小者（呼叫端保證 ≥ 最小倍數）。
 export function achievableNutrition(c, budget, maxScale) {
   if (!c.is_composed || !(budget > 0) || !(c.primary_kcal > 0)) {
-    return { scale: 1, kcal: c.kcal, protein_g: c.protein_g, carb_g: c.carb_g, fat_g: c.fat_g, fiber_g: c.fiber_g };
+    return Object.assign({ scale: 1, kcal: c.kcal, protein_g: c.protein_g, carb_g: c.carb_g, fat_g: c.fat_g, fiber_g: c.fiber_g },
+      scaledDisplay(c, 1));
   }
   const fixedKcal = c.kcal - c.primary_kcal;
   let scale = (budget - fixedKcal) / c.primary_kcal;
@@ -68,14 +86,23 @@ export function achievableNutrition(c, budget, maxScale) {
   const scaled = function (total, primary) {
     return total == null || primary == null ? null : round1((total - primary) + primary * scale);
   };
-  return {
+  return Object.assign({
     scale: scale,
     kcal: round1(fixedKcal + c.primary_kcal * scale),
     protein_g: scaled(c.protein_g, c.primary_protein_g),
     carb_g: scaled(c.carb_g, c.primary_carb_g),
     fat_g: scaled(c.fat_g, c.primary_fat_g),
     fiber_g: scaled(c.fiber_g, c.primary_fiber_g),
-  };
+  }, scaledDisplay(c, scale));
+}
+
+// 顯示用欄位縮放：主要槽位只縮放它有資料的部分（沒資料的部分本來就不在合計裡）
+function scaledDisplay(c, scale) {
+  const out = {};
+  DISPLAY_FIELDS.forEach(function (k) {
+    out[k] = c[k] == null ? null : round1(c[k] + (c["primary_" + k] || 0) * (scale - 1));
+  });
+  return out;
 }
 
 // 低碳（章程 B6.6）：這個候選在碳水 ≤ maxCarbG 的前提下，主要槽位最多能放大幾倍。
@@ -91,12 +118,16 @@ export function lowCarbMaxScale(c, maxCarbG) {
 
 // 熱量是現成品項與我的品項的必填欄位（章程 B4、B8），不會是 null
 export function sumProducts(items) {
+  const display = addContributions(items.map(function (it) { return { sat_fat_g: it.sat_fat_g, sodium_mg: it.sodium_mg }; }));
   return {
     kcal: round1(items.reduce(function (s, it) { return s + it.kcal; }, 0)),
     protein_g: sumOrNull(items, "protein_g"),
     carb_g: sumOrNull(items, "carb_g"),
     fat_g: sumOrNull(items, "fat_g"),
     fiber_g: sumOrNull(items, "fiber_g"),
+    sat_fat_g: round1OrNull(display.sat_fat_g),
+    sodium_mg: round1OrNull(display.sodium_mg),
+    partial: display.partial,
   };
 }
 
@@ -158,10 +189,10 @@ export function composeTotals(c, primary) {
   });
   if (c.drink) {
     const d = c.drink;
-    parts.push({ kcal: d.kcal, protein_g: d.protein_g, carb_g: d.carb_g, fat_g: d.fat_g, fiber_g: d.fiber_g });
+    parts.push({ kcal: d.kcal, protein_g: d.protein_g, carb_g: d.carb_g, fat_g: d.fat_g, fiber_g: d.fiber_g, sat_fat_g: d.sat_fat_g, sodium_mg: d.sodium_mg });
   }
   const total = addContributions(parts);
-  CONTRIB_FIELDS.forEach(function (k) { total[k] = round1OrNull(total[k]); });
+  CONTRIB_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) { total[k] = round1OrNull(total[k]); });
   return total;
 }
 
@@ -193,6 +224,25 @@ export function sumKnownLogTotals(logs, field) {
     else sum += v;
   });
   return { sum: sum, missing: missing };
+}
+
+// 推薦候選池與推薦結果只「帶著」顯示用欄位（鈉、飽和脂肪），不讀、不評分（章程 C4.14）：
+// pool.js／recommend.js 一律透過這個函式複製，程式裡不直接出現欄位名稱（check-arch 會擋）。
+// primary（選填）：自組食譜的主要槽位那一份，縮放時用。
+export function displayFields(src, primary) {
+  const out = {};
+  DISPLAY_FIELDS.forEach(function (k) {
+    out[k] = src[k] == null ? null : round1(src[k]);
+    if (primary) out["primary_" + k] = primary[k] == null ? 0 : primary[k];
+  });
+  if (src.partial) out.partial = src.partial.slice();
+  return out;
+}
+
+// 顯示用的鈉／飽和脂肪合計（章程 C4.5 例外）：{ value: 有資料的部分合計（全部沒資料是 null）, partial: 有沒有品項缺資料 }
+export function sumDisplayLogTotals(logs, field) {
+  const t = addContributions(logs.map(function (l) { return l.totals; }));
+  return { value: t[field] == null ? null : round1(t[field]), partial: t.partial.indexOf(field) !== -1 };
 }
 
 // 今日已攝取（hero）：跳過 null（缺資料），不當 0 加；缺脂肪或碳水的紀錄另外算熱量給涵蓋率警語。
@@ -325,6 +375,9 @@ export function buildLogEntry(o) {
       carb_g: o.totals.carb_g,
       fat_g: o.totals.fat_g,
       fiber_g: o.totals.fiber_g,
+      sat_fat_g: o.totals.sat_fat_g != null ? o.totals.sat_fat_g : null,
+      sodium_mg: o.totals.sodium_mg != null ? o.totals.sodium_mg : null,
+      partial: Array.isArray(o.totals.partial) ? o.totals.partial.slice() : [],
     },
     created_at: o.createdAt,
   };
