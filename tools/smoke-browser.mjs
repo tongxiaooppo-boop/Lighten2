@@ -123,6 +123,10 @@ async function run() {
     check(!("item_name" in e) && !("feast_reservation_id" in e) && !("component_ids" in e), "daily_log 還有 v1 欄位");
   }
   check(Number((await js(text("#today-hero-protein"))).split(" ")[0]) > 0, "記錄後 hero 蛋白質沒有增加");
+  const shownDates = await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => {
+    const q = r.result.transaction('recipe_feedback').objectStore('recipe_feedback').getAll(); q.onsuccess = () => res(q.result.map((x) => x.last_shown_date)); }; })`);
+  const todayLocal = await js(`(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`);
+  check(shownDates.length > 0 && shownDates.every((d) => d === todayLocal), "推薦卡片顯示後 recipe_feedback 的 last_shown_date 不是今天：" + shownDates.join(","));
 
   await js(`document.querySelector('#rec-breakfast .rec-undo-btn').click()`);
   await until(`!!document.querySelector('#rec-breakfast .rec-log-btn')`, "撤銷後早餐沒有回到推薦");

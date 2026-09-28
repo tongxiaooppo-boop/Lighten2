@@ -69,11 +69,21 @@ function normTotals(t) {
   return "kcal=" + n(t.kcal) + " P=" + n(t.protein_g) + " C=" + n(t.carb_g) + " F=" + n(t.fat_g) + " Fb=" + n(t.fiber_g);
 }
 
+// MealContent 規範化：型態、餐型/烹調法、每個元件（食材 axis:ref*縮放、商品 ref×數量、估算 名稱@熱量）、隱含成分
+function normContent(c) {
+  const comps = c.components.map((x) => {
+    if (x.kind === "ingredient") return x.axis + ":" + x.ref + (x.scale != null ? "*" + n(x.scale) : "");
+    if (x.kind === "product") return x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal);
+    return "estimate:" + x.name + "@" + n(x.snapshot.kcal);
+  });
+  return c.meal_type + "|" + (c.archetype_id || "-") + "/" + (c.method_id || "-") + "|" + comps.join(",") + "|implicit=" + stable(c.implicit);
+}
+
 function normWrite(w) {
   if (w.op === "addDailyLog") {
     const e = w.entry;
-    // 只比時段、名稱與營養合計；紀錄的其他欄位是 v1 舊格式（−1a 改成 MealContent，屬刻意的格式變更）
-    return "addDailyLog " + e.slot + " " + JSON.stringify(e.name) + " " + normTotals(e.totals);
+    return "addDailyLog " + e.slot + " " + JSON.stringify(e.name) + " " + normTotals(e.totals) +
+      " type=" + e.meal_type + " source=" + e.source + " content=" + normContent(e.content);
   }
   if (w.op === "markRecipesShown") return "markRecipesShown " + w.ids.join(",");
   return w.op + " " + stable(w);
@@ -296,6 +306,27 @@ async function snapToday() {
   A.takeWrites().forEach((w, i) => emit("recs", "flow/undo-breakfast/write" + i, normWrite(w)));
   SLOTS.forEach((slot) => emit("recs", "flow/undo-breakfast/" + slot, normRec(recs[slot])));
   A.takeDom();
+
+  // 倒讚、「順便不要」、同一天重建（切回分頁）：卡片顯示過就會記「今天顯示過」，重建時被降權
+  const flows = {
+    "dislike-dinner": async () => { await A.dislike("dinner"); },
+    "chip-dinner-protein": async () => {
+      const r = A.currentRecs().dinner;
+      await A.dislikeChip("protein", r.protein_name, r.protein_name);
+    },
+    "rebuild-same-day": async () => { await A.todayPage(); },
+  };
+  for (const name of Object.keys(flows)) {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: history(7), tdeeState: tdeeState({ goal_mode: null }) });
+    await A.todayPage();
+    A.takeEngineIO(); A.takeWrites(); A.takeDom();
+    await flows[name]();
+    const r2 = A.currentRecs();
+    A.takeEngineIO(); A.takeDom();
+    A.takeWrites().forEach((w, i) => emit("recs", "flow/" + name + "/write" + i, normWrite(w)));
+    SLOTS.forEach((slot) => emit("recs", "flow/" + name + "/" + slot, normRec(r2[slot])));
+  }
 }
 
 async function tdeeScenario(name, s) {

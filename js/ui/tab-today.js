@@ -230,8 +230,8 @@ export async function onUndoClick(logId, btnEl) {
   }
 }
 
-function onDislikeClick(id) {
-  saveRecipeFeedback(id, "dislike").then(function () {
+export function onDislikeClick(id) {
+  return saveRecipeFeedback(id, "dislike").then(function () {
     return buildRecommendation();
   }).catch(function (e) {
     console.error(e);
@@ -239,7 +239,7 @@ function onDislikeClick(id) {
   });
 }
 
-async function onDislikeChipClick(chip) {
+export async function onDislikeChipClick(chip) {
   const entry = { type: chip.getAttribute("data-type"), key: chip.getAttribute("data-key"), label: chip.getAttribute("data-label") };
   const profile = await getProfile();
   if (!profile) return;
