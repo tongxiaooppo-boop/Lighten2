@@ -374,8 +374,8 @@ async function checkDbValidation() {
     content: content, totals: { kcal: 120, protein_g: 23, carb_g: null, fat_g: 2.8, fiber_g: 0 }, created_at: "2026-09-23T04:00:00.000Z",
   };
   const cook = Object.assign({}, good, { meal_type: "cook_quick", content: {
-    meal_type: "cook_quick", archetype_id: "egg_pan", method_id: "sm_pan_fry",
-    components: [{ kind: "ingredient", axis: "protein", ref: "ps_egg", is_primary: true, scale: 1.25 }], implicit: null,
+    meal_type: "cook_quick", archetype_id: "egg_pan", method_id: "method_pan_fry",
+    components: [{ kind: "ingredient", axis: "protein", ref: "egg", is_primary: true, scale: 1.25 }], implicit: null,
   } });
   const estimate = Object.assign({}, good, { meal_type: "delivery", content: {
     meal_type: "delivery", archetype_id: null, method_id: null,

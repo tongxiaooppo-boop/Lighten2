@@ -150,7 +150,7 @@ compose/breakfast/egg_pan/drink	kcal=308.3 P=22.1 C=27.3 F=13.1 Fb=3.8
 compose/breakfast/egg_pan/no-method	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8
 compose/breakfast/egg_pan/last-protein	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8
 compose/breakfast/no-cook-unsafe	#manual-picker-main-hint text="免開火不能搭配需要加熱的食材，請換烹調法或換食材。"
-compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=435 P=22.5 C=53.9 F=14.1 Fb=9.9 type=cook_quick source=manual content=cook_quick|bowl_oat/sm_no_cook|protein:ps_soy_milk,staple:st_oats*1.2,tw_bf02x1@135|implicit=null
+compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=435 P=22.5 C=53.9 F=14.1 Fb=9.9 type=cook_quick source=manual content=cook_quick|bowl_oat/method_no_cook|protein:soy_milk,staple:oats*1.2,tw_bf02x1@135|implicit=null
 compose/lunch/egg_pan/s1	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8
 compose/lunch/egg_pan/s0.5	kcal=105.6 P=9.8 C=7.3 F=4.9 Fb=2.8
 compose/lunch/egg_pan/s1.3	kcal=213.9 P=19.9 C=8.6 F=12 Fb=2.8
@@ -183,7 +183,7 @@ compose/lunch/warm_salad/no-veg-sauce	kcal=325.3 P=28.6 C=26 F=11.9 Fb=3.8
 compose/lunch/warm_salad/drink	kcal=498.2 P=38 C=51.7 F=16.1 Fb=7.6
 compose/lunch/warm_salad/no-method	kcal=363.2 P=32 C=32.5 F=12.3 Fb=6.6
 compose/lunch/warm_salad/last-protein	kcal=292.6 P=20.7 C=35.3 F=9 Fb=9
-compose/lunch/submit0	addDailyLog lunch "煎蛋類＋雞蛋＋青花菜＋燕麥奶／牛奶（一杯約240ml）" kcal=335.4 P=24.6 C=27.6 F=14.9 Fb=3.8 type=cook_quick source=manual content=cook_quick|egg_pan/sm_pan_fry|protein:ps_egg*1.2,vegetable:broccoli,tw_bf02x1@135|implicit=null
+compose/lunch/submit0	addDailyLog lunch "煎蛋類＋雞蛋＋青花菜＋燕麥奶／牛奶（一杯約240ml）" kcal=335.4 P=24.6 C=27.6 F=14.9 Fb=3.8 type=cook_quick source=manual content=cook_quick|egg_pan/method_pan_fry|protein:egg*1.2,vegetable:broccoli,tw_bf02x1@135|implicit=null
 compose/dinner/egg_pan/s1	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8
 compose/dinner/egg_pan/s0.5	kcal=105.6 P=9.8 C=7.3 F=4.9 Fb=2.8
 compose/dinner/egg_pan/s1.3	kcal=213.9 P=19.9 C=8.6 F=12 Fb=2.8
@@ -216,4 +216,4 @@ compose/dinner/warm_salad/no-veg-sauce	kcal=325.3 P=28.6 C=26 F=11.9 Fb=3.8
 compose/dinner/warm_salad/drink	kcal=498.2 P=38 C=51.7 F=16.1 Fb=7.6
 compose/dinner/warm_salad/no-method	kcal=363.2 P=32 C=32.5 F=12.3 Fb=6.6
 compose/dinner/warm_salad/last-protein	kcal=292.6 P=20.7 C=35.3 F=9 Fb=9
-compose/dinner/submit0	addDailyLog dinner "煎蛋類＋雞蛋＋青花菜＋燕麥奶／牛奶（一杯約240ml）" kcal=335.4 P=24.6 C=27.6 F=14.9 Fb=3.8 type=cook_quick source=manual content=cook_quick|egg_pan/sm_pan_fry|protein:ps_egg*1.2,vegetable:broccoli,tw_bf02x1@135|implicit=null
+compose/dinner/submit0	addDailyLog dinner "煎蛋類＋雞蛋＋青花菜＋燕麥奶／牛奶（一杯約240ml）" kcal=335.4 P=24.6 C=27.6 F=14.9 Fb=3.8 type=cook_quick source=manual content=cook_quick|egg_pan/method_pan_fry|protein:egg*1.2,vegetable:broccoli,tw_bf02x1@135|implicit=null

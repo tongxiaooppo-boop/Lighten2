@@ -5,7 +5,7 @@
 //   2、3 共用同一個「統一成分模型」生成器：品項在資料裡標 role/valid_slots，依一張規則表組合。
 
 import { SLOTS } from "../core/slots.js";
-import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
+import { WIDE_RANGE_RATIO, RANK_TO_TIER, NO_COOK_METHOD_ID, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
 import { sumProducts, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
@@ -63,7 +63,7 @@ function composedCombos(catalog) {
             if (season && season.kcal_100g == null) return;
             methodList.forEach(function (m) {
               // 食安：免開火只能配不需要煮熟的食材，適用於這個組合裡出現的每一個槽位（章程 C4.3）。
-              if (m.id === "sm_no_cook" && [p, s, v, season].some(function (it) { return it && it.requires_cooking; })) return;
+              if (m.id === NO_COOK_METHOD_ID && [p, s, v, season].some(function (it) { return it && it.requires_cooking; })) return;
 
               const primaryItem = hasStapleSlot ? s : p;
               const primaryContribution = primaryItem ? ingredientContribution(primaryItem) : ZERO_CONTRIBUTION;
