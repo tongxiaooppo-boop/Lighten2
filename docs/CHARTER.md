@@ -64,9 +64,9 @@
 {
   id: "chicken_breast",              // 小寫英文＋底線，全資料庫唯一，一經使用不得改名
   name: "雞胸肉",                     // 使用者看到的名稱；有常見歧義時寫清楚（「白花椰菜」不是「花椰菜」）
-  axis: "protein" | "staple" | "vegetable" | "seasoning" | "method",
+  axis: "protein" | "staple" | "vegetable" | "seasoning" | "method" | "seasoning_level",
   basis: "raw" | "cooked" | "dry" | "as_is",   // 數值對應的狀態，必須跟來源樣品狀態一致
-  per_100g: { kcal, protein_g, carb_g, fat_g, fiber_g },
+  per_100g: { kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg },  // sat_fat_g、sodium_mg 可為 null
   serving_g: 130,                    // 一份的克數（跟 basis 同一個狀態）
   serving_label: "1份雞胸肉（生重約130g，熟後約100g）",
   cooked_to_raw: null,               // basis=cooked 時必填：熟重 1g 對應的生重克數
@@ -74,9 +74,19 @@
   requires_cooking: true,
   allergen_tags: [],                 // 必填，食材不允許 null（食材成分單純，一定要確認）
   diet_tags: ["高蛋白"],
-  oil_g: null,                       // 只有 axis=method：這個烹調法每份隱含的用油克數
+  oil: null,                         // 只有 axis=method：{ base_g, veg_add_g }，見 A5 第 6 點
   source: { type: "tfda", ref: "I04024" },
   verified_at: "2026-09-28",
+}
+```
+
+`axis: "seasoning_level"` 是「自煮調味程度」的隱含成分（見 A5 第 7 點），不用 `per_100g`，改用每份數值：
+
+```js
+{
+  id: "seasoning_normal", name: "一般", axis: "seasoning_level",
+  per_serving: { sodium_mg: 700 },
+  source: { type: "derived", ref: "約鹽 1g（390 mg）＋醬油 1 茶匙（約 280 mg），TFDA P0700101" },
 }
 ```
 
@@ -96,10 +106,11 @@
   kcal: 160,                         // 代表值
   kcal_range: null,                  // 選填 [低, 高]，高/低 ≥ 1.5 倍時不進推薦池
   protein_g, carb_g, fat_g, fiber_g, // 可為 null（未知），不得用 0 代替未知
+  sat_fat_g, sodium_mg,              // 同上；包裝標示依法都有，超商品項應優先補齊
   allergen_tags: null | [],          // null = 未確認（使用者有設過敏原就排除）
   diet_tags: [],
   source: { type: "label", ref: "https://..." },
-  confidence: { kcal: "verified", protein_g: "verified", carb_g: "estimate", fat_g: "estimate", fiber_g: "verified" },
+  confidence: { kcal: "verified", protein_g: "verified", carb_g: "estimate", fat_g: "estimate", fiber_g: "verified", sat_fat_g: "estimate", sodium_mg: "estimate" },
   verified_at: "2026-09-28" | null,
 }
 ```
@@ -111,7 +122,14 @@
 3. **有效位數**：每 100g 數值保留 1 位小數；品項每份數值保留 1 位小數；熱量取整數。
 4. **巨量營養素驗算**：來源是 `tfda`/`label`/`official_web`/`usda` 的數字，`蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9` 跟熱量差距超過 15% 時，要在 `source.note` 說明原因（例如含酒精、糖醇），否則視為抄錯。來源是 `estimate`/`derived` 的不做這項驗算（反推出來的數字一定會通過，驗了等於沒驗）。
 5. **份量**：食材的 `serving_g` 優先對齊食物代換表的份數倍數（例如雞胸肉代換表 1 份＝生重 30g，一份 130g ≈ 4.3 份），在 `serving_label` 寫清楚生重或熟重。
-6. **烹調法用油**：`sm_pan_fry`、`sm_stir_fry` 這類會用油的烹調法必須填 `oil_g`，推算熱量時當成這一餐的隱含成分；免開火、微波、氣炸填 0。
+6. **烹調法用油**（2026-09-28 使用者拍板，見 [review/2026-09-28-烹調油脂與鈉決策.md](review/2026-09-28-烹調油脂與鈉決策.md)）：
+   - 每個 `axis: "method"` 必填 `oil: { base_g, veg_add_g }`。現值：煎 5／0、炒 5／5、氣炸與烤 0／0、免開火與微波 0／0。
+   - 這一餐的用油 = `base_g`＋（有選任何蔬菜時）`veg_add_g`，不隨蔬菜種數累加。
+   - 用油是這一餐的隱含成分，以食物代換表油脂類換算：每 5g 油 = 45 kcal、脂肪 5g。
+   - 算的是「吃進去的油」，不是下鍋的油。
+   - 「自己選」在煎/炒時可改為約 1 茶匙（5g）或約 2 茶匙（10g）；實際採用的克數記進這一餐的內容。
+7. **自煮調味的鈉**：`dish_archetypes.json` 每個骨架標 `seasoned: true|false`（例如早餐碗為 false）。`seasoned: true` 的一餐加一個隱含成分「調味程度」：清淡約 300 mg、一般約 700 mg 鈉，預設一般，「自己選」可切換。實際採用的程度記進這一餐的內容。
+8. **鈉與飽和脂肪**：食材取 TFDA「鈉(mg)」「飽和脂肪(g)」欄；超商取包裝標示；外食沒有來源時標 `estimate`，寧可 `null` 也不要沒根據的數字。
 
 ## A6. 過敏原與飲食標籤
 
@@ -125,6 +143,7 @@
 1. 骨架每一軸的 `allow` 只能引用 `ingredients.json` 裡存在、且 `axis` 相符的 id。
 2. 新增或修改骨架屬於 B4 需審核的變更（三輪審核定下的原則：不對稱槽位、每個食材自己的份量、避免無限制組合）。
 3. 食材新增後沒有被任何骨架引用，`check-data.js` 會警告（不是錯誤），避免再累積沒用到的資料。
+4. 每個骨架必填 `seasoned: true|false`（見 A5 第 7 點）。
 
 ## A8. 「我的品項」的最低驗證
 
@@ -149,7 +168,7 @@
 - 食材 `allergen_tags` 不為 null；品項 `allergen_tags` 只含固定詞彙。
 - `source.type` 合法；`tfda` 的 `ref` 能在 `collab/tfdb-2025-simplified.json` 找到。
 - `basis = cooked` 的食材有 `cooked_to_raw`。
-- 會用油的烹調法有 `oil_g`。
+- 每個烹調法有 `oil: { base_g, veg_add_g }`；每個骨架有 `seasoned`；`seasoning_level` 至少有清淡、一般兩筆。
 - 骨架 `allow` 引用的 id 都存在且 `axis` 相符。
 - `kcal_range` 若有，低 ≤ 代表值 ≤ 高。
 - A5 第 4 點的巨量營養素驗算（只對適用來源）。
@@ -203,11 +222,13 @@ ui/  →  engine/  →  data/  →  core/
 7. 現成品項組合：一餐恰好 1 main＋≤1 side＋≤1 drink＋≤1 snack、最多 3 件；下午茶不需要 main；飲料不單獨成一餐。
 8. 近 7 天平均、纖維缺口、校正引擎的攝取檢查，只算「完整記錄日」且不含今天。
 9. 計畫層（L2）不存縮放後的熱量；只有 `daily_log`（L3）算進任何統計。
+10. 自煮的一餐一律包含用油與調味程度兩個隱含成分（A5 第 6、7 點），推薦、自己選、計畫、採買清單用同一套算法（`engine/meal-content.js`）。
 
 **核心原則**
-10. 運動與飲食脫鉤：`engine/` 底下任何模組不得 import 運動紀錄的存取函式；飲食畫面不出現運動內容，反之亦然。
-11. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品清單不依熱量排序或上色；飲料不做糖量警告。
-12. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦引擎、統計、hero 不得讀取。
+11. 運動與飲食脫鉤：`engine/` 底下任何模組不得 import 運動紀錄的存取函式；飲食畫面不出現運動內容，反之亦然。
+12. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品清單不依熱量排序或上色；飲料不做糖量警告。
+13. 鈉只做中性顯示（「鈉 約 X mg（參考 2400 mg）」）：不上色、不警告、不做頻率統計、不參與推薦評分；不把某一餐的鈉跟某天的體重連在一起提示。用油選項的文字只寫克數/茶匙，不寫「健康」「少油比較好」這類評價。
+14. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦引擎、統計、hero 不得讀取。
 
 ## B4. 需要獨立審核的變更
 
