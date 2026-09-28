@@ -11,6 +11,9 @@ const fs = require("fs");
 const path = require("path");
 const { pathToFileURL } = require("url");
 
+// 日期運算依賴本機時區，一律在台灣時區跑（CI 在 UTC，時區 bug 在那裡測不出來）
+require("./lib/fake-env").ensureTaipeiTZ();
+
 const ROOT = path.join(__dirname, "..");
 const SLOTS = ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"];
 const MEAL_SLOTS = ["breakfast", "lunch", "dinner", "snack"];
@@ -189,6 +192,17 @@ async function main() {
   check(skipRecs.breakfast === null, "已記錄的早餐仍然產生推薦");
   check(skipRecs.dinner === null, "已記錄的晚餐仍然產生推薦");
   check(skipRecs.lunch !== null, "沒被跳過的午餐沒有推薦");
+
+  // ---------- 4b. 「幾天前顯示過」用本地日期算（−1b 修 v1 時區 bug） ----------
+  console.log("[近期顯示的天數]");
+  const at = (y, m, d, h) => new Date(y, m - 1, d, h, 0).getTime();
+  [[3, "凌晨"], [10, "白天"], [23, "深夜"]].forEach(([h, label]) => {
+    const now = at(2026, 9, 23, h);
+    check(M.recommend.daysSince("2026-09-23", now) === 0, label + " " + h + " 點：今天顯示過應是 0 天前（實際 " + M.recommend.daysSince("2026-09-23", now) + "）");
+    check(M.recommend.daysSince("2026-09-22", now) === 1, label + " " + h + " 點：昨天顯示過應是 1 天前（實際 " + M.recommend.daysSince("2026-09-22", now) + "）");
+    check(M.recommend.daysSince("2026-09-20", now) === 3, label + " " + h + " 點：3 天前顯示過應是 3（實際 " + M.recommend.daysSince("2026-09-20", now) + "）");
+  });
+  check(M.recommend.daysSince(null, at(2026, 9, 23, 10)) === Infinity, "沒有顯示紀錄應是 Infinity");
 
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
