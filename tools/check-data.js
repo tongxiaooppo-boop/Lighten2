@@ -153,7 +153,9 @@ function checkIngredients(list, refs) {
       if (typeof ing.composite !== "boolean") err(w + "：醬料要標 composite: true|false");
       if (ing.composite && (ing.allergen_tags || []).indexOf(UNVERIFIED) === -1) {
         const r = src.type === "tfda" ? refs.tfda[src.ref] : null;
-        const listsIngredients = r && /[（(][^）)]*[,，][^）)]*[）)]/.test(r["內容物描述"] || "");
+        const desc = (r && r["內容物描述"]) || "";
+        // 括號裡用逗號列出成分，而且不是以「等」結尾（「…等」代表沒列完，B6.3）
+        const listsIngredients = /[（(][^）)]*[,，][^）)]*[）)]/.test(desc) && !/等[）)]?s*$/.test(desc);
         if (!listsIngredients) err(w + "：複合料理沒標「未確認」，出處要是內容物描述列有成分的 TFDA 樣品（或包裝/官網成分表）");
       }
     }
@@ -334,6 +336,16 @@ function main() {
       .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
     readJson("reference/label_unsourced_frozen.json").fields, refs
   );
+
+  // 不吃清單只比 key（decisions #40），前提是 id 全資料庫唯一：食材 id 跟現成品項 uid（台式加 tw_）不得重複
+  const seen = {};
+  ingredients.map((it) => ["食材", it.id])
+    .concat(readJson("convenience_items.json").map((p) => ["超商", p.id]))
+    .concat(readJson("taiwan_items.json").map((p) => ["台式", "tw_" + p.id]))
+    .forEach(([kind, uid]) => {
+      if (seen[uid]) err("id「" + uid + "」在" + seen[uid] + "與" + kind + "重複（不吃清單只比 key，id 要全資料庫唯一，decisions #40）");
+      else seen[uid] = kind;
+    });
 
   warnings.forEach((m) => console.log("  ⚠ " + m));
   errors.forEach((m) => console.log("  ✗ " + m));
