@@ -49,13 +49,15 @@ export function addContributions(parts) {
 // 自組食譜可以靠「主要槽位」（有主食槽用主食，沒有的用蛋白質）在 PRIMARY_SLOT_SCALE_RANGE
 // 內縮放去貼近熱量預算；超商/台式外送是真實商品，不能縮放，固定用天然份量的熱量。
 // 回傳值同時給評分判斷貼近度、也給最終結果組裝實際要顯示的份量。
-export function achievableNutrition(c, budget) {
+// maxScale（選填）：低碳時「碳水 ≤ 上限」容許的最大倍數，縮放取兩者較小者（呼叫端保證 ≥ 最小倍數）。
+export function achievableNutrition(c, budget, maxScale) {
   if (!c.is_composed || !(budget > 0) || !(c.primary_kcal > 0)) {
     return { scale: 1, kcal: c.kcal, protein_g: c.protein_g, carb_g: c.carb_g, fat_g: c.fat_g, fiber_g: c.fiber_g };
   }
   const fixedKcal = c.kcal - c.primary_kcal;
   let scale = (budget - fixedKcal) / c.primary_kcal;
   scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, Math.min(PRIMARY_SLOT_SCALE_RANGE.max, scale));
+  if (maxScale != null && scale > maxScale) scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, maxScale);
   return {
     scale: scale,
     kcal: round1(fixedKcal + c.primary_kcal * scale),
@@ -64,6 +66,15 @@ export function achievableNutrition(c, budget) {
     fat_g: round1((c.fat_g - c.primary_fat_g) + c.primary_fat_g * scale),
     fiber_g: round1((c.fiber_g - c.primary_fiber_g) + c.primary_fiber_g * scale),
   };
+}
+
+// 低碳（章程 B6.6）：這個候選在碳水 ≤ maxCarbG 的前提下，主要槽位最多能放大幾倍。
+// 回傳 null＝不算低碳（碳水未知，或縮到最小倍數仍超過）；Infinity＝不受限制（現成品項本來就不縮放）。
+export function lowCarbMaxScale(c, maxCarbG) {
+  if (c.carb_g == null) return null;
+  if (!c.is_composed || !(c.primary_carb_g > 0)) return c.carb_g <= maxCarbG ? Infinity : null;
+  const m = (maxCarbG - (c.carb_g - c.primary_carb_g)) / c.primary_carb_g;
+  return m >= PRIMARY_SLOT_SCALE_RANGE.min ? m : null;
 }
 
 // ---------- 現成品項多選（自己選） ----------

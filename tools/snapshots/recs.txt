@@ -310,22 +310,22 @@ today/LOWCARB/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/LOWCARB/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/LOWCARB/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/LOWCARB/base/skip	afternoon_tea,snack
-today/LOWCARB/base/breakfast	conv_bx04 scale=1 kcal=120 base=120 P=23 C=0 F=2.8 Fb=0 budget=474 src=convenience
-today/LOWCARB/base/lunch	conv_bx11 scale=1 kcal=300 base=300 P=19.5 C=26.5 F=12.8 Fb=7 budget=888.1 src=convenience
+today/LOWCARB/base/breakfast	conv_bx04+conv_sl03+conv_dr06 scale=1 kcal=465 base=465 P=51.5 C=26.5 F=17 Fb=4 budget=474 src=convenience
+today/LOWCARB/base/lunch	conv_bx07+conv_pk01+conv_pk03 scale=1 kcal=512.5 base=512.5 P=51.5 C=30 F=19.9 Fb=9 budget=715.6 src=convenience
 today/LOWCARB/base/afternoon_tea	-
-today/LOWCARB/base/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=1476.1 src=cook_full
+today/LOWCARB/base/dinner	protein_stir_fry_ps_beef_st_edamame_snap_pea_sm_kimchi_sm_stir_fry scale=2 kcal=448.1 base=327.1 P=52.8 C=28.3 F=16.6 Fb=13.5 budget=918.6 src=cook_full
 today/LOWCARB/base/snack	-
-today/LOWCARB/base/write0	markRecipesShown conv_bx04,conv_bx11,egg_pan_ps_egg_none_onion_none_sm_pan_fry
+today/LOWCARB/base/write0	markRecipesShown conv_bx04+conv_sl03+conv_dr06,conv_bx07+conv_pk01+conv_pk03,protein_stir_fry_ps_beef_st_edamame_snap_pea_sm_kimchi_sm_stir_fry
 today/LOWCARB/today-breakfast/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g":52.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":181.5,"offsetKcal":0,"protein_g":144,"targetKcal":1896.1,"tdee":2370.2}
 today/LOWCARB/today-breakfast/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":0,"dinner":738.1,"lunch":738.1,"snack":0},"remainingKcal":1476.1}
 today/LOWCARB/today-breakfast/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":122}
 today/LOWCARB/today-breakfast/skip	afternoon_tea,breakfast,snack
 today/LOWCARB/today-breakfast/breakfast	-
-today/LOWCARB/today-breakfast/lunch	conv_bx11 scale=1 kcal=300 base=300 P=19.5 C=26.5 F=12.8 Fb=7 budget=738.1 src=convenience
+today/LOWCARB/today-breakfast/lunch	conv_bx07+conv_pk01+conv_pk03 scale=1 kcal=512.5 base=512.5 P=51.5 C=30 F=19.9 Fb=9 budget=738.1 src=convenience
 today/LOWCARB/today-breakfast/afternoon_tea	-
-today/LOWCARB/today-breakfast/dinner	egg_pan_ps_egg_none_onion_none_sm_pan_fry scale=2 kcal=312 base=172 P=26.9 C=9.6 F=19.1 Fb=1.4 budget=1176.1 src=cook_full
+today/LOWCARB/today-breakfast/dinner	protein_stir_fry_ps_beef_st_edamame_snap_pea_sm_kimchi_sm_stir_fry scale=2 kcal=448.1 base=327.1 P=52.8 C=28.3 F=16.6 Fb=13.5 budget=963.6 src=cook_full
 today/LOWCARB/today-breakfast/snack	-
-today/LOWCARB/today-breakfast/write0	markRecipesShown conv_bx11,egg_pan_ps_egg_none_onion_none_sm_pan_fry
+today/LOWCARB/today-breakfast/write0	markRecipesShown conv_bx07+conv_pk01+conv_pk03,protein_stir_fry_ps_beef_st_edamame_snap_pea_sm_kimchi_sm_stir_fry
 today/BULK/base/targets	{"baseTargetKcal":3194.7,"bmr":1873.8,"carb_g":409,"fat_g":88.7,"fiber_g":30,"flooredWarning":false,"netCarb_g":379,"offsetKcal":0,"protein_g":190,"targetKcal":3194.7,"tdee":2904.3}
 today/BULK/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":798.7,"dinner":1198,"lunch":1198,"snack":0},"remainingKcal":3194.7}
 today/BULK/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":190}
