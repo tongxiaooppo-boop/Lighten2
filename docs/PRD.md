@@ -1,11 +1,23 @@
-# 輕盈計畫 PRD 2.0 — 架構草案
+# 輕盈計畫 PRD 2.0（Lighten2）
 
-**狀態：設計定案，尚未實作。** 這份文件描述的是「打算做成什麼樣子」，不是現況。現況（已上線的行為）以根目錄 `輕盈計畫PRD_v4.0.md` 為準；等 2.0 的 Phase 逐步做完、驗收通過，才會回頭把對應章節併回主 PRD、更新版本號。
+**狀態：設計定案，尚未實作。** 這是 Lighten2 開發期間**唯一的權威規格**（章程 A1）。v1 已上線行為的參考在 `docs/v1/輕盈計畫PRD_v4.0.md`，只供查閱，不再維護。
 
-**依據**：這份草案是三輪跟 Opus（`model: opus`）獨立架構審核收斂出來的結果，完整逐字問答見：
-- [collab/opus-review-log/2026-09-28-prd-2.0-architecture-round1.md](opus-review-log/2026-09-28-prd-2.0-architecture-round1.md)
-- [collab/opus-review-log/2026-09-28-prd-2.0-architecture-round2.md](opus-review-log/2026-09-28-prd-2.0-architecture-round2.md)
-- [collab/opus-review-log/2026-09-28-prd-2.0-architecture-round3.md](opus-review-log/2026-09-28-prd-2.0-architecture-round3.md)（美饗日曆收斂／使用者自建品項／圖片政策）
+**依據**：
+- 三輪獨立架構審核：[round1](../collab/opus-review-log/2026-09-28-prd-2.0-architecture-round1.md)、[round2](../collab/opus-review-log/2026-09-28-prd-2.0-architecture-round2.md)、[round3](../collab/opus-review-log/2026-09-28-prd-2.0-architecture-round3.md)（美饗日曆收斂／使用者自建品項／圖片政策）
+- 開工前的架構與資料 review、章程與其獨立審核：[docs/review/](review/)、[docs/CHARTER.md](CHARTER.md)、[collab/opus-review-log/2026-09-28-lighten2-review-and-charter.md](../collab/opus-review-log/2026-09-28-lighten2-review-and-charter.md)
+- 所有決定的一行摘要：[docs/decisions.md](decisions.md)
+
+## 0.1 開工前的修訂（2026-09-28，優先於本文其他段落）
+
+以下決定讓本文部分段落的前提改變，各節已同步改寫；若仍有殘留矛盾，以本節為準：
+
+1. **沒有任何使用者資料需要遷移**（decisions #9）。本文所有「舊資料相容」「遷移」「過渡期」的安排全部取消：沒有 `feast_reservation` 遷移、沒有 `channel: null` 之類的舊資料分支、`is_feast` 欄位不存在。
+2. **立場修正**：第 0 節原本的「加一層，不是換一層」針對的是**演算法**——推薦引擎、硬性過濾、預算、體重校正、餐型骨架的邏輯仍然保留。但**程式結構與資料格式**會在新增的 **Phase −1（地基）** 重整，因為 v1 的問題出在同一件事有多份實作（見 [架構 review](review/2026-09-28-架構review.md)）。Phase −1 拆成 −1a 純重構（用錄下的推薦結果逐字比對，證明行為不變）與 −1b 修正（每項附前後差異報告）。
+3. **美饗日曆在 Phase −1 直接移除**（decisions #16），不再等到 Phase 3。它的職責去向見第 9 節。
+4. **MealContent（第 3 節）在 Phase −1 一次定案**，包含商品快照、`estimate` 元件、隱含成分（用油、調味），不留到 Phase 1 再改格式。
+5. **用油、鈉、調味**：見第 3 節「隱含成分」與章程 B5.6–B5.8（decisions #13–15）。
+6. **手動記錄比推薦寬鬆**：「自己選」只限制各角色數量上限，不要求必須有主餐（decisions #20）。
+7. **型態列舉**統一為 `convenience | delivery | cook_quick | cook_full`（L1/L2/L3 共用）；本文出現的 `meal_type=cook` 一律指 `cook_quick` 或 `cook_full`。
 
 ---
 
@@ -26,8 +38,8 @@
 | 層 | 資料位置 | 內容 | 現況 |
 |---|---|---|---|
 | **L1 長期預設** | `profile.meal_prefs[slot]` | 每個時段一個型態，沒有日期概念 | 已存在 |
-| **L2 餐點計畫** | 新 store `meal_plan`，key = `date\|slot` | 某天某時段：只指定型態，或型態＋具體內容 | 新增（Phase 2），最終吸收現有 `feast_reservation`（Phase 3） |
-| **L3 實際紀錄** | `daily_log` | 真的吃了什麼 | 已存在，新增 `meal_type` 欄位 |
+| **L2 餐點計畫** | 新 store `meal_plan`，key = `date\|slot` | 某天某時段：只指定型態，或型態＋具體內容 | 新增（Phase 2） |
+| **L3 實際紀錄** | `daily_log` | 真的吃了什麼 | Phase −1 改成新格式：一筆一餐，`meal_type`＋MealContent 快照 |
 
 **解析規則**（整份設計最核心的一條）：
 
@@ -60,27 +72,42 @@
 
 ## 3. 核心概念三：統一的「一餐內容」格式（MealContent）
 
+**Phase −1 一次定案**（0.1 第 4 點），實作在 `engine/meal-content.js`，推薦、自己選、餐點日曆、採買清單共用（章程 C2）。
+
 ```js
 MealContent = {
-  archetype_id: "protein_stir_fry" | null,   // 只有自煮型態才有
-  method_id:    "sm_stir_fry" | null,
+  meal_type: "convenience" | "delivery" | "cook_quick" | "cook_full",
+  archetype_id: "stir_fry" | null,             // 只有自煮才有
+  method_id:    "stir_fry" | null,
   components: [
-    { kind: "ingredient", axis: "protein",  ref: "ps_beef" },
-    { kind: "ingredient", axis: "staple",   ref: "st_brown_rice", is_primary: true },
-    { kind: "ingredient", axis: "vegetable",ref: "broccoli" },
-    { kind: "product",    role: "drink",    ref: "conv_dr01", qty: 1 },
+    { kind: "ingredient", axis: "protein",   ref: "beef_shank" },
+    { kind: "ingredient", axis: "staple",    ref: "brown_rice_cooked", is_primary: true },
+    { kind: "ingredient", axis: "vegetable", ref: "cabbage" },
+    { kind: "product",    role: "drink",     ref: "conv_dr01", qty: 1,
+      snapshot: { name, kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg } },
+    { kind: "estimate",   name: "喜宴", size: "L" | null,
+      snapshot: { kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg } },
   ],
+  implicit: { oil_g: 10, seasoning: "normal" | "light" | null },   // 只有自煮才有
 }
 ```
 
-- `ingredient` 元件不存克數，克數＝該食材的 `serving_g`（資料層唯一真相），主要槽位的縮放倍數在「當天」才計算，不預先存。
-- `product` 元件存 `qty`，沿用現有品項角色上限（1主餐+1配菜+1飲料+1點心）。
-- 允許混合（自煮配一瓶超商豆漿本來就存在），統一格式後這不再是特例。
-- **這一個格式同時用在三個地方**：`daily_log` 的新紀錄、`meal_plan.content`、大餐預約的內容。
-- 附帶效果：美饗日曆「主餐＋飲品」這個排隊中、還沒動工的需求，用這個格式（`components` 裡多一個 `role: "drink"` 的 product）直接解決，不需要另外在 `feast_reservation` 上加欄位。
+**計畫與紀錄用同一個格式，差別只在這幾個欄位什麼時候有值**：
 
-**預算規則**（沿用 PRD 6.3 大餐預約的既有精神，泛化到所有計畫）：
-- `product` 元件（超商/外食/大餐）：熱量固定，**預先佔用**當天預算。
+| 欄位 | 計畫（`meal_plan.content`） | 紀錄（`daily_log.content`） |
+|---|---|---|
+| `ingredient` 的份量 | 不存；當天才依剩餘預算算主要槽位縮放 | 存 `scale`（實際吃的倍數） |
+| `product` / `estimate` 的 `snapshot` | 建立計畫時就存（品項之後被改被刪，計畫不跟著變） | 存 |
+| `implicit` | 存使用者選的用油/調味（沒選則存 null，當天套用預設） | 存實際採用的克數與程度 |
+| 整餐營養合計 | 不存（未來預算未知） | 存 `totals`（快照，食材資料之後修正也不回溯改紀錄） |
+
+- `product` 存 `qty`；推薦生成沿用角色上限（1 主餐＋1 配菜＋1 飲料＋1 點心、最多 3 件）；手動記錄只限制角色數量上限，不要求主餐（0.1 第 6 點）。
+- 允許混合（自煮配一瓶超商豆漿），統一格式後不是特例。
+- **隱含成分**：自煮的一餐一律帶用油（`cooking_oil`，煎 5g、炒 5g＋有蔬菜 5g，基本資料可設少油＝減半，「自己選」可選 1 或 2 茶匙）與調味程度（清淡約 300 mg／一般約 700 mg 鈉）。兩者都**不跟主要槽位縮放**。
+- `estimate` 元件：查不到品項時的匿名估算（喜宴、朋友家），只存在這一餐裡，不存成品項。
+
+**預算規則**（沿用 v1 大餐預約的精神，泛化到所有計畫）：
+- `product`／`estimate` 元件：熱量固定（用快照），**預先佔用**當天預算。
 - `ingredient` 元件（自煮）：熱量有彈性，**不預先佔用**，當天才依剩餘預算算縮放倍數（範圍維持既有 0.5–2.0）。
 - 計畫層絕對不存縮放後的熱量——未來某天的預算，存計畫的當下根本不知道。
 
@@ -115,7 +142,7 @@ modal 預設型態 =
 
 ### 5.1 定位：週規劃＝泛化的大餐預約
 
-`feast_reservation` 本來就是「預先登記未來某天某時段要吃什麼、預扣當天預算、確認後才寫入 `daily_log`」。週菜單規劃要的是同一件事,只是用在自煮/快煮上。**不另開一個平行的「週規劃」模組**，而是把大餐預約泛化成 `meal_plan`（見第 1 節），美饗日曆本身也隨之擴充成「餐點日曆」——每天五個時段的格子，大餐只是其中一種條目（用 `is_feast` 標記維持既有呈現方式跟文案），不再另開新分頁。
+v1 的大餐預約是「預先登記未來某天某時段要吃什麼、預扣當天預算、確認後才寫入 `daily_log`」。週菜單規劃要的是同一件事，只是也用在自煮上。**不另開一個平行的「週規劃」模組**，而是由 `meal_plan`（見第 1 節）承擔，入口是「餐點日曆」——每天五個時段的格子。聚餐、喜宴這類「大餐」就是一筆含 `estimate` 或外食 `product` 的計畫，沒有另外的大餐旗標。
 
 ### 5.2 情境：一人一盤，份量按人數放大
 
@@ -131,23 +158,25 @@ modal 預設型態 =
 
 **聚合邏輯**（MVP 範圍）：
 ```
-只彙總 status=planned、meal_type=cook、已指定 content 的計畫條目
+只彙總日期範圍內、今天以後（含今天尚未記錄的時段）、meal_type 為 cook_quick 或 cook_full、已指定 content 的計畫條目
+（meal_plan 沒有狀態欄位；已被 daily_log 取代的時段不算）
 對每個 ingredient 元件：
   數量 = 該食材 serving_g（名目份量，不管當天縮放）× servings
   依「採買身分」（purchase_key）彙總，不是依食材資料庫的 id
+用油（cooking_oil）與調味不列入（屬常備品）
 ```
 
-**已知的隱藏複雜度**（MVP 都要處理，否則清單第一眼就會誤導人）：
-- **熟重換生重**：`staples.json` 裡多種主食是「熟重」基準，直接寫「糙米飯 1050g」會誤導使用者去買比實際多快一倍的生米。食材資料要補上 `purchase.cooked_to_raw` 換算比例。
-- **可數食材用單位**：蛋要顯示「顆」不是克，食材資料要補 `purchase.unit` / `purchase.g_per_unit`，而且要對**總數**取整，不是逐餐取整再加總。
-- **烹調法不是可以買的東西**：`sauce_methods.json` 混了烹調法（氣炸、微波）跟真正可買的醬料，要加 `purchasable` 欄位排除前者。
-- **常備品**：燕麥、醬油、鹽這類一次用量很少、家裡通常有的，標 `pantry: true`，清單分「要買」「家裡常備」兩區，不算進「要買」的總量。
+**已知的隱藏複雜度**（MVP 都要處理，否則清單第一眼就會誤導人）。欄位名稱以章程 B4 為準，Phase 4 再補採買專用欄位：
+- **熟重換生重**：多種主食是「熟重」基準，直接寫「糙米飯 1050g」會誤導使用者去買比實際多快一倍的生米。用食材的 `cooked_to_raw`（章程 B4，Phase −1b 就補上）換算。
+- **可數食材用單位**：蛋要顯示「顆」不是克，Phase 4 補 `purchase_unit` / `g_per_unit`（來源優先用食物代換表），而且要對**總數**取整，不是逐餐取整再加總。
+- **烹調法不是可以買的東西**：用 `axis` 判斷，`method` 與 `implicit` 不進清單。
+- **常備品**：燕麥、醬油、鹽、油這類一次用量很少、家裡通常有的，標 `pantry: true`，清單分「要買」「家裡常備」兩區，不算進「要買」的總量。
 
 **明確不做**（MVP 範圍之外）：超商/外食品項不進採買清單、包裝規格換算（「米一包 1.5kg」）、賣場分區排序、庫存追蹤、削皮去骨損耗、價格、自動排一週菜單、匯出分享。清單全面標示「估算」。
 
 ### 5.4 「複製上週」的兩個陷阱
 
-1. **不能連大餐/一次性計畫一起複製**：預算會被預先佔用，複製後等於讓一次性大餐每週自動重複扣預算。規則：預設不複製 `is_feast` 的項目；目的日期已經有計畫的時段預設跳過、不覆蓋；只複製到今天以後的日期。
+1. **不能連大餐/一次性計畫一起複製**：預算會被預先佔用，複製後等於讓一次性大餐每週自動重複扣預算。規則：預設不複製含 `estimate` 元件的計畫（估算的一餐本來就是一次性事件，見第 9 節）；目的日期已經有計畫的時段預設跳過、不覆蓋；只複製到今天以後的日期。
 2. **不能從「實際吃了什麼」（L3）複製**：這會讓紀錄反過來變成偏好來源，跟第 4 節「不能讓 lastPicked 變成隱性偏好」是同一類問題。只從 L2 計畫複製；上週沒排計畫就顯示「上週沒有排計畫」，並提供「用目前的長期預設（L1）預填」的選項。
 
 ---
@@ -183,19 +212,21 @@ modal 預設型態 =
 
 ## 7. 分階段路線圖
 
-每個 Phase 都要能獨立驗收，不做一次性大改。
+每個 Phase 都要能獨立驗收。Phase −1 重整結構，但用「錄下推薦結果逐字比對」和「差異報告」確保每一步的行為變化都看得見（0.1 第 2 點）。
 
-| Phase | 內容 | 備註 |
+| Phase | 內容 | 驗收 |
 |---|---|---|
-| **Phase 0** | 「自己選」modal 改成型態分頁（超商｜外食｜自煮），自煮分頁含快煮/開伙子切換；飲料抽成三分頁共用的獨立步驟；蛋白質/蔬菜多選；`daily_log` 新增 `meal_type`；`picker_last_meal_type` 機制；**品項卡片全面改成純文字版面**（拿掉圖片區塊、刪除 `TAIWAN_ITEM_IMAGE`，今日建議推薦卡片維持用 5 張時段插畫墊底不受影響）；`normalizeCustom` 先帶上 `channel`/`role`/`valid_slots`/`archived`（為線 B-1 鋪路）。 | 取代原本要交給 Cline 的「刪除現成品項模式」任務。範圍加倍，建議分兩輪交辦。 |
-| **Phase 1** | 定案 `MealContent` 格式（**商品與估算元件存營養素快照，不是只存 ref**）；新增 `estimate` 元件（查不到品項時的匿名估算，取代美饗日曆的 S/M/L）；外食分頁加「找不到？直接估算」卡片；美饗日曆支援主餐＋飲品。 | 沿用 Phase 0 做出來的商品選擇器＋飲料步驟，不是重做。**存快照是最容易忽略、後果最隱蔽的一條規則**，見第 9 節。 |
-| **Phase 2** | 新增 `meal_plan` store＋解析規則；今日建議讀「有效型態」；支援「只指定型態」跟「型態＋內容」兩種計畫粒度。 | 過渡期規則：同一時段已有 `feast_reservation` 就不能再建 `meal_plan` 條目。 |
-| **Phase 3** | `feast_reservation` 遷移併入 `meal_plan`（只搬 `reserved` 且未來日期的）；美饗日曆改寫成「餐點日曆」週格子，直接用三分頁編輯器，不再有自己的品項邏輯；保留「回填過去日期」跟時段結束時間檢查。 | **先決條件：Phase 1 的 `estimate` 元件、線 B-1 必須已上線**（拆掉美饗日曆前，自建品項跟匿名估算要先有新家）。動到既有使用者資料，遷移前備份，跟 Phase 2 分開驗收。 |
-| **Phase 4** | 採買清單 MVP（含食材資料補 `purchase`/`purchase_key`/`pantry`/`purchasable` 欄位）。 | 用手算範例核對聚合結果再上線。 |
-| **Phase 5（可選）** | 自動排一週菜單、週模板、包裝規格換算、自助餐支援。 | 視實際使用狀況再決定要不要做。 |
-| **平行工作線 A** | 擴充餐型骨架（目前只有 5 個，午晚餐可用的只有 3 個）。 | 沒有這條線，週規劃做得再好，使用者兩週後會覺得菜色單調。每個新骨架要照三輪審核定下的原則逐一設計。 |
-| **平行工作線 B-1** | `custom_foods` 升級成「我的品項」：擴充 schema、`updateCustomFood`（軟刪除）、選擇器裡快速新增、「基本資料」分頁裡的管理畫面、內建品項的隱藏清單＋複製成我的版本、**同時修掉自訂食物完全不做過敏原檢查的既有漏洞**（見第 10 節）。 | **Phase 0 之後可以開始，必須在 Phase 3 之前上線**——Phase 3 會拆掉目前唯一能新增自訂食物/匿名估算的地方（美饗日曆的「自訂」卡片）。 |
-| **平行工作線 B-2** | 「我的品項」資料填得夠完整（有 kcal/protein_g，過敏原已確認）時，自動併入今日建議候選池。 | B-1 之後隨時可做，跟 Phase 1–4 沒有依賴。 |
+| **Phase −1a 純重構** | ES modules；`core/`；engine 改純函式；`data/catalog.js` 接上現有資料；`engine/filters.js`、`engine/meal-content.js` 收斂 4 份營養計算；`data/db.js` 原生 IndexedDB、新 DB 名稱、一筆一個 key、`daily_log` 新格式（第 3 節）；**移除美饗日曆、`feast.js`、`feast_reservation`**；工具：`tools/diff-recs.js`（推薦快照）、`tools/check-arch.js`、GitHub Actions。 | 重構前錄下的固定設定組推薦結果**逐字相同**；check-engine 全過。 |
+| **Phase −1b 修正** | 依[資料 review](review/2026-09-28-食物資料review.md) 重建 `data/ingredients.json`（由 TFDA 產生數值）、修正現成品項（官方數字、過敏原、複合料理未確認）、過敏原詞彙加花生與軟體動物；用油與調味隱含成分、基本資料「用油習慣」；鈉與飽和脂肪；null 傳染修正；自訂食物加過敏原欄位並拿掉例外；低碳自動判定；手動記錄放寬；`daysSince` 時區；食材 id 定案後凍結。 | 每一項各附 `diff-recs` 差異報告（哪些推薦變了、熱量變多少、哪些品項對有過敏原設定的人消失）；check-data、check-engine 全過。 |
+| **Phase 0** | 「自己選」modal 改成型態分頁（超商｜外食｜自煮），自煮分頁含快煮/開伙子切換與用油、調味選項；飲料抽成三分頁共用的獨立步驟；蛋白質/蔬菜多選；外食分頁最上方「找不到？直接估算」卡片（`estimate` 元件）；`picker_last_meal_type`；**品項卡片全面改成純文字版面**（推薦卡片保留 5 張時段插畫）。 | round2 第 2.10 節驗收清單（已刪除與遷移、舊欄位相關的項目）。 |
+| ~~Phase 1~~ | 原內容已併入：MealContent 與快照 → −1a；`estimate` 卡片 → Phase 0；美饗日曆主餐＋飲品 → 美饗日曆已移除。 | — |
+| **Phase 2** | 新增 `meal_plan` store＋解析規則；今日建議讀「有效型態」；支援「只指定型態」跟「型態＋內容」兩種計畫粒度；「照計畫記下」。 | |
+| **Phase 3** | 「餐點日曆」週格子（新做，沒有遷移）：直接用三分頁編輯器；依日期決定寫 `meal_plan`（未來）或 `daily_log`（回填過去／今天已過的時段，沿用時段結束時間檢查）；「複製上週」。 | 回填過去日期、預約未來、複製上週的兩個陷阱（5.4）。 |
+| **Phase 4** | 採買清單 MVP（補 `purchase_key`、`purchase_unit`、`g_per_unit`、`pantry`）。 | 用手算範例核對聚合結果再上線。 |
+| **Phase 5（可選）** | 自動排一週菜單、週模板、包裝規格換算、自助餐支援。 | 視實際使用狀況再決定。 |
+| **平行工作線 A** | 擴充餐型骨架（目前只有 5 個，午晚餐可用的只有 3 個）。 | 沒有這條線，週規劃做得再好，使用者兩週後會覺得菜色單調。新骨架可一批一起送獨立審核（章程 B7）。 |
+| **平行工作線 B-1** | `custom_foods` 升級成「我的品項」：完整欄位（第 10 節）、`updateCustomFood`（軟刪除）、選擇器裡快速新增、「基本資料」分頁裡的管理畫面、內建品項的隱藏清單＋複製成我的版本。 | Phase 0 之後即可開始。過敏原欄位與例外修正已在 −1b 完成。 |
+| **平行工作線 B-2** | 「我的品項」資料填得夠完整（有 kcal/protein_g，過敏原已確認）時，自動併入今日建議候選池。 | B-1 之後隨時可做，跟 Phase 2–4 沒有依賴。 |
 | **平行工作線 B-3** | 資料匯出/匯入（JSON）。 | 使用者開始自己花時間建品項清單後，瀏覽器資料被清掉就全部沒了，這件事從「有更好」變成「建議做」。 |
 
 ---
@@ -214,16 +245,18 @@ modal 預設型態 =
 
 ## 9. 美饗日曆的收斂（第三輪定案）
 
-美饗日曆不維持獨立的品項策展身分，它的功能被「超商」「外食」型態分頁取代——Phase 3 之後，餐點日曆就是同一套三分頁選擇器的週視圖，寫入目標從 `daily_log` 換成 `meal_plan`，沒有自己的品項邏輯。這比原本 Phase 3 的設想更簡化，但代表美饗日曆現在做的下列 4 件事，都要先在新架構裡找到家，Phase 3 才能真的拆掉它：
+美饗日曆不維持獨立的品項策展身分，它的功能被「超商」「外食」型態分頁取代，**在 Phase −1a 直接移除**（decisions #16；沒有使用者資料要遷移，也沒有人在日常使用，不需要過渡期）。它原有的 4 項職責去向：
 
-| 美饗日曆現有功能 | 新歸屬 |
-|---|---|
-| S/M/L 匿名估算（查不到品項時用：喜宴、吃到飽、朋友家） | MealContent 新增 `estimate` 元件（見第 3 節、第 7 節 Phase 1），放在外食分頁最上方「找不到？直接估算」卡片，不存成品項，只存在這一餐裡。順便補上「自己選」現在記錄不了查不到的一餐這個缺口。 |
-| 順手用同一張表建立具名的自訂食物（靠有沒有填名稱猜意圖） | 拆成兩個明確動作：「只估這一次」（上面的 estimate）和「存成我的品項」（見第 10 節的快速新增）。用有沒有填名稱猜意圖的做法廢除。 |
-| 預約（未來日期）跟直接記錄（過去日期）兩種模式，含「時段已過不能預約」的檢查 | 依日期決定寫到哪：未來寫 `meal_plan`，過去或今天已過的時段寫 `daily_log`（回填）。**回填過去日期是現有功能，Phase 3 不能弄丟**，要列進驗收清單，`SLOT_END_HOUR` 的檢查繼續沿用。 |
-| 預約狀態 reserved→confirmed→cancelled | `meal_plan` 不設狀態欄位。「確認」＝按「照計畫記下」寫一筆 `daily_log`（L3 蓋過 L2）；「取消」＝刪掉這筆計畫；過了日期沒記錄的計畫直接失效，不提醒、不標「未完成」（呼應第 6 節的不評判原則）。 |
+| 美饗日曆原有功能 | 新歸屬 | 什麼時候有 |
+|---|---|---|
+| S/M/L 匿名估算（喜宴、吃到飽、朋友家） | `estimate` 元件，外食分頁最上方「找不到？直接估算」卡片，只存在這一餐裡 | Phase 0 |
+| 順手建立具名的自訂食物（靠有沒有填名稱猜意圖） | 拆成兩個明確動作：「只估這一次」（estimate）和「存成我的品項」（第 10 節快速新增）；猜意圖的做法廢除 | 估算 Phase 0；快速新增 B-1 |
+| 預約未來／直接記錄過去兩種模式，含「時段已過不能預約」檢查 | 餐點日曆依日期決定寫 `meal_plan` 或 `daily_log`（回填），時段結束時間檢查沿用 | Phase 3 |
+| 預約狀態 reserved→confirmed→cancelled | `meal_plan` 不設狀態欄位。「確認」＝「照計畫記下」寫一筆 `daily_log`；「取消」＝刪掉計畫；過期沒記錄的計畫直接失效，不提醒、不標「未完成」 | Phase 2 |
 
-「複製上週」原本規劃跳過 `is_feast` 標記的項目（避免一次性大餐被每週重複複製、預先佔用預算），現在改成**跳過含有 `estimate` 元件的計畫**——估算的一餐本來就是一次性事件（喜宴、聚餐），剛好取代大餐旗標的作用，不用再新增一個「一次性」欄位。`is_feast` 本身不再寫入新紀錄，舊資料保留當歷史。
+Phase −1a 到 Phase 3 之間，App 沒有「回填過去日期」與「預約未來」的入口，這是接受的空窗。
+
+「複製上週」**跳過含有 `estimate` 元件的計畫**——估算的一餐本來就是一次性事件（喜宴、聚餐），不需要另外的大餐或「一次性」欄位。
 
 **對核心原則的提醒**：美饗日曆原本讓「先把大餐排進去」變成一件光明正大、被系統鼓勵的事，這對「不評判超吃」是有正面作用的使用入口。身分收斂之後，這層意義不能跟著消失——餐點日曆的空格子、外食分頁的估算卡片，文案要延續這個精神（例如「有聚餐？先排進來，其他餐會自動幫你調整」）。
 
@@ -235,25 +268,26 @@ modal 預設型態 =
 
 ### 10.1 資料模型：擴充 `custom_foods`，不開新 store
 
-新舊參照（`daily_log`/`feast.js` 都用 `custom_...` id 查）、舊資料相容、概念一致性三個角度衡量後，擴充現有 `custom_foods` 的成本明顯比開新 store 低。程式碼裡可以把概念改稱「我的品項」，store 名稱不變。
+沿用 `custom_foods` 這個 store（一筆一個 key），程式碼裡概念稱「我的品項」。沒有舊資料，所有欄位一開始就照下面的格式（decisions #9）。
 
 ```js
 {
   id: "custom_xxx",
   name,                                         // 必填
-  channel: "convenience" | "delivery" | null,   // 新建立時必填（從目前分頁自動帶入）；舊資料 null
-  role: "main" | "side" | "snack" | "drink",    // 新建立時必填，預設 main；舊資料缺欄當 side
-  valid_slots: [...],                           // 可省略，依 role 推預設
-  kcal,                                         // 必填
-  protein_g, carb_g, fat_g, fiber_g,            // 可省略，null
-  vendor, category, note,                       // 可省略
-  allergen_tags: null | [],                     // null=未確認／[]=確認不含／[..]=含這些
-  diet_tags: [],
+  channel: "convenience" | "delivery",          // 必填（從目前分頁自動帶入）
+  role: "main" | "side" | "snack" | "drink",    // 必填，預設依時段（早午晚＝main，下午茶/宵夜＝snack）
+  valid_slots: [...],                           // 必填，依 role 推預設，且一定包含新增當下的時段
+  kcal,                                         // 必填，正數
+  protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg,   // 選填，未填為 null
+  vendor, category, note,                       // 選填
+  allergen_tags: null | [],                     // 必有此欄；null=未確認（預設）／[]=確認不含／[..]=含這些
+  vegan: false, lacto_ovo: false,
+  copied_from: null | "<內建品項 id>",
   archived: false,                              // 軟刪除，只提供這個，不做硬刪除
   created_at, updated_at,
 }
 ```
-不存圖片欄位。`database.js` 新增 `updateCustomFood(id, patch)`。
+不存圖片欄位。`data/db.js` 提供 `updateCustomFood(id, patch)`。寫入驗證見章程 B8。
 
 ### 10.2 內建品項的「增減」：隱藏＋複製，不做修補層
 
@@ -266,9 +300,7 @@ modal 預設型態 =
 
 ### 10.4 一併修掉的既有漏洞：自訂食物完全不做過敏原檢查
 
-現有 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.is_custom` 例外），跟 PRD 5.7「未確認就保守排除」的方向相反。使用者自建品項若擴大使用範圍，這是真正的安全漏洞，**必須跟著這個功能一起修**：拿掉例外，`allergen_tags === null`（含所有舊資料）一律當「未確認」套用既有規則；只有使用者設過敏原/飲食限制時才會擋。被擋的自建品項灰階顯示「過敏原未填，點這裡補填」，點進去就是編輯畫面。
-
-⚠️ **行為會改變**：修完之後，有設過敏原/飲食限制的使用者，他所有舊的自訂食物會變成灰階，要點進去補填一次才會恢復可選。**修正跟編輯畫面必須同時上線**，不能只先修過濾機制，否則會出現「被擋住卻無處可改」的死路。
+v1 的 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.is_custom` 例外），跟「未確認就保守排除」相反。**Phase −1b 修正**（decisions #17）：拿掉例外，同時在新增自訂食物的表單加過敏原欄位（未確認／確認不含／含…，預設未確認），兩者一起上線，不會出現「被擋住卻無處可改」的死路。`allergen_tags === null` 一律當未確認；只有使用者設過敏原/飲食限制時才會擋。B-1 的管理畫面上線後，被擋的品項灰階顯示「過敏原未填，點這裡補填」，點進去就是編輯畫面。
 
 ### 10.5 要不要進今日建議候選池：分兩階段
 

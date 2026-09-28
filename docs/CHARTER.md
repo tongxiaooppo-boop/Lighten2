@@ -1,94 +1,117 @@
 # Lighten2 章程
 
-這份文件規定**之後新增或修訂食物資料、改動架構**時要照什麼規則走。它是用來防止 v1「修修補補」的狀況再發生：每一次改動都有固定的出處要求、固定的檢查、固定的紀錄方式。
+這份文件規定**之後改產品概念、新增或修訂食物資料、改動程式架構**時要照什麼規則走，目的是防止 v1「概念一改再改、程式修修補補」的狀況再發生。
 
-- 適用對象：任何改 `data/`、`js/` 的人（Opus、Sonnet、Cline 或使用者自己）。
-- 章程本身要修改，比照第 B4 節「需要獨立審核的變更」處理。
-- 制定依據：[docs/review/2026-09-28-架構review.md](review/2026-09-28-架構review.md)、[docs/review/2026-09-28-食物資料review.md](review/2026-09-28-食物資料review.md)。
+- 適用對象：任何改 `docs/PRD.md`、`data/`、`js/` 的人（Opus、Sonnet、Cline 或使用者自己）。
+- 章程本身要修改，比照 C3「需要獨立審核的變更」處理。
+- 制定依據：[review/2026-09-28-架構review.md](review/2026-09-28-架構review.md)、[review/2026-09-28-食物資料review.md](review/2026-09-28-食物資料review.md)、[review/2026-09-28-烹調油脂與鈉決策.md](review/2026-09-28-烹調油脂與鈉決策.md)、獨立審核 [collab/opus-review-log/2026-09-28-lighten2-review-and-charter.md](../collab/opus-review-log/2026-09-28-lighten2-review-and-charter.md)。
+
+每條規則後面標註它怎麼被檢查：**〔機〕**＝自動檢查程式會擋；**〔人〕**＝寫在手機實機腳本或審核清單裡，靠人檢查。沒有標註檢查方式的規則不應該存在。
 
 ---
 
-# A. 食物資料章程
+# A. 產品概念變更
 
-## A1. 範圍
+v1 重來的根本原因是「概念一改再改」，所以概念層的規則放在最前面。
+
+## A1. 先改 PRD，再改程式
+
+1. 下列變更屬於「概念變更」，**必須先改 `docs/PRD.md`、在 `docs/decisions.md` 記一條，才能動程式碼**〔人〕：
+   - 型態（超商／外食／自煮）的定義或列舉
+   - L1／L2／L3 資料模型與解析規則
+   - 一餐內容（MealContent）的格式
+   - 頂層分頁的新增、移除、合併
+   - 任何「X 取代 Y」的決定
+2. `docs/PRD.md` 是開發期間唯一的權威規格。程式跟 PRD 不一致時，PRD 為準；PRD 自己前後矛盾時，先修 PRD〔人〕。
+3. 決定取代或移除一個功能時，同一次決定要列出它**原有的每一項職責搬到哪裡**，然後直接移除，不為了過渡期保留（例外：該職責的新家還沒做好，且使用者明確要求保留）〔人〕。
+
+## A2. 決策紀錄 `docs/decisions.md`
+
+- 一行一條：日期、決定了什麼、否決了什麼、為什麼、出處（對話或審核紀錄）〔人〕。
+- 同一個問題再被提出時，先查這份紀錄；要推翻舊決定，要新增一條並寫明「推翻 #N，原因是前提改變了什麼」〔人〕。
+
+---
+
+# B. 食物資料章程
+
+## B1. 範圍
 
 | 檔案 | 內容 | 受本章程管轄 |
 |---|---|---|
-| `data/ingredients.json` | 自煮用的食材、醬料、烹調法 | 是 |
-| `data/dish_archetypes.json` | 餐型骨架 | 是（A7） |
+| `data/ingredients.json` | 自煮用的食材、醬料、烹調法、隱含成分（用油、調味程度） | 是 |
+| `data/dish_archetypes.json` | 餐型骨架 | 是（B7） |
 | `data/convenience_items.json` | 超商與連鎖健康餐盒/宅配 | 是 |
 | `data/taiwan_items.json` | 台式外食 | 是 |
-| 使用者的「我的品項」（`custom_foods` store） | 使用者自建 | 否，只受 A8 的最低驗證 |
+| `data/reference/` | TFDA 資料庫等參考資料（檢查程式依賴，版本管理） | 是（B10） |
+| 使用者的「我的品項」（`custom_foods` store） | 使用者自建 | 否，只受 B8 的最低驗證 |
 
-## A2. 出處分級
+## B2. 出處
 
-每一筆資料的每一個營養數字，都要能說出「從哪裡來」。出處依可信度由高到低：
+每一個營養數字都要能說出「從哪裡來」。食材和現成品項的出處順序不同，分開規定：
 
-| `source.type` | 說明 | 適用 | `source.ref` 要寫什麼 |
-|---|---|---|---|
-| `tfda` | 衛福部食品營養成分資料庫（目前版本：2025 UPDATE1） | 食材首選 | 整合編號，例如 `I04024` |
-| `exchange` | 衛福部國健署食物代換表 | 份量、生熟重、購買量/可食量 | 表號＋品名，例如 `附-3-1 雞胸肉` |
-| `label` | 包裝營養標示 | 超商商品首選 | 照片檔名或商品頁網址 |
-| `official_web` | 品牌/連鎖店官網或官方 App 公布的營養資料 | 外食連鎖、健康餐盒 | 網址（附查詢日期） |
-| `usda` | 美國農業部 FoodData Central | TFDA 沒有收錄的食材 | FDC ID |
-| `derived` | 由上面的來源用明確公式推算 | 熟重數值（由生重＋吸水/失水率推算）、組合品項 | 公式與所用的來源編號，例如 `A05013 × (1/2.5)` |
-| `estimate` | 依同類品項或食物代換表概算，沒有直接對應的官方數字 | 查不到的外食 | 估算方法一句話 |
+**食材**：`tfda` ＞ `usda` ＞ `derived`。不存在「估算的食材」〔機〕。
 
-**規則**：
-- 有高等級來源時，不得使用低等級來源。食材在 TFDA 查得到就一定用 TFDA。
-- `estimate` 不得覆蓋任何較高等級的數字（不能拿估算換掉包裝標示）。
-- 「AI 回答的數字」不是出處。AI 可以幫忙找網址或整理，但寫進資料的數字必須來自上表某一種來源，否則一律標 `estimate`。
-- TFDA 熱量取「熱量(kcal)」欄（不是「修正熱量」），全資料庫一致。
+**現成品項**：`label` ≈ `official_web` ＞ `derived` ＞ `estimate`。
 
-## A3. 可信度（現成品項）
+| `type` | 說明 | `ref` 要寫什麼 |
+|---|---|---|
+| `tfda` | 衛福部食品營養成分資料庫（目前版本 2025 UPDATE1） | 整合編號，例如 `I04024` |
+| `usda` | 美國農業部 FoodData Central（TFDA 沒收錄時才用） | FDC ID |
+| `label` | 包裝營養標示 | 照片檔名或商品頁網址 |
+| `official_web` | 品牌/連鎖店官網、官方 App 或其公開的營養資料 | 網址（附查詢日期） |
+| `derived` | 由上列來源用明確公式推算（熟重、TFDA 每 100g × 份量、官方蛋白質/脂肪 ＋ 熱量扣減求碳水） | 公式與所用來源，例如 `A05013 ÷ 2.5` |
+| `estimate` | 依同類品項或食物代換表概算 | 估算方法一句話 |
+| `exchange` | 食物代換表。**只用於份量、生熟重、購買量/可食量**，不作為營養數值的出處 | 表號＋品名，例如 `附-3-1 雞胸肉` |
 
-食材一律要有 `tfda`/`exchange`/`usda`/`derived` 出處，不存在「估算的食材」。
+規則：
+1. 有高順位出處時，不得使用低順位出處〔人〕；TFDA 查得到的食材一定用 TFDA〔機：`tfda` 以外的食材出處要在 `source.note` 寫「TFDA 無此品項」〕。
+2. **低順位不得覆蓋高順位**：已有 `label`/`official_web` 的數字，不得被 `estimate` 或反推值取代〔機：凍結清單比對〕。
+3. 「AI 回答的數字」不是出處。AI 可以幫忙找網址，但寫進資料的數字必須來自上表，否則一律 `estimate`〔人〕。
+4. TFDA 熱量取「熱量(kcal)」欄，不取「修正熱量」〔機〕。
+5. 一筆資料的欄位出處不同時（例如熱量來自包裝、碳水是估算），用 `source` 當預設，`field_sources` 逐欄覆寫〔機：格式〕。
 
-現成品項逐欄位記可信度：`confidence: { kcal, protein_g, carb_g, fat_g, fiber_g }`，每欄的值為：
+## B3. 可信度（由出處推導，不另外存）
 
-| 值 | 意義 |
+可信度**不存欄位**，由 catalog 依每個欄位的出處推導〔機〕：
+
+| 推導結果 | 條件 |
 |---|---|
-| `verified` | 來源是 `label` 或 `official_web`，且 `source.ref` 有網址或照片 |
-| `label_unsourced` | 看起來是包裝標示，但沒留出處（v1 遺留，只准減少不准新增） |
-| `estimate` | 估算 |
+| `verified` | 出處是 `tfda`／`usda`／`label`／`official_web`，且 `ref` 有值 |
+| `derived` | 出處是 `derived` |
+| `label_unsourced` | v1 遺留、看起來來自單一商品包裝但沒留出處。**只准減少不准新增**〔機：對 `data/reference/label_unsourced_frozen.json` 比對〕 |
+| `estimate` | 出處是 `estimate`；**多個商品合併的一筆、以品牌/整份菜單為單位的一筆，一律屬於此級** |
 
-**升級規則**：查到官方數字時，替換數值、改 `source`、把對應欄位升成 `verified`、填 `verified_at`，並在 `data/CHANGELOG.md` 記一行。
+- **升級**：查到更高順位出處時，替換數值與出處，commit 訊息用 `data(upgrade): <id> <欄位> → <type>`〔人〕。
+- **畫面**：可信度不在畫面上用顏色或警告表示，只決定熱量前面是否加「約」〔人〕。
 
-**畫面規則**：可信度不在畫面上用顏色或警告標示（避免「這個不好」的暗示），只影響「約」字與內部決策（例如「我的品項」能不能自動進推薦候選池）。
-
-## A4. 欄位規格
+## B4. 欄位規格
 
 ### 食材（`ingredients.json`）
 
 ```js
 {
-  id: "chicken_breast",              // 小寫英文＋底線，全資料庫唯一，一經使用不得改名
-  name: "雞胸肉",                     // 使用者看到的名稱；有常見歧義時寫清楚（「白花椰菜」不是「花椰菜」）
-  axis: "protein" | "staple" | "vegetable" | "seasoning" | "method" | "seasoning_level",
-  basis: "raw" | "cooked" | "dry" | "as_is",   // 數值對應的狀態，必須跟來源樣品狀態一致
-  per_100g: { kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg },  // sat_fat_g、sodium_mg 可為 null
-  serving_g: 130,                    // 一份的克數（跟 basis 同一個狀態）
-  serving_label: "1份雞胸肉（生重約130g，熟後約100g）",
-  cooked_to_raw: null,               // basis=cooked 時必填：熟重 1g 對應的生重克數
+  id: "chicken_breast",                // 小寫英文＋底線，全資料庫唯一；Phase −1b 完成時凍結，之後不得改名
+  name: "雞胸肉",                       // 有常見歧義時寫清楚（「白花椰菜」「青花菜」分開）
+  axis: "protein" | "staple" | "vegetable" | "seasoning" | "method" | "implicit",
+  basis: "raw" | "cooked" | "dry" | "as_is",   // 必須跟來源樣品狀態一致
+  per_100g: { kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg },
+  serving_g: 130,                      // 跟 basis 同一個狀態
+  serving_label: "1份雞胸肉（生重約130g，約4份代換表蛋白質）",
+  cooked_to_raw: null,                 // basis=cooked 時必填：熟重 1g 對應的生重克數
   prep_tier: "🟢" | "🟡" | "🔴",
   requires_cooking: true,
-  allergen_tags: [],                 // 必填，食材不允許 null（食材成分單純，一定要確認）
-  diet_tags: ["高蛋白"],
-  oil: null,                         // 只有 axis=method：{ base_g, veg_add_g }，見 A5 第 6 點
-  source: { type: "tfda", ref: "I04024" },
+  allergen_tags: [],                   // 必填，食材不允許 null
+  vegan: true | false,                 // 全素
+  lacto_ovo: true | false,             // 蛋奶素
+  implicit: [],                        // 只有 axis=method：[{ ref: "cooking_oil", g: 5, veg_add_g: 0 }]
+  source: { type: "tfda", ref: "I04024", note: null },
+  field_sources: {},
   verified_at: "2026-09-28",
 }
 ```
 
-`axis: "seasoning_level"` 是「自煮調味程度」的隱含成分（見 A5 第 7 點），不用 `per_100g`，改用每份數值：
-
-```js
-{
-  id: "seasoning_normal", name: "一般", axis: "seasoning_level",
-  per_serving: { sodium_mg: 700 },
-  source: { type: "derived", ref: "約鹽 1g（390 mg）＋醬油 1 茶匙（約 280 mg），TFDA P0700101" },
-}
-```
+- **營養數值由程式產生，不手抄**：`source.type = tfda` 的食材，`per_100g` 由 `tools/build-ingredients.js` 從 `data/reference/` 的 TFDA 資料產生；檢查程式要求數值跟 TFDA 四捨五入後**完全相等**，不相等就是錯誤〔機〕。
+- `axis: "implicit"` 是一餐的隱含成分：`cooking_oil`（TFDA M1100101 大豆油）、`seasoning_light`／`seasoning_normal`（調味程度，用 `per_serving: { sodium_mg }`）。
 
 ### 現成品項（`convenience_items.json`、`taiwan_items.json`）
 
@@ -98,167 +121,176 @@
   name: "統一陽光 高纖無糖豆漿",
   channel: "convenience" | "delivery",
   vendor: "統一" | null,
-  category: "飲品",                   // 食物類型（便當/麵食/沙拉/飲品…），不是時段
+  category: "飲品",                     // 食物類型（便當/麵食/沙拉/飲品…），不是時段
   role: "main" | "side" | "snack" | "drink",
   valid_slots: ["breakfast", ...],
   contains_drink: false,
   is_treat: false,
-  kcal: 160,                         // 代表值
-  kcal_range: null,                  // 選填 [低, 高]，高/低 ≥ 1.5 倍時不進推薦池
-  protein_g, carb_g, fat_g, fiber_g, // 可為 null（未知），不得用 0 代替未知
-  sat_fat_g, sodium_mg,              // 同上；包裝標示依法都有，超商品項應優先補齊
-  allergen_tags: null | [],          // null = 未確認（使用者有設過敏原就排除）
-  diet_tags: [],
+  kcal: 160,
+  kcal_basis: "stated" | "midpoint",   // midpoint＝由區間取中點
+  kcal_range: null | [低, 高],
+  protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg,   // 未知寫 null
+  allergen_tags: null | [...],         // null＝未確認
+  vegan: false, lacto_ovo: false,
   source: { type: "label", ref: "https://..." },
-  confidence: { kcal: "verified", protein_g: "verified", carb_g: "estimate", fat_g: "estimate", fiber_g: "verified", sat_fat_g: "estimate", sodium_mg: "estimate" },
+  field_sources: { carb_g: { type: "estimate", ref: "..." } },
   verified_at: "2026-09-28" | null,
 }
 ```
 
-## A5. 數值規則
+- **推薦池門檻**（保留 v1 語意）：`kcal_basis = "midpoint"` 且高/低 ≥ 1.5 倍的品項不進推薦池，手動選照樣可用〔機〕。
 
-1. **未知寫 `null`，不寫 0。** 0 代表「確定沒有」。
-2. **生熟一致**：`basis` 必須跟來源樣品狀態一致。TFDA 沒有熟重樣品時，熟重數值用 `derived`，公式寫進 `source.ref`。
-3. **有效位數**：每 100g 數值保留 1 位小數；品項每份數值保留 1 位小數；熱量取整數。
-4. **巨量營養素驗算**：來源是 `tfda`/`label`/`official_web`/`usda` 的數字，`蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9` 跟熱量差距超過 15% 時，要在 `source.note` 說明原因（例如含酒精、糖醇），否則視為抄錯。來源是 `estimate`/`derived` 的不做這項驗算（反推出來的數字一定會通過，驗了等於沒驗）。
-5. **份量**：食材的 `serving_g` 優先對齊食物代換表的份數倍數（例如雞胸肉代換表 1 份＝生重 30g，一份 130g ≈ 4.3 份），在 `serving_label` 寫清楚生重或熟重。
-6. **烹調法用油**（2026-09-28 使用者拍板，見 [review/2026-09-28-烹調油脂與鈉決策.md](review/2026-09-28-烹調油脂與鈉決策.md)）：
-   - 每個 `axis: "method"` 必填 `oil: { base_g, veg_add_g }`。現值：煎 5／0、炒 5／5、氣炸與烤 0／0、免開火與微波 0／0。
-   - 這一餐的用油 = `base_g`＋（有選任何蔬菜時）`veg_add_g`，不隨蔬菜種數累加。
-   - 用油是這一餐的隱含成分，以食物代換表油脂類換算：每 5g 油 = 45 kcal、脂肪 5g。
-   - 算的是「吃進去的油」，不是下鍋的油。
-   - 「自己選」在煎/炒時可改為約 1 茶匙（5g）或約 2 茶匙（10g）；實際採用的克數記進這一餐的內容。
-7. **自煮調味的鈉**：`dish_archetypes.json` 每個骨架標 `seasoned: true|false`（例如早餐碗為 false）。`seasoned: true` 的一餐加一個隱含成分「調味程度」：清淡約 300 mg、一般約 700 mg 鈉，預設一般，「自己選」可切換。實際採用的程度記進這一餐的內容。
-8. **鈉與飽和脂肪**：食材取 TFDA「鈉(mg)」「飽和脂肪(g)」欄；超商取包裝標示；外食沒有來源時標 `estimate`，寧可 `null` 也不要沒根據的數字。
+## B5. 數值規則
 
-## A6. 過敏原與飲食標籤
+1. **未知寫 `null`，不寫 0**；0 代表「確定沒有」〔機：格式；計算時 null 傳染見 C2〕。
+2. **熱量非負**；除了 `method` 和調味程度以外的食材熱量必須大於 0〔機〕。
+3. **生熟**：`basis` 必須跟來源樣品一致；TFDA 沒有熟樣品時，熟重數值用 `derived` 並寫公式〔機：`cooked` 必有 `cooked_to_raw` 與公式〕。**蔬菜一律用生重**，不做蔬菜的生熟換算〔機〕。
+4. **巨量營養素驗算**：出處是 `tfda`／`usda`／`label`／`official_web` 的數字，`蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9` 跟熱量差距超過 15% 要在 `note` 說明，否則視為抄錯〔機〕。`derived`／`estimate` 不驗（反推值必然通過）。
+5. **份量**：`serving_label` 註明生重或熟重、約幾份代換表份數〔人〕。
+6. **用油**（2026-09-28 拍板）〔機：計算斷言〕：
+   - 烹調法用 `implicit` 引用 `cooking_oil`：煎 5g、炒 5g＋有蔬菜再加 5g、氣炸與烤 0、免開火與微波 0。
+   - 基本資料設定「家裡用油習慣：少／一般」，少＝上列克數減半；推薦卡片套用這個設定。
+   - 「自己選」用煎或炒時，可改成約 1 茶匙（5g）／約 2 茶匙（10g）。
+   - 用油**不跟主要槽位一起縮放**；實際採用的克數記進這一餐的內容快照。
+   - 算的是吃進去的油，不是下鍋的油。
+7. **自煮調味的鈉**：`seasoned: true` 的餐型加 `seasoning_light`（約 300 mg）或 `seasoning_normal`（約 700 mg），預設一般，「自己選」可切換，記進快照〔機〕。
+8. **鈉與飽和脂肪**：食材取 TFDA 欄位；超商取包裝標示；外食沒有出處就寫 `null`，不填沒根據的數字〔機：出處檢查〕。
 
-1. 過敏原只能用固定詞彙：`甲殼類｜魚｜蛋｜乳製品｜堅果｜麩質｜黃豆｜芝麻`，外加 `未確認`。新增詞彙屬於 B4 需審核的變更。
-2. 複合料理（外食、餐盒）沒有逐項確認過成分，一律含 `未確認`，不能因為「看起來沒有」就標 `[]`。
-3. 飲食標籤要**正面宣告**：只有標了 `全素` 的品項才算全素，沒標就是不符合。`全素` 自動滿足 `蛋奶素`。
-4. 過敏原或飲食標籤有疑義時，往保守方向標（多標、標未確認），不往寬鬆方向標。
+## B6. 過敏原與飲食限制
 
-## A7. 餐型骨架
+1. **過敏原固定詞彙**：`甲殼類｜軟體動物｜魚｜蛋｜乳製品｜花生｜堅果｜麩質｜黃豆｜芝麻`，外加 `未確認`〔機〕。花生與堅果分開（台灣法規如此）；軟體動物指蚵、花枝、章魚、貝類。新增詞彙屬於 C3 需審核的變更。
+2. **含麩質穀物包含燕麥**（台灣過敏原標示規定）〔人：資料審核清單〕。
+3. **複合料理**（外食、餐盒、醬料）沒逐項確認成分的，一律含 `未確認`〔機：`channel=delivery` 的品項若 `allergen_tags` 不含未確認，必須有 `source` 證明是官方成分表〕。
+4. **組合的過敏原**：任一成分 `allergen_tags` 缺欄或含 `未確認`，整組就是未確認〔機〕。
+5. **飲食限制**只有 `全素`、`蛋奶素` 兩種人工標註，而且要正面宣告：`vegan: true` 才算全素；全素自動滿足蛋奶素；沒標就是不符合〔機〕。
+6. **「低碳」「高蛋白」不人工標註**，由數值自動判定〔機〕：
+   - 低碳：這一餐（縮放後）總碳水 ≤ `LOW_CARB_MEAL_MAX_G`（`core/config.js`，初始 30g）；碳水是 null 就不算低碳。
+   - 高蛋白：只用於顯示，這一餐蛋白質 ≥ 20g。
+7. 有疑義時往保守方向標〔人〕。
 
-1. 骨架每一軸的 `allow` 只能引用 `ingredients.json` 裡存在、且 `axis` 相符的 id。
-2. 新增或修改骨架屬於 B4 需審核的變更（三輪審核定下的原則：不對稱槽位、每個食材自己的份量、避免無限制組合）。
-3. 食材新增後沒有被任何骨架引用，`check-data.js` 會警告（不是錯誤），避免再累積沒用到的資料。
-4. 每個骨架必填 `seasoned: true|false`（見 A5 第 7 點）。
+## B7. 餐型骨架
 
-## A8. 「我的品項」的最低驗證
+1. 每一軸的 `allow` 只能引用存在、且 `axis` 相符的食材 id〔機〕。
+2. 每個骨架必填 `seasoned: true|false`〔機〕。
+3. 食材沒被任何骨架引用 → 警告〔機〕。
+4. 新增或修改骨架屬於 C3 需審核的變更，可以**一批一起審**。
 
-使用者自建品項不受出處規則管轄，但寫入前必須通過：名稱非空、`kcal` 為正數、`role` 與 `channel` 為合法值；`allergen_tags` 預設 `null`（未確認）。沒填的營養欄位是 `null`，不是 0。
+## B8. 「我的品項」最低驗證
 
-## A9. 新增或修訂資料的流程
+寫入前必須通過：名稱非空、`kcal` 為正數、`role` 與 `channel` 合法、有 `allergen_tags` 欄位（表單預設「未確認」＝`null`）；沒填的營養欄位是 `null`〔機：`data/db.js` 寫入驗證〕。它進不進推薦候選池，依 PRD 10.5 的條件判斷，不看本章程的可信度。
 
-1. 查出處（依 A2 的優先順序）。
-2. 依 A4 格式修改資料，填 `source`、`confidence`、`verified_at`。
-3. 在 `data/CHANGELOG.md` 加一行：日期、id、改了什麼、出處。
-4. 跑 `node tools/check-data.js`，必須全過。
-5. 跑 `node tools/check-engine.js`，必須全過（資料改動可能影響推薦結果）。
-6. 同一個 commit 提交資料與 CHANGELOG。commit 訊息寫明是「新增」「修正數值」還是「升級可信度」。
-7. 一次改動超過 10 筆，或改動會讓推薦熱量系統性上升/下降（例如 A5 第 6 點的用油），要附一段前後比較（某個代表性設定下，五個時段推薦熱量的變化）。
+## B9. 資料下架
 
-## A10. `tools/check-data.js` 自動檢查項目
+刪除一個食材或品項時，`meal_plan`、`daily_log` 快照、「我的品項」的 `copied_from` 若還指著它：紀錄照樣用快照顯示；計畫顯示中性提示「這個品項已不提供」；程式不得因為查不到而出錯〔機：check-engine 斷言〕。
 
-**錯誤（不通過就不能提交）**：
-- 每個檔案符合 A4 格式；必填欄位齊全；列舉值合法。
-- id 全資料庫唯一。
-- 營養數字是 `null` 或非負數；熱量為正數。
-- 食材 `allergen_tags` 不為 null；品項 `allergen_tags` 只含固定詞彙。
-- `source.type` 合法；`tfda` 的 `ref` 能在 `collab/tfdb-2025-simplified.json` 找到。
-- `basis = cooked` 的食材有 `cooked_to_raw`。
-- 每個烹調法有 `oil: { base_g, veg_add_g }`；每個骨架有 `seasoned`；`seasoning_level` 至少有清淡、一般兩筆。
-- 骨架 `allow` 引用的 id 都存在且 `axis` 相符。
-- `kcal_range` 若有，低 ≤ 代表值 ≤ 高。
-- A5 第 4 點的巨量營養素驗算（只對適用來源）。
+## B10. 參考資料與 TFDA 改版
 
-**警告（提醒但不擋）**：
-- 食材沒被任何骨架引用。
-- 品項任一欄 `confidence` 是 `label_unsourced` 或 `estimate`（列出清單，方便排查證優先順序）。
-- `tfda` 出處的數值跟 TFDA 樣品差距超過 5%（可能抄錯或樣品選錯）。
+- 檢查程式依賴的參考資料放 `data/reference/`（TFDA json、`label_unsourced` 凍結清單），不放 `collab/`〔機〕。
+- TFDA 出新版時：放進新檔 → 重跑 `tools/build-ingredients.js` → 列出所有數值差異 → 逐項確認後提交，commit 訊息 `data(tfda): 升級到 <版本>`〔人〕。
+
+## B11. 修改資料的流程
+
+1. 依 B2 查出處。
+2. 依 B4 修改；TFDA 食材改 `source.ref` 後重跑 `tools/build-ingredients.js`，不手改數值。
+3. `node tools/check-data.js`、`node tools/check-engine.js` 全過。
+4. `node tools/diff-recs.js` 產生推薦快照差異；一次改超過 10 筆、或差異報告顯示推薦熱量系統性變動時，把差異報告附在 commit 說明〔機：CI 會輸出差異〕。
+5. commit 訊息格式：`data(add|fix|upgrade|remove): <id> <摘要>（出處 <type> <ref>）`。git log 就是資料變更紀錄，不另外維護 CHANGELOG。
+
+## B12. `tools/check-data.js` 檢查項目
+
+**錯誤**：格式與必填欄位、列舉值、id 唯一；熱量非負（B5.2）；null 規則；TFDA 食材數值與參考資料完全相等；出處順位（B2.1、B2.2）；`label_unsourced` 凍結清單只減不增；`cooked` 有 `cooked_to_raw` 與公式；蔬菜為 `raw`；烹調法有 `implicit`；骨架有 `seasoned`、`allow` 引用正確；過敏原詞彙、複合料理未確認規則（B6.3）；巨量營養素驗算（B5.4）；`kcal_range` 低 ≤ 代表值 ≤ 高。
+
+**警告**：食材沒被骨架引用；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）。
 
 ---
 
-# B. 架構章程
+# C. 架構章程
 
-## B1. 分層與依賴方向
+## C1. 分層與依賴方向
 
 ```
-ui/  →  engine/  →  data/  →  core/
+ui/  →  engine/  →  core/
+ui/  →  data/    →  core/
 ```
-- 只能往右依賴。`engine/` 不碰 DOM；`data/` 不 import `engine/`；`core/` 不依賴任何東西。
-- 全部用 ES modules（`import`/`export`），不再把函式掛到 `window`。
-- 例外只有一個：`ui/app.js` 可以把少數函式掛到 `window` 供 console 除錯，但任何模組不得透過 `window` 呼叫別的模組。
+1. `engine/` 是純函式：只能 import `core/` 和 `engine/`，**不得 import `data/`**；需要的資料由 `ui/` 讀好傳入〔機：`tools/check-arch.js`〕。
+2. `data/` 不 import `engine/`；`core/` 不 import 任何東西〔機〕。
+3. 全部使用 ES modules，不把函式掛到 `window`；唯一例外是 `ui/app.js` 掛少數除錯函式〔機〕。
+4. 儲存層使用瀏覽器原生 IndexedDB 加一層薄的封裝（`data/db.js`），不使用 localforage；資料庫名稱 `lighten2`，`settings` 與任何 localStorage key 一律加 `lighten2.` 前綴〔機〕。
+5. 清單型資料（`daily_log`、`meal_plan`、`weight_log`、`exercise_log`、`custom_foods`）一筆紀錄一個 key，需要全有全無的批次寫入用 IndexedDB transaction〔機：check-arch 檢查 db.js 沒有整包陣列寫入〕。
+6. 部署時用一個版本字串統一帶進所有模組（import map），不靠使用者手動重新整理〔機：CI 檢查版本字串已更新〕。本機開發要用本機 server 開，不能用 `file://`。
 
-## B2. 單一真相來源
+## C2. 單一真相來源
 
-下列概念只能在一個地方定義，其他地方一律 import：
+下列概念只能在一個地方定義，其他地方一律 import〔機：check-arch 檢查重複的函式名與常數名〕：
 
 | 概念 | 位置 |
 |---|---|
 | 時段清單、中文標籤、預設權重、預設開關、時段結束時間 | `core/slots.js` |
-| 型態列舉、日期工具、escape | `core/` |
-| 食物資料的載入、驗證、正規化（內建＋我的品項） | `data/catalog.js` |
+| 型態列舉、門檻常數（低碳、低預算等）、日期工具、escape | `core/` |
+| 食物資料的載入、驗證、正規化、可信度推導 | `data/catalog.js` |
 | IndexedDB 存取 | `data/db.js` |
-| 過敏原/飲食限制/不吃清單的判斷 | `engine/filters.js` |
-| 一餐內容的營養計算、骨架驗證、快照 | `engine/meal-content.js` |
+| 過敏原／飲食限制／不吃清單判斷 | `engine/filters.js` |
+| 一餐內容的營養計算（含用油、調味、縮放、null 傳染）、驗證、快照 | `engine/meal-content.js` |
 
-新增功能時發現需要「類似的東西」，先找上表；找到就用，找不到而且確實是新概念，才新增模組並補進上表。**禁止複製一份再改。**
+「不吃清單」「倒讚紀錄」一律以 id 為 key，不用名稱〔機〕。
 
-## B3. 不可退化的規則
+## C3. 需要獨立審核的變更
 
-以下規則是多輪審核定下的，改寫、重構時不得削弱。`tools/check-engine.js` 對每一條都要有對應的斷言。
+動工前找一個**新開的 Opus agent**（不是正在實作的那一個）審核，完整問答逐字存到 `collab/opus-review-log/YYYY-MM-DD-主題.md`〔人〕：
 
-**安全**
-1. 硬性過濾「未確認就排除」：過敏原未確認、飲食標籤缺漏，只要使用者有設定就排除。
-2. 飲食限制逐成分判斷，不用聯集。
-3. 免開火烹調法不得搭配需要煮熟的食材，存檔與顯示時各檢查一次。
-4. 計畫（meal_plan）內容在顯示時重新跑硬性過濾，被擋下顯示中性提示，不默默刪除。
-
-**計算**
-5. 缺資料是 `null`，加總時 null 傳染，不當 0。
-6. 自組食譜：不對稱槽位、每個食材自己的 `serving_g`、只有主要槽位縮放且限 0.5–2.0 倍。
-7. 現成品項組合：一餐恰好 1 main＋≤1 side＋≤1 drink＋≤1 snack、最多 3 件；下午茶不需要 main；飲料不單獨成一餐。
-8. 近 7 天平均、纖維缺口、校正引擎的攝取檢查，只算「完整記錄日」且不含今天。
-9. 計畫層（L2）不存縮放後的熱量；只有 `daily_log`（L3）算進任何統計。
-10. 自煮的一餐一律包含用油與調味程度兩個隱含成分（A5 第 6、7 點），推薦、自己選、計畫、採買清單用同一套算法（`engine/meal-content.js`）。
-
-**核心原則**
-11. 運動與飲食脫鉤：`engine/` 底下任何模組不得 import 運動紀錄的存取函式；飲食畫面不出現運動內容，反之亦然。
-12. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品清單不依熱量排序或上色；飲料不做糖量警告。
-13. 鈉只做中性顯示（「鈉 約 X mg（參考 2400 mg）」）：不上色、不警告、不做頻率統計、不參與推薦評分；不把某一餐的鈉跟某天的體重連在一起提示。用油選項的文字只寫克數/茶匙，不寫「健康」「少油比較好」這類評價。
-14. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦引擎、統計、hero 不得讀取。
-
-## B4. 需要獨立審核的變更
-
-下列變更動工前，要找一個**獨立的 Opus**（新開的 agent，不是正在實作的那一個）審核，並把完整問答逐字存到 `collab/opus-review-log/YYYY-MM-DD-主題.md`（只存摘要不算）：
-
-- 新增或移除 IndexedDB store、改變已存在 store 的資料格式。
-- 修改 B3 任何一條規則，或推薦評分、預算分配、體重校正的演算法。
-- 新增或修改餐型骨架。
-- 新增過敏原或飲食標籤詞彙。
-- 新增頂層分頁，或改變 L1/L2/L3 資料模型的解析規則。
+- A1 列的概念變更（PRD 改完後、動程式前審）。
+- 修改 C4 任何一條規則，或推薦評分、預算分配、體重校正的演算法。
+- 新增 IndexedDB store 或改變已存在 store 的格式——**照已定案的 PRD 實作的不必再審**，偏離 PRD 才審。
+- 新增或修改餐型骨架（可一批一起審）。
+- 新增過敏原或飲食限制詞彙、新增外部函式庫（CDN）。
 - 修改本章程。
 
-以下**不需要**獨立審核，照 A9 流程或一般開發即可：修正資料數值（有出處）、純 UI 文案與版面、修 bug 且不改變 B3 規則、補測試。
+不需要獨立審核：有出處的資料數值修正、純 UI 文案與版面、依 C5 流程修 bug 且不改變 C4 規則、補測試。
 
-審核至少一輪；對方提出的問題有需要使用者決定的，先問使用者，不自行拍板。
+## C4. 不可退化的規則
 
-## B5. 每次提交前的驗收
+**安全**
+1. 硬性過濾「未確認就排除」：過敏原未確認、飲食標註缺漏，只要使用者有設定就排除；**自訂食物沒有例外**〔機〕。
+2. 飲食限制逐成分判斷，不用聯集〔機〕。
+3. 免開火不得搭配需要煮熟的食材，存檔與顯示時各檢查一次〔機：engine 斷言；〔人〕：畫面兩處都有呼叫〕。
+4. 計畫內容在顯示時重新跑硬性過濾，被擋下顯示中性提示，不默默刪除〔機＋人〕。
 
-1. `node tools/check-data.js` 全過。
-2. `node tools/check-engine.js` 全過。
-3. 動到畫面流程時，跑一次手機實機腳本（`docs/手機實機腳本.md`，Phase −1 建立）：新使用者填資料 → 看推薦 → 記錄一餐 → 撤銷 → 自己選一餐 → 切分頁回來確認更新 → 改飲食限制 → 記體重。
-4. 改動了行為，同一個 commit 更新 PRD 對應章節；PRD 跟程式不一致時，以「最近一次審核定案的規格」為準，並立刻修正落後的那一邊。
+**計算**
+5. 缺資料是 `null`，任何加總 null 傳染，不當 0〔機〕。
+6. 自組食譜：不對稱槽位、每個食材自己的 `serving_g`、只有主要槽位縮放且限 0.5–2.0 倍；用油與調味不縮放〔機〕。
+7. **推薦生成規則**：一餐恰好 1 main＋≤1 side＋≤1 drink＋≤1 snack、最多 3 件；下午茶不需要 main；飲料不單獨成一餐〔機〕。
+8. **手動記錄規則**比推薦寬：只限制每個角色的數量上限，不要求必須有主餐（一杯拿鐵可以記成一餐）〔機〕。
+9. 近 7 天平均、纖維缺口、校正引擎的攝取檢查，只算完整記錄日且不含今天〔機〕。
+10. 計畫層不存縮放後的熱量；只有 `daily_log` 算進任何統計〔機〕。
+11. 自煮一律包含用油與調味兩個隱含成分，推薦、自己選、計畫、採買清單都走 `engine/meal-content.js`〔機〕。
 
-## B6. 文件位置
+**核心原則**
+12. 運動與飲食脫鉤：`engine/` 不得接觸運動紀錄（由 C1.1 保證）〔機〕；飲食畫面不出現運動內容，反之亦然〔人〕。
+13. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品不依熱量排序或上色；飲料不做糖量警告〔機：check-arch 對 `ui/` 做禁用字 grep；〔人〕：配色與排序〕。
+14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：engine 評分不讀 sodium；〔人〕：畫面〕。
+15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取〔機：由 C1.1 加 check-arch 的 grep 保證〕。
+
+## C5. 修 bug 的規則
+
+1. **先寫一條會失敗的斷言**（check-engine、check-data 或 check-arch），確認它失敗，再修程式讓它通過，同一個 commit 提交〔人：審 commit；〔機〕：CI 保證斷言之後不會再退化〕。
+2. 畫面層的 bug 測不到時，把重現步驟加進 `docs/手機實機腳本.md`〔人〕。
+3. 同一類 bug 第二次出現，代表 C2 的單一真相來源沒守住，要找出重複的那份並合併，不是再補一次〔人〕。
+
+## C6. 提交前的驗收
+
+1. **GitHub Actions** 每次 push 自動跑 `check-data`、`check-engine`、`check-arch`、`diff-recs`；不通過不得合併〔機〕。
+2. 動到畫面流程時，跑手機實機腳本中受影響的段落；每個 Phase 驗收時跑完整版〔人〕。
+3. 改到行為時，同一個 commit 更新 `docs/PRD.md` 對應章節〔人〕。
+
+## C7. 文件位置
 
 | 文件 | 位置 |
 |---|---|
-| PRD（權威規格） | `docs/PRD.md`（2.0 各 Phase 驗收後，從 `collab/PRD-2.0-架構草案.md` 併入） |
+| PRD（權威規格） | `docs/PRD.md` |
+| 決策紀錄 | `docs/decisions.md` |
 | 章程 | `docs/CHARTER.md`（本檔） |
 | Review 報告 | `docs/review/` |
+| 手機實機腳本 | `docs/手機實機腳本.md` |
 | 獨立審核逐字紀錄 | `collab/opus-review-log/` |
-| 資料變更紀錄 | `data/CHANGELOG.md` |
+| 參考資料 | `data/reference/` |
 | v1 舊文件 | `docs/v1/` |
