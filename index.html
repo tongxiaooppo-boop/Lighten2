@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>輕盈計畫 (Lighten Plan)</title>
-  <link rel="stylesheet" href="css/style.css?v=20260928-140823" />
+  <link rel="stylesheet" href="css/style.css?v=20260928-141021" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap" />
 </head>
@@ -378,7 +378,7 @@
       </div>
       <div id="manual-picker-items-mode">
         <p class="taiwan-ref-note">點卡片多選，最多 1 主餐＋1 配菜＋1 飲料＋1 點心（下午茶不需要主餐）。灰色是過敏原／飲食限制／不吃清單擋掉的品項。</p>
-        <div id="manual-picker-items" class="feast-item-picker"></div>
+        <div id="manual-picker-items" class="item-grid"></div>
       </div>
       <div id="manual-picker-compose-mode" hidden></div>
       <p id="manual-picker-main-hint" class="taiwan-ref-note" style="color:#a33" hidden>請先選齊必要的食材（餐型＋蛋白質，有主食槽的餐型還要選主食）才能送出。</p>
@@ -394,36 +394,37 @@
   <script type="importmap">
 {
   "imports": {
-    "./js/core/config.js": "./js/core/config.js?v=20260928-140823",
-    "./js/core/dates.js": "./js/core/dates.js?v=20260928-140823",
-    "./js/core/html.js": "./js/core/html.js?v=20260928-140823",
-    "./js/core/num.js": "./js/core/num.js?v=20260928-140823",
-    "./js/core/slots.js": "./js/core/slots.js?v=20260928-140823",
-    "./js/data/catalog.js": "./js/data/catalog.js?v=20260928-140823",
-    "./js/data/db.js": "./js/data/db.js?v=20260928-140823",
-    "./js/engine/budget.js": "./js/engine/budget.js?v=20260928-140823",
-    "./js/engine/filters.js": "./js/engine/filters.js?v=20260928-140823",
-    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20260928-140823",
-    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20260928-140823",
-    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20260928-140823",
-    "./js/engine/pool.js": "./js/engine/pool.js?v=20260928-140823",
-    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20260928-140823",
-    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20260928-140823",
-    "./js/engine/today.js": "./js/engine/today.js?v=20260928-140823",
-    "./js/ui/app.js": "./js/ui/app.js?v=20260928-140823",
-    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20260928-140823",
-    "./js/ui/clock.js": "./js/ui/clock.js?v=20260928-140823",
-    "./js/ui/item-picker.js": "./js/ui/item-picker.js?v=20260928-140823",
-    "./js/ui/manual-picker.js": "./js/ui/manual-picker.js?v=20260928-140823",
-    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20260928-140823",
-    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20260928-140823",
-    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20260928-140823",
-    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20260928-140823",
-    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20260928-140823",
-    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20260928-140823"
+    "./js/core/config.js": "./js/core/config.js?v=20260928-141021",
+    "./js/core/dates.js": "./js/core/dates.js?v=20260928-141021",
+    "./js/core/html.js": "./js/core/html.js?v=20260928-141021",
+    "./js/core/num.js": "./js/core/num.js?v=20260928-141021",
+    "./js/core/slots.js": "./js/core/slots.js?v=20260928-141021",
+    "./js/data/catalog.js": "./js/data/catalog.js?v=20260928-141021",
+    "./js/data/db.js": "./js/data/db.js?v=20260928-141021",
+    "./js/engine/budget.js": "./js/engine/budget.js?v=20260928-141021",
+    "./js/engine/filters.js": "./js/engine/filters.js?v=20260928-141021",
+    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20260928-141021",
+    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20260928-141021",
+    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20260928-141021",
+    "./js/engine/pool.js": "./js/engine/pool.js?v=20260928-141021",
+    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20260928-141021",
+    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20260928-141021",
+    "./js/engine/today.js": "./js/engine/today.js?v=20260928-141021",
+    "./js/ui/app.js": "./js/ui/app.js?v=20260928-141021",
+    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20260928-141021",
+    "./js/ui/clock.js": "./js/ui/clock.js?v=20260928-141021",
+    "./js/ui/dom.js": "./js/ui/dom.js?v=20260928-141021",
+    "./js/ui/item-picker.js": "./js/ui/item-picker.js?v=20260928-141021",
+    "./js/ui/manual-picker.js": "./js/ui/manual-picker.js?v=20260928-141021",
+    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20260928-141021",
+    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20260928-141021",
+    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20260928-141021",
+    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20260928-141021",
+    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20260928-141021",
+    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20260928-141021"
   }
 }
   </script>
-  <script type="module" src="js/ui/app.js?v=20260928-140823"></script>
+  <script type="module" src="js/ui/app.js?v=20260928-141021"></script>
 </body>
 </html>

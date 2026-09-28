@@ -2,7 +2,7 @@
 
 import { SLOTS, isSlotEnabled } from "../core/slots.js";
 import { shortDate } from "../core/dates.js";
-import { $ } from "../core/html.js";
+import { $ } from "./dom.js";
 import { computeRecentAvgVsTarget } from "../engine/budget.js";
 import { todayIntake, recsKcalTotal } from "../engine/meal-content.js";
 import { loadTdeeState, getCalibratedTargets } from "./calibration.js";

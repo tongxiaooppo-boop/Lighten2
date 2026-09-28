@@ -7,7 +7,3 @@ export function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
-
-export function $(sel) {
-  return document.querySelector(sel);
-}

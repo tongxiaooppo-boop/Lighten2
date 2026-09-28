@@ -2,7 +2,8 @@
 // 原則：僅記錄運動項目/時長/強度，不做熱量換算；版面與文案與飲食完全隔離（章程 C4.12）。
 
 import { dateAddDays, mondayOf } from "../core/dates.js";
-import { escapeHtml, $ } from "../core/html.js";
+import { escapeHtml } from "../core/html.js";
+import { $ } from "./dom.js";
 import { addExerciseLog, getExerciseLogs } from "../data/db.js";
 import { todayStr } from "./clock.js";
 

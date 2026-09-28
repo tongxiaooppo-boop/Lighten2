@@ -2,13 +2,14 @@
 // Phase 0 整個改成三分頁選擇器（ui/meal-picker/）；−1a 只搬家，畫面與行為不變。
 
 import { SLOT_LABELS } from "../core/slots.js";
-import { escapeHtml, $ } from "../core/html.js";
+import { escapeHtml } from "../core/html.js";
+import { $ } from "./dom.js";
 import { getProfile, getDailyLogs, getCustomFoods, addDailyLog } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { passesHardFilters } from "../engine/filters.js";
 import { slotNutrientShare } from "../engine/budget.js";
 import {
-  sumProducts, composeTotals, suggestFillers,
+  sumProducts, composeTotals, suggestFillers, slotGaps,
   contentFromProducts, contentFromCompose, buildLogEntry,
 } from "../engine/meal-content.js";
 import { filterForSlot, cardHtml } from "./item-picker.js";
@@ -119,7 +120,7 @@ function composeBlockedReason(it, axisType, c) {
 function composeOptionHtml(id, name, opts) {
   const o = opts || {};
   const cls = "compose-option" + (o.selected ? " selected" : "") + (o.blockedReason != null ? " is-blocked" : "");
-  const reason = o.blockedReason != null ? '<span class="feast-item-card-reason">' + escapeHtml(o.blockedReason) + "</span>" : "";
+  const reason = o.blockedReason != null ? '<span class="item-card-reason">' + escapeHtml(o.blockedReason) + "</span>" : "";
   return '<button type="button" class="' + cls + '" data-axis="' + escapeHtml(o.axis) + '" data-id="' + escapeHtml(id) + '"' +
     (o.blockedReason != null ? " disabled" : "") + ">" + escapeHtml(name) + reason + "</button>";
 }
@@ -295,10 +296,11 @@ export function updateManualSummary() {
   if (gapEl) {
     const share = slotNutrientShare(manualPicker.targets, manualPicker.todayLogs, manualPicker.profile.enabled_slots, manualPicker.slot);
     const lines = [];
-    const overKcal = Math.round(totals.kcal - share.kcalShare);
+    const gaps = slotGaps(share, totals);
+    const overKcal = gaps.overKcal;
     if (overKcal > 0) lines.push("這組合約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + overKcal + "），仍可送出。");
-    const proteinGap = Math.round((share.proteinShare - (totals.protein_g || 0)) * 10) / 10;
-    const fiberGap = Math.round((share.fiberShare - (totals.fiber_g || 0)) * 10) / 10;
+    const proteinGap = gaps.proteinGap;
+    const fiberGap = gaps.fiberGap;
     if (proteinGap > 0) lines.push("蛋白質缺口約 " + proteinGap + "g");
     if (fiberGap > 0) lines.push("纖維缺口約 " + fiberGap + "g");
     if (!isCompose) {
@@ -333,7 +335,7 @@ function roleLabel(role) {
 }
 
 function onManualItemClick(e) {
-  const card = e.target.closest(".feast-item-card");
+  const card = e.target.closest(".item-card");
   if (!card || card.disabled) return;
   const uid = card.getAttribute("data-uid");
   const it = manualPicker.passItems.filter(function (x) { return x.uid === uid; })[0];

@@ -3,7 +3,8 @@
 
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays, mondayOf } from "../core/dates.js";
-import { escapeHtml, $ } from "../core/html.js";
+import { escapeHtml } from "../core/html.js";
+import { $ } from "./dom.js";
 import {
   getProfile, saveProfile, getDailyLogs, addDailyLog, undoDailyLog,
   getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown,
@@ -63,9 +64,9 @@ function setStatus(msg) {
 function loggedHtml(logs) {
   const total = logsKcal(logs);
   const names = logs.map(function (l) { return l.name || "已記錄的餐點"; }).join("、");
-  let html = '<p class="rec-reservation-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
+  let html = '<p class="rec-logged-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
   logs.forEach(function (l) {
-    html += '<button type="button" class="feast-cancel rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' +
+    html += '<button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' +
       (logs.length > 1 ? "「" + escapeHtml(l.name || "") + "」" : "") + "</button>";
   });
   return html;

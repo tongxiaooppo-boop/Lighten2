@@ -8,7 +8,7 @@ import { SLOTS } from "../core/slots.js";
 import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
-import { num, sumOrNull, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
+import { num, sumProducts, ingredientContribution, addContributions, ZERO_CONTRIBUTION } from "./meal-content.js";
 
 function byId(list, id) {
   for (let i = 0; i < list.length; i++) {
@@ -150,6 +150,7 @@ function toItemCombo(members) {
   const maxTierRank = members.reduce(function (r, m) { return Math.max(r, m.tier_rank); }, 0);
   const notes = members.map(function (m) { return m.note; }).filter(Boolean);
   const single = members.length === 1 ? members[0] : null;
+  const totals = sumProducts(members);
   return {
     id: members.map(function (m) { return m.uid; }).join("+"),
     source_id: single && single.is_taiwan ? single.source_id : null,
@@ -158,11 +159,11 @@ function toItemCombo(members) {
     name: members.map(function (m) { return m.name; }).join(" ＋ "),
     protein_name: null,
     content_note: notes.length > 0 ? notes.join("；") : null,
-    kcal: round1(members.reduce(function (s, m) { return s + m.kcal; }, 0)),
-    protein_g: sumOrNull(members, "protein_g"),
-    carb_g: sumOrNull(members, "carb_g"),
-    fat_g: sumOrNull(members, "fat_g"),
-    fiber_g: sumOrNull(members, "fiber_g"),
+    kcal: totals.kcal,
+    protein_g: totals.protein_g,
+    carb_g: totals.carb_g,
+    fat_g: totals.fat_g,
+    fiber_g: totals.fiber_g,
     tier: RANK_TO_TIER[maxTierRank],
     tier_rank: maxTierRank,
     diet_tag_sets: members.map(function (m) { return m.diet_tags; }),

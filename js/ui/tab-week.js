@@ -2,7 +2,8 @@
 // 原則：只顯示「週平均是否仍在目標內」的中性總結，不做逐日評判性呈現。
 
 import { dateAddDays, diffDays, mondayOf, shortDate } from "../core/dates.js";
-import { escapeHtml, $ } from "../core/html.js";
+import { escapeHtml } from "../core/html.js";
+import { $ } from "./dom.js";
 import { round1 } from "../core/num.js";
 import { getProfile, getDailyLogs } from "../data/db.js";
 import { summarizeWeek, computeRecentAvgVsTarget } from "../engine/budget.js";

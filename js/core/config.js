@@ -24,3 +24,6 @@ export const RANK_TO_TIER = { 0: "🟢", 1: "🟡", 2: "🔴" };
 export function tierRank(t) {
   return TIER_RANK.hasOwnProperty(t) ? TIER_RANK[t] : 2;
 }
+
+// 「找不到？直接估算」的 S/M/L 熱量（沿用 v1 美饗日曆的大餐份量估算；Phase 0 的估算卡片使用，PRD 第 9 節）
+export const ESTIMATE_SIZE_KCAL = { S: 400, M: 700, L: 1200 };

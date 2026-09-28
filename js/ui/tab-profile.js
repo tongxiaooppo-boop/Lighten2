@@ -2,7 +2,8 @@
 
 import { SLOTS, isSlotEnabled, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
 import { dateAddDays } from "../core/dates.js";
-import { escapeHtml, $ } from "../core/html.js";
+import { escapeHtml } from "../core/html.js";
+import { $ } from "./dom.js";
 import { getProfile, saveProfile, addWeightLog } from "../data/db.js";
 import { calculateTargets } from "../engine/nutrition.js";
 import { normalizeAllergens } from "../engine/filters.js";
@@ -300,7 +301,7 @@ async function onWeightSubmit(e) {
   const log_date = fd.get("log_date");
   const weight_kg = toFloatOrNull(fd.get("weight_kg"));
 
-  if (!log_date || weight_kg === null) {
+  if (!log_date || weight_kg === null || !(weight_kg > 0)) {
     alert("請填寫日期與體重。");
     return;
   }

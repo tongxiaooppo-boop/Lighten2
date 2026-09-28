@@ -129,8 +129,8 @@ async function run() {
 
   console.log("[自己選]");
   await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
-  await until(`!document.getElementById('manual-picker-overlay').hidden && document.querySelectorAll('#manual-picker-items .feast-item-card').length > 0`, "自己選沒有打開或沒有品項");
-  await js(`document.querySelector('#manual-picker-items .feast-item-card[data-uid=conv_bx04]').click()`);
+  await until(`!document.getElementById('manual-picker-overlay').hidden && document.querySelectorAll('#manual-picker-items .item-card').length > 0`, "自己選沒有打開或沒有品項");
+  await js(`document.querySelector('#manual-picker-items .item-card[data-uid=conv_bx04]').click()`);
   await until(`${text("#manual-picker-summary")}.indexOf("已選 1 件") !== -1`, "選一個品項後摘要沒有更新");
   await js(`document.getElementById('manual-picker-submit').click()`);
   await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "自己選送出後午餐沒有變成已記錄");

@@ -78,6 +78,15 @@ export function sumProducts(items) {
   };
 }
 
+// 自己選的單餐缺口提示：熱量超出份額多少、蛋白質/纖維還差多少（share 來自 budget.js slotNutrientShare）
+export function slotGaps(share, totals) {
+  return {
+    overKcal: Math.round(totals.kcal - share.kcalShare),
+    proteinGap: Math.round((share.proteinShare - (totals.protein_g || 0)) * 10) / 10,
+    fiberGap: Math.round((share.fiberShare - (totals.fiber_g || 0)) * 10) / 10,
+  };
+}
+
 // 營養缺口的「可以考慮加」：配菜/飲料/點心裡，這個欄位每 100 kcal 含量最高的前 3 個，
 // 加進去後熱量不超過單餐份額 +100。
 export function suggestFillers(passItems, selItems, gap, field, share) {
@@ -133,6 +142,12 @@ export function composeTotals(c, primary) {
 
 // ---------- 紀錄的加總 ----------
 
+// 一筆紀錄某個營養欄位的值（缺值當 0；v1 的預算、缺口、平均都是這個口徑，−1b 修 null 規則時只改這裡）。
+// field：kcal、protein_g、carb_g、fat_g、fiber_g
+export function logTotal(l, field) {
+  return Number(l.totals[field]) || 0;
+}
+
 // 今日已攝取（hero）：跳過 null（缺資料），不當 0 加；缺脂肪或碳水的紀錄另外算熱量給涵蓋率警語。
 export function todayIntake(todayLogs) {
   const r = { protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, missingCoverageKcal: 0 };
@@ -150,7 +165,7 @@ export function todayIntake(todayLogs) {
 }
 
 export function logsKcal(logs) {
-  return logs.reduce(function (sum, l) { return sum + (Number(l.totals.kcal) || 0); }, 0);
+  return logs.reduce(function (sum, l) { return sum + logTotal(l, "kcal"); }, 0);
 }
 
 // 今日建議卡片的熱量合計（額度用完、沒有推薦的時段不算）

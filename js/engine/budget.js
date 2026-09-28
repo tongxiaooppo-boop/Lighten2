@@ -5,6 +5,7 @@
 import { SLOTS, SLOT_WEIGHTS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays } from "../core/dates.js";
 import { round1 } from "../core/num.js";
+import { logTotal } from "./meal-content.js";
 
 // 分配邏輯：
 // - 已吃餐次：配額回傳 0（不再顯示）。
@@ -28,7 +29,7 @@ export function recalcTodayBudget(targetKcal, todayLogs, enabledSlots) {
   logs.forEach(function (log) {
     if (!log || !SLOT_WEIGHTS.hasOwnProperty(log.slot)) return;
     eatenSlots[log.slot] = true;
-    eatenKcal[log.slot] += Number(log.totals.kcal) || 0;
+    eatenKcal[log.slot] += logTotal(log, "kcal");
   });
 
   const totalEaten = SLOTS.reduce(function (sum, s) {
@@ -111,7 +112,7 @@ export function computeRecentAvgVsTarget(logs, targetKcal, enabledSlots, days, t
   let totalKcal = 0;
   completeDates.forEach(function (d) {
     totalKcal += byDate[d].reduce(function (s, l) {
-      return s + (Number(l.totals.kcal) || 0);
+      return s + logTotal(l, "kcal");
     }, 0);
   });
 
@@ -149,9 +150,9 @@ export function slotNutrientShare(targets, todayLogs, enabledSlots, slot) {
   logs.forEach(function (l) {
     if (!l) return;
     if (l.slot) eatenSlots[l.slot] = true;
-    eaten.kcal += Number(l.totals.kcal) || 0;
-    eaten.protein += Number(l.totals.protein_g) || 0;
-    eaten.fiber += Number(l.totals.fiber_g) || 0;
+    eaten.kcal += logTotal(l, "kcal");
+    eaten.protein += logTotal(l, "protein_g");
+    eaten.fiber += logTotal(l, "fiber_g");
   });
 
   if (eatenSlots[slot]) return { kcalShare: 0, proteinShare: 0, fiberShare: 0 };
@@ -183,9 +184,9 @@ export function summarizeWeek(logs, enabledSlots, today) {
   logs.forEach(function (l) {
     const d = l.log_date;
     if (!byDate[d]) byDate[d] = { kcal: 0, protein: 0, fiber: 0 };
-    byDate[d].kcal += Number(l.totals.kcal) || 0;
-    byDate[d].protein += Number(l.totals.protein_g) || 0;
-    byDate[d].fiber += Number(l.totals.fiber_g) || 0;
+    byDate[d].kcal += logTotal(l, "kcal");
+    byDate[d].protein += logTotal(l, "protein_g");
+    byDate[d].fiber += logTotal(l, "fiber_g");
     if (!logsByDate[d]) logsByDate[d] = [];
     logsByDate[d].push(l);
   });
