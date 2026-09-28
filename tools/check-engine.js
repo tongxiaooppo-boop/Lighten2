@@ -73,8 +73,7 @@ async function main() {
     matcher: await imp("js/engine/matcher.js"),
   };
   const catalog = M.catalog.buildCatalog({
-    proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
-    rawIngredients: readJson("raw_ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"),
   });
   const candidatePool = M.pool.buildCandidatePool(catalog);
@@ -238,10 +237,9 @@ async function main() {
   // ---------- 4d. 不吃清單以 id 為 key（章程 C2）：食材改名後仍然命中 ----------
   console.log("[不吃清單用 id]");
   {
-    const renamed = readJson("protein_sources.json").map((it) => Object.assign({}, it, { name: it.name + "（改名）" }));
+    const renamed = readJson("ingredients.json").map((it) => it.axis === "protein" ? Object.assign({}, it, { name: it.name + "（改名）" }) : it);
     const renamedCatalog = M.catalog.buildCatalog({
-      proteins: renamed, staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
-      rawIngredients: readJson("raw_ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+      ingredients: renamed, convenienceItems: convenienceData, taiwanItems: taiwanData,
       archetypes: readJson("dish_archetypes.json"),
     });
     const renamedPool = M.pool.buildCandidatePool(renamedCatalog);
@@ -268,8 +266,7 @@ async function main() {
 
     const conv = convenienceData.map((it) => it.id === "conv_bx04" ? Object.assign({}, it, { protein_g: null, fiber_g: null }) : it);
     const nullCatalog = M.catalog.buildCatalog({
-      proteins: readJson("protein_sources.json"), staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
-      rawIngredients: readJson("raw_ingredients.json"), convenienceItems: conv, taiwanItems: taiwanData,
+      ingredients: readJson("ingredients.json"), convenienceItems: conv, taiwanItems: taiwanData,
       archetypes: readJson("dish_archetypes.json"),
     });
     const withIt = M.pool.buildCandidatePool(nullCatalog).filter((c) => c.components.indexOf("conv_bx04") !== -1);
