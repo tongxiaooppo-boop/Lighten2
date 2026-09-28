@@ -65,8 +65,10 @@ function normRec(r) {
     " budget=" + n(r.budget) + " src=" + r.source_pref + (r.fallback_to_auto ? " fallback" : "");
 }
 
+// 顯示欄位（飽和脂肪、鈉）也要進快照，不然漏帶這兩欄時差異看不出來（−1b 驗收審核 A1）
 function normTotals(t) {
-  return "kcal=" + n(t.kcal) + " P=" + n(t.protein_g) + " C=" + n(t.carb_g) + " F=" + n(t.fat_g) + " Fb=" + n(t.fiber_g);
+  return "kcal=" + n(t.kcal) + " P=" + n(t.protein_g) + " C=" + n(t.carb_g) + " F=" + n(t.fat_g) + " Fb=" + n(t.fiber_g) +
+    " SF=" + n(t.sat_fat_g) + " Na=" + n(t.sodium_mg) + (t.partial && t.partial.length ? " partial=" + t.partial.join(",") : "");
 }
 
 // MealContent 規範化：型態、餐型/烹調法、每個元件（食材 axis:ref*縮放、商品 ref×數量、估算 名稱@熱量）、隱含成分
@@ -438,6 +440,7 @@ async function snapPicker() {
       "main+side+drink": [first("main"), first("side"), first("drink")],
       "main+drink+snack": [first("main"), first("drink"), first("snack")],
       "drink-only": [first("drink")],
+      "drink-tfda": [items.some((it) => it.uid === "tw_dr05") ? "tw_dr05" : null], // 有 TFDA 鈉值的飲料
       "custom-null": ["custom_b", first("drink")],
       "custom-carb-null": [first("main"), "custom_a"],
       none: [],

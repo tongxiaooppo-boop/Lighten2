@@ -410,6 +410,31 @@ async function main() {
     check(rc.implicit && rc.implicit.oil_g === 5 && rc.implicit.seasoning === lessPool.implicit.seasoning, "推薦記錄的 implicit 要是實際採用的克數與程度");
   }
 
+  // ---------- 4i. 「自己選」的品項帶齊 catalog 的營養欄位（章程 C2；−1b 驗收審核 A1） ----------
+  console.log("[自己選的營養欄位]");
+  {
+    const picker = await imp("js/ui/item-picker.js");
+    const FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+    let compared = 0;
+    SLOTS.forEach((slot) => {
+      const r = picker.filterForSlot(catalog, [], slot, {});
+      r.pass.concat(r.blocked.map((b) => b.item)).forEach((it) => {
+        const src = catalog.productsByUid[it.uid];
+        FIELDS.forEach((k) => {
+          compared++;
+          check(it[k] === src[k], "自己選 " + slot + " 的 " + it.uid + "." + k + " 跟 catalog 不同（" + it[k] + " vs " + src[k] + "）");
+        });
+      });
+    });
+    check(compared > 0, "測試前提：自己選要有品項");
+    const latte = picker.filterForSlot(catalog, [], "breakfast", {}).pass.find((it) => it.uid === "tw_dr05");
+    check(latte && M.mc.sumProducts([latte]).sodium_mg === 113.1, "自己選拿鐵（tw_dr05），合計鈉要是 113.1（實際 " + (latte && M.mc.sumProducts([latte]).sodium_mg) + "）");
+    const cf = M.catalog.fromCustomFood({ id: "custom_y", name: "y", kcal: 100, protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 0, sat_fat_g: 0.4, sodium_mg: 250, allergen_tags: [] });
+    check(cf.sat_fat_g === 0.4 && cf.sodium_mg === 250, "我的品項要帶飽和脂肪與鈉（實際 " + cf.sat_fat_g + "、" + cf.sodium_mg + "）");
+    const cfPicked = picker.filterForSlot(catalog, [{ id: "custom_y", name: "y", kcal: 100, sat_fat_g: 0.4, sodium_mg: 250, allergen_tags: [] }], "lunch", {}).pass.find((it) => it.uid === "custom_y");
+    check(cfPicked && cfPicked.sodium_mg === 250, "自己選裡的我的品項要帶鈉");
+  }
+
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
   checkTdeeSlope();

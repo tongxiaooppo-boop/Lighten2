@@ -486,7 +486,7 @@ today/M/fb-shownOften-night/afternoon_tea	-
 today/M/fb-shownOften-night/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave scale=1.9 kcal=708.6 base=461 P=42.6 C=116.5 F=6.3 Fb=8.7 budget=708.6 src=cook_full
 today/M/fb-shownOften-night/snack	-
 today/M/fb-shownOften-night/write0	markRecipesShown conv_bx05+conv_dr06+conv_pk03,conv_bx06+conv_sl01+conv_dr01,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave
-flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 高纖藜麥／穀物沙拉盒 ＋ Plenti／Oatly 濃縮燕麥奶" kcal=475 P=33 C=47.5 F=16.3 Fb=8.5 type=convenience source=rec_accepted content=convenience|-/-|conv_bx04x1@120,conv_sl04x1@210,conv_pk04x1@145|implicit=null
+flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 高纖藜麥／穀物沙拉盒 ＋ Plenti／Oatly 濃縮燕麥奶" kcal=475 P=33 C=47.5 F=16.3 Fb=8.5 SF=null Na=null type=convenience source=rec_accepted content=convenience|-/-|conv_bx04x1@120,conv_sl04x1@210,conv_pk04x1@145|implicit=null
 flow/log-breakfast/write1	markRecipesShown conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry
 flow/log-breakfast/breakfast	-
 flow/log-breakfast/lunch	conv_bx03+conv_sl01+conv_dr01 scale=1 kcal=710 base=710 P=51.5 C=82.9 F=20.4 Fb=19.2 budget=710.6 src=convenience
