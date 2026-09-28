@@ -39,18 +39,20 @@ function upgrade(db, oldVersion) {
 
 function openDb() {
   if (!_dbPromise) {
+    let gaveUp = false;
     _dbPromise = new Promise(function (resolve, reject) {
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = function (e) { upgrade(req.result, e.oldVersion); };
       req.onsuccess = function () {
         const db = req.result;
+        if (gaveUp) { db.close(); return; } // 已經因為被擋住而放棄：晚到的連線直接關掉
         // 別的分頁要升級資料庫版本時，這邊主動關閉連線讓它升級，不要讓對方卡住；下次存取再重新開。
         db.onversionchange = function () { db.close(); _dbPromise = null; };
         resolve(db);
       };
       req.onerror = function () { _dbPromise = null; reject(req.error); };
       // 舊版本的分頁還開著、沒有關閉連線：不要無聲卡住，直接報錯讓畫面提示重新整理。
-      req.onblocked = function () { _dbPromise = null; reject(new Error("[db.js] 資料庫升級被其他開著的分頁擋住，請關閉其他分頁後重新整理")); };
+      req.onblocked = function () { gaveUp = true; _dbPromise = null; reject(new Error("[db.js] 資料庫升級被其他開著的分頁擋住，請關閉其他分頁後重新整理")); };
     });
   }
   return _dbPromise;
