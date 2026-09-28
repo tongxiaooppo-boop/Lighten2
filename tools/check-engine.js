@@ -218,6 +218,26 @@ async function main() {
   check(M.filters.unionTags(["蛋"], null).indexOf("未確認") !== -1, "組合裡有成分 allergen_tags 是 null，整組要是未確認");
   check(M.filters.unionTags(["蛋"], []).join() === "蛋", "成分都有 allergen_tags 時是聯集");
 
+  // ---------- 4d. 不吃清單以 id 為 key（章程 C2）：食材改名後仍然命中 ----------
+  console.log("[不吃清單用 id]");
+  {
+    const renamed = readJson("protein_sources.json").map((it) => Object.assign({}, it, { name: it.name + "（改名）" }));
+    const renamedCatalog = M.catalog.buildCatalog({
+      proteins: renamed, staples: readJson("staples.json"), sauces: readJson("sauce_methods.json"),
+      rawIngredients: readJson("raw_ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+      archetypes: readJson("dish_archetypes.json"),
+    });
+    const renamedPool = M.pool.buildCandidatePool(renamedCatalog);
+    const target = renamed.find((it) => renamedPool.some((c) => c.is_composed && c.protein_id === it.id));
+    const disliked = [{ type: "protein", key: target.id, label: "改名前的名稱" }];
+    const hits = renamedPool.filter((c) => c.is_composed && c.protein_id === target.id);
+    check(hits.length > 0, "測試前提：候選池裡要有用到 " + target.id + " 的組合");
+    check(hits.every((c) => !M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok),
+      "不吃清單用 id「" + target.id + "」，食材改名後沒有命中");
+    const others = renamedPool.filter((c) => c.is_composed && c.protein_id !== target.id).slice(0, 50);
+    check(others.every((c) => M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok), "不吃清單誤擋了其他蛋白質的組合");
+  }
+
   // ---------- 5. 體重趨勢斜率估計 ----------
   console.log("[體重趨勢斜率]");
   checkTdeeSlope();
