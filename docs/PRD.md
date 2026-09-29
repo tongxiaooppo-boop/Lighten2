@@ -113,7 +113,7 @@ MealContent = {
 - **隱含成分**：自煮的一餐一律帶用油（`cooking_oil`，煎 5g、炒 5g＋有蔬菜 5g；基本資料「用油習慣」設少油時減半，這就是推薦、計畫、自己選共用的預設用油；「自己選」另可選 1 或 2 茶匙）與調味程度（清淡約 300 mg／一般約 700 mg 鈉；已選醬料時預設清淡）。兩者都**不跟主要槽位縮放**。調味程度是「鹽等值的鈉估計」，不代表醬油、不帶過敏原；溫沙拉的調味只代表煎肉調味，不含沙拉醬（decisions #38）；推薦卡片與自煮合計註明「未含沙拉醬」（骨架 `not_included`，章程 B7.5）。細節見章程 B5.6–B5.7。
 - **鈉與飽和脂肪**只用於顯示：合計時有資料的部分照加，另外註明「部分品項無資料」，不因一項缺資料就整欄變空（章程 C4.5）。其餘營養素維持 null 傳染。
 - `estimate` 元件：查不到品項時的匿名估算（喜宴、朋友家），只存在這一餐裡，不存成品項。
-- `dish` 元件（第 12.5 節）：使用者的我的料理，快照是一份的營養（含料理自己的用油與調味），`qty` 是份量倍數。只出現在自煮型態的一餐，而且這一餐不含 `ingredient` 元件；這時 `implicit` 記 `{ oil_g: 0, seasoning: null }`（用油與調味已在快照裡，章程 C4.11）。推薦引擎不產生這種元件（章程 C4.17）。
+- `dish` 元件（第 12.5 節）：使用者的我的料理，快照是一份的營養（含料理自己的用油與調味），`qty` 是份量倍數。只出現在自煮型態的一餐，而且這一餐不含 `ingredient` 元件；這時紀錄的 `implicit` 記 `{ oil_g: 0, seasoning: null }`（用油與調味已在快照裡，章程 C4.11；計畫與組合也可以是 null，見 12.5）。推薦引擎不產生這種元件（章程 C4.17）。
 - `qty`：只用在 `product` 與 `dish`，值只能是 0.5、1、1.5、2（第 12.3 節）；角色上限算元件數，不算 `qty`。
 
 **daily_log 一筆的欄位**（Phase −1a 實作定案，decisions #33）：`{ id, log_date, slot, meal_type, source, name, content, totals, created_at }`
@@ -255,7 +255,7 @@ v1 的大餐預約是「預先登記未來某天某時段要吃什麼、預扣�
 | **平行工作線 B-1b** | 第 12.2 節「食物資料」查詢：`data/tfda_lookup.json` 的產生工具與 check-data 逐筆比對、搜尋與明細畫面。 | B-1a 之後。 |
 | **平行工作線 B-1c** | 第 12.2 節成分明細（選擇器摘要與推薦卡片）。 | B-3 之後，跟 B-1a、B-1b 無依賴。 |
 | **平行工作線 B-2** | 「我的品項」資料填得夠完整（有 kcal/protein_g，過敏原已確認）時，自動併入今日建議候選池。 | B-1a 之後隨時可做，跟 Phase 2–4 沒有依賴。 |
-| **平行工作線 B-4a** | 第 12.4 節：我的食材＝常買清單（從衛福部加入或自填、`settings.favorite_ingredient_ids`、封存語意）；章程 B8、C4.17 的檢查；匯出匯入涵蓋 `custom_ingredients` 與常買 id，匯入時依 `tfda_id` 核對（編號存在或標已下架、`filled` 只留衛福部仍是 null 的欄位；編號在查詢檔完全找不到的那一筆拒絕匯入並列出）；匯入重新產生 id 時料理對我的食材的引用跟著改寫（斷言）。 | B-1b 之後（要用衛福部查詢檔）。 |
+| **平行工作線 B-4a** | 第 12.4 節：我的食材＝常買清單（從衛福部加入或自填、`settings.favorite_ingredient_ids`、封存語意）；章程 B8、C4.17 的檢查；匯出匯入涵蓋 `custom_ingredients` 與常買 id，匯入時依 `tfda_id` 核對（編號存在或標已下架、`filled` 只留衛福部仍是 null 的欄位；編號在查詢檔完全找不到的那一筆拒絕匯入並列出，引用它的料理也一起拒絕並列出，不放寬 ref 驗證）；匯入重新產生 id 時料理對我的食材的引用跟著改寫（斷言）。 | B-1b 之後（要用衛福部查詢檔）。 |
 | **平行工作線 B-4b** | 第 12.5 節：我的料理＋MealContent 的 `dish` 元件（第 3 節、`db.js` 驗證、`contentTotals`、硬性過濾）；匯出匯入涵蓋 `custom_dishes`，匯入重新產生 id 時組合對料理的引用跟著改寫（斷言）；`tools/check-engine.js` 目前用 `kind: "dish"` 當不合法元件的測資，要換一個。 | B-4a 之後。跟 Phase 2 誰先做，後做的那個驗收要加「計畫含料理」的斷言。 |
 | **平行工作線 C** | 「我的組合」（第 11 節）：`saved_meals` store、`toSavedContent`／`remapSavedRefs`／`resolveSavedMeal`、存成組合的兩個入口、選擇器裡的「我的組合」列、基本資料分頁的管理區塊（含直接編輯內容，第 12.6 節）、餐點日曆引用（Phase 3 起）。 | Phase 0 之後即可開始，不依賴 B-1；組合包含我的料理要等 B-4b。驗收：`resolveSavedMeal`／`remapSavedRefs` 的 check-engine 斷言（過敏原、隱藏後改用複製版本、下架、骨架已刪除、骨架 `allow` 失效、軸上限、免開火、角色超量依順序擋後者）；`toSavedContent` 的 `keepImplicit` 兩種情況；帶入時被擋元件不預選；自煮份量依當天預算重算；推薦引擎不讀（check-arch）。 |
 
@@ -390,7 +390,7 @@ v1 的 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.i
 
 - **轉換只有兩個函式，都在 `engine/meal-content.js`**（章程 C2），兩個建立入口依序呼叫：
   1. `toSavedContent(mealContent, { keepImplicit })`：純結構轉換，去掉快照、`role`、縮放倍數與合計。`keepImplicit` 為 true 時保留 `implicit`，否則設 `null`。入口 1 傳入「使用者是否在選擇器裡改過用油／調味」；入口 2 一律傳 false（紀錄裡分不出當時是預設還是使用者指定）。
-  2. `remapSavedRefs(savedContent, catalog, hidden, customFoods, customDishes)`（料理見 12.5）：套用 11.3 解析規則 1–2（隱藏且有複製版本 → 換成複製版本；查不到或隱藏且無複製版本 → 移除），回傳 `{ content, dropped }`。`dropped` 非空時，存檔前用中性文字列出「以下品項已不提供，不會存進組合」。`resolveSavedMeal` 的規則 1–2 也呼叫同一個函式。
+  2. `remapSavedRefs(savedContent, catalog, hidden, customFoods, customDishes, customIngredients, tfdaLookup)`（後三個參數給料理用，見 12.5；要分得出「衛福部查詢檔載入失敗」與「查不到」）：套用 11.3 解析規則 1–2（隱藏且有複製版本 → 換成複製版本；查不到或隱藏且無複製版本 → 移除），回傳 `{ content, dropped }`。`dropped` 非空時，存檔前用中性文字列出「以下品項已不提供，不會存進組合」。`resolveSavedMeal` 的規則 1–2 也呼叫同一個函式。
 - **驗證分兩層**（章程 C1）：
   - `data/db.js` 寫入時只做結構驗證：名稱非空、至少 1 個元件、沒有 `estimate`、`product` 有 `ref` 與 `qty` 且沒有 `snapshot`／`role`、`dish` 有 `ref` 與 `qty` 且沒有 `snapshot`。
   - 語意驗證（角色數量上限、骨架 `allow` 與軸上限、免開火食安）由 ui 在寫入前呼叫 engine 完成；用手動記錄規則（章程 C4.8），**不檢查時段**。
@@ -435,7 +435,7 @@ v1 的 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.i
 
 ---
 
-## 12. 食物資料：查詢與修訂（2026-09-29 新增，第四版草案：依第三輪獨立審核修訂，待最後核對）
+## 12. 食物資料：查詢與修訂（2026-09-29 新增，2026-09-29 定案：四輪獨立審核）
 
 使用者要能單獨查任何食物或食材的營養成分、能在哪些餐出現，也要能增加與修訂。第 10、11 節只涵蓋「我的品項」與「我的組合」的一部分，這一節把整件事一次定義（decisions #50–#56、#57–#70；審核紀錄 [2026-09-29-food-data-review](../collab/opus-review-log/2026-09-29-food-data-review.md)）。
 
@@ -559,7 +559,7 @@ v1 的 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.i
 - **MealContent**（第 3 節）：新元件種類 `dish`（方案 A，第一輪審核採用）。
   - 紀錄：`{ kind: "dish", ref, qty, snapshot: { name, kcal, protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg, partial } }`，快照是一份的營養（含用油與調味），`qty` 照乘；`partial` 讓整餐的「部分品項無資料」照常顯示（章程 C4.5）。
   - 只有料理的一餐，`implicit` 記 `{ oil_g: 0, seasoning: null }`：用油與調味已經含在料理快照裡（章程 C4.11 加註）。計畫與組合的 `implicit` 是 null 時照第 3 節「套用當下預設」，沒有烹調法與骨架時預設剛好也是 `{ oil_g: 0, seasoning: null }`，要有 check-engine 斷言。
-  - `data/db.js` 驗證：元件種類加 `dish`，必有 `ref`、`qty`、`snapshot.name`、`snapshot.kcal`（名稱在快照裡，跟 `estimate` 的頂層 `name` 分開檢查）；含 `dish` 的一餐不得有 `ingredient`，`archetype_id`、`method_id` 是 null；`implicit` 依存放位置：`daily_log` 恰好是 `{ oil_g: 0, seasoning: null }`（避免用油重複計算），`meal_plan` 與 `saved_meals` 是 `{ oil_g: 0, seasoning: null }` 或 `null`（null＝套用當下預設，11.1、12.6）。`snapshotProblem` 允許快照帶 `partial`。
+  - `data/db.js` 驗證：元件種類加 `dish`，紀錄與計畫的 dish 必有 `ref`、`qty`、`snapshot.name`、`snapshot.kcal`（名稱在快照裡，跟 `estimate` 的頂層 `name` 分開檢查；`saved_meals` 的 dish 只有 `ref`、`qty`，不帶快照，見 11.1）；含 `dish` 的一餐不得有 `ingredient`，`archetype_id`、`method_id` 是 null；`implicit` 依存放位置：`daily_log` 恰好是 `{ oil_g: 0, seasoning: null }`（避免用油重複計算），`meal_plan` 與 `saved_meals` 是 `{ oil_g: 0, seasoning: null }` 或 `null`（null＝套用當下預設，11.1、12.6）。`snapshotProblem` 允許快照帶 `partial`。
   - 組合引用（11.3）：`resolveSavedMeal`、`remapSavedRefs` 多收料理、我的食材與衛福部查詢表；這一餐的 `archetype_id` 是 null，略過 11.3 規則 4（骨架重新驗證）。
   - 推薦快照（diff-recs）不受影響：推薦引擎不產生 `dish` 元件，`contentFromRec` 不變。
   - **刻意的行為**：今天已記錄的一餐如果是料理，推薦判斷跨時段不重複（蛋白質、餐型、品項）時不看料理，料理裡的蛋白質不佔名額——因為料理不進推薦，這不是 bug。Phase 2 讓計畫的料理預先佔用當天預算時，`engine/today.js` 用「不是 `ingredient` 就用快照」的泛用寫法，不直接寫 `"dish"`（章程 C4.17 ③）。
