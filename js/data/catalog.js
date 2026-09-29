@@ -10,7 +10,6 @@
 // 並攤平成 engine 用的形狀：kcal_100g、protein_100g、carb_100g、fat_100g、fiber_100g、sat_fat_100g、sodium_100g、
 // diet_tags（由 vegan／lacto_ovo 推導：全素 ⊃ 蛋奶素）；其餘欄位照抄。
 
-import { SLOTS } from "../core/slots.js";
 import { UNVERIFIED_ALLERGEN as UNVERIFIED } from "../core/config.js";
 
 // 種子 JSON 帶跟程式同一個版本字串（取自這個模組被 import map 對應到的網址 ?v=），部署後資料跟程式一起更新（章程 C1.6）
@@ -52,19 +51,21 @@ function fromProduct(it, isTaiwan) {
   };
 }
 
-// 使用者的「我的品項」（custom_foods store）→ 跟現成品項同形狀。v1 的自訂食物沒有角色與時段，一律當配菜、全時段。
+// 使用者的「我的品項」（custom_foods store，PRD 10.1 格式，寫入時已過 db.validateCustomFood）→ 跟現成品項同形狀。
 // allergen_tags 缺欄或 null＝未確認（PRD 10.4），有設過敏原的使用者會被擋。
+// vegan／lacto_ovo／archived 只認 true（寫入驗證不檢查這三欄的型別，字串 "false" 不能被當成全素；Phase 0 計畫 S9）。
 export function fromCustomFood(f) {
   return {
-    uid: f.id, source_id: f.id, name: f.name, channel: null, category: null,
-    role: "side", valid_slots: SLOTS.slice(),
+    uid: f.id, source_id: f.id, name: f.name, channel: f.channel, vendor: orNull(f.vendor), category: orNull(f.category),
+    role: f.role, valid_slots: Array.isArray(f.valid_slots) ? f.valid_slots.slice() : [],
     contains_drink: false, is_treat: false,
     kcal: f.kcal != null ? f.kcal : null, kcal_low: null, kcal_high: null, kcal_rep: null,
     protein_g: f.protein_g != null ? f.protein_g : null, carb_g: f.carb_g != null ? f.carb_g : null,
     fat_g: f.fat_g != null ? f.fat_g : null, fiber_g: f.fiber_g != null ? f.fiber_g : null,
     sat_fat_g: orNull(f.sat_fat_g), sodium_mg: orNull(f.sodium_mg),
-    tier: "🟢", diet_tags: [], allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
-    note: null, is_taiwan: false, is_custom: true,
+    tier: "🟢", diet_tags: dietTags({ vegan: f.vegan === true, lacto_ovo: f.lacto_ovo === true }),
+    allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
+    note: orNull(f.note), is_taiwan: false, is_custom: true, archived: f.archived === true,
   };
 }
 

@@ -227,7 +227,8 @@ async function main() {
   // ---------- 4c. 自訂食物與組合的過敏原（章程 C4.1、B6.4） ----------
   console.log("[自訂食物與組合的過敏原]");
   const allergic = { allergens: ["蛋"] };
-  const custom = (tags) => M.catalog.fromCustomFood(Object.assign({ id: "custom_x", name: "x", kcal: 100 }, tags === undefined ? {} : { allergen_tags: tags }));
+  const customRec = { id: "custom_x", name: "x", kcal: 100, role: "side", channel: "convenience", valid_slots: SLOTS.slice() };
+  const custom = (tags) => M.catalog.fromCustomFood(Object.assign({}, customRec, tags === undefined ? {} : { allergen_tags: tags }));
   check(!M.filters.passesHardFilters(custom(["蛋"]), allergic).ok, "自訂食物含使用者的過敏原卻沒被擋（不能有自訂食物例外）");
   check(!M.filters.passesHardFilters(custom(null), allergic).ok, "自訂食物過敏原未確認（null）卻沒被擋");
   check(!M.filters.passesHardFilters(custom(undefined), allergic).ok, "自訂食物沒有 allergen_tags 欄位卻沒被擋");
@@ -423,29 +424,33 @@ async function main() {
     check(saladRecs.lunch && (saladRecs.lunch.not_included || []).join() === "沙拉醬", "推薦結果要保留溫沙拉的 not_included（卡片靠它顯示「未含沙拉醬」）");
   }
 
-  // ---------- 4i. 「自己選」的品項帶齊 catalog 的營養欄位（章程 C2；−1b 驗收審核 A1） ----------
-  console.log("[自己選的營養欄位]");
+  // ---------- 4i. 我的品項照 PRD 10.1 讀進來、選擇器的品項帶齊 catalog 的營養欄位（章程 C2；Phase 0 計畫 N1） ----------
+  console.log("[我的品項與選擇器的營養欄位]");
   {
-    const picker = await imp("js/ui/item-picker.js");
-    const FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
-    let compared = 0;
-    SLOTS.forEach((slot) => {
-      const r = picker.filterForSlot(catalog, [], slot, {});
-      r.pass.concat(r.blocked.map((b) => b.item)).forEach((it) => {
-        const src = catalog.productsByUid[it.uid];
-        FIELDS.forEach((k) => {
-          compared++;
-          check(it[k] === src[k], "自己選 " + slot + " 的 " + it.uid + "." + k + " 跟 catalog 不同（" + it[k] + " vs " + src[k] + "）");
-        });
-      });
-    });
-    check(compared > 0, "測試前提：自己選要有品項");
-    const latte = picker.filterForSlot(catalog, [], "breakfast", {}).pass.find((it) => it.uid === "tw_dr05");
-    check(latte && M.mc.sumProducts([latte]).sodium_mg === 113.1, "自己選拿鐵（tw_dr05），合計鈉要是 113.1（實際 " + (latte && M.mc.sumProducts([latte]).sodium_mg) + "）");
-    const cf = M.catalog.fromCustomFood({ id: "custom_y", name: "y", kcal: 100, protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 0, sat_fat_g: 0.4, sodium_mg: 250, allergen_tags: [] });
+    const rec = (o) => Object.assign({ id: "custom_y", name: "y", kcal: 100, protein_g: 1, carb_g: 1, fat_g: 1, fiber_g: 0, sat_fat_g: 0.4, sodium_mg: 250,
+      role: "main", channel: "delivery", valid_slots: ["lunch", "dinner"], allergen_tags: [], vegan: false, lacto_ovo: false, archived: false }, o);
+    let valid = true;
+    try { M.db.validateCustomFood(rec({})); } catch (e) { valid = false; }
+    check(valid, "測試前提：PRD 10.1 格式的我的品項要通過寫入驗證");
+    const cf = M.catalog.fromCustomFood(rec({}));
+    check(cf.role === "main" && cf.channel === "delivery" && cf.valid_slots.join() === "lunch,dinner", "我的品項要讀記錄的角色、分頁、時段（實際 " + cf.role + "、" + cf.channel + "、" + cf.valid_slots + "）");
     check(cf.sat_fat_g === 0.4 && cf.sodium_mg === 250, "我的品項要帶飽和脂肪與鈉（實際 " + cf.sat_fat_g + "、" + cf.sodium_mg + "）");
-    const cfPicked = picker.filterForSlot(catalog, [{ id: "custom_y", name: "y", kcal: 100, sat_fat_g: 0.4, sodium_mg: 250, allergen_tags: [] }], "lunch", {}).pass.find((it) => it.uid === "custom_y");
-    check(cfPicked && cfPicked.sodium_mg === 250, "自己選裡的我的品項要帶鈉");
+    check(M.filters.passesHardFilters(M.catalog.fromCustomFood(rec({ vegan: true })), { diet_restriction: "全素" }).ok, "宣告全素的我的品項，全素使用者可以選");
+    check(M.filters.passesHardFilters(M.catalog.fromCustomFood(rec({ lacto_ovo: true })), { diet_restriction: "蛋奶素" }).ok, "宣告蛋奶素的我的品項，蛋奶素使用者可以選");
+    check(!M.filters.passesHardFilters(M.catalog.fromCustomFood(rec({ vegan: "false" })), { diet_restriction: "全素" }).ok, "vegan 是字串 \"false\" 不能當成全素");
+    check(M.catalog.fromCustomFood(rec({ archived: true })).archived === true && M.catalog.fromCustomFood(rec({ archived: "yes" })).archived === false, "archived 只認 true");
+    check(!M.filters.passesHardFilters(cf, { diet_restriction: "全素" }).ok, "沒宣告的我的品項，全素使用者不能選");
+    const t = M.picker.partitionByMealType(catalog.products, [cf], "lunch");
+    check(t.delivery.indexOf(cf) !== -1 && t.convenience.indexOf(cf) === -1, "我的品項依 channel 進外食分頁");
+    check(M.picker.partitionByMealType(catalog.products, [cf], "breakfast").delivery.indexOf(cf) === -1, "我的品項照自己的時段");
+    // 選擇器的品項就是 catalog 的品項本身（章程 C2：不逐欄抄）
+    SLOTS.forEach((slot) => {
+      const p = M.picker.partitionByMealType(catalog.products, [], slot);
+      check(p.convenience.concat(p.delivery, p.drinks).every((it) => catalog.productsByUid[it.uid] === it), slot + "：選擇器的品項要是 catalog 的同一個物件");
+    });
+    const latte = catalog.productsByUid["tw_dr05"];
+    check(M.mc.sumProducts([latte]).sodium_mg === 113.1, "自己選拿鐵（tw_dr05），合計鈉要是 113.1（實際 " + M.mc.sumProducts([latte]).sodium_mg + "）");
+    check(M.mc.slotGaps({ kcalShare: 600, proteinShare: 30, fiberShare: 8 }, { kcal: 800, protein_g: null, fiber_g: 3 }).proteinGap === null, "蛋白質合計未知時缺口是 null，不當 0");
   }
 
   // ---------- 4j. Phase 0 選擇器的 engine（Phase 0 計畫第 4 節斷言 1–13） ----------
@@ -681,7 +686,8 @@ async function main() {
           const d = Object.assign(draftOf(c, drink), { kind: "cook", meal_type: M.config.isQuickTier(c.tier_rank) ? "cook_quick" : "cook_full", primaryScale: scale });
           const nt = mc.contentTotals(mc.buildDraftContent(d, { oilHabit: "normal" }), catalog);
           if (!drink && nt.partial.length > 0 && mc.composeTotals(d, mc.composePrimary(d), mc.composeImplicit(d, "normal"), catalog.implicit).partial.length === 0) soloPartial++;
-          if (!same(nt, mc.composeTotals(d, mc.composePrimary(d), mc.composeImplicit(d, "normal"), catalog.implicit))) oldMismatch++;
+          // 沒有飲料時自煮合計仍等於 composeTotals（飲料從 commit 3 起不在 composeTotals 裡，有飲料的組合靠下面的凍結值）
+          if (!drink && !same(nt, mc.composeTotals(d, mc.composePrimary(d), mc.composeImplicit(d, "normal"), catalog.implicit))) oldMismatch++;
           cookLines.push(c.id + "@" + scale + "=" + JSON.stringify(nt));
         });
       });
@@ -693,7 +699,7 @@ async function main() {
       lines["cook:" + key] = cookLines;
       lines["items:" + key] = itemLines;
     });
-    check(oldMismatch === 0, "草稿路徑的合計要逐欄等於舊的 composeTotals／sumProducts（不一致 " + oldMismatch + " 組）");
+    check(oldMismatch === 0, "草稿路徑的合計要逐欄等於 composeTotals（無飲料）／sumProducts（不一致 " + oldMismatch + " 組）");
     check(soloPartial === 0, "只有自煮、沒有飲料的一餐不能被標部分無資料（" + soloPartial + " 組）");
     const hashes = {};
     Object.keys(lines).forEach((k) => { hashes[k] = require("crypto").createHash("sha256").update(lines[k].join("\n")).digest("hex").slice(0, 16); });

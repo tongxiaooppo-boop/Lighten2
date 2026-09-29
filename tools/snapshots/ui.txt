@@ -1234,596 +1234,366 @@ profile/night-cut-fast/dom08	#target-protein text="144"
 profile/night-cut-fast/dom09	#target-tdee text="2370.2"
 profile/night-cut-fast/dom10	#target-warning hidden
 profile/night-cut-fast/dom11	#targets-result (untouched)
-picker/items/breakfast/main/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/main/dom01	#manual-picker-gap html="<p>這組合約 120 kcal，這個時段配額約 0 kcal（+120），仍可送出。</p>"
-picker/items/breakfast/main/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/main/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/main/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/main/dom06	#manual-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
-picker/items/breakfast/main+side/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/main+side/dom01	#manual-picker-gap html="<p>這組合約 230 kcal，這個時段配額約 0 kcal（+230），仍可送出。</p>"
-picker/items/breakfast/main+side/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/main+side/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/main+side/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/main+side/dom06	#manual-picker-summary html="已選 2 件 · 約 230 kcal · 蛋白質 36g · 碳水 7g · 脂肪 5g · 纖維 4g · 鈉 無資料"
-picker/items/breakfast/main+side+drink/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/main+side+drink/dom01	#manual-picker-gap html="<p>這組合約 365 kcal，這個時段配額約 0 kcal（+365），仍可送出。</p>"
-picker/items/breakfast/main+side+drink/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/main+side+drink/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/main+side+drink/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/main+side+drink/dom06	#manual-picker-summary html="已選 3 件 · 約 365 kcal · 蛋白質 42g · 碳水 26g · 脂肪 9g · 纖維 5g · 鈉 無資料"
-picker/items/breakfast/main+drink+snack/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/main+drink+snack/dom01	#manual-picker-gap html="<p>這組合約 393 kcal，這個時段配額約 0 kcal（+393），仍可送出。</p>"
-picker/items/breakfast/main+drink+snack/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/main+drink+snack/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/main+drink+snack/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/main+drink+snack/dom06	#manual-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
-picker/items/breakfast/drink-only/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/drink-only/dom01	#manual-picker-gap html="<p>這組合約 135 kcal，這個時段配額約 0 kcal（+135），仍可送出。</p>"
-picker/items/breakfast/drink-only/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/drink-only/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/drink-only/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
-picker/items/breakfast/drink-tfda/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/drink-tfda/dom01	#manual-picker-gap html="<p>這組合約 172 kcal，這個時段配額約 0 kcal（+172），仍可送出。</p>"
-picker/items/breakfast/drink-tfda/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/drink-tfda/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/drink-tfda/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
-picker/items/breakfast/custom-null/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 0 kcal（+935），仍可送出。</p>"
-picker/items/breakfast/custom-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/custom-null/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/custom-null/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/custom-null/dom06	#manual-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
-picker/items/breakfast/custom-carb-null/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/custom-carb-null/dom01	#manual-picker-gap html="<p>這組合約 770 kcal，這個時段配額約 0 kcal（+770），仍可送出。</p>"
-picker/items/breakfast/custom-carb-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/custom-carb-null/dom04	#manual-picker-main-hint hidden
-picker/items/breakfast/custom-carb-null/dom05	#manual-picker-submit (untouched)
-picker/items/breakfast/custom-carb-null/dom06	#manual-picker-summary html="已選 2 件 · 約 770 kcal · 蛋白質 53g · 碳水 — · 脂肪 23g · 纖維 5g · 鈉 無資料"
-picker/items/breakfast/none/dom00	#manual-picker-compose-mode hidden
-picker/items/breakfast/none/dom01	#manual-picker-gap (untouched)
-picker/items/breakfast/none/dom03	#manual-picker-items-mode (untouched)
-picker/items/breakfast/none/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/breakfast/none/dom05	#manual-picker-submit disabled
-picker/items/breakfast/none/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/items/lunch/main/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/main/dom01	#manual-picker-gap html="<p>蛋白質缺口約 38g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/main/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/main/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/main/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/main/dom06	#manual-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
-picker/items/lunch/main+side/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/main+side/dom01	#manual-picker-gap html="<p>蛋白質缺口約 25.5g</p><p>纖維缺口約 8.7g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/main+side/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/main+side/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/main+side/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/main+side/dom06	#manual-picker-summary html="已選 2 件 · 約 230 kcal · 蛋白質 36g · 碳水 7g · 脂肪 5g · 纖維 4g · 鈉 無資料"
-picker/items/lunch/main+side+drink/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/main+side+drink/dom01	#manual-picker-gap html="<p>蛋白質缺口約 19.5g</p><p>纖維缺口約 7.7g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/main+side+drink/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/main+side+drink/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/main+side+drink/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/main+side+drink/dom06	#manual-picker-summary html="已選 3 件 · 約 365 kcal · 蛋白質 42g · 碳水 26g · 脂肪 9g · 纖維 5g · 鈉 無資料"
-picker/items/lunch/main+drink+snack/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/main+drink+snack/dom01	#manual-picker-gap html="<p>蛋白質缺口約 27.5g</p><p>纖維缺口約 8g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/main+drink+snack/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/main+drink+snack/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/main+drink+snack/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/main+drink+snack/dom06	#manual-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
-picker/items/lunch/drink-only/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/drink-only/dom01	#manual-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/drink-only/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/drink-only/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/drink-only/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
-picker/items/lunch/drink-tfda/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/drink-tfda/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/drink-tfda/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/drink-tfda/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
-picker/items/lunch/custom-null/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p>"
-picker/items/lunch/custom-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/custom-null/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/custom-null/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/custom-null/dom06	#manual-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
-picker/items/lunch/custom-carb-null/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/custom-carb-null/dom01	#manual-picker-gap html="<p>這組合約 770 kcal，這個時段配額約 738 kcal（+32），仍可送出。</p><p>蛋白質缺口約 8g</p><p>纖維缺口約 7.5g</p><p>可以考慮加：美式咖啡（無糖，大杯約450ml）（+1g）、海苔／日式海藻高纖沙拉（+3g）</p>"
-picker/items/lunch/custom-carb-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/custom-carb-null/dom04	#manual-picker-main-hint hidden
-picker/items/lunch/custom-carb-null/dom05	#manual-picker-submit (untouched)
-picker/items/lunch/custom-carb-null/dom06	#manual-picker-summary html="已選 2 件 · 約 770 kcal · 蛋白質 53g · 碳水 — · 脂肪 23g · 纖維 5g · 鈉 無資料"
-picker/items/lunch/none/dom00	#manual-picker-compose-mode hidden
-picker/items/lunch/none/dom01	#manual-picker-gap html="<p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/lunch/none/dom03	#manual-picker-items-mode (untouched)
-picker/items/lunch/none/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/lunch/none/dom05	#manual-picker-submit disabled
-picker/items/lunch/none/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/items/afternoon_tea/main/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/main/dom01	#manual-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/afternoon_tea/main/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/main/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/afternoon_tea/main/dom05	#manual-picker-submit disabled
-picker/items/afternoon_tea/main/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/items/afternoon_tea/main+side/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/main+side/dom01	#manual-picker-gap html="<p>這組合約 650 kcal，這個時段配額約 246 kcal（+404），仍可送出。</p>"
-picker/items/afternoon_tea/main+side/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/main+side/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/main+side/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/main+side/dom06	#manual-picker-summary html="已選 1 件 · 約 650 kcal · 蛋白質 30g · 碳水 — · 脂肪 20g · 纖維 5g · 鈉 無資料"
-picker/items/afternoon_tea/main+side+drink/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/main+side+drink/dom01	#manual-picker-gap html="<p>這組合約 785 kcal，這個時段配額約 246 kcal（+539），仍可送出。</p>"
-picker/items/afternoon_tea/main+side+drink/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/main+side+drink/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/main+side+drink/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/main+side+drink/dom06	#manual-picker-summary html="已選 2 件 · 約 785 kcal · 蛋白質 36g · 碳水 — · 脂肪 24g · 纖維 6g · 鈉 無資料"
-picker/items/afternoon_tea/main+drink+snack/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/main+drink+snack/dom01	#manual-picker-gap html="<p>這組合約 273 kcal，這個時段配額約 246 kcal（+27），仍可送出。</p><p>蛋白質缺口約 9.8g</p><p>可以考慮加：美式咖啡（無糖，大杯約450ml）（+1g）</p>"
-picker/items/afternoon_tea/main+drink+snack/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/main+drink+snack/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/main+drink+snack/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/main+drink+snack/dom06	#manual-picker-summary html="已選 2 件 · 約 273 kcal · 蛋白質 11g · 碳水 31g · 脂肪 11g · 纖維 5g · 鈉 無資料"
-picker/items/afternoon_tea/drink-only/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/drink-only/dom01	#manual-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/afternoon_tea/drink-only/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/drink-only/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/drink-only/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
-picker/items/afternoon_tea/drink-tfda/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/afternoon_tea/drink-tfda/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/drink-tfda/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/drink-tfda/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
-picker/items/afternoon_tea/custom-null/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p>"
-picker/items/afternoon_tea/custom-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/custom-null/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/custom-null/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/custom-null/dom06	#manual-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
-picker/items/afternoon_tea/custom-carb-null/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/custom-carb-null/dom01	#manual-picker-gap html="<p>這組合約 650 kcal，這個時段配額約 246 kcal（+404），仍可送出。</p>"
-picker/items/afternoon_tea/custom-carb-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/custom-carb-null/dom04	#manual-picker-main-hint hidden
-picker/items/afternoon_tea/custom-carb-null/dom05	#manual-picker-submit (untouched)
-picker/items/afternoon_tea/custom-carb-null/dom06	#manual-picker-summary html="已選 1 件 · 約 650 kcal · 蛋白質 30g · 碳水 — · 脂肪 20g · 纖維 5g · 鈉 無資料"
-picker/items/afternoon_tea/none/dom00	#manual-picker-compose-mode hidden
-picker/items/afternoon_tea/none/dom01	#manual-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/afternoon_tea/none/dom03	#manual-picker-items-mode (untouched)
-picker/items/afternoon_tea/none/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/afternoon_tea/none/dom05	#manual-picker-submit disabled
-picker/items/afternoon_tea/none/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/items/dinner/main/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/main/dom01	#manual-picker-gap html="<p>蛋白質缺口約 38g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/main/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/main/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/main/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/main/dom06	#manual-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
-picker/items/dinner/main+side/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/main+side/dom01	#manual-picker-gap html="<p>蛋白質缺口約 25.5g</p><p>纖維缺口約 8.7g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/main+side/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/main+side/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/main+side/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/main+side/dom06	#manual-picker-summary html="已選 2 件 · 約 230 kcal · 蛋白質 36g · 碳水 7g · 脂肪 5g · 纖維 4g · 鈉 無資料"
-picker/items/dinner/main+side+drink/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/main+side+drink/dom01	#manual-picker-gap html="<p>蛋白質缺口約 19.5g</p><p>纖維缺口約 7.7g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/main+side+drink/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/main+side+drink/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/main+side+drink/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/main+side+drink/dom06	#manual-picker-summary html="已選 3 件 · 約 365 kcal · 蛋白質 42g · 碳水 26g · 脂肪 9g · 纖維 5g · 鈉 無資料"
-picker/items/dinner/main+drink+snack/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/main+drink+snack/dom01	#manual-picker-gap html="<p>蛋白質缺口約 27.5g</p><p>纖維缺口約 8g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/main+drink+snack/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/main+drink+snack/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/main+drink+snack/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/main+drink+snack/dom06	#manual-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
-picker/items/dinner/drink-only/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/drink-only/dom01	#manual-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/drink-only/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/drink-only/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/drink-only/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
-picker/items/dinner/drink-tfda/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/drink-tfda/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/drink-tfda/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/drink-tfda/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
-picker/items/dinner/custom-null/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p>"
-picker/items/dinner/custom-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/custom-null/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/custom-null/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/custom-null/dom06	#manual-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
-picker/items/dinner/custom-carb-null/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/custom-carb-null/dom01	#manual-picker-gap html="<p>這組合約 770 kcal，這個時段配額約 738 kcal（+32），仍可送出。</p><p>蛋白質缺口約 8g</p><p>纖維缺口約 7.5g</p><p>可以考慮加：美式咖啡（無糖，大杯約450ml）（+1g）、海苔／日式海藻高纖沙拉（+3g）</p>"
-picker/items/dinner/custom-carb-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/custom-carb-null/dom04	#manual-picker-main-hint hidden
-picker/items/dinner/custom-carb-null/dom05	#manual-picker-submit (untouched)
-picker/items/dinner/custom-carb-null/dom06	#manual-picker-summary html="已選 2 件 · 約 770 kcal · 蛋白質 53g · 碳水 — · 脂肪 23g · 纖維 5g · 鈉 無資料"
-picker/items/dinner/none/dom00	#manual-picker-compose-mode hidden
-picker/items/dinner/none/dom01	#manual-picker-gap html="<p>蛋白質缺口約 61g</p><p>纖維缺口約 12.5g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/dinner/none/dom03	#manual-picker-items-mode (untouched)
-picker/items/dinner/none/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/dinner/none/dom05	#manual-picker-submit disabled
-picker/items/dinner/none/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/items/snack/main/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/main/dom01	#manual-picker-gap html="<p>纖維缺口約 4.2g</p><p>可以考慮加：統一陽光 高纖無糖豆漿（+10g）、義美 高纖無糖豆奶（+9g）</p>"
-picker/items/snack/main/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/main/dom04	#manual-picker-main-hint hidden
-picker/items/snack/main/dom05	#manual-picker-submit (untouched)
-picker/items/snack/main/dom06	#manual-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
-picker/items/snack/main+side/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/main+side/dom01	#manual-picker-gap html="<p>這組合約 770 kcal，這個時段配額約 246 kcal（+524），仍可送出。</p>"
-picker/items/snack/main+side/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/main+side/dom04	#manual-picker-main-hint hidden
-picker/items/snack/main+side/dom05	#manual-picker-submit (untouched)
-picker/items/snack/main+side/dom06	#manual-picker-summary html="已選 2 件 · 約 770 kcal · 蛋白質 53g · 碳水 — · 脂肪 23g · 纖維 5g · 鈉 無資料"
-picker/items/snack/main+side+drink/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/main+side+drink/dom01	#manual-picker-gap html="<p>這組合約 905 kcal，這個時段配額約 246 kcal（+659），仍可送出。</p>"
-picker/items/snack/main+side+drink/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/main+side+drink/dom04	#manual-picker-main-hint hidden
-picker/items/snack/main+side+drink/dom05	#manual-picker-submit (untouched)
-picker/items/snack/main+side+drink/dom06	#manual-picker-summary html="已選 3 件 · 約 905 kcal · 蛋白質 59g · 碳水 — · 脂肪 27g · 纖維 6g · 鈉 無資料"
-picker/items/snack/main+drink+snack/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/main+drink+snack/dom01	#manual-picker-gap html="<p>這組合約 393 kcal，這個時段配額約 246 kcal（+147），仍可送出。</p>"
-picker/items/snack/main+drink+snack/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/main+drink+snack/dom04	#manual-picker-main-hint hidden
-picker/items/snack/main+drink+snack/dom05	#manual-picker-submit (untouched)
-picker/items/snack/main+drink+snack/dom06	#manual-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
-picker/items/snack/drink-only/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/drink-only/dom01	#manual-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/snack/drink-only/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/drink-only/dom04	#manual-picker-main-hint hidden
-picker/items/snack/drink-only/dom05	#manual-picker-submit (untouched)
-picker/items/snack/drink-only/dom06	#manual-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
-picker/items/snack/drink-tfda/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/drink-tfda/dom01	#manual-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/snack/drink-tfda/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/drink-tfda/dom04	#manual-picker-main-hint hidden
-picker/items/snack/drink-tfda/dom05	#manual-picker-submit (untouched)
-picker/items/snack/drink-tfda/dom06	#manual-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
-picker/items/snack/custom-null/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/custom-null/dom01	#manual-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p>"
-picker/items/snack/custom-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/custom-null/dom04	#manual-picker-main-hint hidden
-picker/items/snack/custom-null/dom05	#manual-picker-submit (untouched)
-picker/items/snack/custom-null/dom06	#manual-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
-picker/items/snack/custom-carb-null/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/custom-carb-null/dom01	#manual-picker-gap html="<p>這組合約 770 kcal，這個時段配額約 246 kcal（+524），仍可送出。</p>"
-picker/items/snack/custom-carb-null/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/custom-carb-null/dom04	#manual-picker-main-hint hidden
-picker/items/snack/custom-carb-null/dom05	#manual-picker-submit (untouched)
-picker/items/snack/custom-carb-null/dom06	#manual-picker-summary html="已選 2 件 · 約 770 kcal · 蛋白質 53g · 碳水 — · 脂肪 23g · 纖維 5g · 鈉 無資料"
-picker/items/snack/none/dom00	#manual-picker-compose-mode hidden
-picker/items/snack/none/dom01	#manual-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 4.2g</p><p>可以考慮加：Body Goals 飽飽控卡／蛋白飲（+21g）、翰方御品 高蛋白飽飽纖搖飲（+20g）</p>"
-picker/items/snack/none/dom03	#manual-picker-items-mode (untouched)
-picker/items/snack/none/dom04	#manual-picker-main-hint text="請至少選一個品項。"
-picker/items/snack/none/dom05	#manual-picker-submit disabled
-picker/items/snack/none/dom06	#manual-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
-picker/compose/breakfast/bowl_oat/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 20.4g</p>"
-picker/compose/breakfast/bowl_oat/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/s1/dom06	#manual-picker-summary html="已配好 · 約 268 kcal · 蛋白質 16g · 碳水 29g · 脂肪 10g · 纖維 8g · 鈉 約 8 mg"
-picker/compose/breakfast/bowl_oat/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22.8g</p><p>纖維缺口約 1.5g</p>"
-picker/compose/breakfast/bowl_oat/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/s0.5/dom06	#manual-picker-summary html="已配好 · 約 186 kcal · 蛋白質 13g · 碳水 16g · 脂肪 8g · 纖維 6g · 鈉 約 7 mg"
-picker/compose/breakfast/bowl_oat/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19g</p>"
-picker/compose/breakfast/bowl_oat/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/s1.3/dom06	#manual-picker-summary html="已配好 · 約 316 kcal · 蛋白質 17g · 碳水 37g · 脂肪 11g · 纖維 9g · 鈉 約 8 mg"
-picker/compose/breakfast/bowl_oat/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 15.7g</p>"
-picker/compose/breakfast/bowl_oat/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/s2/dom06	#manual-picker-summary html="已配好 · 約 430 kcal · 蛋白質 20g · 碳水 56g · 脂肪 13g · 纖維 12g · 鈉 約 9 mg"
-picker/compose/breakfast/bowl_oat/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 20.4g</p>"
-picker/compose/breakfast/bowl_oat/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 268 kcal · 蛋白質 16g · 碳水 29g · 脂肪 10g · 纖維 8g · 鈉 約 8 mg"
-picker/compose/breakfast/bowl_oat/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 14.4g</p>"
-picker/compose/breakfast/bowl_oat/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/drink/dom06	#manual-picker-summary html="已配好 · 約 403 kcal · 蛋白質 22g · 碳水 49g · 脂肪 13g · 纖維 9g · 鈉 約 8 mg（部分品項無資料）"
-picker/compose/breakfast/bowl_oat/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 20.4g</p>"
-picker/compose/breakfast/bowl_oat/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/breakfast/bowl_oat/no-method/dom05	#manual-picker-submit disabled
-picker/compose/breakfast/bowl_oat/no-method/dom06	#manual-picker-summary html="已配好 · 約 268 kcal · 蛋白質 16g · 碳水 29g · 脂肪 10g · 纖維 8g · 鈉 約 8 mg"
-picker/compose/breakfast/bowl_oat/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16.2g</p><p>纖維缺口約 3.3g</p>"
-picker/compose/breakfast/bowl_oat/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/bowl_oat/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/bowl_oat/last-protein/dom06	#manual-picker-summary html="已配好 · 約 272 kcal · 蛋白質 20g · 碳水 33g · 脂肪 7g · 纖維 4g · 鈉 約 52 mg"
-picker/compose/breakfast/egg_pan/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.9g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/s1/dom06	#manual-picker-summary html="已配好 · 約 218 kcal · 蛋白質 16g · 碳水 8g · 脂肪 14g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/breakfast/egg_pan/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 26.2g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/s0.5/dom06	#manual-picker-summary html="已配好 · 約 150 kcal · 蛋白質 10g · 碳水 7g · 脂肪 10g · 纖維 3g · 鈉 約 782 mg"
-picker/compose/breakfast/egg_pan/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16.1g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/s1.3/dom06	#manual-picker-summary html="已配好 · 約 258 kcal · 蛋白質 20g · 碳水 9g · 脂肪 17g · 纖維 3g · 鈉 約 893 mg"
-picker/compose/breakfast/egg_pan/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 7.2g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/s2/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 29g · 碳水 10g · 脂肪 23g · 纖維 3g · 鈉 約 989 mg"
-picker/compose/breakfast/egg_pan/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.3g</p><p>纖維缺口約 7.5g</p>"
-picker/compose/breakfast/egg_pan/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 180 kcal · 蛋白質 13g · 碳水 2g · 脂肪 14g · 纖維 0g · 鈉 約 838 mg"
-picker/compose/breakfast/egg_pan/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 13.9g</p><p>纖維缺口約 3.7g</p>"
-picker/compose/breakfast/egg_pan/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/drink/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 22g · 碳水 27g · 脂肪 18g · 纖維 4g · 鈉 約 851 mg（部分品項無資料）"
-picker/compose/breakfast/egg_pan/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.9g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/breakfast/egg_pan/no-method/dom05	#manual-picker-submit disabled
-picker/compose/breakfast/egg_pan/no-method/dom06	#manual-picker-summary html="已配好 · 約 173 kcal · 蛋白質 16g · 碳水 8g · 脂肪 9g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/breakfast/egg_pan/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.9g</p><p>纖維缺口約 4.7g</p>"
-picker/compose/breakfast/egg_pan/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/breakfast/egg_pan/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/breakfast/egg_pan/last-protein/dom06	#manual-picker-summary html="已配好 · 約 262 kcal · 蛋白質 16g · 碳水 8g · 脂肪 19g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/lunch/egg_pan/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/s1/dom06	#manual-picker-summary html="已配好 · 約 218 kcal · 蛋白質 16g · 碳水 8g · 脂肪 14g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/lunch/egg_pan/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 44.2g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/s0.5/dom06	#manual-picker-summary html="已配好 · 約 150 kcal · 蛋白質 10g · 碳水 7g · 脂肪 10g · 纖維 3g · 鈉 約 782 mg"
-picker/compose/lunch/egg_pan/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 34.1g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/s1.3/dom06	#manual-picker-summary html="已配好 · 約 258 kcal · 蛋白質 20g · 碳水 9g · 脂肪 17g · 纖維 3g · 鈉 約 893 mg"
-picker/compose/lunch/egg_pan/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.2g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/s2/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 29g · 碳水 10g · 脂肪 23g · 纖維 3g · 鈉 約 989 mg"
-picker/compose/lunch/egg_pan/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 41.3g</p><p>纖維缺口約 11.2g</p>"
-picker/compose/lunch/egg_pan/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 180 kcal · 蛋白質 13g · 碳水 2g · 脂肪 14g · 纖維 0g · 鈉 約 838 mg"
-picker/compose/lunch/egg_pan/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 31.9g</p><p>纖維缺口約 7.4g</p>"
-picker/compose/lunch/egg_pan/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/drink/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 22g · 碳水 27g · 脂肪 18g · 纖維 4g · 鈉 約 851 mg（部分品項無資料）"
-picker/compose/lunch/egg_pan/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/lunch/egg_pan/no-method/dom05	#manual-picker-submit disabled
-picker/compose/lunch/egg_pan/no-method/dom06	#manual-picker-summary html="已配好 · 約 173 kcal · 蛋白質 16g · 碳水 8g · 脂肪 9g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/lunch/egg_pan/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/lunch/egg_pan/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/egg_pan/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/egg_pan/last-protein/dom06	#manual-picker-summary html="已配好 · 約 262 kcal · 蛋白質 16g · 碳水 8g · 脂肪 19g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/lunch/protein_stir_fry/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.5g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/lunch/protein_stir_fry/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/s1/dom06	#manual-picker-summary html="已配好 · 約 339 kcal · 蛋白質 31g · 碳水 15g · 脂肪 18g · 纖維 7g · 鈉 約 576 mg"
-picker/compose/lunch/protein_stir_fry/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 24.9g</p><p>纖維缺口約 6.1g</p>"
-picker/compose/lunch/protein_stir_fry/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/s0.5/dom06	#manual-picker-summary html="已配好 · 約 321 kcal · 蛋白質 29g · 碳水 12g · 脂肪 18g · 纖維 5g · 鈉 約 565 mg"
-picker/compose/lunch/protein_stir_fry/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22.7g</p><p>纖維缺口約 3.7g</p>"
-picker/compose/lunch/protein_stir_fry/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/s1.3/dom06	#manual-picker-summary html="已配好 · 約 349 kcal · 蛋白質 31g · 碳水 17g · 脂肪 18g · 纖維 8g · 鈉 約 582 mg"
-picker/compose/lunch/protein_stir_fry/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 20.8g</p><p>纖維缺口約 1.6g</p>"
-picker/compose/lunch/protein_stir_fry/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/s2/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 33g · 碳水 22g · 脂肪 18g · 纖維 10g · 鈉 約 597 mg"
-picker/compose/lunch/protein_stir_fry/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 27.5g</p><p>纖維缺口約 8.2g</p>"
-picker/compose/lunch/protein_stir_fry/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 246 kcal · 蛋白質 27g · 碳水 7g · 脂肪 12g · 纖維 3g · 鈉 約 817 mg"
-picker/compose/lunch/protein_stir_fry/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 17.5g</p><p>纖維缺口約 3.6g</p>"
-picker/compose/lunch/protein_stir_fry/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/drink/dom06	#manual-picker-summary html="已配好 · 約 474 kcal · 蛋白質 37g · 碳水 34g · 脂肪 22g · 纖維 8g · 鈉 約 576 mg（部分品項無資料）"
-picker/compose/lunch/protein_stir_fry/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.5g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/lunch/protein_stir_fry/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/lunch/protein_stir_fry/no-method/dom05	#manual-picker-submit disabled
-picker/compose/lunch/protein_stir_fry/no-method/dom06	#manual-picker-summary html="已配好 · 約 250 kcal · 蛋白質 31g · 碳水 15g · 脂肪 8g · 纖維 7g · 鈉 約 576 mg"
-picker/compose/lunch/protein_stir_fry/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 28.5g</p>"
-picker/compose/lunch/protein_stir_fry/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/protein_stir_fry/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/protein_stir_fry/last-protein/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 26g · 碳水 30g · 脂肪 20g · 纖維 16g · 鈉 約 1019 mg"
-picker/compose/lunch/grain_bowl_baked/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 14.2g</p><p>纖維缺口約 4.9g</p>"
-picker/compose/lunch/grain_bowl_baked/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/s1/dom06	#manual-picker-summary html="已配好 · 約 511 kcal · 蛋白質 40g · 碳水 75g · 脂肪 5g · 纖維 6g · 鈉 約 749 mg"
-picker/compose/lunch/grain_bowl_baked/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16.9g</p><p>纖維缺口約 6.7g</p>"
-picker/compose/lunch/grain_bowl_baked/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/s0.5/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 37g · 碳水 46g · 脂肪 4g · 纖維 5g · 鈉 約 747 mg"
-picker/compose/lunch/grain_bowl_baked/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 12.5g</p><p>纖維缺口約 3.9g</p>"
-picker/compose/lunch/grain_bowl_baked/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/s1.3/dom06	#manual-picker-summary html="已配好 · 約 593 kcal · 蛋白質 42g · 碳水 92g · 脂肪 6g · 纖維 7g · 鈉 約 749 mg"
-picker/compose/lunch/grain_bowl_baked/s2/dom02	#manual-picker-gap html="<p>這組合約 784 kcal，這個時段配額約 711 kcal（+73），仍可送出。</p><p>蛋白質缺口約 8.6g</p><p>纖維缺口約 1.5g</p>"
-picker/compose/lunch/grain_bowl_baked/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/s2/dom06	#manual-picker-summary html="已配好 · 約 784 kcal · 蛋白質 45g · 碳水 132g · 脂肪 7g · 纖維 10g · 鈉 約 751 mg"
-picker/compose/lunch/grain_bowl_baked/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 18.2g</p><p>纖維缺口約 7.7g</p>"
-picker/compose/lunch/grain_bowl_baked/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 428 kcal · 蛋白質 36g · 碳水 58g · 脂肪 5g · 纖維 4g · 鈉 約 768 mg"
-picker/compose/lunch/grain_bowl_baked/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 8.2g</p><p>纖維缺口約 3.9g</p>"
-picker/compose/lunch/grain_bowl_baked/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/drink/dom06	#manual-picker-summary html="已配好 · 約 646 kcal · 蛋白質 46g · 碳水 94g · 脂肪 9g · 纖維 7g · 鈉 約 749 mg（部分品項無資料）"
-picker/compose/lunch/grain_bowl_baked/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 14.2g</p><p>纖維缺口約 4.9g</p>"
-picker/compose/lunch/grain_bowl_baked/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/lunch/grain_bowl_baked/no-method/dom05	#manual-picker-submit disabled
-picker/compose/lunch/grain_bowl_baked/no-method/dom06	#manual-picker-summary html="已配好 · 約 511 kcal · 蛋白質 40g · 碳水 75g · 脂肪 5g · 纖維 6g · 鈉 約 749 mg"
-picker/compose/lunch/grain_bowl_baked/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 30g</p><p>纖維缺口約 2.5g</p>"
-picker/compose/lunch/grain_bowl_baked/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/grain_bowl_baked/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/grain_bowl_baked/last-protein/dom06	#manual-picker-summary html="已配好 · 約 500 kcal · 蛋白質 24g · 碳水 77g · 脂肪 11g · 纖維 9g · 鈉 約 693 mg"
-picker/compose/lunch/warm_salad/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/lunch/warm_salad/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.4g</p><p>纖維缺口約 6.5g</p>"
-picker/compose/lunch/warm_salad/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 21.2g</p><p>纖維缺口約 3.5g</p>"
-picker/compose/lunch/warm_salad/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.2g</p><p>纖維缺口約 0.9g</p>"
-picker/compose/lunch/warm_salad/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.4g</p><p>纖維缺口約 7.4g</p>"
-picker/compose/lunch/warm_salad/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16g</p><p>纖維缺口約 3.6g</p>"
-picker/compose/lunch/warm_salad/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料） · 未含沙拉醬"
-picker/compose/lunch/warm_salad/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/lunch/warm_salad/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/lunch/warm_salad/no-method/dom05	#manual-picker-submit disabled
-picker/compose/lunch/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
-picker/compose/lunch/warm_salad/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 33.3g</p><p>纖維缺口約 2.2g</p>"
-picker/compose/lunch/warm_salad/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/lunch/warm_salad/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/lunch/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg · 未含沙拉醬"
-picker/compose/dinner/egg_pan/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/s1/dom06	#manual-picker-summary html="已配好 · 約 218 kcal · 蛋白質 16g · 碳水 8g · 脂肪 14g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/dinner/egg_pan/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 44.2g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/s0.5/dom06	#manual-picker-summary html="已配好 · 約 150 kcal · 蛋白質 10g · 碳水 7g · 脂肪 10g · 纖維 3g · 鈉 約 782 mg"
-picker/compose/dinner/egg_pan/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 34.1g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/s1.3/dom06	#manual-picker-summary html="已配好 · 約 258 kcal · 蛋白質 20g · 碳水 9g · 脂肪 17g · 纖維 3g · 鈉 約 893 mg"
-picker/compose/dinner/egg_pan/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.2g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/s2/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 29g · 碳水 10g · 脂肪 23g · 纖維 3g · 鈉 約 989 mg"
-picker/compose/dinner/egg_pan/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 41.3g</p><p>纖維缺口約 11.2g</p>"
-picker/compose/dinner/egg_pan/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 180 kcal · 蛋白質 13g · 碳水 2g · 脂肪 14g · 纖維 0g · 鈉 約 838 mg"
-picker/compose/dinner/egg_pan/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 31.9g</p><p>纖維缺口約 7.4g</p>"
-picker/compose/dinner/egg_pan/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/drink/dom06	#manual-picker-summary html="已配好 · 約 353 kcal · 蛋白質 22g · 碳水 27g · 脂肪 18g · 纖維 4g · 鈉 約 851 mg（部分品項無資料）"
-picker/compose/dinner/egg_pan/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/dinner/egg_pan/no-method/dom05	#manual-picker-submit disabled
-picker/compose/dinner/egg_pan/no-method/dom06	#manual-picker-summary html="已配好 · 約 173 kcal · 蛋白質 16g · 碳水 8g · 脂肪 9g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/dinner/egg_pan/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
-picker/compose/dinner/egg_pan/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/egg_pan/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/egg_pan/last-protein/dom06	#manual-picker-summary html="已配好 · 約 262 kcal · 蛋白質 16g · 碳水 8g · 脂肪 19g · 纖維 3g · 鈉 約 851 mg"
-picker/compose/dinner/protein_stir_fry/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.5g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/dinner/protein_stir_fry/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/s1/dom06	#manual-picker-summary html="已配好 · 約 339 kcal · 蛋白質 31g · 碳水 15g · 脂肪 18g · 纖維 7g · 鈉 約 576 mg"
-picker/compose/dinner/protein_stir_fry/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 24.9g</p><p>纖維缺口約 6.1g</p>"
-picker/compose/dinner/protein_stir_fry/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/s0.5/dom06	#manual-picker-summary html="已配好 · 約 321 kcal · 蛋白質 29g · 碳水 12g · 脂肪 18g · 纖維 5g · 鈉 約 565 mg"
-picker/compose/dinner/protein_stir_fry/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22.7g</p><p>纖維缺口約 3.7g</p>"
-picker/compose/dinner/protein_stir_fry/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/s1.3/dom06	#manual-picker-summary html="已配好 · 約 349 kcal · 蛋白質 31g · 碳水 17g · 脂肪 18g · 纖維 8g · 鈉 約 582 mg"
-picker/compose/dinner/protein_stir_fry/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 20.8g</p><p>纖維缺口約 1.6g</p>"
-picker/compose/dinner/protein_stir_fry/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/s2/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 33g · 碳水 22g · 脂肪 18g · 纖維 10g · 鈉 約 597 mg"
-picker/compose/dinner/protein_stir_fry/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 27.5g</p><p>纖維缺口約 8.2g</p>"
-picker/compose/dinner/protein_stir_fry/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 246 kcal · 蛋白質 27g · 碳水 7g · 脂肪 12g · 纖維 3g · 鈉 約 817 mg"
-picker/compose/dinner/protein_stir_fry/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 17.5g</p><p>纖維缺口約 3.6g</p>"
-picker/compose/dinner/protein_stir_fry/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/drink/dom06	#manual-picker-summary html="已配好 · 約 474 kcal · 蛋白質 37g · 碳水 34g · 脂肪 22g · 纖維 8g · 鈉 約 576 mg（部分品項無資料）"
-picker/compose/dinner/protein_stir_fry/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.5g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/dinner/protein_stir_fry/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/dinner/protein_stir_fry/no-method/dom05	#manual-picker-submit disabled
-picker/compose/dinner/protein_stir_fry/no-method/dom06	#manual-picker-summary html="已配好 · 約 250 kcal · 蛋白質 31g · 碳水 15g · 脂肪 8g · 纖維 7g · 鈉 約 576 mg"
-picker/compose/dinner/protein_stir_fry/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 28.5g</p>"
-picker/compose/dinner/protein_stir_fry/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/protein_stir_fry/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/protein_stir_fry/last-protein/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 26g · 碳水 30g · 脂肪 20g · 纖維 16g · 鈉 約 1019 mg"
-picker/compose/dinner/grain_bowl_baked/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 14.2g</p><p>纖維缺口約 4.9g</p>"
-picker/compose/dinner/grain_bowl_baked/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/s1/dom06	#manual-picker-summary html="已配好 · 約 511 kcal · 蛋白質 40g · 碳水 75g · 脂肪 5g · 纖維 6g · 鈉 約 749 mg"
-picker/compose/dinner/grain_bowl_baked/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16.9g</p><p>纖維缺口約 6.7g</p>"
-picker/compose/dinner/grain_bowl_baked/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/s0.5/dom06	#manual-picker-summary html="已配好 · 約 374 kcal · 蛋白質 37g · 碳水 46g · 脂肪 4g · 纖維 5g · 鈉 約 747 mg"
-picker/compose/dinner/grain_bowl_baked/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 12.5g</p><p>纖維缺口約 3.9g</p>"
-picker/compose/dinner/grain_bowl_baked/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/s1.3/dom06	#manual-picker-summary html="已配好 · 約 593 kcal · 蛋白質 42g · 碳水 92g · 脂肪 6g · 纖維 7g · 鈉 約 749 mg"
-picker/compose/dinner/grain_bowl_baked/s2/dom02	#manual-picker-gap html="<p>這組合約 784 kcal，這個時段配額約 711 kcal（+73），仍可送出。</p><p>蛋白質缺口約 8.6g</p><p>纖維缺口約 1.5g</p>"
-picker/compose/dinner/grain_bowl_baked/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/s2/dom06	#manual-picker-summary html="已配好 · 約 784 kcal · 蛋白質 45g · 碳水 132g · 脂肪 7g · 纖維 10g · 鈉 約 751 mg"
-picker/compose/dinner/grain_bowl_baked/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 18.2g</p><p>纖維缺口約 7.7g</p>"
-picker/compose/dinner/grain_bowl_baked/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 428 kcal · 蛋白質 36g · 碳水 58g · 脂肪 5g · 纖維 4g · 鈉 約 768 mg"
-picker/compose/dinner/grain_bowl_baked/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 8.2g</p><p>纖維缺口約 3.9g</p>"
-picker/compose/dinner/grain_bowl_baked/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/drink/dom06	#manual-picker-summary html="已配好 · 約 646 kcal · 蛋白質 46g · 碳水 94g · 脂肪 9g · 纖維 7g · 鈉 約 749 mg（部分品項無資料）"
-picker/compose/dinner/grain_bowl_baked/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 14.2g</p><p>纖維缺口約 4.9g</p>"
-picker/compose/dinner/grain_bowl_baked/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/dinner/grain_bowl_baked/no-method/dom05	#manual-picker-submit disabled
-picker/compose/dinner/grain_bowl_baked/no-method/dom06	#manual-picker-summary html="已配好 · 約 511 kcal · 蛋白質 40g · 碳水 75g · 脂肪 5g · 纖維 6g · 鈉 約 749 mg"
-picker/compose/dinner/grain_bowl_baked/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 30g</p><p>纖維缺口約 2.5g</p>"
-picker/compose/dinner/grain_bowl_baked/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/grain_bowl_baked/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/grain_bowl_baked/last-protein/dom06	#manual-picker-summary html="已配好 · 約 500 kcal · 蛋白質 24g · 碳水 77g · 脂肪 11g · 纖維 9g · 鈉 約 693 mg"
-picker/compose/dinner/warm_salad/s1/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/dinner/warm_salad/s1/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/s1/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s1/dom06	#manual-picker-summary html="已配好 · 約 407 kcal · 蛋白質 32g · 碳水 33g · 脂肪 17g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/s0.5/dom02	#manual-picker-gap html="<p>蛋白質缺口約 23.4g</p><p>纖維缺口約 6.5g</p>"
-picker/compose/dinner/warm_salad/s0.5/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/s0.5/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s0.5/dom06	#manual-picker-summary html="已配好 · 約 352 kcal · 蛋白質 31g · 碳水 20g · 脂肪 17g · 纖維 5g · 鈉 約 802 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/s1.3/dom02	#manual-picker-gap html="<p>蛋白質缺口約 21.2g</p><p>纖維缺口約 3.5g</p>"
-picker/compose/dinner/warm_salad/s1.3/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/s1.3/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s1.3/dom06	#manual-picker-summary html="已配好 · 約 441 kcal · 蛋白質 33g · 碳水 40g · 脂肪 17g · 纖維 8g · 鈉 約 804 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/s2/dom02	#manual-picker-gap html="<p>蛋白質缺口約 19.2g</p><p>纖維缺口約 0.9g</p>"
-picker/compose/dinner/warm_salad/s2/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/s2/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/s2/dom06	#manual-picker-summary html="已配好 · 約 519 kcal · 蛋白質 35g · 碳水 58g · 脂肪 18g · 纖維 10g · 鈉 約 805 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/no-veg-sauce/dom02	#manual-picker-gap html="<p>蛋白質缺口約 25.4g</p><p>纖維缺口約 7.4g</p>"
-picker/compose/dinner/warm_salad/no-veg-sauce/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/no-veg-sauce/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/no-veg-sauce/dom06	#manual-picker-summary html="已配好 · 約 370 kcal · 蛋白質 29g · 碳水 26g · 脂肪 17g · 纖維 4g · 鈉 約 790 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/drink/dom02	#manual-picker-gap html="<p>蛋白質缺口約 16g</p><p>纖維缺口約 3.6g</p>"
-picker/compose/dinner/warm_salad/drink/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/drink/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/drink/dom06	#manual-picker-summary html="已配好 · 約 542 kcal · 蛋白質 38g · 碳水 52g · 脂肪 21g · 纖維 8g · 鈉 約 803 mg（部分品項無資料） · 未含沙拉醬"
-picker/compose/dinner/warm_salad/no-method/dom02	#manual-picker-gap html="<p>蛋白質缺口約 22g</p><p>纖維缺口約 4.6g</p>"
-picker/compose/dinner/warm_salad/no-method/dom04	#manual-picker-main-hint text="請選烹調法"
-picker/compose/dinner/warm_salad/no-method/dom05	#manual-picker-submit disabled
-picker/compose/dinner/warm_salad/no-method/dom06	#manual-picker-summary html="已配好 · 約 363 kcal · 蛋白質 32g · 碳水 33g · 脂肪 12g · 纖維 7g · 鈉 約 803 mg · 未含沙拉醬"
-picker/compose/dinner/warm_salad/last-protein/dom02	#manual-picker-gap html="<p>蛋白質缺口約 33.3g</p><p>纖維缺口約 2.2g</p>"
-picker/compose/dinner/warm_salad/last-protein/dom04	#manual-picker-main-hint hidden
-picker/compose/dinner/warm_salad/last-protein/dom05	#manual-picker-submit (untouched)
-picker/compose/dinner/warm_salad/last-protein/dom06	#manual-picker-summary html="已配好 · 約 293 kcal · 蛋白質 21g · 碳水 35g · 脂肪 9g · 纖維 9g · 鈉 約 725 mg · 未含沙拉醬"
+picker/items/convenience/breakfast/main/dom01	#meal-picker-gap html="<p>這組合約 120 kcal，這個時段配額約 0 kcal（+120），仍可送出。</p>"
+picker/items/convenience/breakfast/main/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/main/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/main/dom05	#meal-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/breakfast/main+side/dom01	#meal-picker-gap html="<p>這組合約 230 kcal，這個時段配額約 0 kcal（+230），仍可送出。</p>"
+picker/items/convenience/breakfast/main+side/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/main+side/dom05	#meal-picker-summary html="已選 2 件 · 約 230 kcal · 蛋白質 36g · 碳水 7g · 脂肪 5g · 纖維 4g · 鈉 無資料"
+picker/items/convenience/breakfast/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 365 kcal，這個時段配額約 0 kcal（+365），仍可送出。</p>"
+picker/items/convenience/breakfast/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/main+side+drink/dom05	#meal-picker-summary html="已選 3 件 · 約 365 kcal · 蛋白質 42g · 碳水 26g · 脂肪 9g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/breakfast/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 393 kcal，這個時段配額約 0 kcal（+393），仍可送出。</p>"
+picker/items/convenience/breakfast/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/main+drink+snack/dom05	#meal-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/breakfast/drink-only/dom01	#meal-picker-gap html="<p>這組合約 135 kcal，這個時段配額約 0 kcal（+135），仍可送出。</p>"
+picker/items/convenience/breakfast/drink-only/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/breakfast/drink-tfda/dom01	#meal-picker-gap html="<p>這組合約 172 kcal，這個時段配額約 0 kcal（+172），仍可送出。</p>"
+picker/items/convenience/breakfast/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/convenience/breakfast/two-mains/dom01	#meal-picker-gap html="<p>這組合約 280 kcal，這個時段配額約 0 kcal（+280），仍可送出。</p>"
+picker/items/convenience/breakfast/two-mains/dom02	#meal-picker-hint hidden
+picker/items/convenience/breakfast/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/breakfast/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 280 kcal · 蛋白質 25g · 碳水 37g · 脂肪 3g · 纖維 4g · 鈉 無資料"
+picker/items/convenience/breakfast/none/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/breakfast/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/breakfast/none/dom04	#meal-picker-submit disabled
+picker/items/convenience/breakfast/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/breakfast/main/dom01	#meal-picker-gap html="<p>這組合約 323 kcal，這個時段配額約 0 kcal（+323），仍可送出。</p>"
+picker/items/delivery/breakfast/main/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/main/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/main/dom05	#meal-picker-summary html="已選 1 件 · 約 323 kcal · 蛋白質 10g · 碳水 43g · 脂肪 13g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/breakfast/main+side/dom01	#meal-picker-gap html="<p>這組合約 323 kcal，這個時段配額約 0 kcal（+323），仍可送出。</p>"
+picker/items/delivery/breakfast/main+side/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 323 kcal · 蛋白質 10g · 碳水 43g · 脂肪 13g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/breakfast/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 458 kcal，這個時段配額約 0 kcal（+458），仍可送出。</p>"
+picker/items/delivery/breakfast/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 458 kcal · 蛋白質 16g · 碳水 62g · 脂肪 16g · 纖維 2g · 鈉 無資料"
+picker/items/delivery/breakfast/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 458 kcal，這個時段配額約 0 kcal（+458），仍可送出。</p>"
+picker/items/delivery/breakfast/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/main+drink+snack/dom05	#meal-picker-summary html="已選 2 件 · 約 458 kcal · 蛋白質 16g · 碳水 62g · 脂肪 16g · 纖維 2g · 鈉 無資料"
+picker/items/delivery/breakfast/drink-only/dom01	#meal-picker-gap html="<p>這組合約 135 kcal，這個時段配額約 0 kcal（+135），仍可送出。</p>"
+picker/items/delivery/breakfast/drink-only/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/breakfast/drink-tfda/dom01	#meal-picker-gap html="<p>這組合約 172 kcal，這個時段配額約 0 kcal（+172），仍可送出。</p>"
+picker/items/delivery/breakfast/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/delivery/breakfast/two-mains/dom01	#meal-picker-gap html="<p>這組合約 898 kcal，這個時段配額約 0 kcal（+898），仍可送出。</p>"
+picker/items/delivery/breakfast/two-mains/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 898 kcal · 蛋白質 22g · 碳水 146g · 脂肪 25g · 纖維 3g · 鈉 無資料"
+picker/items/delivery/breakfast/none/dom01	#meal-picker-gap (untouched)
+picker/items/delivery/breakfast/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/delivery/breakfast/none/dom04	#meal-picker-submit disabled
+picker/items/delivery/breakfast/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/breakfast/custom-null/dom01	#meal-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 0 kcal（+935），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/breakfast/custom-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/custom-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/custom-null/dom05	#meal-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/breakfast/custom-carb-null/dom01	#meal-picker-gap html="<p>這組合約 973 kcal，這個時段配額約 0 kcal（+973），仍可送出。</p>"
+picker/items/delivery/breakfast/custom-carb-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/breakfast/custom-carb-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/breakfast/custom-carb-null/dom05	#meal-picker-summary html="已選 2 件 · 約 973 kcal · 蛋白質 40g · 碳水 — · 脂肪 33g · 纖維 6g · 鈉 無資料"
+picker/items/convenience/lunch/main/dom01	#meal-picker-gap html="<p>蛋白質缺口約 31g</p><p>纖維缺口約 7.7g</p>"
+picker/items/convenience/lunch/main/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/main/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/main/dom05	#meal-picker-summary html="已選 1 件 · 約 481 kcal · 蛋白質 30g · 碳水 67g · 脂肪 10g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/lunch/main+side/dom01	#meal-picker-gap html="<p>蛋白質缺口約 18.5g</p><p>纖維缺口約 4g</p>"
+picker/items/convenience/lunch/main+side/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/main+side/dom05	#meal-picker-summary html="已選 2 件 · 約 591 kcal · 蛋白質 43g · 碳水 74g · 脂肪 13g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/lunch/main+side+drink/dom01	#meal-picker-gap html="<p>蛋白質缺口約 12.5g</p><p>纖維缺口約 3g</p>"
+picker/items/convenience/lunch/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/main+side+drink/dom05	#meal-picker-summary html="已選 3 件 · 約 726 kcal · 蛋白質 49g · 碳水 93g · 脂肪 17g · 纖維 10g · 鈉 無資料"
+picker/items/convenience/lunch/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 754 kcal，這個時段配額約 738 kcal（+15），仍可送出。</p><p>蛋白質缺口約 20.5g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/lunch/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/main+drink+snack/dom05	#meal-picker-summary html="已選 3 件 · 約 754 kcal · 蛋白質 41g · 碳水 97g · 脂肪 21g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/lunch/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p>"
+picker/items/convenience/lunch/drink-only/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/lunch/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p>"
+picker/items/convenience/lunch/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/convenience/lunch/two-mains/dom01	#meal-picker-gap html="<p>這組合約 939 kcal，這個時段配額約 738 kcal（+201），仍可送出。</p><p>蛋白質缺口約 3.2g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/lunch/two-mains/dom02	#meal-picker-hint hidden
+picker/items/convenience/lunch/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/lunch/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 939 kcal · 蛋白質 58g · 碳水 120g · 脂肪 26g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/lunch/none/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/lunch/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/lunch/none/dom04	#meal-picker-submit disabled
+picker/items/convenience/lunch/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/lunch/main/dom01	#meal-picker-gap html="<p>這組合約 950 kcal，這個時段配額約 738 kcal（+212），仍可送出。</p><p>蛋白質缺口約 26g</p><p>纖維缺口約 9.5g</p>"
+picker/items/delivery/lunch/main/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/main/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/main/dom05	#meal-picker-summary html="已選 1 件 · 約 950 kcal · 蛋白質 35g · 碳水 120g · 脂肪 37g · 纖維 3g · 鈉 無資料"
+picker/items/delivery/lunch/main+side/dom01	#meal-picker-gap html="<p>這組合約 950 kcal，這個時段配額約 738 kcal（+212），仍可送出。</p><p>蛋白質缺口約 26g</p><p>纖維缺口約 9.5g</p>"
+picker/items/delivery/lunch/main+side/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 950 kcal · 蛋白質 35g · 碳水 120g · 脂肪 37g · 纖維 3g · 鈉 無資料"
+picker/items/delivery/lunch/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 1085 kcal，這個時段配額約 738 kcal（+347），仍可送出。</p><p>蛋白質缺口約 20g</p><p>纖維缺口約 8.5g</p>"
+picker/items/delivery/lunch/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 1085 kcal · 蛋白質 41g · 碳水 139g · 脂肪 41g · 纖維 4g · 鈉 無資料"
+picker/items/delivery/lunch/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 1085 kcal，這個時段配額約 738 kcal（+347），仍可送出。</p><p>蛋白質缺口約 20g</p><p>纖維缺口約 8.5g</p>"
+picker/items/delivery/lunch/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/main+drink+snack/dom05	#meal-picker-summary html="已選 2 件 · 約 1085 kcal · 蛋白質 41g · 碳水 139g · 脂肪 41g · 纖維 4g · 鈉 無資料"
+picker/items/delivery/lunch/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p>"
+picker/items/delivery/lunch/drink-only/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/lunch/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p>"
+picker/items/delivery/lunch/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/delivery/lunch/two-mains/dom01	#meal-picker-gap html="<p>這組合約 1760 kcal，這個時段配額約 738 kcal（+1022），仍可送出。</p><p>纖維缺口約 6.5g</p>"
+picker/items/delivery/lunch/two-mains/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 1760 kcal · 蛋白質 67g · 碳水 225g · 脂肪 66g · 纖維 6g · 鈉 無資料"
+picker/items/delivery/lunch/none/dom01	#meal-picker-gap (untouched)
+picker/items/delivery/lunch/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/delivery/lunch/none/dom04	#meal-picker-submit disabled
+picker/items/delivery/lunch/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/lunch/custom-null/dom01	#meal-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/lunch/custom-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/custom-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/custom-null/dom05	#meal-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/lunch/custom-carb-null/dom01	#meal-picker-gap html="<p>這組合約 1600 kcal，這個時段配額約 738 kcal（+862），仍可送出。</p><p>纖維缺口約 4.5g</p>"
+picker/items/delivery/lunch/custom-carb-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/lunch/custom-carb-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/lunch/custom-carb-null/dom05	#meal-picker-summary html="已選 2 件 · 約 1600 kcal · 蛋白質 65g · 碳水 — · 脂肪 57g · 纖維 8g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/main/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/afternoon_tea/main/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/afternoon_tea/main/dom04	#meal-picker-submit disabled
+picker/items/convenience/afternoon_tea/main/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/main+side/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/afternoon_tea/main+side/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/afternoon_tea/main+side/dom04	#meal-picker-submit disabled
+picker/items/convenience/afternoon_tea/main+side/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/main+side+drink/dom01	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/afternoon_tea/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/convenience/afternoon_tea/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/afternoon_tea/main+side+drink/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 273 kcal，這個時段配額約 246 kcal（+27），仍可送出。</p><p>蛋白質缺口約 9.8g</p>"
+picker/items/convenience/afternoon_tea/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/convenience/afternoon_tea/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/afternoon_tea/main+drink+snack/dom05	#meal-picker-summary html="已選 2 件 · 約 273 kcal · 蛋白質 11g · 碳水 31g · 脂肪 11g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/afternoon_tea/drink-only/dom02	#meal-picker-hint hidden
+picker/items/convenience/afternoon_tea/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/afternoon_tea/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p>"
+picker/items/convenience/afternoon_tea/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/convenience/afternoon_tea/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/afternoon_tea/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/convenience/afternoon_tea/two-mains/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/afternoon_tea/two-mains/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/afternoon_tea/two-mains/dom04	#meal-picker-submit disabled
+picker/items/convenience/afternoon_tea/two-mains/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/afternoon_tea/none/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/afternoon_tea/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/afternoon_tea/none/dom04	#meal-picker-submit disabled
+picker/items/convenience/afternoon_tea/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/main/dom01	#meal-picker-gap html="<p>這組合約 650 kcal，這個時段配額約 246 kcal（+404），仍可送出。</p>"
+picker/items/delivery/afternoon_tea/main/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/main/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/main/dom05	#meal-picker-summary html="已選 1 件 · 約 650 kcal · 蛋白質 30g · 碳水 — · 脂肪 20g · 纖維 5g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/main+side/dom01	#meal-picker-gap html="<p>這組合約 650 kcal，這個時段配額約 246 kcal（+404），仍可送出。</p>"
+picker/items/delivery/afternoon_tea/main+side/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 650 kcal · 蛋白質 30g · 碳水 — · 脂肪 20g · 纖維 5g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 785 kcal，這個時段配額約 246 kcal（+539），仍可送出。</p>"
+picker/items/delivery/afternoon_tea/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 785 kcal · 蛋白質 36g · 碳水 — · 脂肪 24g · 纖維 6g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 1040 kcal，這個時段配額約 246 kcal（+794），仍可送出。</p>"
+picker/items/delivery/afternoon_tea/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/main+drink+snack/dom05	#meal-picker-summary html="已選 3 件 · 約 1040 kcal · 蛋白質 40g · 碳水 — · 脂肪 35g · 纖維 7g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/delivery/afternoon_tea/drink-only/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p>"
+picker/items/delivery/afternoon_tea/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/delivery/afternoon_tea/two-mains/dom01	#meal-picker-gap html="<p>這組合約 1450 kcal，這個時段配額約 246 kcal（+1204），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/afternoon_tea/two-mains/dom02	#meal-picker-hint text="下午茶的主餐最多選 1 個。"
+picker/items/delivery/afternoon_tea/two-mains/dom04	#meal-picker-submit disabled
+picker/items/delivery/afternoon_tea/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 1450 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/afternoon_tea/none/dom01	#meal-picker-gap (untouched)
+picker/items/delivery/afternoon_tea/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/delivery/afternoon_tea/none/dom04	#meal-picker-submit disabled
+picker/items/delivery/afternoon_tea/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/afternoon_tea/custom-null/dom01	#meal-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/afternoon_tea/custom-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/custom-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/custom-null/dom05	#meal-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/afternoon_tea/custom-carb-null/dom01	#meal-picker-gap html="<p>這組合約 650 kcal，這個時段配額約 246 kcal（+404），仍可送出。</p>"
+picker/items/delivery/afternoon_tea/custom-carb-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/afternoon_tea/custom-carb-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/afternoon_tea/custom-carb-null/dom05	#meal-picker-summary html="已選 1 件 · 約 650 kcal · 蛋白質 30g · 碳水 — · 脂肪 20g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/dinner/main/dom01	#meal-picker-gap html="<p>蛋白質缺口約 31g</p><p>纖維缺口約 7.7g</p>"
+picker/items/convenience/dinner/main/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/main/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/main/dom05	#meal-picker-summary html="已選 1 件 · 約 481 kcal · 蛋白質 30g · 碳水 67g · 脂肪 10g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/dinner/main+side/dom01	#meal-picker-gap html="<p>蛋白質缺口約 18.5g</p><p>纖維缺口約 4g</p>"
+picker/items/convenience/dinner/main+side/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/main+side/dom05	#meal-picker-summary html="已選 2 件 · 約 591 kcal · 蛋白質 43g · 碳水 74g · 脂肪 13g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/dinner/main+side+drink/dom01	#meal-picker-gap html="<p>蛋白質缺口約 12.5g</p><p>纖維缺口約 3g</p>"
+picker/items/convenience/dinner/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/main+side+drink/dom05	#meal-picker-summary html="已選 3 件 · 約 726 kcal · 蛋白質 49g · 碳水 93g · 脂肪 17g · 纖維 10g · 鈉 無資料"
+picker/items/convenience/dinner/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 754 kcal，這個時段配額約 738 kcal（+15），仍可送出。</p><p>蛋白質缺口約 20.5g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/dinner/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/main+drink+snack/dom05	#meal-picker-summary html="已選 3 件 · 約 754 kcal · 蛋白質 41g · 碳水 97g · 脂肪 21g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/dinner/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p>"
+picker/items/convenience/dinner/drink-only/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/dinner/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p>"
+picker/items/convenience/dinner/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/convenience/dinner/two-mains/dom01	#meal-picker-gap html="<p>這組合約 939 kcal，這個時段配額約 738 kcal（+201），仍可送出。</p><p>蛋白質缺口約 3.2g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/dinner/two-mains/dom02	#meal-picker-hint hidden
+picker/items/convenience/dinner/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/dinner/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 939 kcal · 蛋白質 58g · 碳水 120g · 脂肪 26g · 纖維 9g · 鈉 無資料"
+picker/items/convenience/dinner/none/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/dinner/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/dinner/none/dom04	#meal-picker-submit disabled
+picker/items/convenience/dinner/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/dinner/main/dom01	#meal-picker-gap html="<p>這組合約 1550 kcal，這個時段配額約 738 kcal（+812），仍可送出。</p><p>蛋白質缺口約 31g</p><p>纖維缺口約 7.5g</p>"
+picker/items/delivery/dinner/main/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/main/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/main/dom05	#meal-picker-summary html="已選 1 件 · 約 1550 kcal · 蛋白質 30g · 碳水 241g · 脂肪 52g · 纖維 5g · 鈉 無資料"
+picker/items/delivery/dinner/main+side/dom01	#meal-picker-gap html="<p>這組合約 1550 kcal，這個時段配額約 738 kcal（+812），仍可送出。</p><p>蛋白質缺口約 31g</p><p>纖維缺口約 7.5g</p>"
+picker/items/delivery/dinner/main+side/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 1550 kcal · 蛋白質 30g · 碳水 241g · 脂肪 52g · 纖維 5g · 鈉 無資料"
+picker/items/delivery/dinner/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 1685 kcal，這個時段配額約 738 kcal（+947），仍可送出。</p><p>蛋白質缺口約 25g</p><p>纖維缺口約 6.5g</p>"
+picker/items/delivery/dinner/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 1685 kcal · 蛋白質 36g · 碳水 260g · 脂肪 56g · 纖維 6g · 鈉 無資料"
+picker/items/delivery/dinner/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 1685 kcal，這個時段配額約 738 kcal（+947），仍可送出。</p><p>蛋白質缺口約 25g</p><p>纖維缺口約 6.5g</p>"
+picker/items/delivery/dinner/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/main+drink+snack/dom05	#meal-picker-summary html="已選 2 件 · 約 1685 kcal · 蛋白質 36g · 碳水 260g · 脂肪 56g · 纖維 6g · 鈉 無資料"
+picker/items/delivery/dinner/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 55g</p><p>纖維缺口約 11.5g</p>"
+picker/items/delivery/dinner/drink-only/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/dinner/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 49.1g</p><p>纖維缺口約 12.5g</p>"
+picker/items/delivery/dinner/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/delivery/dinner/two-mains/dom01	#meal-picker-gap html="<p>這組合約 2800 kcal，這個時段配額約 738 kcal（+2062），仍可送出。</p><p>蛋白質缺口約 6g</p><p>纖維缺口約 6.5g</p>"
+picker/items/delivery/dinner/two-mains/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/two-mains/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 2800 kcal · 蛋白質 55g · 碳水 373g · 脂肪 121g · 纖維 6g · 鈉 無資料"
+picker/items/delivery/dinner/none/dom01	#meal-picker-gap (untouched)
+picker/items/delivery/dinner/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/delivery/dinner/none/dom04	#meal-picker-submit disabled
+picker/items/delivery/dinner/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/dinner/custom-null/dom01	#meal-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 738 kcal（+197），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/dinner/custom-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/custom-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/custom-null/dom05	#meal-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/dinner/custom-carb-null/dom01	#meal-picker-gap html="<p>這組合約 2200 kcal，這個時段配額約 738 kcal（+1462），仍可送出。</p><p>蛋白質缺口約 1g</p><p>纖維缺口約 2.5g</p>"
+picker/items/delivery/dinner/custom-carb-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/dinner/custom-carb-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/dinner/custom-carb-null/dom05	#meal-picker-summary html="已選 2 件 · 約 2200 kcal · 蛋白質 60g · 碳水 — · 脂肪 72g · 纖維 10g · 鈉 無資料"
+picker/items/convenience/snack/main/dom01	#meal-picker-gap html="<p>纖維缺口約 4.2g</p>"
+picker/items/convenience/snack/main/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/main/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/main/dom05	#meal-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/snack/main+side/dom01	#meal-picker-gap html="<p>纖維缺口約 4.2g</p>"
+picker/items/convenience/snack/main+side/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 120 kcal · 蛋白質 23g · 碳水 0g · 脂肪 3g · 纖維 0g · 鈉 無資料"
+picker/items/convenience/snack/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 255 kcal，這個時段配額約 246 kcal（+9），仍可送出。</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/snack/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 255 kcal · 蛋白質 29g · 碳水 19g · 脂肪 7g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/snack/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 393 kcal，這個時段配額約 246 kcal（+147），仍可送出。</p>"
+picker/items/convenience/snack/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/main+drink+snack/dom05	#meal-picker-summary html="已選 3 件 · 約 393 kcal · 蛋白質 34g · 碳水 31g · 脂肪 14g · 纖維 5g · 鈉 無資料"
+picker/items/convenience/snack/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/convenience/snack/drink-only/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/convenience/snack/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p>"
+picker/items/convenience/snack/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/convenience/snack/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/convenience/snack/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/convenience/snack/two-mains/dom01	#meal-picker-gap html="<p>這組合約 280 kcal，這個時段配額約 246 kcal（+34），仍可送出。</p><p>纖維缺口約 0.2g</p>"
+picker/items/convenience/snack/two-mains/dom02	#meal-picker-hint text="宵夜的主餐最多選 1 個。"
+picker/items/convenience/snack/two-mains/dom04	#meal-picker-submit disabled
+picker/items/convenience/snack/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 280 kcal · 蛋白質 25g · 碳水 37g · 脂肪 3g · 纖維 4g · 鈉 無資料"
+picker/items/convenience/snack/none/dom01	#meal-picker-gap (untouched)
+picker/items/convenience/snack/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/convenience/snack/none/dom04	#meal-picker-submit disabled
+picker/items/convenience/snack/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/snack/main/dom01	#meal-picker-gap html="<p>這組合約 1150 kcal，這個時段配額約 246 kcal（+904），仍可送出。</p><p>蛋白質缺口約 0.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/delivery/snack/main/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/main/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/main/dom05	#meal-picker-summary html="已選 1 件 · 約 1150 kcal · 蛋白質 20g · 碳水 124g · 脂肪 64g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/snack/main+side/dom01	#meal-picker-gap html="<p>這組合約 1150 kcal，這個時段配額約 246 kcal（+904），仍可送出。</p><p>蛋白質缺口約 0.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/delivery/snack/main+side/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/main+side/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/main+side/dom05	#meal-picker-summary html="已選 1 件 · 約 1150 kcal · 蛋白質 20g · 碳水 124g · 脂肪 64g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/snack/main+side+drink/dom01	#meal-picker-gap html="<p>這組合約 1285 kcal，這個時段配額約 246 kcal（+1039），仍可送出。</p><p>纖維缺口約 2.2g</p>"
+picker/items/delivery/snack/main+side+drink/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/main+side+drink/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/main+side+drink/dom05	#meal-picker-summary html="已選 2 件 · 約 1285 kcal · 蛋白質 26g · 碳水 143g · 脂肪 68g · 纖維 2g · 鈉 無資料"
+picker/items/delivery/snack/main+drink+snack/dom01	#meal-picker-gap html="<p>這組合約 1285 kcal，這個時段配額約 246 kcal（+1039），仍可送出。</p><p>纖維缺口約 2.2g</p>"
+picker/items/delivery/snack/main+drink+snack/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/main+drink+snack/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/main+drink+snack/dom05	#meal-picker-summary html="已選 2 件 · 約 1285 kcal · 蛋白質 26g · 碳水 143g · 脂肪 68g · 纖維 2g · 鈉 無資料"
+picker/items/delivery/snack/drink-only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 3.2g</p>"
+picker/items/delivery/snack/drink-only/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/drink-only/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/drink-only/dom05	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/items/delivery/snack/drink-tfda/dom01	#meal-picker-gap html="<p>蛋白質缺口約 8.4g</p><p>纖維缺口約 4.2g</p>"
+picker/items/delivery/snack/drink-tfda/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/drink-tfda/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/drink-tfda/dom05	#meal-picker-summary html="已選 1 件 · 約 172 kcal · 蛋白質 12g · 碳水 14g · 脂肪 8g · 纖維 0g · 鈉 約 113 mg"
+picker/items/delivery/snack/two-mains/dom01	#meal-picker-gap html="<p>這組合約 2150 kcal，這個時段配額約 246 kcal（+1904），仍可送出。</p><p>纖維缺口約 1.2g</p>"
+picker/items/delivery/snack/two-mains/dom02	#meal-picker-hint text="宵夜的主餐最多選 1 個。"
+picker/items/delivery/snack/two-mains/dom04	#meal-picker-submit disabled
+picker/items/delivery/snack/two-mains/dom05	#meal-picker-summary html="已選 2 件 · 約 2150 kcal · 蛋白質 50g · 碳水 244g · 脂肪 108g · 纖維 3g · 鈉 無資料"
+picker/items/delivery/snack/none/dom01	#meal-picker-gap (untouched)
+picker/items/delivery/snack/none/dom02	#meal-picker-hint text="請至少選一個品項。"
+picker/items/delivery/snack/none/dom04	#meal-picker-submit disabled
+picker/items/delivery/snack/none/dom05	#meal-picker-summary html="已選 0 件 · 約 0 kcal · 蛋白質 0g · 碳水 0g · 脂肪 0g · 纖維 0g · 鈉 無資料"
+picker/items/delivery/snack/custom-null/dom01	#meal-picker-gap html="<p>這組合約 935 kcal，這個時段配額約 246 kcal（+689），仍可送出。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
+picker/items/delivery/snack/custom-null/dom02	#meal-picker-hint hidden
+picker/items/delivery/snack/custom-null/dom04	#meal-picker-submit (untouched)
+picker/items/delivery/snack/custom-null/dom05	#meal-picker-summary html="已選 2 件 · 約 935 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/items/delivery/snack/custom-carb-null/dom01	#meal-picker-gap html="<p>這組合約 1800 kcal，這個時段配額約 246 kcal（+1554），仍可送出。</p>"
+picker/items/delivery/snack/custom-carb-null/dom02	#meal-picker-hint text="宵夜的主餐最多選 1 個。"
+picker/items/delivery/snack/custom-carb-null/dom04	#meal-picker-submit disabled
+picker/items/delivery/snack/custom-carb-null/dom05	#meal-picker-summary html="已選 2 件 · 約 1800 kcal · 蛋白質 50g · 碳水 — · 脂肪 84g · 纖維 6g · 鈉 無資料"
 week/none/dom00	#week-cal-summary text="本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）"
 week/none/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週二 09/22</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週三 09/23</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div>"
 week/none/dom02	#week-fiber text="膳食纖維：—"

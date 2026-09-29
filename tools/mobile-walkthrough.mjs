@@ -34,12 +34,16 @@ async function shot(name, scrollTo) {
     const small = [...document.querySelectorAll("button, select, input:not([type=checkbox]):not([type=radio]):not([type=hidden])")]
       .filter((el) => visible(el) && el.getBoundingClientRect().height < 44)
       .map((el) => (el.id ? "#" + el.id : el.className ? "." + String(el.className).split(" ")[0] : el.tagName.toLowerCase()) + "(" + Math.round(el.getBoundingClientRect().height) + "px)");
-    return { scrollW: document.documentElement.scrollWidth, W: W, overflow: overflow, imgs: imgs, small: [...new Set(small)] };
+    const smallInPicker = [...document.querySelectorAll("#meal-picker-overlay button, #meal-picker-overlay summary, #meal-picker-overlay input:not([type=hidden])")]
+      .filter((el) => visible(el) && el.getBoundingClientRect().height < 44)
+      .map((el) => (el.id ? "#" + el.id : el.className ? "." + String(el.className).split(" ")[0] : el.tagName.toLowerCase()) + "(" + Math.round(el.getBoundingClientRect().height) + "px)");
+    return { scrollW: document.documentElement.scrollWidth, W: W, overflow: overflow, imgs: imgs, small: [...new Set(small)], smallInPicker: [...new Set(smallInPicker)] };
   })()`);
   check(layout.scrollW <= layout.W + 1, label + "：畫面左右溢出（寬 " + layout.scrollW + " > " + layout.W + "）" + layout.overflow.join(", "));
   const badImgs = layout.imgs.filter((s) => !/^images\/gemini\/meal-default-[a-z_-]+\.jpg$/.test(s || ""));
   check(badImgs.length === 0, label + "：出現時段插畫以外的圖（decisions #8）：" + badImgs.join(", "));
   if (layout.small.length) warnings.push(label + "：按鈕高度不到 44px " + layout.small.join(" "));
+  check(layout.smallInPicker.length === 0, label + "：選擇器裡的按鈕高度不到 44px（Phase 0 起算失敗）" + layout.smallInPicker.join(" "));
   await H.screenshot(OUT, label);
 }
 
@@ -54,16 +58,19 @@ const openPicker = async (slot) => {
   await tab("today");
   await until(`!!document.querySelector('#rec-${slot} .rec-pick-btn')`, slot + " 沒有「自己選」按鈕");
   await click(`#rec-${slot} .rec-pick-btn`);
-  await until(`!document.getElementById('manual-picker-overlay').hidden && document.querySelectorAll('#manual-picker-items .item-card').length > 0`, slot + " 的自己選沒有打開");
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, slot + " 的自己選沒有打開");
 };
-const closePicker = () => click("#manual-picker-cancel");
-const composeMode = () => click("input[name=manual-picker-mode][value=compose]");
-const composePick = (axis, id) => click(`#manual-picker-compose-mode .compose-option[data-axis=${axis}]${id ? `[data-id=${id}]` : ":not([disabled])"}`);
-const summary = () => js(text("#manual-picker-summary"));
-// 選有的軸（沒有主食槽的餐型不點主食）
-const composeFill = async (axes) => { for (const ax of axes) {
-  if (await js(`!!document.querySelector('#manual-picker-compose-mode .compose-option[data-axis=${ax}]:not([disabled])')`)) await composePick(ax);
-} };
+const closePicker = () => click("#meal-picker-cancel");
+const currentTab = () => js(`(document.querySelector('#meal-picker-tabs [aria-selected=true]') || {}).dataset.tab`);
+// 目前分頁可選的品項中，某個角色的 uid（照畫面順序）
+const passUids = (role) => js(`(async () => { const m = await import('./js/data/catalog.js'); const c = await m.loadCatalog();
+  return [...document.querySelectorAll('#meal-picker-panel .item-card:not([disabled])')].map((b) => b.dataset.uid)
+    .filter((u) => (c.productsByUid[u] || {}).role === ${JSON.stringify(role)}); })()`);
+// 步驟編號只數看得到的步驟，要從 1 連續（截圖曾看到「1.」後跳「4.」）
+const checkStepNumbers = async (label) => {
+  const nums = await js(`[...document.querySelectorAll('#meal-picker-overlay .meal-picker-step-label')].filter((el) => el.offsetParent !== null).map((el) => parseInt(el.textContent, 10))`);
+  check(nums.length > 0 && nums.every((n, i) => n === i + 1), label + " 步驟編號不連續：" + nums.join(","));
+};
 // 推薦卡片是整塊重畫的：切分頁前放一個標記，標記消失＝重算完成，才不會讀到舊卡片
 const markStale = () => js(`document.querySelectorAll('[id^=rec-]').forEach((el) => el.insertAdjacentHTML('beforeend', '<i class="walkthrough-stale"></i>'))`);
 const waitFresh = (label) => until(`!document.querySelector('.walkthrough-stale') && !!document.querySelector('#rec-dinner .rec-log-btn')`, label);
@@ -200,93 +207,105 @@ async function run() {
 
   // ---------- 3. 自己選 ----------
   console.log("[3. 自己選]");
-  // 3-1 打開、純文字卡片
+  // 3-1 打開：午餐偏好是超商 → 停在超商分頁；純文字卡片；「記下這餐」不用捲動就看得到；步驟編號連續
   await openPicker("lunch");
-  check((await js(`document.querySelectorAll('#manual-picker-items .item-card img, #manual-picker-items .item-card-img').length`)) === 0, "3-1 品項卡片有圖片（decisions #8）");
-  await shot("自己選-午餐");
-  // 3-2 選一個主餐 → 摘要；同一角色第二個 → 提示
-  const mains = await js(`[...document.querySelectorAll('#manual-picker-items .item-card:not([disabled])')].map((c) => c.dataset.uid)`);
-  // 同一角色要有 2 個以上可選品項，才測得到「第二個出現提示」；主餐優先
-  const mainUids = await js(`(async () => { const m = await import('./js/data/catalog.js'); const c = await m.loadCatalog();
-    const role = (u) => (c.productsByUid[u] || {}).role;
-    const by = {}; ${JSON.stringify(mains)}.forEach((u) => { (by[role(u)] = by[role(u)] || []).push(u); });
-    return ['main', 'side', 'snack', 'drink'].map((r) => by[r] || []).find((l) => l.length >= 2) || []; })()`);
-  check(mainUids.length >= 2, "3-2 午餐自己選沒有任何角色有 2 個以上可選品項");
-  if (mainUids.length >= 2) {
-    await click(`#manual-picker-items .item-card[data-uid="${mainUids[0]}"]`);
-    await until(`/已選 1 件 · 約 \\d+ kcal.*鈉 (約 \\d+ mg|無資料)/.test(${text("#manual-picker-summary")}.replace(/\\n/g, ' '))`, "3-2 選一個品項後摘要不是「已選 1 件 · 約 N kcal … · 鈉 …」");
-    await shot("自己選-選一個主餐", "#manual-picker-summary");
+  check((await currentTab()) === "convenience", "3-1 午餐（偏好超商）打開沒有停在超商分頁，停在 " + (await currentTab()));
+  check((await js(`document.querySelectorAll('#meal-picker-panel .item-card img, #meal-picker-panel .item-card-img').length`)) === 0, "3-1 品項卡片有圖片（decisions #8）");
+  check(await js(`(() => { const r = document.getElementById('meal-picker-submit').getBoundingClientRect(); return r.bottom <= window.innerHeight && r.top >= 0; })()`),
+    "3-1 剛打開時「記下這餐」不在視窗內（要捲動才看得到）");
+  await checkStepNumbers("3-1");
+  await shot("自己選-午餐超商");
+  // 3-2 選一個主餐 → 摘要；午餐主餐可以選 2 個，第 3 個出現提示（decisions #41）
+  const lunchMains = await passUids("main");
+  check(lunchMains.length >= 3, "3-2 午餐超商分頁可選的主餐不到 3 個，測不到上限");
+  if (lunchMains.length >= 3) {
+    await click(`#meal-picker-panel .item-card[data-uid="${lunchMains[0]}"]`);
+    await until(`/已選 1 件 · 約 \\d+ kcal.*鈉 (約 \\d+ mg|無資料)/.test(${text("#meal-picker-summary")}.replace(/\\n/g, ' '))`, "3-2 選一個品項後摘要不是「已選 1 件 · 約 N kcal … · 鈉 …」");
+    await shot("自己選-選一個主餐", "#meal-picker-summary");
+    await click(`#meal-picker-panel .item-card[data-uid="${lunchMains[1]}"]`);
+    await until(`${text("#meal-picker-summary")}.indexOf("已選 2 件") !== -1`, "3-2 午餐選第二個主餐應該可以");
     const dialogsBefore = H.dialogs.length;
-    await click(`#manual-picker-items .item-card[data-uid="${mainUids[1]}"]`);
+    await click(`#meal-picker-panel .item-card[data-uid="${lunchMains[2]}"]`);
     await new Promise((r) => setTimeout(r, 300));
-    check(H.dialogs.length > dialogsBefore && /已經選過了/.test(H.dialogs[H.dialogs.length - 1]), "3-2 同一角色選第二個沒有出現提示");
+    check(H.dialogs.length > dialogsBefore && /午餐的主餐最多選 2 個/.test(H.dialogs[H.dialogs.length - 1]), "3-2 午餐選第三個主餐沒有出現「午餐的主餐最多選 2 個」");
   }
-  // 3-6 取消 → 沒有記錄
+  // 3-7 飲料跨分頁保留；其他分頁還有選取時摘要多一行；外食分頁列出便當
+  await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await until(`(document.querySelector('#meal-picker-tabs [aria-selected=true]') || {}).dataset.tab === 'delivery'`, "3-7 切到外食分頁沒有反應");
+  check(await js(`!!document.querySelector('#meal-picker-drinks [data-drink="tw_dr05"].selected')`), "3-7 切到外食分頁後，剛選的飲料不見了");
+  check((await js(text("#meal-picker-gap"))).indexOf("超商分頁還有 2 項沒有算進這餐") !== -1, "3-7 外食分頁沒有提示「超商分頁還有 2 項沒有算進這餐」");
+  check((await js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].map((c) => c.innerText).join('|')`)).indexOf("便當") !== -1, "3-7 外食分頁沒有列出便當");
+  await checkStepNumbers("3-7");
+  await shot("自己選-外食分頁（飲料保留）");
+  // 3-6 取消 → 沒有記錄；重開回到預設分頁
   await closePicker();
-  await until(`document.getElementById('manual-picker-overlay').hidden`, "3-6 按取消後視窗沒有關閉");
+  await until(`document.getElementById('meal-picker-overlay').hidden`, "3-6 按取消後視窗沒有關閉");
   check((await recText("lunch")).indexOf("已記錄") === -1, "3-6 按取消卻記錄了午餐");
-  // 3-2a 早餐只選拿鐵：鈉約 113 mg、可以送出
+  await openPicker("lunch");
+  check((await currentTab()) === "convenience", "3-6 取消後重開沒有回到預設的超商分頁");
+  await closePicker();
+  // 3-2a 早餐只選拿鐵（飲料步驟）：鈉約 113 mg、可以送出
   await openPicker("breakfast");
-  await click(`#manual-picker-items .item-card[data-uid="tw_dr05"]`);
-  await until(`${text("#manual-picker-summary")}.indexOf("鈉 約 113 mg") !== -1`, "3-2a 早餐只選拿鐵，摘要不是「鈉 約 113 mg」");
-  check(!(await js(`document.getElementById('manual-picker-submit').disabled`)), "3-2a 只選一杯飲料時「記下這餐」不能按");
-  await shot("自己選-早餐只選拿鐵", "#manual-picker-summary");
+  await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
+  await until(`${text("#meal-picker-summary")}.indexOf("鈉 約 113 mg") !== -1`, "3-2a 早餐只選拿鐵，摘要不是「鈉 約 113 mg」");
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)), "3-2a 只選一杯飲料時「記下這餐」不能按");
+  await shot("自己選-早餐只選拿鐵", "#meal-picker-drinks");
   // 3-3 記下這餐
-  await click("#manual-picker-submit");
-  await until(`document.getElementById('manual-picker-overlay').hidden && ${text("#rec-breakfast")}.indexOf("已記錄") !== -1`, "3-3 記下這餐後視窗沒關或早餐沒有變成已記錄");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-breakfast")}.indexOf("已記錄") !== -1`, "3-3 記下這餐後視窗沒關或早餐沒有變成已記錄");
   await click("#rec-breakfast .rec-undo-btn");
   await until(`!!document.querySelector('#rec-breakfast .rec-log-btn')`, "3-3 撤銷早餐沒有完成");
-  // 3-2b 設過敏原並按計算 → 沙拉等複合料理灰掉、成分未確認
+  // 3-8 宵夜設成「自動」：送出後重開停在送出的分頁（PRD 第 4 節）；下午茶的超商分頁只有少數品項
+  await tab("profile");
+  await setField("meal_pref_snack", "auto");
+  await setField("meal_pref_afternoon_tea", "auto");
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "3-8 改宵夜、下午茶偏好後按計算沒有完成");
+  await openPicker("snack");
+  check((await currentTab()) === "convenience", "3-8 宵夜（自動、沒送出過）沒有停在超商分頁");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await click(`#meal-picker-panel .item-card:not([disabled])`);
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-snack")}.indexOf("已記錄") !== -1`, "3-8 宵夜外食送出後沒有變成已記錄");
+  await click("#rec-snack .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-snack .rec-log-btn')`, "3-8 撤銷宵夜沒有完成");
+  await openPicker("snack");
+  check((await currentTab()) === "delivery", "3-8 宵夜送出外食後重開，沒有停在外食分頁");
+  await closePicker();
+  await openPicker("afternoon_tea");
+  await shot("自己選-下午茶超商分頁");
+  await closePicker();
+  // 3-2b 設過敏原並按計算 → 沙拉等複合料理灰掉、寫「成分未確認」、排在組內最後；頂端一行中性說明；整組被擋收成一行
   await tab("profile");
   await setAllergens(["蛋"]);
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "3-2b 勾過敏原後按計算沒有完成");
   await openPicker("lunch");
-  const blocked = await js(`[...document.querySelectorAll('#manual-picker-items .item-card.is-blocked')].map((c) => c.dataset.uid + ':' + c.innerText.replace(/\\n/g, ' '))`);
+  const blocked = await js(`[...document.querySelectorAll('#meal-picker-panel .item-card.is-blocked')].map((c) => c.dataset.uid + ':' + c.textContent)`);
   ["conv_sl01", "conv_sl02", "conv_sl04"].forEach((uid) => {
     const b = blocked.find((x) => x.indexOf(uid + ":") === 0);
     check(b && b.indexOf("成分未確認") !== -1, "3-2b 設了過敏原，" + uid + " 沒有灰掉並顯示「成分未確認」");
   });
-  await shot("自己選-過敏原被擋（清單最後）", "#manual-picker-items .item-card.is-blocked");
+  check(/灰色的 \d+ 項因你的過敏原／飲食／不吃設定不能選/.test(await js(text("#meal-picker-panel"))), "3-2b 分頁頂端沒有「灰色的 N 項…不能選」");
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel .meal-picker-group')].every((g) => { const cards = [...g.querySelectorAll('.item-card')];
+    const first = cards.findIndex((c) => c.classList.contains('is-blocked')); return first === -1 || cards.slice(first).every((c) => c.classList.contains('is-blocked')); })`), "3-2b 被擋的品項沒有排在組內最後");
+  check(/沙拉（\d+ 項因設定不能選）/.test(await js(text("#meal-picker-panel"))), "3-2b 整組被擋的沙拉沒有收成一行「沙拉（N 項因設定不能選）」");
+  await shot("自己選-過敏原被擋（收合）");
+  await js(`document.querySelectorAll('#meal-picker-panel details.is-all-blocked').forEach((d) => { d.open = true; })`);
+  await shot("自己選-過敏原被擋（展開）", "#meal-picker-panel .item-card.is-blocked");
   await closePicker();
   await tab("profile");
   await setAllergens([]);
+  await setField("meal_pref_snack", "off");
+  await setField("meal_pref_afternoon_tea", "off");
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "3-2b 取消過敏原後按計算沒有完成");
-  // 3-4、3-4a 自己煮：溫沙拉「未含沙拉醬」、其他餐型沒有
+  // 3-3a 記一筆午餐留著（第 4 節本週總覽要有今天的熱量）
   await openPicker("lunch");
-  await composeMode();
-  await until(`!document.getElementById('manual-picker-compose-mode').hidden`, "3-4 切到自己煮沒有反應");
-  await shot("自己煮-選餐型");
-  await composePick("archetype", "warm_salad");
-  await composeFill(["protein", "staple", "method"]);
-  await until(`${text("#manual-picker-summary")}.indexOf("已配好") !== -1 && ${text("#manual-picker-summary")}.indexOf("未含沙拉醬") !== -1`, "3-4a 溫沙拉的摘要沒有「未含沙拉醬」");
-  check(!(await js(`document.getElementById('manual-picker-submit').disabled`)), "3-4 自己煮選好後不能送出");
-  await shot("自己煮-溫沙拉", "#manual-picker-summary");
-  const other = await js(`[...document.querySelectorAll('#manual-picker-compose-mode .compose-option[data-axis=archetype]')].map((b) => b.dataset.id).find((id) => id !== 'warm_salad')`);
-  await composePick("archetype", other);
-  await composeFill(["protein", "staple", "method"]);
-  await until(`${text("#manual-picker-summary")}.indexOf("已配好") !== -1`, "3-4a 換成 " + other + " 後沒有配好");
-  check((await summary()).indexOf("未含沙拉醬") === -1, "3-4a 換成 " + other + " 還顯示「未含沙拉醬」");
-  // 3-4 份量滑桿（有的話）拖了摘要要變
-  const hasSlider = await js(`!!document.querySelector('#manual-picker-compose-mode input[type=range]')`);
-  if (hasSlider) {
-    const s1 = await summary();
-    await js(`(() => { const r = document.querySelector('#manual-picker-compose-mode input[type=range]'); r.value = r.max; r.dispatchEvent(new Event('input', { bubbles: true })); r.dispatchEvent(new Event('change', { bubbles: true })); })()`);
-    await until(`${text("#manual-picker-summary")} !== ${JSON.stringify(s1)}`, "3-4 拖份量滑桿後摘要沒變");
-  } else warnings.push("3-4 自己煮沒有找到份量滑桿（input[type=range]）");
-  await shot("自己煮-其他餐型", "#manual-picker-summary");
-  await click("#manual-picker-submit");
-  await until(`document.getElementById('manual-picker-overlay').hidden && ${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "3-4 自己煮記下這餐後午餐沒有變成已記錄");
-  // 3-5 早餐碗：免開火、微波都能選
-  await openPicker("breakfast");
-  await composeMode();
-  await composePick("archetype", "bowl_oat");
-  const methods = await js(`[...document.querySelectorAll('#manual-picker-compose-mode .compose-option[data-axis=method]')].map((b) => b.innerText.trim() + (b.disabled ? '(不可選)' : ''))`);
-  check(methods.some((m) => m.indexOf("免開火") === 0) && methods.some((m) => m.indexOf("微波") === 0) && methods.every((m) => m.indexOf("不可選") === -1),
-    "3-5 早餐碗的烹調法不是免開火、微波都可選：" + methods.join(","));
-  await shot("自己煮-早餐碗", "#manual-picker-compose-mode");
-  await closePicker();
+  await click(`#meal-picker-panel .item-card:not([disabled])`);
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "3-3a 午餐記下這餐後沒有變成已記錄");
 
   // ---------- 4. 本週總覽、運動紀錄 ----------
   console.log("[4. 本週、運動]");

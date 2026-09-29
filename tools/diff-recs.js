@@ -153,9 +153,15 @@ const TODAY_LOGS = {
   all: [log(DAY, "breakfast", 420, 22, 50, 14, 5), log(DAY, "lunch", 700, 35, 80, 20, 6), log(DAY, "dinner", 650, 40, 60, 18, 8)],
 };
 
+// 我的品項（PRD 10.1 格式，要能通過 db.validateCustomFood）：外食主餐兩筆（一筆蛋白質等未填、過敏原未確認）、
+// 一筆超商飲料、一筆已封存（選擇器不列出）
+const CUSTOM_BASE = { protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null,
+  valid_slots: ["breakfast", "lunch", "afternoon_tea", "dinner", "snack"], vegan: false, lacto_ovo: false, archived: false, copied_from: null };
 const CUSTOM_FOODS = [
-  { id: "custom_a", name: "自製便當", kcal: 650, protein_g: 30, carb_g: null, fat_g: 20, fiber_g: 5 },
-  { id: "custom_b", name: "朋友家晚餐", kcal: 800, protein_g: null, carb_g: null, fat_g: null, fiber_g: null },
+  Object.assign({}, CUSTOM_BASE, { id: "custom_a", name: "自製便當", kcal: 650, protein_g: 30, fat_g: 20, fiber_g: 5, role: "main", channel: "delivery", allergen_tags: [] }),
+  Object.assign({}, CUSTOM_BASE, { id: "custom_b", name: "朋友家晚餐", kcal: 800, role: "main", channel: "delivery", allergen_tags: null }),
+  Object.assign({}, CUSTOM_BASE, { id: "custom_c", name: "自己打的豆漿", kcal: 120, protein_g: 8, sodium_mg: 20, role: "drink", channel: "convenience", allergen_tags: ["黃豆"], vegan: true }),
+  Object.assign({}, CUSTOM_BASE, { id: "custom_d", name: "停賣的便當", kcal: 700, role: "main", channel: "convenience", allergen_tags: [], archived: true }),
 ];
 
 function tdeeState(extra) {
@@ -419,101 +425,76 @@ async function snapPicker() {
       A.setDb({ profile: P[pk], dailyLogs: TODAY_LOGS.breakfast, customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
       const r = await A.pickerOpen(slot);
       const k = "open/" + pk + "/" + slot;
-      emit("picker", k + "/pass", r.pass.join(","));
-      emit("picker", k + "/blocked", r.blocked.join(","));
-      emit("picker", k + "/drinks", r.drinks.join(","));
+      emit("picker", k + "/tab", r.tab);
+      ["convenience", "delivery", "drinks"].forEach((t) => {
+        emit("picker", k + "/" + t + "/pass", r[t].pass.join(","));
+        emit("picker", k + "/" + t + "/blocked", r[t].blocked.join(","));
+      });
       A.takeDom();
     }
   }
 
-  // 選品項的加總：每個時段取第一個 main/side/drink/snack 組合，另外加一組含 null 營養的自訂食物
+  // 選品項的加總：每個時段、每個商品分頁取第一個 main/side/drink/snack 組合，另外加我的品項（蛋白質等未填）與兩個主餐
   for (const slot of SLOTS) {
-    env.setNow(NOW_DAY);
-    A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
-    await A.pickerOpen(slot);
-    A.takeDom();
-    const items = A.pickerPassItems();
-    const first = (role) => (items.find((it) => it.role === role) || {}).uid;
-    const picks = {
-      main: [first("main")],
-      "main+side": [first("main"), first("side")],
-      "main+side+drink": [first("main"), first("side"), first("drink")],
-      "main+drink+snack": [first("main"), first("drink"), first("snack")],
-      "drink-only": [first("drink")],
-      "drink-tfda": [items.some((it) => it.uid === "tw_dr05") ? "tw_dr05" : null], // 有 TFDA 鈉值的飲料
-      "custom-null": ["custom_b", first("drink")],
-      "custom-carb-null": [first("main"), "custom_a"],
-      none: [],
-    };
-    for (const pkName of Object.keys(picks)) {
-      const uids = picks[pkName].filter(Boolean);
-      const totals = A.pickerSelectItems(uids);
-      const k = "items/" + slot + "/" + pkName;
-      emit("picker", k, uids.join("+") + " " + normTotals(totals));
-      A.takeDom().forEach((line, i) => {
-        if (line.indexOf("#manual-picker-items ") === 0) return; // 卡片清單已由 open/*/pass 涵蓋
-        emit("ui", "picker/" + k + "/dom" + String(i).padStart(2, "0"), line);
-      });
-    }
-    // 送出一組
-    A.pickerSelectItems(picks["main+side+drink"].filter(Boolean));
-    await A.pickerSubmit();
-    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "items/" + slot + "/submit" + i, normWrite(w)); });
-    A.takeAlerts().forEach((a, i) => emit("picker", "items/" + slot + "/alert" + i, a));
-    A.takeDom(); A.takeEngineIO();
-  }
-
-  // 自己煮：每個適用的餐型，第一個蛋白質/主食/蔬菜/調味/烹調法，各種縮放與飲料
-  for (const slot of ["breakfast", "lunch", "dinner"]) {
-    env.setNow(NOW_DAY);
-    A.setDb({ profile: P.M, dailyLogs: [], customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
-    const r = await A.pickerOpen(slot);
-    A.takeDom();
-    const ax = r.axes;
-    const archetypes = ax.archetypes.filter((a) => (a.valid_slots || []).indexOf(slot) !== -1);
-    for (const a of archetypes) {
-      const al = (axis) => (a[axis] && a[axis].allow) || [];
-      const base = {
-        archetype: a.id, protein: al("protein")[0], staple: al("staple")[0], vegetable: al("vegetable")[0],
-        seasoning: al("seasoning")[0], method: (a.methods || [])[0],
+    for (const tab of ["convenience", "delivery"]) {
+      env.setNow(NOW_DAY);
+      A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
+      await A.pickerOpen(slot);
+      A.pickerTab(tab);
+      A.takeDom();
+      const items = A.pickerPassItems();
+      const first = (role) => (items.find((it) => it.role === role) || {}).uid;
+      const mains = items.filter((it) => it.role === "main").map((it) => it.uid);
+      const picks = {
+        main: [first("main")],
+        "main+side": [first("main"), first("side")],
+        "main+side+drink": [first("main"), first("side"), first("drink")],
+        "main+drink+snack": [first("main"), first("drink"), first("snack")],
+        "drink-only": [first("drink")],
+        "drink-tfda": [items.some((it) => it.uid === "tw_dr05") ? "tw_dr05" : null], // 有 TFDA 鈉值的飲料
+        "two-mains": mains.slice(0, 2), // 早午晚可以、下午茶宵夜超量（decisions #41）
+        none: [],
       };
-      const variants = {
-        s1: {}, "s0.5": { scale: 0.5 }, "s1.3": { scale: 1.3 }, s2: { scale: 2 },
-        "no-veg-sauce": { vegetable: null, seasoning: null },
-        "drink": { drink: r.drinks[0] },
-        "no-method": { method: null },
-        "last-protein": { protein: al("protein")[al("protein").length - 1], method: (a.methods || [])[(a.methods || []).length - 1] },
-      };
-      for (const vn of Object.keys(variants)) {
-        const sel = Object.assign({}, base, variants[vn]);
-        const totals = A.pickerCompose(sel);
-        const k = "compose/" + slot + "/" + a.id + "/" + vn;
-        emit("picker", k, normTotals(totals));
+      if (tab === "delivery") {
+        picks["custom-null"] = ["custom_b", first("drink")];
+        picks["custom-carb-null"] = [first("main"), "custom_a"];
+      }
+      for (const pkName of Object.keys(picks)) {
+        const uids = picks[pkName].filter(Boolean);
+        const totals = A.pickerSelectItems(uids);
+        const k = "items/" + tab + "/" + slot + "/" + pkName;
+        emit("picker", k, uids.join("+") + " " + (totals ? normTotals(totals) : "-"));
         A.takeDom().forEach((line, i) => {
-          if (line.indexOf("#manual-picker-summary") === 0 || line.indexOf("#manual-picker-gap") === 0 ||
-              line.indexOf("#manual-picker-submit") === 0 || line.indexOf("#manual-picker-main-hint") === 0) {
-            emit("ui", "picker/" + k + "/dom" + String(i).padStart(2, "0"), line);
-          }
+          // 分頁、卡片清單、飲料步驟由 open/* 涵蓋，這裡只看摘要、缺口、提示與送出鈕
+          if (/^#meal-picker-(panel|drinks|tabs) /.test(line)) return;
+          emit("ui", "picker/" + k + "/dom" + String(i).padStart(2, "0"), line);
         });
       }
-    }
-    // 免開火＋需要加熱的食材：擋下送出
-    const noCook = archetypes.find((a) => (a.methods || []).indexOf("method_no_cook") !== -1);
-    // 骨架 allow 裡沒有需要加熱的蛋白質，直接指定一個（模擬選擇器以外的來源帶入，驗證送出前的食安檢查）
-    const cookNeeded = noCook && ax.proteins.find((p) => p.requires_cooking);
-    if (noCook && cookNeeded) {
-      A.pickerCompose({ archetype: noCook.id, protein: cookNeeded.id, staple: ((noCook.staple && noCook.staple.allow) || [])[0], method: "method_no_cook" });
-      A.takeDom().forEach((line) => { if (line.indexOf("#manual-picker-main-hint") === 0) emit("picker", "compose/" + slot + "/no-cook-unsafe", line); });
-    }
-    // 送出一組自己煮
-    const a0 = archetypes[0];
-    if (a0) {
-      A.pickerCompose({ archetype: a0.id, protein: a0.protein.allow[0], staple: ((a0.staple && a0.staple.allow) || [])[0],
-        vegetable: ((a0.vegetable && a0.vegetable.allow) || [])[0], method: (a0.methods || [])[0], scale: 1.2, drink: r.drinks[0] });
+      // 送出一組，並記住這個時段送出的型態
+      A.pickerSelectItems(picks["main+side+drink"].filter(Boolean));
       await A.pickerSubmit();
-      A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "compose/" + slot + "/submit" + i, normWrite(w)); });
-      A.takeAlerts().forEach((m, i) => emit("picker", "compose/" + slot + "/alert" + i, m));
+      A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "items/" + tab + "/" + slot + "/submit" + i, normWrite(w)); });
+      A.takeAlerts().forEach((a, i) => emit("picker", "items/" + tab + "/" + slot + "/alert" + i, a));
+      emit("picker", "items/" + tab + "/" + slot + "/lastPicked", stable(A.pickerLastPicked()));
       A.takeDom(); A.takeEngineIO();
+    }
+  }
+
+  // 預設分頁（PRD 第 4 節）：偏好是有效型態就用偏好；auto 時用上次這個時段送出的型態；都沒有停在超商
+  const last = { picker_last_meal_type: { lunch: "delivery", afternoon_tea: "delivery", dinner: "convenience" } };
+  const prefProfile = (prefs) => Object.assign({}, P.M, { meal_prefs: Object.assign({}, P.M.meal_prefs, prefs) });
+  const tabCases = {
+    "no-last": [P.M, {}],
+    "last": [P.M, last],
+    "auto-last": [prefProfile({ lunch: "auto", dinner: "auto" }), last],
+    "pref-delivery": [prefProfile({ afternoon_tea: "delivery" }), {}],
+  };
+  for (const name of Object.keys(tabCases)) {
+    for (const slot of SLOTS) {
+      env.setNow(NOW_DAY);
+      A.setDb({ profile: tabCases[name][0], dailyLogs: [], customFoods: [], tdeeState: tdeeState({ goal_mode: null }), settings: tabCases[name][1] });
+      emit("picker", "tab/" + name + "/" + slot, (await A.pickerOpen(slot)).tab);
+      A.takeDom();
     }
   }
 }

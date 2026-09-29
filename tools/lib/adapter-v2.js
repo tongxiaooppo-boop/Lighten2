@@ -44,7 +44,7 @@ module.exports = async function createV2Adapter(ROOT) {
   const clock = await imp("js/ui/clock.js");
   const cal = await imp("js/ui/calibration.js");
   const today = await imp("js/ui/tab-today.js");
-  const picker = await imp("js/ui/manual-picker.js");
+  const picker = await imp("js/ui/meal-picker/index.js");
   const week = await imp("js/ui/tab-week.js");
   const profileTab = await imp("js/ui/tab-profile.js");
   const exercise = await imp("js/ui/tab-exercise.js");
@@ -84,7 +84,7 @@ module.exports = async function createV2Adapter(ROOT) {
         customFoods: clone(state.customFoods) || [],
         tdeeState: clone(state.tdeeState) || null,
         exerciseLogs: clone(state.exerciseLogs) || [],
-        settings: {},
+        settings: clone(state.settings) || {},
         writes: [],
       };
       fdb.__resetSeq();
@@ -158,43 +158,35 @@ module.exports = async function createV2Adapter(ROOT) {
       io.fromToday = true;
     },
 
-    // ---------- 自己選 ----------
+    // ---------- 自己選（三分頁選擇器） ----------
+    // 回傳打開時停的分頁，以及各分頁、飲料步驟的可選／被擋（uid:原因）
     async pickerOpen(slot) {
-      await picker.openManualPicker(slot, today.buildRecommendation);
-      const mp = picker.manualPicker;
-      return {
-        pass: mp.passItems.map((it) => it.uid),
-        blocked: mp.blockedItems.map((b) => b.item.uid + ":" + b.reason),
-        drinks: mp.compose.drinkItems.map((it) => it.uid),
-        axes: mp.compose.axes,
-      };
+      await picker.openMealPicker(slot, today.buildRecommendation);
+      const mp = picker.mealPicker;
+      const split = (t) => ({
+        pass: t.items.filter((it) => !t.reasons[it.uid]).map((it) => it.uid),
+        blocked: t.items.filter((it) => t.reasons[it.uid]).map((it) => it.uid + ":" + t.reasons[it.uid]),
+      });
+      return { tab: mp.tab, convenience: split(mp.tabs.convenience), delivery: split(mp.tabs.delivery), drinks: split(mp.drinks), catalog: mp.catalog };
     },
-    pickerPassItems: () => picker.manualPicker.passItems.map((it) => ({ uid: it.uid, role: it.role })),
+    pickerTab(tab) { picker.selectTab(tab); },
+    // 目前分頁可選的品項＋可選的飲料
+    pickerPassItems() {
+      const mp = picker.mealPicker;
+      const t = mp.tabs[mp.tab] || { items: [], reasons: {} };
+      return t.items.concat(mp.drinks.items).filter((it) => !t.reasons[it.uid] && !mp.drinks.reasons[it.uid]).map((it) => ({ uid: it.uid, role: it.role }));
+    },
+    // 目前分頁的選取（飲料放進飲料步驟），回傳摘要用的合計
     pickerSelectItems(uids) {
-      const mp = picker.manualPicker;
-      mp.mode = "items";
-      mp.selectedUids = uids.slice();
-      picker.renderManualPicker();
-      return mc.sumProducts(mp.passItems.filter((it) => uids.indexOf(it.uid) !== -1));
+      const mp = picker.mealPicker;
+      const drinkUids = mp.drinks.items.map((d) => d.uid);
+      mp.tabs[mp.tab].selected = uids.filter((u) => drinkUids.indexOf(u) === -1);
+      mp.drinkUid = uids.filter((u) => drinkUids.indexOf(u) !== -1)[0] || null;
+      picker.renderMealPicker();
+      return picker.currentTotals();
     },
-    pickerCompose(sel) {
-      const mp = picker.manualPicker;
-      const c = mp.compose;
-      const ax = c.axes;
-      const find = (list, id) => (id ? list.find((x) => x.id === id) || null : null);
-      mp.mode = "compose";
-      c.archetype = find(ax.archetypes, sel.archetype);
-      c.protein = find(ax.proteins, sel.protein);
-      c.staple = find(ax.staples, sel.staple);
-      c.vegetable = find(ax.vegetables, sel.vegetable);
-      c.seasoning = find(ax.sauces, sel.seasoning);
-      c.method = find(ax.sauces, sel.method);
-      c.primaryScale = sel.scale == null ? 1 : sel.scale;
-      c.drink = sel.drink ? c.drinkItems.find((d) => d.uid === sel.drink) || null : null;
-      picker.renderManualPicker();
-      return picker.currentComposeTotals();
-    },
-    pickerSubmit: () => picker.onManualSubmit(),
+    pickerSubmit: () => picker.onMealSubmit(),
+    pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,
 
     // ---------- 本週總覽、基本資料的校正卡片、運動 ----------
     weekPage: () => week.renderWeek(),

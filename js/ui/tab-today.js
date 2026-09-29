@@ -1,5 +1,5 @@
 // 輕盈計畫 (Lighten Plan) — 分頁二：今日建議（推薦卡片＋流程）。
-// 彙總卡在 today-hero.js，「自己選」在 manual-picker.js；推薦流程本身是 engine/today.js 的純函式。
+// 彙總卡在 today-hero.js，「自己選」在 meal-picker/；推薦流程本身是 engine/today.js 的純函式。
 
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays, mondayOf } from "../core/dates.js";
@@ -15,7 +15,7 @@ import { planToday } from "../engine/today.js";
 import { contentFromRec, logsKcal, buildLogEntry } from "../engine/meal-content.js";
 import { getCalibratedTargets } from "./calibration.js";
 import { renderHero } from "./today-hero.js";
-import { openManualPicker, initManualPicker } from "./manual-picker.js";
+import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
 
 // 時段 → 插畫（decisions #8：推薦卡片只用這 5 張，不逐品項配圖）。5 張同一套手繪風格，只有時段場景不同。
@@ -273,7 +273,7 @@ export function initTodayTab() {
       }
       const pickBtn = e.target.closest(".rec-pick-btn");
       if (pickBtn && pickBtn.getAttribute("data-slot")) {
-        openManualPicker(pickBtn.getAttribute("data-slot"), buildRecommendation);
+        openMealPicker(pickBtn.getAttribute("data-slot"), buildRecommendation);
         return;
       }
       const chipBtn = e.target.closest(".dislike-chip");
@@ -283,7 +283,7 @@ export function initTodayTab() {
     });
   }
 
-  initManualPicker();
+  initMealPicker();
 
   // 從其他分頁切回來（記錄／改基本資料之後）要重新算，不能停在載入時的畫面。
   document.addEventListener("tab:activated", function (e) {

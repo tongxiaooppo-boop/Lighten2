@@ -216,30 +216,15 @@ export function canAddManualItem(items, item, slot) {
   return (roleCounts(items)[item.role] || 0) < manualRoleMax(item.role, slot);
 }
 
-// 自己選的單餐缺口提示：熱量超出份額多少、蛋白質/纖維還差多少（share 來自 budget.js slotNutrientShare）
+// 自己選的單餐缺口提示：熱量超出份額多少、蛋白質/纖維還差多少（share 來自 budget.js slotNutrientShare）。
+// 合計未知（例：估算、蛋白質沒填的我的品項）時缺口是 null，畫面顯示「無資料」，不當 0 算出假的缺口（章程 C4.5）。
 export function slotGaps(share, totals) {
+  const gap = function (target, v) { return v == null ? null : Math.round((target - v) * 10) / 10; };
   return {
     overKcal: Math.round(totals.kcal - share.kcalShare),
-    proteinGap: Math.round((share.proteinShare - (totals.protein_g || 0)) * 10) / 10,
-    fiberGap: Math.round((share.fiberShare - (totals.fiber_g || 0)) * 10) / 10,
+    proteinGap: gap(share.proteinShare, totals.protein_g),
+    fiberGap: gap(share.fiberShare, totals.fiber_g),
   };
-}
-
-// 營養缺口的「可以考慮加」：配菜/飲料/點心裡，這個欄位每 100 kcal 含量最高的前 3 個，
-// 加進去後熱量不超過單餐份額 +100。
-export function suggestFillers(passItems, selItems, gap, field, share) {
-  const out = [];
-  passItems.forEach(function (it) {
-    if (selItems.indexOf(it) !== -1) return;
-    if (["side", "drink", "snack"].indexOf(it.role) === -1) return;
-    if (it[field] == null || it[field] <= 0) return;
-    const cur = sumProducts(selItems);
-    if (cur.kcal + (it.kcal || 0) > share.kcalShare + 100) return;
-    const per100 = it[field] / Math.max(1, it.kcal || 100) * 100;
-    out.push({ label: it.name + "（+" + Math.round(it[field]) + "g）", score: per100 });
-  });
-  out.sort(function (a, b) { return b.score - a.score; });
-  return out.slice(0, 3).map(function (o) { return o.label; });
 }
 
 // ---------- 自煮：推薦候選池與自煮分頁共用的判斷（章程 C2） ----------
@@ -264,7 +249,7 @@ export function archetypeHasStaple(a) {
   return !!(a && a.staple && a.staple.allow && a.staple.allow.length > 0);
 }
 
-// 自煮草稿：d = { archetype, proteins: [], staple, vegetables: [], seasoning, method, primaryScale, drink }
+// 自煮草稿：d = { archetype, proteins: [], staple, vegetables: [], seasoning, method, primaryScale }（飲料是選擇器共用的一步，不在自煮草稿裡）
 // 蛋白質最多 2、蔬菜最多 3（COMPOSE_MAX），其餘單選。
 const AXIS_FIELDS = { protein: "proteins", staple: "staple", vegetable: "vegetables", seasoning: "seasoning" };
 const AXIS_LABELS = { protein: "蛋白質", staple: "主食", vegetable: "蔬菜", seasoning: "醬料" };
@@ -334,14 +319,13 @@ export function composeImplicit(d, oilHabit) {
 }
 
 // 不進位的自煮合計。primary＝被縮放的那個食材（composePrimary）；implicit：composeImplicit 的結果；implicitItems：catalog.implicit。
-// 食材與飲料任一項某欄未知，合計那一欄就是 null。
+// 食材任一項某欄未知，合計那一欄就是 null。
 function composeContributions(d, primary, implicit, implicitItems) {
   const parts = draftIngredients(d).map(function (it) {
     const serving = it.serving_g != null ? it.serving_g : 100;
     return ingredientContribution(it, serving * (it === primary ? (d.primaryScale || 1) : 1));
   });
   parts.push(implicitContribution(implicit, implicitItems));
-  if (d.drink) parts.push(productPart(d.drink, 1));
   return addContributions(parts);
 }
 
@@ -474,18 +458,6 @@ export function contentFromRec(rec, productsByUid) {
   };
 }
 
-// 自己選的現成品項 → MealContent。型態看第一個主餐（沒有主餐看第一件）的來源。
-// −1a 過渡：v1 的自訂食物沒有 channel，暫算外食；Phase 0 起「我的品項」用自己的 channel（PRD 10.1）。
-export function contentFromProducts(items) {
-  const lead = items.filter(function (it) { return it.role === "main"; })[0] || items[0];
-  return {
-    meal_type: lead && lead.channel === "convenience" ? "convenience" : "delivery",
-    archetype_id: null, method_id: null,
-    components: items.map(productComponent),
-    implicit: null,
-  };
-}
-
 // 自煮草稿 → MealContent。primary：composePrimary(d)；implicit：實際採用的用油與調味；
 // mealType：自煮分頁的子切換值（decisions #34、#47），不從食材反推。
 export function contentFromCompose(d, primary, implicit, mealType) {
@@ -498,7 +470,6 @@ export function contentFromCompose(d, primary, implicit, mealType) {
       comps.push(comp);
     });
   });
-  if (d.drink) comps.push(productComponent(d.drink));
   return {
     meal_type: mealType,
     archetype_id: d.archetype ? d.archetype.id : null,
@@ -520,13 +491,15 @@ export function estimateComponent(size, name) {
 // draft.kind："products"（超商/外食分頁：items、estimates [{ size, name }]、drink）或 "cook"（自煮草稿，見 composeProblem）。
 // draft.meal_type：分頁值或自煮子切換值，飲料不影響（decisions #47）。opts.oilHabit：基本資料的用油習慣。
 export function buildDraftContent(draft, opts) {
+  const drink = draft.drink ? [productComponent(draft.drink)] : [];
   if (draft.kind === "cook") {
-    const implicit = composeImplicit(draft, opts && opts.oilHabit);
-    return contentFromCompose(draft, composePrimary(draft), implicit, draft.meal_type);
+    const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
+    content.components = content.components.concat(drink);
+    return content;
   }
   const comps = (draft.items || []).map(productComponent)
     .concat((draft.estimates || []).map(function (e) { return estimateComponent(e.size, e.name); }))
-    .concat(draft.drink ? [productComponent(draft.drink)] : []);
+    .concat(drink);
   return { meal_type: draft.meal_type, archetype_id: null, method_id: null, components: comps, implicit: null };
 }
 
