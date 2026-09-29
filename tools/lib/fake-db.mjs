@@ -2,7 +2,7 @@
 // 讀取順序照 IndexedDB：依日期範圍讀的依 log_date、再依 id 排序；custom_foods 依 id 排序。
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
-import { validateDailyLog, validateWeightLog, validateExerciseLog } from "../../js/data/db.js";
+import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -23,7 +23,7 @@ function byDateThenId(a, b) {
 let seq = 0;
 export function __resetSeq() { seq = 0; }
 
-export { validateDailyLog, validateWeightLog, validateExerciseLog };
+export { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood };
 
 export async function getProfile() { return clone(S().profile); }
 export async function saveProfile(p) {
@@ -63,6 +63,17 @@ export async function markRecipesShown(ids, today) {
 
 export async function getCustomFoods() {
   return clone(S().customFoods.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+}
+
+// 照 db.js：寫入驗證（章程 B8）＋補 copied_from、archived、時間戳
+export async function addCustomFood(food) {
+  validateCustomFood(food);
+  const now = new Date().toISOString();
+  const record = Object.assign({ copied_from: null, archived: false, created_at: now }, clone(food),
+    { id: food.id || "custom_" + String(++seq).padStart(4, "0"), updated_at: now });
+  S().customFoods.push(record);
+  S().writes.push({ op: "addCustomFood", record: clone(record) });
+  return clone(record);
 }
 
 export async function addDailyLog(entry) {

@@ -71,6 +71,10 @@ const cookPick = (axis, id) => click(`#meal-picker-panel .compose-option[data-ax
 const cookFill = async (axes) => { for (const ax of axes) {
   if (await js(`!!document.querySelector('#meal-picker-panel .compose-option[data-axis=${ax}]:not([disabled]):not(.selected)')`)) await cookPick(ax);
 } };
+// 快速新增表單：填名稱與熱量（觸發 input 事件，預告會跟著更新）
+const fillQuickAdd = (name, kcal) => js(`(() => {
+  const set = (sel, v) => { const el = document.querySelector('#quick-add-form ' + sel); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+  set('[data-qa=name]', ${JSON.stringify(name)}); set('[data-qa=kcal]', ${JSON.stringify(kcal)}); })()`);
 // 步驟編號只數看得到的步驟，要從 1 連續（截圖曾看到「1.」後跳「4.」）
 const checkStepNumbers = async (label) => {
   const nums = await js(`[...document.querySelectorAll('#meal-picker-overlay .meal-picker-step-label')].filter((el) => el.offsetParent !== null).map((el) => parseInt(el.textContent, 10))`);
@@ -299,6 +303,12 @@ async function run() {
   await shot("自己選-過敏原被擋（收合）");
   await js(`document.querySelectorAll('#meal-picker-panel details.is-all-blocked').forEach((d) => { d.open = true; })`);
   await shot("自己選-過敏原被擋（展開）", "#meal-picker-panel .item-card.is-blocked");
+  // 3-11a 有設過敏原時，快速新增照預設（過敏原未確認）會預告被哪個設定擋住，不引導改填「確認不含」
+  await click("#meal-picker-panel [data-quick-add-open]");
+  await fillQuickAdd("朋友做的便當", "650");
+  const notes = await js(text("#quick-add-notes"));
+  check(notes.indexOf("你設了過敏原「蛋」") !== -1 && notes.indexOf("確認不含就") === -1, "3-11a 有設過敏原時沒有預告，或預告在引導改填確認不含：" + notes);
+  await shot("自己選-快速新增預告", "#quick-add-form");
   await closePicker();
   await tab("profile");
   await setAllergens([]);
@@ -384,6 +394,29 @@ async function run() {
   await shot("自煮-早餐只選飲料", "#meal-picker-hint");
   await closePicker();
 
+  // 3-10 外食分頁「找不到？直接估算」：名稱＋L → 摘要約 1200 kcal、蛋白質無資料、「其他餐會自動調整」；送出後紀錄名稱是填的名稱
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await js(`(() => { const el = document.getElementById('meal-picker-estimate-name'); el.value = '喜宴'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await click(`#meal-picker-panel [data-estimate-size=L]`);
+  await until(`${text("#meal-picker-summary")}.indexOf("約 1200 kcal") !== -1`, "3-10 估算 L 後摘要不是約 1200 kcal");
+  const estGap = await js(text("#meal-picker-gap"));
+  check(estGap.indexOf("其他餐會自動調整") !== -1 && estGap.indexOf("蛋白質：無資料") !== -1, "3-10 估算的缺口文字沒有「其他餐會自動調整」「蛋白質：無資料」：" + estGap);
+  await shot("自己選-外食估算", "#meal-picker-panel .meal-picker-estimate");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-lunch")}.indexOf("喜宴") !== -1`, "3-10 估算送出後午餐紀錄沒有「喜宴」");
+  check((await recText("lunch")).indexOf("1200") !== -1, "3-10 估算送出後午餐紀錄的熱量不是 1200");
+  await click("#rec-lunch .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "3-10 撤銷午餐沒有完成");
+  // 3-11 快速新增：存完在目前分頁的「我的品項」看得到、已選中
+  await openPicker("lunch");
+  await click("#meal-picker-panel [data-quick-add-open]");
+  await fillQuickAdd("巷口新開的便當", "620");
+  await click("#meal-picker-panel [data-qa-save]");
+  await until(`!!document.querySelector('#meal-picker-panel details.meal-picker-custom[open] .item-card.selected')`, "3-11 快速新增後，我的品項沒有展開或沒有選中");
+  check((await js(text("#meal-picker-summary"))).indexOf("已選 1 件 · 約 620 kcal") !== -1, "3-11 快速新增後摘要不是「已選 1 件 · 約 620 kcal」");
+  await shot("自己選-快速新增後選中", "#meal-picker-panel details.meal-picker-custom");
+  await closePicker();
   // 3-3a 記一筆午餐留著（第 4 節本週總覽要有今天的熱量）
   await openPicker("lunch");
   await click(`#meal-picker-panel .item-card:not([disabled])`);

@@ -45,6 +45,7 @@ module.exports = async function createV2Adapter(ROOT) {
   const cal = await imp("js/ui/calibration.js");
   const today = await imp("js/ui/tab-today.js");
   const picker = await imp("js/ui/meal-picker/index.js");
+  const quickAdd = await imp("js/ui/meal-picker/quick-add.js");
   const week = await imp("js/ui/tab-week.js");
   const profileTab = await imp("js/ui/tab-profile.js");
   const exercise = await imp("js/ui/tab-exercise.js");
@@ -205,6 +206,21 @@ module.exports = async function createV2Adapter(ROOT) {
       mp.drinkUid = sel.drink || null;
       picker.renderMealPicker();
       return picker.currentTotals();
+    },
+    // 外食分頁的「找不到？直接估算」
+    pickerEstimate(size, name) {
+      picker.selectTab("delivery");
+      picker.addEstimate(size, name);
+      return picker.currentTotals();
+    },
+    // 快速新增：values 同表單（quick-add.js emptyQuickAdd 的形狀，只給要改的欄位）；回傳送出前預告、存完的說明與目前分頁的選取
+    async pickerQuickAdd(values) {
+      const mp = picker.mealPicker;
+      const v = Object.assign(quickAdd.emptyQuickAdd(mp.slot), values, { nutrients: Object.assign(quickAdd.emptyQuickAdd(mp.slot).nutrients, values.nutrients) });
+      const notes = quickAdd.quickAddNotes(v, mp.slot, mp.tab, mp.profile);
+      const saved = await picker.saveQuickAdd(v);
+      const t = mp.tabs[mp.tab];
+      return { notes: notes, saved: saved ? saved.id : null, message: mp.quickAddMessage, selected: t.selected.slice(), drink: mp.drinkUid };
     },
     pickerSubmit: () => picker.onMealSubmit(),
     pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,

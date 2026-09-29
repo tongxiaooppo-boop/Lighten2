@@ -630,6 +630,40 @@ body {
 .meal-picker-group[open] summary::before {
   content: "▾";
 }
+.meal-picker-estimate, .quick-add {
+  border: 1px solid #EFE3D2;
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  margin: 0.2rem 0 0.8rem;
+  background-color: #FFFBF6;
+}
+.meal-picker-estimate-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #3A2E22;
+}
+.meal-picker-estimate-list {
+  margin-top: 0.4rem;
+}
+.meal-picker-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin: 0.35rem 0;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid #E8DCCB;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+.quick-add-row {
+  margin: 0.4rem 0;
+}
+.meal-picker-add-btn {
+  min-height: 44px;
+  margin: 0.6rem 0 0.2rem;
+}
 .meal-picker-drinks {
   margin-top: 0.9rem;
 }
