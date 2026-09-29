@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29，Phase −1b 第二輪核對通過，待使用者跑手機實機腳本）
+# 給接手的 Opus：Lighten2 交接（2026-09-29，Phase −1b 驗收完成，下一步 Phase 0）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -12,7 +12,7 @@
 ## 2. 目前狀態
 
 - **Phase −1a** 已驗收。
-- **Phase −1b 所有項目已實作**，驗收審核第一輪「需再修」的必改項已修完，**第二輪核對：可以驗收（待手機實機腳本）**：紀錄在 [collab/opus-review-log/2026-09-28-phase-1b-review.md](opus-review-log/2026-09-28-phase-1b-review.md)。
+- **Phase −1b** 已驗收（2026-09-29：兩輪獨立審核＋使用者手機實機腳本全過）。紀錄在 [collab/opus-review-log/2026-09-28-phase-1b-review.md](opus-review-log/2026-09-28-phase-1b-review.md) 最後一節。
 - −1b 期間另有一批送審（毛豆仁移軸、骨架 seasoned、同一天重建），審核紀錄 [2026-09-28-phase-1b-batch.md](opus-review-log/2026-09-28-phase-1b-batch.md)，決策 #37–#40。
 
 −1b 做了什麼（細節看 commit 訊息）：
@@ -38,19 +38,12 @@
 
 ## 4. 下一步
 
-1. **−1b 驗收審核第一輪的必改 5 項（A1、A2、飲食限制、T1–T3、T8）與大部分建議項已修完**（`84a216d..HEAD`，每個 commit 都有差異報告；規格變更都先有 docs commit）。重點：
-   - A1 `toPickerItem` 改成帶 catalog 全部欄位；diff-recs 的 normTotals 加了 SF/Na/partial，picker 快照多了 `drink-tfda` 情境。
-   - A2 骨架新欄位 `not_included`（章程 B7.5），`ui/dom.js` 的 `notIncludedText`。
-   - 飲食限制：章程 B6.8＋check-data `checkDietTags`；Soyjoy、海藻沙拉、藜麥沙拉盒、高蛋白飲、薯泥沙拉、照燒醬改非素；超商素食系列只標蛋奶素並寫「素食依據：」；台式單一成分飲料/地瓜/堅果改正面宣告。
-   - 工具：`field_sources.value` 只准 null→0；check-data 開頭有「工具自我檢查」；label/official_web 現成品項做 B5.4；跨檔 id 唯一；「等」結尾的 TFDA 描述不算列有成分；note 不得出現「AI」（B2.6）；麥當勞官方值凍結 `data/reference/official_values_frozen.json`＋反推碳水公式；check-arch C4.14 收緊到整個 engine。
-   - db：自煮紀錄必有 `implicit`（A4）。
-   - 資料：泡菜/照燒醬加「未確認」；AI 補值段落從 note 刪掉（卡片不再顯示沒出處的鈉）；6 欄 label_unsourced 改 estimate（凍結清單 34→24）；食材 note 措辭。
-   - 沒做的登記在 `docs/日後討論.md` 最後一節。smoke-browser 14 項全過。
-2. **第二輪核對已回覆：−1b 可以驗收（待手機實機腳本）**，逐字在審核紀錄檔。建議 3.1–3.9 已處理（c79e909、95b48ba、a68eb60），3.6 登記在日後討論。
-3. **C6.5（第二輪核對：可以驗收，待這一步）：請使用者在手機跑完整的 `docs/手機實機腳本.md`**（「自己選」2a 拿鐵鈉約 113 mg、4a 溫沙拉「未含沙拉醬」是這次新加的），留紀錄。兩者都過才算 −1b 驗收。
-4. 驗收後問使用者要不要推送到 GitHub（跑 CI）。
-5. 之後是 **Phase 0**（「自己選」改三分頁、我的品項快速新增、自煮分頁的用油/調味選項；品項卡片純文字已在 −1b 提前做完，9bae3d5）。
-6. `docs/日後討論.md` 的 −1b 待評估項目（低碳主食槽、超商隔天重複、shown_count 不衰減、煎蛋清淡、不加調味、溫沙拉沙拉醬）要另外送 C3 審核。運動分頁「連續紀錄」仍暫緩。
+1. **Phase 0**（PRD 第 7 節 Phase 0 列、第 4 節、第 10 節）：「自己選」改成超商｜外食｜自煮三分頁（依 `profile.meal_prefs`，auto 時用 `picker_last_meal_type`）；飲料抽成三分頁共用的獨立步驟；自煮分頁含快煮/開伙子切換與用油、調味選項；蛋白質/蔬菜多選；外食分頁「找不到？直接估算」；「我的品項」快速新增。品項卡片純文字已提前在 −1b 做完（9bae3d5）。
+   - 使用者手機實測時已經問過：來源分頁、飲料與食物分開、便當/餐盒不在自己選——這些都是 Phase 0 要解決的，做完要讓使用者確認。
+   - 一併處理 `docs/日後討論.md` 裡跟選擇器有關的：被擋品項排在最後、基本資料設定要按「計算」才存（可放 Phase 0 或 B-1）。
+   - Phase 0 屬於改骨架/重大畫面流程：開工前先改 PRD/decisions，必要時送 Opus 獨立審核（問答逐字存 `collab/opus-review-log/`）。
+2. `docs/日後討論.md` 的 −1b 待評估項目（低碳主食槽、超商隔天重複、shown_count 不衰減、煎蛋清淡、不加調味、溫沙拉沙拉醬、補一筆成分完整的醬料、外食升級 TFDA derived）要另外送 C3 審核。運動分頁「連續紀錄」仍暫緩。
+3. `collab/pdf/` 有兩份 PDF 超過 50 MB（GitHub 警告），要不要改 Git LFS 或移出 repo 待使用者決定。
 
 ## 5. 工作方式
 
