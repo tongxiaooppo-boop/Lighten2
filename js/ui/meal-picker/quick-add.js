@@ -6,28 +6,12 @@ import { escapeHtml } from "../../core/html.js";
 import { ALLERGEN_OPTIONS, ROLE_LABELS } from "../../core/config.js";
 import { fromCustomFood } from "../../data/catalog.js";
 import { quickAddDefaults, defaultQuickAddRole, quickAddProblem } from "../../engine/picker.js";
-
-const ROLES = ["main", "side", "snack", "drink"];
-const MORE_FIELDS = [["protein_g", "蛋白質（g）"], ["carb_g", "碳水（g）"], ["fat_g", "脂肪（g）"], ["fiber_g", "纖維（g）"], ["sat_fat_g", "飽和脂肪（g）"], ["sodium_mg", "鈉（mg）"]];
-const DIET_LABELS = { none: "都不是", vegan: "全素", lacto_ovo: "蛋奶素" };
+import { MORE_FIELDS, DIET_LABELS, ROLES, hasDietRestriction, parseNum } from "../custom-food-form.js";
 
 export function emptyQuickAdd(slot) {
   const nutrients = {};
   MORE_FIELDS.forEach(function (f) { nutrients[f[0]] = ""; });
   return { name: "", kcal: "", role: defaultQuickAddRole(slot), allergenMode: "unknown", allergens: [], diet: "none", nutrients: nutrients };
-}
-
-// 使用者有設飲食限制（全素、蛋奶素）時，飲食宣告放在必填區；沒設時收在「更多」
-export function hasDietRestriction(profile) {
-  const d = profile && profile.diet_restriction;
-  return d === "全素" || d === "蛋奶素";
-}
-
-function parseNum(v) {
-  const t = String(v == null ? "" : v).trim();
-  if (t === "") return null;
-  const n = Number(t);
-  return isFinite(n) ? n : NaN;
 }
 
 // 表單值 → PRD 10.1 記錄；errors：表單層的問題（名稱、數字格式），寫入驗證另由 db.js 做

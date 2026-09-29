@@ -5,16 +5,20 @@
 import { SLOT_LABELS, DEFAULT_MEAL_PREFS } from "../../core/slots.js";
 import { escapeHtml } from "../../core/html.js";
 import { $, sodiumText, notIncludedText } from "../dom.js";
-import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting, getHiddenCatalogUids } from "../../data/db.js";
+import {
+  getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting,
+  getHiddenCatalogUids, hideCatalogItem, unhideCatalogItem, copyBuiltinToCustom, updateCustomFood,
+} from "../../data/db.js";
 import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
 import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
-  composeProblem, composeImplicit, oilOptions, draftLogName,
+  composeProblem, composeImplicit, oilOptions, draftLogName, copyFromBuiltin,
 } from "../../engine/meal-content.js";
-import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab, placeNewCustom } from "../../engine/picker.js";
-import { productTabHtml, drinkStepHtml } from "./product-tab.js";
+import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab, placeNewCustom, fillableReason } from "../../engine/picker.js";
+import { productTabHtml, drinkStepHtml, selectedSectionHtml, selectedRowHtml, hideNoticeHtml } from "./product-tab.js";
+import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml, readCustomFoodInputs, onCustomFoodFormClick } from "../custom-food-form.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
 import { estimateCardHtml } from "./estimate-card.js";
 import { emptyQuickAdd, quickAddRecord, quickAddNotes, quickAddFormHtml, readQuickAddInputs } from "./quick-add.js";
@@ -75,7 +79,8 @@ export async function openMealPicker(slot, onLogged) {
   const today = todayStr();
   const todayLogs = await getDailyLogs({ start: today, end: today });
   const catalog = await loadCatalog();
-  const customs = (await getCustomFoods()).map(fromCustomFood);
+  const rawCustoms = await getCustomFoods();
+  const customs = rawCustoms.map(fromCustomFood);
   const lastPicked = await readLastPicked();
   // 隱藏清單讀不到不擋選擇器（比照 readLastPicked），當成沒有隱藏
   let hiddenUids = [];
@@ -85,6 +90,11 @@ export async function openMealPicker(slot, onLogged) {
   const m = mealPicker;
   m.slot = slot; m.profile = profile; m.targets = targets; m.todayLogs = todayLogs; m.catalog = catalog;
   m.onLogged = onLogged || null; m.lastPicked = lastPicked;
+  // B-1a：隱藏、復原、複製、補填之後要重新分頁，所以留著我的品項（原始紀錄與轉好的品項）與隱藏清單
+  m.customRecords = {};
+  rawCustoms.forEach(function (r) { m.customRecords[r.id] = r; });
+  m.customs = customs; m.hiddenUids = hiddenUids.slice();
+  m.editForm = null; m.notice = null; m.drinkNotice = null;
   ["convenience", "delivery"].forEach(function (t) {
     m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), selected: [] };
   });
@@ -197,10 +207,13 @@ function renderPanel() {
   syncQuickAdd();
   const t = m.tabs[m.tab];
   const groups = groupForTab(t.items, function (it) { return t.reasons[it.uid]; });
+  syncEditForm();
   let html = m.tab === "delivery" ? estimateCardHtml(t.estimates) : "";
-  html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab]);
+  html += m.notice && !m.notice.drink ? hideNoticeHtml(m.notice) : "";
+  html += selectedSectionHtml(selectedItems(m.tab), m.qtyByUid);
+  html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab], fillableReason);
   if (m.quickAddMessage) html += '<p class="meal-picker-note">' + escapeHtml(m.quickAddMessage) + "</p>";
-  html += m.quickAdd && m.quickAdd.tab === m.tab
+  html += m.editForm && !m.editForm.drink ? editFormHtml() : m.quickAdd && m.quickAdd.tab === m.tab
     ? quickAddFormHtml(m.quickAdd.values, TAB_LABELS[m.tab], m.profile, quickAddNotes(m.quickAdd.values, m.slot, m.tab, m.profile))
     : '<button type="button" class="secondary-btn meal-picker-add-btn" data-quick-add-open>＋新增到我的' + TAB_LABELS[m.tab] + "品項</button>";
   panel.innerHTML = html;
@@ -224,8 +237,196 @@ function renderDrinks() {
   const el = $("#meal-picker-drinks");
   if (!el) return;
   const m = mealPicker;
+  syncEditForm();
   const entries = m.drinks.items.map(function (it) { return { item: it, reason: m.drinks.reasons[it.uid] || null }; });
-  el.innerHTML = drinkStepHtml(entries, m.drinkUid, m.tab === "cook" ? (m.cookSteps || 2) + 1 : 2);
+  // 選中那杯的份量與動作放在飲料步驟（三分頁都看得到，B-1a 計畫 2.1 第 17 項）
+  const drink = selectedDrink();
+  let extra = drink ? '<div class="meal-picker-selected">' + selectedRowHtml(drink, m.qtyByUid[drink.uid] || 1) + "</div>" : "";
+  if (m.notice && m.notice.drink) extra += hideNoticeHtml(m.notice);
+  if (m.drinkNotice) extra += '<p class="meal-picker-note">' + escapeHtml(m.drinkNotice) + "</p>";
+  if (m.editForm && m.editForm.drink) extra += editFormHtml();
+  el.innerHTML = drinkStepHtml(entries, m.drinkUid, m.tab === "cook" ? (m.cookSteps || 2) + 1 : 2, extra, fillableReason);
+}
+
+// ---------- B-1a：份量、隱藏、複製成我的版本、補填 ----------
+
+const EDIT_FORM_ID = "picker-custom-food-form";
+
+function editFormHtml() {
+  const f = mealPicker.editForm;
+  const title = f.mode === "copy" ? "複製成我的版本" : "補填我的品項";
+  const notes = (f.error ? [f.error] : []).concat(customFoodNotes(f.values, mealPicker.profile));
+  return customFoodFormHtml(f.values, { formId: EDIT_FORM_ID, title: title, saveLabel: f.mode === "copy" ? "存成我的品項" : "存檔", profile: mealPicker.profile, notes: notes });
+}
+
+// 表單的文字欄位在重畫前先讀回來
+function syncEditForm() {
+  const f = mealPicker.editForm;
+  if (f) readCustomFoodInputs(document.getElementById(EDIT_FORM_ID), f.values);
+}
+
+// 依目前的我的品項與隱藏清單重新分頁；還在、還能選的選取與份量保留（隱藏、復原、複製之後用）
+function rebuildLists() {
+  const m = mealPicker;
+  const parts = partitionByMealType(m.catalog.products, m.customs, m.slot, m.hiddenUids);
+  ["convenience", "delivery"].forEach(function (t) {
+    const old = m.tabs[t];
+    const reasons = reasonsFor(parts[t], m.profile);
+    m.tabs[t] = Object.assign({}, old, { items: parts[t], reasons: reasons,
+      selected: old.selected.filter(function (u) { return parts[t].some(function (it) { return it.uid === u; }) && !reasons[u]; }) });
+  });
+  m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, m.profile) };
+  if (m.drinkUid && !selectedDrink()) m.drinkUid = null;
+  const keep = {};
+  ["convenience", "delivery"].forEach(function (t) { m.tabs[t].selected.forEach(function (u) { keep[u] = true; }); });
+  if (m.drinkUid) keep[m.drinkUid] = true;
+  Object.keys(m.qtyByUid).forEach(function (u) { if (!keep[u]) delete m.qtyByUid[u]; });
+}
+
+function unselect(uid) {
+  const m = mealPicker;
+  ["convenience", "delivery"].forEach(function (t) {
+    const i = m.tabs[t].selected.indexOf(uid);
+    if (i !== -1) m.tabs[t].selected.splice(i, 1);
+  });
+  if (m.drinkUid === uid) m.drinkUid = null;
+  delete m.qtyByUid[uid];
+}
+
+async function hideItem(uid) {
+  const m = mealPicker;
+  const p = m.catalog.productsByUid[uid];
+  if (!p) return;
+  try { await hideCatalogItem(uid); } catch (err) { console.error(err); alert("隱藏失敗，請重試。"); return; }
+  unselect(uid);
+  if (m.hiddenUids.indexOf(uid) === -1) m.hiddenUids.push(uid);
+  rebuildLists();
+  m.notice = { uid: uid, name: p.name, drink: p.role === "drink" };
+}
+
+async function unhideItem(uid) {
+  const m = mealPicker;
+  try { await unhideCatalogItem(uid); } catch (err) { console.error(err); alert("復原失敗，請重試。"); return; }
+  m.hiddenUids = m.hiddenUids.filter(function (u) { return u !== uid; });
+  rebuildLists(); // 放回原本的位置，不接在最後（PRD 6.3）
+  m.notice = null;
+}
+
+// 複製、補填存完之後的說明（快速新增有自己的句型，在 saveQuickAdd）
+function placedMessage(head, place, name) {
+  const m = mealPicker;
+  if (place.reason) return head + "。以你目前的設定不能選：" + place.reason;
+  if (place.roleProblem) return head + "。" + place.roleProblem + "這次沒有幫你選。";
+  if (place.dest === null) return head + "，但它適合的時段不含" + (SLOT_LABELS[m.slot] || m.slot) + "，這個時段不會出現。";
+  if (place.dest === "tab" && place.tab !== m.tab) return head + "，在「" + TAB_LABELS[place.tab] + "」分頁。";
+  return head + "，並選進這一餐。";
+}
+
+async function saveEditForm() {
+  const m = mealPicker;
+  const f = m.editForm;
+  syncEditForm();
+  const r = recordFromValues(f.values);
+  if (r.errors.length > 0) { f.error = r.errors.join("；"); return; }
+  let saved;
+  let head;
+  let oldQty = null;
+  try {
+    if (f.mode === "copy") {
+      const base = copyFromBuiltin(m.catalog.productsByUid[f.uid]);
+      saved = await copyBuiltinToCustom(Object.assign({}, base, r.record, { copied_from: f.uid }));
+      head = "已複製成我的版本「" + saved.name + "」";
+    } else {
+      saved = await updateCustomFood(f.uid, r.record);
+      head = "已更新「" + saved.name + "」";
+    }
+  } catch (err) {
+    console.error(err);
+    f.error = "存檔失敗，請重試。";
+    return;
+  }
+  const item = fromCustomFood(saved);
+  m.customRecords[saved.id] = saved;
+  let keepIndex = null;
+  if (f.mode === "copy") {
+    // 先把原品項從選取、清單與份量拿掉（不然原品項還佔著名額），份量搬到新的那筆
+    oldQty = m.qtyByUid[f.uid] || null;
+    unselect(f.uid);
+    if (m.hiddenUids.indexOf(f.uid) === -1) m.hiddenUids.push(f.uid);
+    rebuildLists();
+    m.customs.push(item);
+  } else {
+    // 補填：換掉同 uid 那一筆（不另外 push，否則兩張卡片），位置不變
+    unselect(f.uid);
+    m.customs = m.customs.map(function (c) { return c.uid === item.uid ? item : c; });
+    keepIndex = removeFromLists(item.uid);
+  }
+  const place = placeInPicker(item, keepIndex);
+  if (place.select && oldQty) m.qtyByUid[item.uid] = oldQty;
+  const msg = placedMessage(head, place, saved.name);
+  if (f.drink) m.drinkNotice = msg; else m.quickAddMessage = msg;
+  m.editForm = null;
+  m.notice = null;
+}
+
+// 從清單拿掉某個 uid（補填前），回傳它原本在哪個清單的第幾個
+function removeFromLists(uid) {
+  const m = mealPicker;
+  let where = null;
+  [["convenience", m.tabs.convenience], ["delivery", m.tabs.delivery], ["drinks", m.drinks]].forEach(function (x) {
+    const i = x[1].items.findIndex(function (it) { return it.uid === uid; });
+    if (i !== -1) { where = { list: x[0], index: i }; x[1].items.splice(i, 1); delete x[1].reasons[uid]; }
+  });
+  return where;
+}
+
+// 份量、隱藏、復原、複製、補填、表單的點擊（商品分頁與飲料步驟共用）。有處理回傳 true。
+function onB1aClick(e) {
+  const m = mealPicker;
+  const at = function (sel) { return e.target.closest(sel); };
+  let el;
+  if ((el = at("[data-qty-uid]"))) {
+    const q = Number(el.getAttribute("data-qty"));
+    const uid = el.getAttribute("data-qty-uid");
+    if (q === 1) delete m.qtyByUid[uid]; else m.qtyByUid[uid] = q;
+    rerender();
+    return true;
+  }
+  if ((el = at("[data-hide-uid]"))) { hideItem(el.getAttribute("data-hide-uid")).then(rerender); return true; }
+  if ((el = at("[data-unhide-uid]"))) { unhideItem(el.getAttribute("data-unhide-uid")).then(rerender); return true; }
+  if ((el = at("[data-copy-uid]"))) {
+    const p = m.catalog.productsByUid[el.getAttribute("data-copy-uid")];
+    if (!p) return true;
+    m.quickAdd = null; m.quickAddMessage = null; m.drinkNotice = null;
+    m.editForm = { mode: "copy", uid: p.uid, drink: p.role === "drink", values: valuesFromRecord(copyFromBuiltin(p)), error: null };
+    rerender();
+    return true;
+  }
+  if ((el = at("[data-fill-uid]"))) {
+    const raw = m.customRecords[el.getAttribute("data-fill-uid")];
+    if (!raw) return true;
+    m.quickAdd = null; m.quickAddMessage = null; m.drinkNotice = null;
+    m.editForm = { mode: "fill", uid: raw.id, drink: raw.role === "drink", values: valuesFromRecord(raw), error: null };
+    rerender();
+    return true;
+  }
+  if (!m.editForm || !at("#" + EDIT_FORM_ID)) return false;
+  if (at("[data-cf-cancel]")) { m.editForm = null; rerender(); return true; }
+  if (at("[data-cf-save]")) { saveEditForm().then(rerender); return true; }
+  syncEditForm();
+  if (onCustomFoodFormClick(e.target, m.editForm.values)) { m.editForm.error = null; rerender(); return true; }
+  return false;
+}
+
+function rerender() {
+  // 重畫表單時保留「更多（選填）」展開的狀態
+  const more = document.querySelector("#" + EDIT_FORM_ID + " .quick-add-more");
+  const moreOpen = !!(more && more.open);
+  renderPanel();
+  renderDrinks();
+  updateSummary();
+  const moreAfter = document.querySelector("#" + EDIT_FORM_ID + " .quick-add-more");
+  if (moreAfter && moreOpen) moreAfter.open = true;
 }
 
 export function renderMealPicker() {
@@ -262,6 +463,8 @@ export async function saveQuickAdd(values) {
     return null;
   }
   const item = fromCustomFood(saved);
+  m.customRecords[saved.id] = saved;
+  m.customs.push(item);
   const place = placeInPicker(item);
   m.quickAdd = null;
   m.quickAddMessage = place.reason ? "已存成我的品項。以你目前的設定不能選：" + place.reason
@@ -272,11 +475,14 @@ export async function saveQuickAdd(values) {
 
 // 新存的我的品項放進選擇器（快速新增、複製、補填共用；engine placeNewCustom 決定放哪裡、選不選中）。
 // 飲料沒被擋就取代目前的飲料（舊飲料的份量清掉）。回傳 placeNewCustom 的結果，說明文字由呼叫端組。
-function placeInPicker(item) {
+function placeInPicker(item, keepIndex) {
   const m = mealPicker;
   const place = placeNewCustom(item, { slot: m.slot, currentTab: m.tab, profile: m.profile, roleItems: draftRoleItems(currentDraft()) });
+  const insert = function (list, name) {
+    if (keepIndex && keepIndex.list === name) list.splice(keepIndex.index, 0, item); else list.push(item);
+  };
   if (place.dest === "drinks") {
-    m.drinks.items.push(item);
+    insert(m.drinks.items, "drinks");
     if (place.reason) m.drinks.reasons[item.uid] = place.reason;
     else {
       if (m.drinkUid) delete m.qtyByUid[m.drinkUid];
@@ -284,7 +490,7 @@ function placeInPicker(item) {
     }
   } else if (place.dest === "tab") {
     const t = m.tabs[place.tab];
-    t.items.push(item);
+    insert(t.items, place.tab);
     if (place.reason) t.reasons[item.uid] = place.reason;
     else if (place.select) t.selected.push(item.uid);
   }
@@ -451,6 +657,7 @@ function onProductExtrasClick(e) {
 
 function onPanelClick(e) {
   if (mealPicker.tab === "cook") { onCookClick(e); return; }
+  if (onB1aClick(e)) return;
   if (onProductExtrasClick(e)) return;
   const card = e.target.closest(".item-card");
   if (!card || card.disabled) return;
@@ -470,15 +677,19 @@ function onPanelClick(e) {
     t.selected.push(uid);
   } else {
     t.selected.splice(idx, 1);
+    delete m.qtyByUid[uid];
   }
   renderPanel();
   updateSummary();
 }
 
 function onDrinkClick(e) {
+  if (onB1aClick(e)) return;
   const btn = e.target.closest("[data-drink]");
   if (!btn || btn.disabled) return;
-  mealPicker.drinkUid = btn.getAttribute("data-drink") || null;
+  const next = btn.getAttribute("data-drink") || null;
+  if (mealPicker.drinkUid && mealPicker.drinkUid !== next) delete mealPicker.qtyByUid[mealPicker.drinkUid]; // 換掉或取消，重選回到 1
+  mealPicker.drinkUid = next;
   renderDrinks();
   updateSummary();
 }
