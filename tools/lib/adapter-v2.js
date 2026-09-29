@@ -185,6 +185,27 @@ module.exports = async function createV2Adapter(ROOT) {
       picker.renderMealPicker();
       return picker.currentTotals();
     },
+    // 自煮分頁：sel = { tier, archetype, proteins: [id], staple, vegetables: [id], seasoning, method, scale, drink, override: { oil_g?, seasoning? } }
+    pickerCompose(sel) {
+      const mp = picker.mealPicker;
+      const cat = mp.catalog;
+      const find = (list, id) => (id ? list.find((x) => x.id === id) || null : null);
+      picker.selectTab("cook");
+      mp.cook.tier = sel.tier || "cook_full";
+      mp.cook.draft = {
+        archetype: find(cat.archetypes, sel.archetype),
+        proteins: (sel.proteins || []).map((id) => find(cat.ingredients, id)).filter(Boolean),
+        staple: find(cat.staples, sel.staple),
+        vegetables: (sel.vegetables || []).map((id) => find(cat.vegetables, id)).filter(Boolean),
+        seasoning: find(cat.sauces, sel.seasoning),
+        method: find(cat.sauces, sel.method),
+        primaryScale: sel.scale == null ? 1 : sel.scale,
+        implicitOverride: Object.assign({}, sel.override),
+      };
+      mp.drinkUid = sel.drink || null;
+      picker.renderMealPicker();
+      return picker.currentTotals();
+    },
     pickerSubmit: () => picker.onMealSubmit(),
     pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,
 

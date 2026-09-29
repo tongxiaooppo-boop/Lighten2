@@ -318,6 +318,143 @@ items/delivery/snack/custom-null	custom_b+tw_bf02 kcal=935 P=null C=null F=null 
 items/delivery/snack/custom-carb-null	tw_sn01+custom_a kcal=1800 P=50 C=null F=83.9 Fb=6 SF=null Na=null
 items/delivery/snack/submit0	addDailyLog snack "鹹酥雞＋燕麥奶／牛奶（一杯約240ml）" kcal=1285 P=26 C=142.9 F=67.7 Fb=2 SF=null Na=null type=delivery source=manual content=delivery|-/-|tw_sn01x1@1150,tw_bf02x1@135|implicit=null
 items/delivery/snack/lastPicked	{"snack":"delivery"}
+compose/breakfast/bowl_oat/s1	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/s0.5	kcal=186.3 P=13.2 C=15.7 F=7.6 Fb=6 SF=1.5 Na=7.2
+compose/breakfast/bowl_oat/s1.3	kcal=316.3 P=17 C=37.4 F=10.7 Fb=9.4 SF=2.1 Na=8.2
+compose/breakfast/bowl_oat/s2	kcal=430 P=20.3 C=56.4 F=13.4 Fb=12.3 SF=2.6 Na=9
+compose/breakfast/bowl_oat/no-veg-sauce	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/drink	kcal=402.5 P=21.6 C=48.5 F=13.3 Fb=9.1 SF=1.9 Na=7.8 partial=sat_fat_g,sodium_mg
+compose/breakfast/bowl_oat/no-method	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/last-protein	kcal=272 P=19.8 C=33 F=6.7 Fb=4.2 SF=2.5 Na=52.2
+compose/breakfast/bowl_oat/two-proteins	kcal=377 P=30.6 C=35.1 F=12.4 Fb=8.1 SF=3.7 Na=58.8
+compose/breakfast/bowl_oat/three-veg	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/oil-10	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/light	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/bowl_oat/quick	kcal=267.5 P=15.6 C=29.3 F=9.5 Fb=8.1 SF=1.9 Na=7.8
+compose/breakfast/egg_pan/s1	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/breakfast/egg_pan/s0.5	kcal=149.8 P=9.8 C=7.3 F=9.9 Fb=2.8 SF=2.6 Na=782.1
+compose/breakfast/egg_pan/s1.3	kcal=258.1 P=19.9 C=8.6 F=17 Fb=2.8 SF=5 Na=892.5
+compose/breakfast/egg_pan/s2	kcal=352.9 P=28.8 C=9.7 F=23.2 Fb=2.8 SF=7.2 Na=989.1
+compose/breakfast/egg_pan/no-veg-sauce	kcal=179.6 P=12.7 C=1.6 F=13.9 Fb=0 SF=3.9 Na=838
+compose/breakfast/egg_pan/drink	kcal=352.5 P=22.1 C=27.3 F=18.1 Fb=3.8 SF=4.1 Na=851.1 partial=sat_fat_g,sodium_mg
+compose/breakfast/egg_pan/no-method	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8 SF=3.3 Na=851.1
+compose/breakfast/egg_pan/last-protein	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/breakfast/egg_pan/two-proteins	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/breakfast/egg_pan/three-veg	kcal=250.8 P=19.1 C=13.6 F=14.7 Fb=6.1 SF=4.2 Na=960.1
+compose/breakfast/egg_pan/oil-10	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/breakfast/egg_pan/light	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=451.1
+compose/breakfast/egg_pan/quick	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/breakfast/no-cook-unsafe	#meal-picker-hint text="免開火不能搭配需要加熱的食材，請換烹調法或換食材。"
+compose/breakfast/submit0	addDailyLog breakfast "早餐碗＋無糖豆漿＋希臘優格＋燕麥片＋燕麥奶／牛奶（一杯約240ml）" kcal=544.5 P=37.5 C=59.7 F=17 Fb=9.9 SF=3.8 Na=59 partial=sat_fat_g,sodium_mg type=cook_full source=manual content=cook_full|bowl_oat/method_no_cook|protein:soy_milk,protein:greek_yogurt,staple:oats*1.2,tw_bf02x1@135|implicit={"oil_g":0,"seasoning":null}
+compose/breakfast/lastPicked	{"breakfast":"cook_full"}
+compose/lunch/egg_pan/s1	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/lunch/egg_pan/s0.5	kcal=149.8 P=9.8 C=7.3 F=9.9 Fb=2.8 SF=2.6 Na=782.1
+compose/lunch/egg_pan/s1.3	kcal=258.1 P=19.9 C=8.6 F=17 Fb=2.8 SF=5 Na=892.5
+compose/lunch/egg_pan/s2	kcal=352.9 P=28.8 C=9.7 F=23.2 Fb=2.8 SF=7.2 Na=989.1
+compose/lunch/egg_pan/no-veg-sauce	kcal=179.6 P=12.7 C=1.6 F=13.9 Fb=0 SF=3.9 Na=838
+compose/lunch/egg_pan/drink	kcal=352.5 P=22.1 C=27.3 F=18.1 Fb=3.8 SF=4.1 Na=851.1 partial=sat_fat_g,sodium_mg
+compose/lunch/egg_pan/no-method	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8 SF=3.3 Na=851.1
+compose/lunch/egg_pan/last-protein	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/lunch/egg_pan/two-proteins	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/lunch/egg_pan/three-veg	kcal=250.8 P=19.1 C=13.6 F=14.7 Fb=6.1 SF=4.2 Na=960.1
+compose/lunch/egg_pan/oil-10	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/lunch/egg_pan/light	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=451.1
+compose/lunch/egg_pan/quick	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/lunch/protein_stir_fry/s1	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/lunch/protein_stir_fry/s0.5	kcal=321.3 P=29.1 C=11.6 F=17.8 Fb=5.1 SF=5 Na=565
+compose/lunch/protein_stir_fry/s1.3	kcal=349.1 P=31.3 C=17 F=17.9 Fb=7.5 SF=5 Na=582.3
+compose/lunch/protein_stir_fry/s2	kcal=373.5 P=33.2 C=21.7 F=18 Fb=9.6 SF=5 Na=597.4
+compose/lunch/protein_stir_fry/no-veg-sauce	kcal=246 P=26.5 C=6.8 F=12.4 Fb=3 SF=3.9 Na=816.6
+compose/lunch/protein_stir_fry/drink	kcal=473.7 P=36.5 C=34.2 F=21.7 Fb=7.6 SF=5 Na=575.8 partial=sat_fat_g,sodium_mg
+compose/lunch/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6 SF=3.4 Na=575.8
+compose/lunch/protein_stir_fry/last-protein	kcal=373.7 P=25.5 C=29.7 F=19.8 Fb=16.4 SF=3.6 Na=1019.1
+compose/lunch/protein_stir_fry/two-proteins	kcal=435.4 P=50.6 C=15.4 F=19.1 Fb=6.6 SF=5.4 Na=1111.3
+compose/lunch/protein_stir_fry/three-veg	kcal=372 P=33.5 C=20.5 F=18.3 Fb=9.9 SF=5.1 Na=684.8
+compose/lunch/protein_stir_fry/oil-10	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/lunch/protein_stir_fry/light	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/lunch/protein_stir_fry/quick	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/lunch/grain_bowl_baked/s1	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/lunch/grain_bowl_baked/s0.5	kcal=374.4 P=37.1 C=45.7 F=4.1 Fb=4.5 SF=1.2 Na=747.4
+compose/lunch/grain_bowl_baked/s1.3	kcal=592.9 P=41.5 C=91.7 F=5.6 Fb=7.3 SF=1.6 Na=749.2
+compose/lunch/grain_bowl_baked/s2	kcal=784.1 P=45.4 C=131.9 F=6.8 Fb=9.7 SF=1.9 Na=750.8
+compose/lunch/grain_bowl_baked/no-veg-sauce	kcal=427.6 P=35.8 C=57.5 F=4.5 Fb=3.5 SF=1.2 Na=767.5
+compose/lunch/grain_bowl_baked/drink	kcal=645.9 P=45.8 C=93.7 F=8.8 Fb=7.3 SF=1.5 Na=748.6 partial=sat_fat_g,sodium_mg
+compose/lunch/grain_bowl_baked/no-method	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/lunch/grain_bowl_baked/last-protein	kcal=500 P=24 C=77.3 F=10.6 Fb=8.7 SF=2.2 Na=693.4
+compose/lunch/grain_bowl_baked/two-proteins	kcal=719.4 P=64.7 C=74.5 F=16.4 Fb=6.3 SF=4.6 Na=796
+compose/lunch/grain_bowl_baked/three-veg	kcal=544.2 P=42.8 C=80 F=5.4 Fb=9.6 SF=1.6 Na=857.6
+compose/lunch/grain_bowl_baked/oil-10	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/lunch/grain_bowl_baked/light	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/lunch/grain_bowl_baked/quick	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/lunch/warm_salad/s1	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=803.1
+compose/lunch/warm_salad/s0.5	kcal=351.8 P=30.6 C=19.5 F=17.1 Fb=4.7 SF=4.2 Na=802.1
+compose/lunch/warm_salad/s1.3	kcal=440.7 P=32.8 C=40.2 F=17.4 Fb=7.7 SF=4.3 Na=803.6
+compose/lunch/warm_salad/s2	kcal=518.5 P=34.8 C=58.4 F=17.6 Fb=10.3 SF=4.4 Na=805
+compose/lunch/warm_salad/no-veg-sauce	kcal=369.5 P=28.6 C=26 F=16.9 Fb=3.8 SF=4.1 Na=790
+compose/lunch/warm_salad/drink	kcal=542.4 P=38 C=51.7 F=21.1 Fb=7.6 SF=4.3 Na=803.1 partial=sat_fat_g,sodium_mg
+compose/lunch/warm_salad/no-method	kcal=363.2 P=32 C=32.5 F=12.3 Fb=6.6 SF=3.5 Na=803.1
+compose/lunch/warm_salad/last-protein	kcal=292.6 P=20.7 C=35.3 F=9 Fb=9 SF=1.9 Na=725.1
+compose/lunch/warm_salad/two-proteins	kcal=561.8 P=62.3 C=32.5 F=20 Fb=6.6 SF=5.1 Na=868.3
+compose/lunch/warm_salad/three-veg	kcal=440.7 P=35 C=38 F=17.7 Fb=9.9 SF=4.4 Na=912.1
+compose/lunch/warm_salad/oil-10	kcal=451.6 P=32 C=32.5 F=22.3 Fb=6.6 SF=5.1 Na=803.1
+compose/lunch/warm_salad/light	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=403.1
+compose/lunch/warm_salad/quick	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=803.1
+compose/lunch/submit0	addDailyLog lunch "炒類＋牛腱＋蝦仁＋花椰菜米＋青花菜＋菠菜＋燕麥奶／牛奶（一杯約240ml）" kcal=584.7 P=58.7 C=36.7 F=23.1 Fb=9.3 SF=5.5 Na=1413.1 partial=sat_fat_g,sodium_mg type=cook_full source=manual content=cook_full|protein_stir_fry/method_stir_fry|protein:beef_shank,protein:shrimp,staple:cauliflower_rice*1.2,vegetable:broccoli,vegetable:spinach,tw_bf02x1@135|implicit={"oil_g":10,"seasoning":"normal"}
+compose/lunch/lastPicked	{"lunch":"cook_full"}
+compose/dinner/egg_pan/s1	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/dinner/egg_pan/s0.5	kcal=149.8 P=9.8 C=7.3 F=9.9 Fb=2.8 SF=2.6 Na=782.1
+compose/dinner/egg_pan/s1.3	kcal=258.1 P=19.9 C=8.6 F=17 Fb=2.8 SF=5 Na=892.5
+compose/dinner/egg_pan/s2	kcal=352.9 P=28.8 C=9.7 F=23.2 Fb=2.8 SF=7.2 Na=989.1
+compose/dinner/egg_pan/no-veg-sauce	kcal=179.6 P=12.7 C=1.6 F=13.9 Fb=0 SF=3.9 Na=838
+compose/dinner/egg_pan/drink	kcal=352.5 P=22.1 C=27.3 F=18.1 Fb=3.8 SF=4.1 Na=851.1 partial=sat_fat_g,sodium_mg
+compose/dinner/egg_pan/no-method	kcal=173.3 P=16.1 C=8.1 F=9.3 Fb=2.8 SF=3.3 Na=851.1
+compose/dinner/egg_pan/last-protein	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/dinner/egg_pan/two-proteins	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/dinner/egg_pan/three-veg	kcal=250.8 P=19.1 C=13.6 F=14.7 Fb=6.1 SF=4.2 Na=960.1
+compose/dinner/egg_pan/oil-10	kcal=261.7 P=16.1 C=8.1 F=19.3 Fb=2.8 SF=4.9 Na=851.1
+compose/dinner/egg_pan/light	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=451.1
+compose/dinner/egg_pan/quick	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
+compose/dinner/protein_stir_fry/s1	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/dinner/protein_stir_fry/s0.5	kcal=321.3 P=29.1 C=11.6 F=17.8 Fb=5.1 SF=5 Na=565
+compose/dinner/protein_stir_fry/s1.3	kcal=349.1 P=31.3 C=17 F=17.9 Fb=7.5 SF=5 Na=582.3
+compose/dinner/protein_stir_fry/s2	kcal=373.5 P=33.2 C=21.7 F=18 Fb=9.6 SF=5 Na=597.4
+compose/dinner/protein_stir_fry/no-veg-sauce	kcal=246 P=26.5 C=6.8 F=12.4 Fb=3 SF=3.9 Na=816.6
+compose/dinner/protein_stir_fry/drink	kcal=473.7 P=36.5 C=34.2 F=21.7 Fb=7.6 SF=5 Na=575.8 partial=sat_fat_g,sodium_mg
+compose/dinner/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6 SF=3.4 Na=575.8
+compose/dinner/protein_stir_fry/last-protein	kcal=373.7 P=25.5 C=29.7 F=19.8 Fb=16.4 SF=3.6 Na=1019.1
+compose/dinner/protein_stir_fry/two-proteins	kcal=435.4 P=50.6 C=15.4 F=19.1 Fb=6.6 SF=5.4 Na=1111.3
+compose/dinner/protein_stir_fry/three-veg	kcal=372 P=33.5 C=20.5 F=18.3 Fb=9.9 SF=5.1 Na=684.8
+compose/dinner/protein_stir_fry/oil-10	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/dinner/protein_stir_fry/light	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/dinner/protein_stir_fry/quick	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
+compose/dinner/grain_bowl_baked/s1	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/dinner/grain_bowl_baked/s0.5	kcal=374.4 P=37.1 C=45.7 F=4.1 Fb=4.5 SF=1.2 Na=747.4
+compose/dinner/grain_bowl_baked/s1.3	kcal=592.9 P=41.5 C=91.7 F=5.6 Fb=7.3 SF=1.6 Na=749.2
+compose/dinner/grain_bowl_baked/s2	kcal=784.1 P=45.4 C=131.9 F=6.8 Fb=9.7 SF=1.9 Na=750.8
+compose/dinner/grain_bowl_baked/no-veg-sauce	kcal=427.6 P=35.8 C=57.5 F=4.5 Fb=3.5 SF=1.2 Na=767.5
+compose/dinner/grain_bowl_baked/drink	kcal=645.9 P=45.8 C=93.7 F=8.8 Fb=7.3 SF=1.5 Na=748.6 partial=sat_fat_g,sodium_mg
+compose/dinner/grain_bowl_baked/no-method	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/dinner/grain_bowl_baked/last-protein	kcal=500 P=24 C=77.3 F=10.6 Fb=8.7 SF=2.2 Na=693.4
+compose/dinner/grain_bowl_baked/two-proteins	kcal=719.4 P=64.7 C=74.5 F=16.4 Fb=6.3 SF=4.6 Na=796
+compose/dinner/grain_bowl_baked/three-veg	kcal=544.2 P=42.8 C=80 F=5.4 Fb=9.6 SF=1.6 Na=857.6
+compose/dinner/grain_bowl_baked/oil-10	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/dinner/grain_bowl_baked/light	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/dinner/grain_bowl_baked/quick	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
+compose/dinner/warm_salad/s1	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=803.1
+compose/dinner/warm_salad/s0.5	kcal=351.8 P=30.6 C=19.5 F=17.1 Fb=4.7 SF=4.2 Na=802.1
+compose/dinner/warm_salad/s1.3	kcal=440.7 P=32.8 C=40.2 F=17.4 Fb=7.7 SF=4.3 Na=803.6
+compose/dinner/warm_salad/s2	kcal=518.5 P=34.8 C=58.4 F=17.6 Fb=10.3 SF=4.4 Na=805
+compose/dinner/warm_salad/no-veg-sauce	kcal=369.5 P=28.6 C=26 F=16.9 Fb=3.8 SF=4.1 Na=790
+compose/dinner/warm_salad/drink	kcal=542.4 P=38 C=51.7 F=21.1 Fb=7.6 SF=4.3 Na=803.1 partial=sat_fat_g,sodium_mg
+compose/dinner/warm_salad/no-method	kcal=363.2 P=32 C=32.5 F=12.3 Fb=6.6 SF=3.5 Na=803.1
+compose/dinner/warm_salad/last-protein	kcal=292.6 P=20.7 C=35.3 F=9 Fb=9 SF=1.9 Na=725.1
+compose/dinner/warm_salad/two-proteins	kcal=561.8 P=62.3 C=32.5 F=20 Fb=6.6 SF=5.1 Na=868.3
+compose/dinner/warm_salad/three-veg	kcal=440.7 P=35 C=38 F=17.7 Fb=9.9 SF=4.4 Na=912.1
+compose/dinner/warm_salad/oil-10	kcal=451.6 P=32 C=32.5 F=22.3 Fb=6.6 SF=5.1 Na=803.1
+compose/dinner/warm_salad/light	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=403.1
+compose/dinner/warm_salad/quick	kcal=407.4 P=32 C=32.5 F=17.3 Fb=6.6 SF=4.3 Na=803.1
+compose/dinner/submit0	addDailyLog dinner "炒類＋牛腱＋蝦仁＋花椰菜米＋青花菜＋菠菜＋燕麥奶／牛奶（一杯約240ml）" kcal=584.7 P=58.7 C=36.7 F=23.1 Fb=9.3 SF=5.5 Na=1413.1 partial=sat_fat_g,sodium_mg type=cook_full source=manual content=cook_full|protein_stir_fry/method_stir_fry|protein:beef_shank,protein:shrimp,staple:cauliflower_rice*1.2,vegetable:broccoli,vegetable:spinach,tw_bf02x1@135|implicit={"oil_g":10,"seasoning":"normal"}
+compose/dinner/lastPicked	{"dinner":"cook_full"}
 tab/no-last/breakfast	convenience
 tab/no-last/lunch	convenience
 tab/no-last/afternoon_tea	convenience

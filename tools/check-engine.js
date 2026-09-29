@@ -591,6 +591,22 @@ async function main() {
     const twoP = D({ proteins: [p1, p3], method: ing("method_pan_fry") });
     check(mc.composePrimary(twoP) === null && mc.composePrimary(D({ method: ing("method_pan_fry") })) === p1, "無主食槽：選 1 個蛋白質才有主要槽位，2 個不縮放");
 
+    // 6b. 用油與調味的選項（章程 B5.6、decisions #42）：只在煎、炒出現、相同克數只列一次、沒有「不用油」；覆寫後合計跟著變；
+    //     換成不能選用油的烹調法時覆寫不生效；沒覆寫時醬料讓調味預設清淡
+    const egg = arch("egg_pan");
+    const ed = (o) => Object.assign({ kind: "cook", meal_type: "cook_quick", archetype: egg, proteins: [ing(egg.protein.allow[0])], staple: null,
+      vegetables: [], seasoning: null, method: ing("method_pan_fry"), primaryScale: 1, implicitOverride: {} }, o);
+    check(JSON.stringify(mc.oilOptions(ed({}), "normal")) === JSON.stringify([{ oil_g: 5, is_default: true }, { oil_g: 10, is_default: false }]), "煎、一般用油習慣：預設 5g 與 1 茶匙相同只列一次，另有 2 茶匙");
+    check(mc.oilOptions(ed({}), "less").map((o) => o.oil_g).join() === "2.5,5,10", "煎、少油：預設 2.5g、1 茶匙、2 茶匙");
+    check(mc.oilOptions(ed({ method: ing("method_air_fry") }), "normal").length === 0 && mc.oilOptions(ed({ method: null }), "normal").length === 0, "氣炸、沒選烹調法：沒有用油選項");
+    check(mc.oilOptions(ed({}), "normal").every((o) => o.oil_g > 0), "沒有「不用油」選項");
+    const tEgg = (o) => mc.contentTotals(mc.buildDraftContent(ed(o), { oilHabit: "normal" }), catalog);
+    check(Math.abs(tEgg({ implicitOverride: { oil_g: 10 } }).kcal - tEgg({}).kcal - 44.2) < 0.11, "覆寫用油 5→10g，熱量多約 44.2 kcal");
+    check(tEgg({ method: ing("method_air_fry"), implicitOverride: { oil_g: 10 } }).kcal === tEgg({ method: ing("method_air_fry") }).kcal, "換成氣炸後用油覆寫不生效");
+    check(mc.composeImplicit(ed({ implicitOverride: { oil_g: 7 } }), "normal").oil_g === 5, "不在選項裡的克數不生效");
+    check(Math.round(tEgg({}).sodium_mg - tEgg({ implicitOverride: { seasoning: "light" } }).sodium_mg) === 400, "調味改清淡，鈉少 400 mg");
+    check(mc.composeImplicit(ed({ archetype: arch("bowl_oat"), implicitOverride: { seasoning: "normal" } }), "normal").seasoning === null, "不調味的骨架，調味覆寫不生效");
+
     // 7. meal_type 由呼叫端傳入，不從食材反推
     const green = composed.find((c) => c.tier_rank === 0);
     const gd = draftOf(green);

@@ -12,7 +12,7 @@
 // 用油與調味不跟主要槽位縮放；推薦、自己選、紀錄快照都用這裡的函式。
 
 import {
-  PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
+  PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax,
 } from "../core/config.js";
 import { SLOT_LABELS } from "../core/slots.js";
@@ -313,9 +313,28 @@ export function composeProblem(d, opts) {
   return null;
 }
 
-// 自煮的隱含成分：目前一律用預設（用油與調味的選項在 Phase 0 的自煮分頁）
-export function composeImplicit(d, oilHabit) {
+function draftDefaultImplicit(d, oilHabit) {
   return defaultImplicit(d.method, d.archetype, onAxis(d, "vegetable").length > 0, !!d.seasoning, oilHabit);
+}
+
+// 用油選項（章程 B5.6）：只有烹調法本身帶用油（煎、炒）才有；預設（依用油習慣）／約 1 茶匙／約 2 茶匙，相同克數只列一次。
+// 刻意沒有「不用油」（decisions #42）。回傳 [{ oil_g, is_default }]，不能選時是 []。
+export function oilOptions(d, oilHabit) {
+  const m = d.method;
+  if (!m || !(m.implicit || []).some(function (x) { return x.ref === COOKING_OIL_ID; })) return [];
+  const def = draftDefaultImplicit(d, oilHabit).oil_g;
+  return [{ oil_g: def, is_default: true }].concat(OIL_TSP_OPTIONS_G.filter(function (g) { return g !== def; })
+    .map(function (g) { return { oil_g: g, is_default: false }; }));
+}
+
+// 自煮實際採用的隱含成分：使用者的覆寫（d.implicitOverride = { oil_g?, seasoning? }）?? 預設。
+// 覆寫不合用時退回預設：換成不能選用油的烹調法、骨架不調味（Phase 0 計畫 3-3）。沒覆寫時醬料跟著改預設清淡（decisions #28）。
+export function composeImplicit(d, oilHabit) {
+  const base = draftDefaultImplicit(d, oilHabit);
+  const o = d.implicitOverride || {};
+  const oilOk = o.oil_g != null && oilOptions(d, oilHabit).some(function (x) { return x.oil_g === o.oil_g; });
+  const seasoningOk = base.seasoning != null && (o.seasoning === "light" || o.seasoning === "normal");
+  return { oil_g: oilOk ? o.oil_g : base.oil_g, seasoning: seasoningOk ? o.seasoning : base.seasoning };
 }
 
 // 不進位的自煮合計。primary＝被縮放的那個食材（composePrimary）；implicit：composeImplicit 的結果；implicitItems：catalog.implicit。
