@@ -1131,3 +1131,68 @@ body {
     max-width: 100%;
   }
 }
+
+/* B-1a：選擇器的「已選」段、份量晶片、隱藏／複製、補填（不上色，章程 C4.13） */
+.meal-picker-selected {
+  margin: 0.4rem 0 0.8rem;
+  padding: 0.6rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  background-color: #FFFBF5;
+}
+.selected-row {
+  padding: 0.4rem 0;
+  border-bottom: 1px dashed #EFE3D2;
+}
+.selected-row:last-child {
+  border-bottom: none;
+}
+.selected-name {
+  font-weight: 600;
+  color: #3A2E22;
+  margin-bottom: 0.3rem;
+}
+.qty-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.selected-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  margin-top: 0.2rem;
+}
+.link-btn {
+  min-height: 44px;
+  padding: 0 0.2rem;
+  border: none;
+  background: none;
+  color: #C1652F;
+  font-family: inherit;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.item-card-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.item-fill-btn {
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+.hide-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.hide-notice p {
+  margin: 0;
+  flex: 1 1 12rem;
+}
+.hide-notice .secondary-btn {
+  min-height: 44px;
+}

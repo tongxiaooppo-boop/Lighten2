@@ -535,6 +535,109 @@ async function run() {
   await until(`!!document.querySelector('#rec-breakfast .rec-log-btn') && ${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "5-7 還原後早餐不是回到推薦、或午餐紀錄不見了");
   await shot("資料備份-還原後今日建議");
 
+  // ---------- 6. 我的品項（B-1a）：份量、隱藏、複製、補填 ----------
+  console.log("[6. 我的品項]");
+  const kcalOf = async () => { const m = /約 (\d+(?:\.\d+)?) kcal/.exec(await js(text("#meal-picker-summary"))); return m ? Number(m[1]) : null; };
+  const firstBuiltinMain = () => js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog();
+    const card = [...document.querySelectorAll('#meal-picker-panel .item-card:not([disabled])')].find((b) => { const p = c.productsByUid[b.dataset.uid]; return p && p.role === 'main'; });
+    return card ? card.dataset.uid : null; })()`);
+  const cardIndex = (uid) => js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].findIndex((b) => b.dataset.uid === ${JSON.stringify(uid)})`);
+
+  // 6-1 份量：已選段在清單上方；×2 摘要熱量兩倍；飲料份量在飲料步驟，切到自煮看得到；取消再選回到 1；送出名稱帶 ×2
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const mainA = await firstBuiltinMain();
+  check(!!mainA, "6-1 超商分頁沒有可選的內建主餐");
+  await click(`#meal-picker-panel .item-card[data-uid="${mainA}"]`);
+  check(await js(`(() => { const s = document.querySelector('#meal-picker-panel .meal-picker-selected'); const g = document.querySelector('#meal-picker-panel .item-grid');
+    return !!s && !!g && (s.compareDocumentPosition(g) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0; })()`), "6-1 已選段不在品項清單上方");
+  check(!/kcal/.test(await js(text("#meal-picker-panel .meal-picker-selected"))), "6-1 已選段每行顯示了熱量（要看摘要，章程 C4.11）");
+  const k1 = await kcalOf();
+  await click(`#meal-picker-panel [data-qty-uid="${mainA}"][data-qty="2"]`);
+  const k2 = await kcalOf();
+  check(k1 && k2 && Math.abs(k2 - 2 * k1) <= 1, "6-1 份量 ×2 後摘要熱量不是兩倍（" + k1 + " → " + k2 + "）");
+  await click(`#meal-picker-drinks [data-drink]:not([data-drink=""]):not([disabled])`);
+  const drinkA = await js(`document.querySelector('#meal-picker-drinks .item-card.selected').dataset.drink`);
+  await click(`#meal-picker-drinks [data-qty-uid="${drinkA}"][data-qty="2"]`);
+  await shot("我的品項-份量", "#meal-picker-panel .meal-picker-selected");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  check(await js(`!!document.querySelector('#meal-picker-drinks [data-qty-uid="${drinkA}"][data-qty="2"].selected')`), "6-1 切到自煮分頁看不到飲料的份量 ×2");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await click(`#meal-picker-drinks [data-drink=""]`);
+  await click(`#meal-picker-drinks [data-drink="${drinkA}"]`);
+  check(await js(`!!document.querySelector('#meal-picker-drinks [data-qty-uid="${drinkA}"][data-qty="1"].selected')`), "6-1 飲料取消再選回來，份量不是 1");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("×2") !== -1`, "6-1 送出後晚餐紀錄名稱沒有「×2」");
+  await click("#rec-dinner .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-dinner .rec-pick-btn')`, "6-1 撤銷晚餐沒有完成");
+
+  // 6-2 隱藏：已選段按「隱藏」→ 消失＋提示＋復原 → 按復原回到原本的位置
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const mainB = await firstBuiltinMain();
+  const idxB = await cardIndex(mainB);
+  await click(`#meal-picker-panel .item-card[data-uid="${mainB}"]`);
+  await click(`#meal-picker-panel [data-hide-uid="${mainB}"]`);
+  await until(`!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]') && !!document.querySelector('#meal-picker-panel .hide-notice')`, "6-2 隱藏後品項沒有消失或沒有提示");
+  await shot("我的品項-隱藏提示", "#meal-picker-panel .hide-notice");
+  await click(`#meal-picker-panel [data-unhide-uid="${mainB}"]`);
+  await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]')`, "6-2 按復原後品項沒有回來");
+  check((await cardIndex(mainB)) === idxB, "6-2 復原後品項沒有回到原本的位置（" + idxB + " → " + (await cardIndex(mainB)) + "）");
+
+  // 6-3 複製成我的版本：表單預帶內建的值 → 改熱量存檔 → 原品項消失、新的一筆選中、份量沿用
+  await click(`#meal-picker-panel .item-card[data-uid="${mainB}"]`);
+  await click(`#meal-picker-panel [data-qty-uid="${mainB}"][data-qty="2"]`);
+  await click(`#meal-picker-panel [data-copy-uid="${mainB}"]`);
+  await until(`!!document.getElementById('picker-custom-food-form')`, "6-3 按複製成我的版本沒有出現表單");
+  const builtinName = await js(`(async () => (await (await import('./js/data/catalog.js')).loadCatalog()).productsByUid[${JSON.stringify(mainB)}].name)()`);
+  check((await js(`document.querySelector('#picker-custom-food-form [data-cf=name]').value`)) === builtinName, "6-3 表單沒有預帶內建品項的名稱");
+  await js(`document.querySelector('#picker-custom-food-form [data-cf=kcal]').value = '444'`);
+  await shot("我的品項-複製表單", "#picker-custom-food-form");
+  await click(`#picker-custom-food-form [data-cf-save]`);
+  await until(`!document.getElementById('picker-custom-food-form') && !document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]')`, "6-3 存檔後表單沒關或原品項沒有消失");
+  check(await js(`!!document.querySelector('#meal-picker-panel details.meal-picker-custom[open] .item-card.selected')`), "6-3 複製品沒有在我的品項裡選中");
+  check((await kcalOf()) === 888, "6-3 複製品的份量沒有沿用 ×2（摘要應該是 888 kcal，實際 " + (await kcalOf()) + "）");
+  check((await js(text("#meal-picker-panel"))).indexOf("已複製成我的版本") !== -1, "6-3 沒有「已複製成我的版本」的說明");
+  await closePicker();
+
+  // 6-4 補填：快速新增一筆過敏原未確認 → 設過敏原並按「計算」→ 灰掉、旁邊有「補填」；勾「含蛋」的那筆沒有補填 → 補成確認不含 → 可以選
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await click("#meal-picker-panel [data-quick-add-open]");
+  await fillQuickAdd("朋友做的飯糰", "300");
+  await click("#meal-picker-panel [data-qa-save]");
+  await until(`${text("#meal-picker-panel")}.indexOf("已存成我的品項") !== -1`, "6-4 快速新增沒有存成功");
+  await click("#meal-picker-panel [data-quick-add-open]");
+  await fillQuickAdd("有蛋的三明治", "320");
+  await click(`#meal-picker-panel [data-qa-allergen-mode=some]`);
+  await click(`#meal-picker-panel [data-qa-allergen="蛋"]`);
+  await click("#meal-picker-panel [data-qa-save]");
+  await until(`${text("#meal-picker-panel")}.indexOf("有蛋的三明治") !== -1`, "6-4 第二筆快速新增沒有存成功");
+  await closePicker();
+  await tab("profile");
+  await setAllergens(["蛋"]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "6-4 設過敏原後按計算沒有完成");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await js(`document.querySelectorAll('#meal-picker-panel details.meal-picker-custom').forEach((d) => { d.open = true; })`);
+  const riceUid = await js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].find((b) => b.innerText.indexOf('朋友做的飯糰') !== -1).dataset.uid`);
+  const eggUid = await js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].find((b) => b.innerText.indexOf('有蛋的三明治') !== -1).dataset.uid`);
+  check(await js(`document.querySelector('#meal-picker-panel .item-card[data-uid="${riceUid}"]').disabled && !!document.querySelector('#meal-picker-panel [data-fill-uid="${riceUid}"]')`), "6-4 過敏原未確認的我的品項沒有灰掉或旁邊沒有「補填」");
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-fill-uid="${eggUid}"]')`)), "6-4 勾了「含蛋」的我的品項出現「補填」（不能引導改答案，章程 C4.1）");
+  await shot("我的品項-補填按鈕", `#meal-picker-panel [data-fill-uid="${riceUid}"]`);
+  await click(`#meal-picker-panel [data-fill-uid="${riceUid}"]`);
+  await until(`!!document.getElementById('picker-custom-food-form')`, "6-4 按補填沒有出現表單");
+  await click(`#picker-custom-food-form [data-cf-allergen-mode=none]`);
+  await click(`#picker-custom-food-form [data-cf-save]`);
+  await until(`!document.getElementById('picker-custom-food-form') && !!document.querySelector('#meal-picker-panel .item-card[data-uid="${riceUid}"].selected')`, "6-4 補成確認不含之後沒有選中");
+  check((await js(`document.querySelectorAll('#meal-picker-panel .item-card[data-uid="${riceUid}"]').length`)) === 1, "6-4 補填後出現兩張同一筆的卡片");
+  await closePicker();
+  await tab("profile");
+  await setAllergens([]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "6-4 取消過敏原後按計算沒有完成");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }
