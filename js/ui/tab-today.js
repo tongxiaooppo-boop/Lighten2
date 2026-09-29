@@ -91,13 +91,14 @@ function renderRecs(recs, profile, logsBySlot) {
       return;
     }
     const rec = recs[slot];
+    // 沒有推薦卡片時仍要能「自己選」，不然這個時段無法手動記錄
     if (!rec) {
-      body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>';
+      body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>' + pickBtnHtml(slot);
       return;
     }
     // 依序分配後配額低於門檻（不是「找不到組合」，是「配額被前面時段用完了」）
     if (rec.lowBudget) {
-      body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>';
+      body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>' + pickBtnHtml(slot);
       return;
     }
     const imgSrc = MEAL_DEFAULT_IMAGE[slot];
@@ -124,8 +125,12 @@ function renderRecs(recs, profile, logsBySlot) {
       dislikeChipsHtml(rec) +
       '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
       '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>' +
-      '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自己選</button>';
+      pickBtnHtml(slot);
   });
+}
+
+function pickBtnHtml(slot) {
+  return '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自己選</button>';
 }
 
 export async function buildRecommendation() {

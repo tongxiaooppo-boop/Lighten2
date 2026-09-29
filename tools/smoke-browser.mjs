@@ -59,7 +59,7 @@ async function run() {
   await until(`${text("#meal-picker-summary")}.indexOf("已選 1 件") !== -1`, "選一個品項後摘要沒有更新");
   await js(`document.getElementById('meal-picker-submit').click()`);
   await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "自己選送出後午餐沒有變成已記錄");
-  // 每次送出後撤銷，讓後面的時段不會因配額不足而沒有「自己選」按鈕
+  // 送出後撤銷，順便測撤銷（配額不足時仍有「自己選」由 mobile-walkthrough 3-12 測）
   await js(`document.querySelector('#rec-lunch .rec-undo-btn').click()`);
   await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "撤銷後午餐沒有回到推薦");
 

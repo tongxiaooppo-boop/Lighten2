@@ -417,6 +417,26 @@ async function run() {
   check((await js(text("#meal-picker-summary"))).indexOf("已選 1 件 · 約 620 kcal") !== -1, "3-11 快速新增後摘要不是「已選 1 件 · 約 620 kcal」");
   await shot("自己選-快速新增後選中", "#meal-picker-panel details.meal-picker-custom");
   await closePicker();
+  // 3-12 配額不足的時段也能「自己選」：早餐記 1800 kcal → 午餐、晚餐配額不足，卡片仍有「自己選」且能記錄（v1 起這兩種卡片沒有按鈕）
+  await openPicker("breakfast");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await click("#meal-picker-panel [data-quick-add-open]");
+  await fillQuickAdd("吃到飽早午餐", "1800");
+  await click("#meal-picker-panel [data-qa-save]");
+  await until(`!document.getElementById('meal-picker-submit').disabled`, "3-12 快速新增 1800 kcal 後不能送出");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-breakfast")}.indexOf("已記錄") !== -1`, "3-12 早餐記 1800 kcal 後沒有變成已記錄");
+  await until(`${text("#rec-dinner")}.indexOf("配額已經不多") !== -1`, "3-12 早餐記 1800 kcal 後晚餐沒有顯示配額不足：" + (await recText("dinner")));
+  await shot("今日建議-配額不足", "#rec-dinner");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await click(`#meal-picker-panel .item-card:not([disabled])`);
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("已記錄") !== -1`, "3-12 配額不足時自己選送出後晚餐沒有變成已記錄");
+  await click("#rec-dinner .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-dinner .rec-pick-btn')`, "3-12 撤銷晚餐沒有完成");
+  await click("#rec-breakfast .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-breakfast .rec-log-btn') && !!document.querySelector('#rec-lunch .rec-log-btn')`, "3-12 撤銷早餐後早餐／午餐沒有回到推薦");
   // 3-3a 記一筆午餐留著（第 4 節本週總覽要有今天的熱量）
   await openPicker("lunch");
   await click(`#meal-picker-panel .item-card:not([disabled])`);
