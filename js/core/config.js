@@ -43,6 +43,8 @@ export const COMPOSE_MAX = { protein: 2, vegetable: 3 };
 export const COOKING_OIL_ID = "cooking_oil";
 export const OIL_HABIT_FACTOR = { normal: 1, less: 0.5 };
 export const SEASONING_IDS = { light: "seasoning_light", normal: "seasoning_normal" };
+// 「自己選」煎、炒時可以改的用油量：約 1 茶匙、約 2 茶匙（章程 B5.6；另一個選項是依用油習慣算的預設）
+export const OIL_TSP_OPTIONS_G = [5, 10];
 
 // 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」，不上色、不警告、不參與推薦（章程 C4.14、decisions #14）
 export const SODIUM_REFERENCE_MG = 2400;

@@ -480,6 +480,64 @@ async function snapPicker() {
     }
   }
 
+  // 自煮分頁：每個適用的餐型，第一個蛋白質/主食/蔬菜/醬料/烹調法，各種縮放、多選、用油與調味、快煮與飲料
+  for (const slot of ["breakfast", "lunch", "dinner"]) {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: [], customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
+    const r = await A.pickerOpen(slot);
+    A.takeDom();
+    const cat = r.catalog;
+    const archetypes = cat.archetypes.filter((a) => (a.valid_slots || []).indexOf(slot) !== -1);
+    const first = (list) => (list.length ? [list[0]] : []);
+    for (const a of archetypes) {
+      const al = (axis) => (a[axis] && a[axis].allow) || [];
+      const methods = a.methods || [];
+      const base = {
+        archetype: a.id, proteins: first(al("protein")), staple: al("staple")[0], vegetables: first(al("vegetable")),
+        seasoning: al("seasoning")[0], method: methods[0],
+      };
+      const variants = {
+        s1: {}, "s0.5": { scale: 0.5 }, "s1.3": { scale: 1.3 }, s2: { scale: 2 },
+        "no-veg-sauce": { vegetables: [], seasoning: null },
+        drink: { drink: r.drinks.pass[0] },
+        "no-method": { method: null },
+        "last-protein": { proteins: [al("protein")[al("protein").length - 1]], method: methods[methods.length - 1] },
+        "two-proteins": { proteins: al("protein").slice(0, 2) },
+        "three-veg": { vegetables: al("vegetable").slice(0, 3) },
+        "oil-10": { override: { oil_g: 10 } },
+        light: { override: { seasoning: "light" } },
+        quick: { tier: "cook_quick" },
+      };
+      for (const vn of Object.keys(variants)) {
+        const sel = Object.assign({}, base, variants[vn]);
+        const totals = A.pickerCompose(sel);
+        const k = "compose/" + slot + "/" + a.id + "/" + vn;
+        emit("picker", k, normTotals(totals));
+        A.takeDom().forEach((line, i) => {
+          if (/^#meal-picker-(summary|gap|hint|submit) /.test(line)) emit("ui", "picker/" + k + "/dom" + String(i).padStart(2, "0"), line);
+        });
+      }
+    }
+    // 免開火＋需要加熱的食材：擋下送出（骨架 allow 裡沒有需要加熱的蛋白質，直接指定一個，模擬選擇器以外的來源帶入）
+    const noCook = archetypes.find((a) => (a.methods || []).indexOf("method_no_cook") !== -1);
+    const cookNeeded = noCook && cat.proteins.find((p) => p.requires_cooking);
+    if (noCook && cookNeeded) {
+      A.pickerCompose({ archetype: noCook.id, proteins: [cookNeeded.id], staple: ((noCook.staple && noCook.staple.allow) || [])[0], method: "method_no_cook" });
+      A.takeDom().forEach((line) => { if (line.indexOf("#meal-picker-hint") === 0) emit("picker", "compose/" + slot + "/no-cook-unsafe", line); });
+    }
+    // 送出一組自煮（開伙、2 個蛋白質、用油 2 茶匙、配飲料）
+    const a0 = archetypes.find((a) => a.id === "protein_stir_fry") || archetypes[0];
+    if (a0) {
+      A.pickerCompose({ tier: "cook_full", archetype: a0.id, proteins: a0.protein.allow.slice(0, 2), staple: ((a0.staple && a0.staple.allow) || [])[0],
+        vegetables: ((a0.vegetable && a0.vegetable.allow) || []).slice(0, 2), method: (a0.methods || [])[0], scale: 1.2, drink: r.drinks.pass[0], override: { oil_g: 10 } });
+      await A.pickerSubmit();
+      A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "compose/" + slot + "/submit" + i, normWrite(w)); });
+      A.takeAlerts().forEach((m, i) => emit("picker", "compose/" + slot + "/alert" + i, m));
+      emit("picker", "compose/" + slot + "/lastPicked", stable(A.pickerLastPicked()));
+      A.takeDom(); A.takeEngineIO();
+    }
+  }
+
   // 預設分頁（PRD 第 4 節）：偏好是有效型態就用偏好；auto 時用上次這個時段送出的型態；都沒有停在超商
   const last = { picker_last_meal_type: { lunch: "delivery", afternoon_tea: "delivery", dinner: "convenience" } };
   const prefProfile = (prefs) => Object.assign({}, P.M, { meal_prefs: Object.assign({}, P.M.meal_prefs, prefs) });

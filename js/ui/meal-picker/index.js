@@ -4,14 +4,18 @@
 
 import { SLOT_LABELS, DEFAULT_MEAL_PREFS } from "../../core/slots.js";
 import { escapeHtml } from "../../core/html.js";
-import { $, sodiumText } from "../dom.js";
+import { $, sodiumText, notIncludedText } from "../dom.js";
 import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, getSetting, setSetting } from "../../data/db.js";
 import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
-import { buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps } from "../../engine/meal-content.js";
+import {
+  buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
+  composeProblem, composeImplicit, draftIngredients, oilOptions,
+} from "../../engine/meal-content.js";
 import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab } from "../../engine/picker.js";
 import { productTabHtml, drinkStepHtml } from "./product-tab.js";
+import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
 import { getCalibratedTargets } from "../calibration.js";
 import { todayStr, nowIso } from "../clock.js";
 
@@ -30,7 +34,13 @@ export const mealPicker = {
   },
   drinks: { items: [], reasons: {} },
   drinkUid: null,
+  // 自煮分頁：tier＝快煮/開伙子切換（就是這餐的 meal_type，decisions #34）；draft＝engine 的自煮草稿
+  cook: { tier: "cook_full", draft: null },
 };
+
+function emptyCookDraft() {
+  return { archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1, implicitOverride: {} };
+}
 
 function reasonsFor(items, profile) {
   const out = {};
@@ -74,7 +84,13 @@ export async function openMealPicker(slot, onLogged) {
   m.drinkUid = null;
   // 沒存過的時段用預設偏好（跟推薦、基本資料表單顯示的一樣）；不合法的值（含 auto）由 engine 往下找上次送出的型態
   const prefs = Object.assign({}, DEFAULT_MEAL_PREFS, profile.meal_prefs);
-  m.tab = tabOfMealType(resolveDefaultMealType({ planned: null, pref: prefs[slot], lastPicked: lastPicked[slot] }));
+  const mealType = resolveDefaultMealType({ planned: null, pref: prefs[slot], lastPicked: lastPicked[slot] });
+  m.tab = tabOfMealType(mealType);
+  // 子切換的預設：預設型態就是自煮時用它；否則用這個時段上次送出的自煮型態；都沒有用開伙（不預先灰掉任何選項）
+  m.cook = {
+    tier: tabOfMealType(mealType) === "cook" ? mealType : tabOfMealType(lastPicked[slot]) === "cook" ? lastPicked[slot] : "cook_full",
+    draft: emptyCookDraft(),
+  };
 
   const labelEl = $("#meal-picker-slot-label");
   if (labelEl) labelEl.textContent = SLOT_LABELS[slot] || slot;
@@ -111,7 +127,7 @@ function selectedDrink() {
 // 目前分頁的草稿（摘要與送出共用同一份，看到的＝存下的）；meal_type 一律是分頁值（decisions #47）
 export function currentDraft() {
   const m = mealPicker;
-  if (m.tab === "cook") return null;
+  if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink() }, m.cook.draft);
   return { kind: "products", meal_type: m.tab, items: selectedItems(m.tab), estimates: [], drink: selectedDrink() };
 }
 
@@ -121,13 +137,20 @@ function draftRoleItems(d) {
 }
 
 export function currentTotals() {
-  const d = currentDraft();
-  return d ? contentTotals(buildDraftContent(d), mealPicker.catalog) : null;
+  return contentTotals(buildDraftContent(currentDraft(), { oilHabit: mealPicker.profile.oil_habit }), mealPicker.catalog);
 }
 
+// 自煮分頁要餐型完整才能送出，只記飲料請到超商／外食分頁（decisions #45）
 function submitProblem(d) {
-  if (!d) return "自煮分頁還沒做好，請先用超商或外食分頁。";
+  if (d.kind === "cook") {
+    const p = composeProblem(d, { tier: d.meal_type });
+    return p && !d.archetype && d.drink ? p + "（只記飲料請到超商或外食分頁）" : p;
+  }
   return manualSelectionProblem(draftRoleItems(d), mealPicker.slot, { estimates: d.estimates.length });
+}
+
+function pickedCount(d) {
+  return d.kind === "cook" ? 0 : d.items.length + d.estimates.length + (d.drink ? 1 : 0);
 }
 
 function fmtNutrient(v) { return v == null ? "—" : Math.round(v) + "g"; }
@@ -147,7 +170,10 @@ function renderPanel() {
   if (!panel) return;
   const m = mealPicker;
   if (m.tab === "cook") {
-    panel.innerHTML = '<p class="meal-picker-note">自煮分頁還沒做好。</p>';
+    const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile);
+    m.cookSteps = r.steps;
+    panel.innerHTML = r.html;
+    bindSlider();
     return;
   }
   const t = m.tabs[m.tab];
@@ -159,9 +185,8 @@ function renderDrinks() {
   const el = $("#meal-picker-drinks");
   if (!el) return;
   const m = mealPicker;
-  if (m.tab === "cook") { el.innerHTML = ""; return; }
   const entries = m.drinks.items.map(function (it) { return { item: it, reason: m.drinks.reasons[it.uid] || null }; });
-  el.innerHTML = drinkStepHtml(entries, m.drinkUid, 2);
+  el.innerHTML = drinkStepHtml(entries, m.drinkUid, m.tab === "cook" ? (m.cookSteps || 2) + 1 : 2);
 }
 
 export function renderMealPicker() {
@@ -184,20 +209,25 @@ export function updateSummary() {
   const d = currentDraft();
   const totals = currentTotals();
   const summaryEl = $("#meal-picker-summary");
-  if (summaryEl) {
-    summaryEl.innerHTML = !totals ? "" :
-      "已選 " + (d.items.length + d.estimates.length + (d.drink ? 1 : 0)) + " 件 · 約 " + Math.round(totals.kcal) + " kcal" +
+  const isCook = d.kind === "cook";
+  const lead = isCook ? (composeProblem(d, { tier: d.meal_type }) ? "還沒配好 · " : "已配好 · ") : "已選 " + pickedCount(d) + " 件 · ";
+  if (summaryEl && isCook && !d.archetype && !d.drink) {
+    summaryEl.innerHTML = "還沒配好";
+  } else if (summaryEl) {
+    const oil = isCook && d.method ? composeImplicit(d, m.profile.oil_habit).oil_g : 0;
+    summaryEl.innerHTML = lead + "約 " + Math.round(totals.kcal) + " kcal" + (oil > 0 ? "（含用油約 " + oil + "g）" : "") +
       " · 蛋白質 " + fmtNutrient(totals.protein_g) +
       " · 碳水 " + fmtNutrient(totals.carb_g) +
       " · 脂肪 " + fmtNutrient(totals.fat_g) +
       " · 纖維 " + fmtNutrient(totals.fiber_g) +
-      " · " + escapeHtml(sodiumText(totals.sodium_mg, totals.partial.indexOf("sodium_mg") !== -1, false));
+      " · " + escapeHtml(sodiumText(totals.sodium_mg, totals.partial.indexOf("sodium_mg") !== -1, false)) +
+      (isCook && d.archetype && notIncludedText(d.archetype.not_included) ? " · " + escapeHtml(notIncludedText(d.archetype.not_included)) : "");
   }
 
   const gapEl = $("#meal-picker-gap");
   if (gapEl) {
     const lines = [];
-    if (totals && (d.items.length + d.estimates.length + (d.drink ? 1 : 0)) > 0) {
+    if (isCook ? !!d.archetype : pickedCount(d) > 0) {
       const share = slotNutrientShare(m.targets, m.todayLogs, m.profile.enabled_slots, m.slot);
       const gaps = slotGaps(share, totals);
       if (gaps.overKcal > 0) lines.push("這組合約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + gaps.overKcal + "），仍可送出。");
@@ -220,7 +250,61 @@ export function updateSummary() {
   }
 }
 
+// 自煮分頁的點選：子切換、餐型、食材（蛋白質/蔬菜多選，其餘單選）、烹調法、用油、調味
+function onCookClick(e) {
+  const m = mealPicker;
+  const d = m.cook.draft;
+  const tierBtn = e.target.closest("[data-tier]");
+  const oilBtn = e.target.closest("[data-oil]");
+  const levelBtn = e.target.closest("[data-seasoning-level]");
+  const btn = e.target.closest("[data-axis]");
+  if (tierBtn) {
+    m.cook.tier = tierBtn.getAttribute("data-tier");
+  } else if (oilBtn) {
+    const g = oilBtn.getAttribute("data-oil");
+    if (g === "") delete d.implicitOverride.oil_g; else d.implicitOverride.oil_g = parseFloat(g);
+  } else if (levelBtn) {
+    d.implicitOverride.seasoning = levelBtn.getAttribute("data-seasoning-level");
+  } else if (btn && !btn.disabled) {
+    const axis = btn.getAttribute("data-axis");
+    const id = btn.getAttribute("data-id");
+    if (axis === "archetype") {
+      m.cook.draft = emptyCookDraft();
+      m.cook.draft.archetype = m.catalog.archetypes.filter(function (a) { return a.id === id; })[0] || null;
+    } else {
+      const item = id ? archetypeOptions(m.catalog, axis, d.archetype).filter(function (x) { return x.id === id; })[0] : null;
+      if (axis === "protein" || axis === "vegetable") {
+        const key = axis === "protein" ? "proteins" : "vegetables";
+        const i = d[key].indexOf(item);
+        if (i !== -1) d[key].splice(i, 1);
+        else if (item && !optionReason(item, axis, d, m.cook.tier, m.profile)) d[key].push(item);
+      } else {
+        d[axis] = item && d[axis] === item ? null : item;
+        // 換成不能選用油的烹調法時清掉用油覆寫（Phase 0 計畫 3-3）
+        if (axis === "method" && oilOptions(d, m.profile.oil_habit).length === 0) delete d.implicitOverride.oil_g;
+      }
+    }
+  } else {
+    return;
+  }
+  renderPanel();
+  renderDrinks();
+  updateSummary();
+}
+
+function bindSlider() {
+  const slider = document.getElementById("compose-scale-slider");
+  if (!slider || !slider.addEventListener) return;
+  slider.addEventListener("input", function () {
+    mealPicker.cook.draft.primaryScale = parseFloat(slider.value);
+    const v = document.getElementById("compose-scale-value");
+    if (v) v.textContent = mealPicker.cook.draft.primaryScale.toFixed(1) + " 倍";
+    updateSummary();
+  });
+}
+
 function onPanelClick(e) {
+  if (mealPicker.tab === "cook") { onCookClick(e); return; }
   const card = e.target.closest(".item-card");
   if (!card || card.disabled) return;
   const m = mealPicker;
@@ -258,6 +342,7 @@ function onTabClick(e) {
 }
 
 function logName(d) {
+  if (d.kind === "cook") return [d.archetype.name].concat(draftIngredients(d).map(function (it) { return it.name; }), d.drink ? [d.drink.name] : []).join("＋");
   return d.items.map(function (it) { return it.name; })
     .concat(d.estimates.map(function (x) { return x.name || "外食估算"; }), d.drink ? [d.drink.name] : []).join("＋");
 }

@@ -684,6 +684,7 @@ body {
 }
 .compose-option {
   min-height: 44px;
+  font-family: inherit;
   justify-content: center;
   padding: 0.3rem 0.65rem;
   font-size: 0.85rem;
@@ -716,6 +717,7 @@ body {
 .compose-scale input[type="range"] {
   flex: 1;
   max-width: 260px;
+  min-height: 44px;
 }
 .compose-scale span {
   font-size: 0.85rem;
