@@ -28,6 +28,7 @@ body {
 .tab-panel h2,
 .targets-result h3,
 .weight-widget h3,
+.backup-widget h3,
 .rec-card h3,
 .exercise-streak h3,
 .exercise-form h3,
@@ -268,6 +269,99 @@ body {
 .status-text {
   color: #C1652F;
   min-height: 1.2em;
+}
+
+/* 基本資料：資料備份（PRD 11.6）。只顯示筆數與日期，中性文字不上警示色 */
+.backup-widget {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #EFE3D2;
+}
+.backup-widget h3 {
+  margin-top: 0;
+}
+.backup-note {
+  color: #8A7A63;
+  font-size: 0.9rem;
+  margin: 0.3rem 0 0.6rem;
+}
+.backup-actions,
+.backup-guard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.6rem 0;
+}
+.backup-actions .secondary-btn,
+.backup-actions .primary-btn,
+.backup-guard .secondary-btn,
+.backup-preview > .secondary-btn {
+  min-height: 44px;
+}
+.backup-file-label {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; /* label 會繼承內文字型，對齊旁邊的按鈕 */
+}
+/* 「還原」要先匯出或勾選才能按，不能按時要看得出來 */
+.backup-actions .primary-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* 選檔框藏起來，由外面的 label 當按鈕（不用 display:none，部分行動瀏覽器點 label 才打得開） */
+.backup-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+.backup-skip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  font-size: 0.9rem;
+}
+.backup-preview {
+  margin-top: 0.6rem;
+  padding: 0.8rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  background-color: #FFFBF5;
+}
+.backup-preview-title {
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+  color: #3A2E22;
+}
+.backup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.backup-table tbody th {
+  white-space: nowrap;
+}
+.backup-table th,
+.backup-table td {
+  text-align: left;
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid #EFE3D2;
+  vertical-align: top;
+}
+.backup-drop {
+  display: block;
+  color: #8A7A63;
+  font-size: 0.8rem;
+}
+.backup-problems {
+  margin: 0 0 0.6rem;
+  padding-left: 1.2rem;
+  color: #3A2E22;
+  font-size: 0.9rem;
 }
 
 /* 今日建議分頁 */
