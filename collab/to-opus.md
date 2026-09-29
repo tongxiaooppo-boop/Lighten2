@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29，Phase −1b 驗收完成，下一步 Phase 0）
+# 給接手的 Opus：Lighten2 交接（2026-09-29 中午，−1b 已驗收；Phase 0 計畫第二輪「要再修改」，待改第三版）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -39,12 +39,14 @@
 
 ## 4. 下一步
 
-1. **Phase 0**（PRD 第 7 節 Phase 0 列、第 4 節、第 10 節）：「自己選」改成超商｜外食｜自煮三分頁（依 `profile.meal_prefs`，auto 時用 `picker_last_meal_type`）；飲料抽成三分頁共用的獨立步驟；自煮分頁含快煮/開伙子切換與用油、調味選項；蛋白質/蔬菜多選；外食分頁「找不到？直接估算」；「我的品項」快速新增。品項卡片純文字已提前在 −1b 做完（9bae3d5）。
-   - 使用者手機實測時已經問過：來源分頁、飲料與食物分開、便當/餐盒不在自己選——這些都是 Phase 0 要解決的，做完要讓使用者確認。
-   - 一併處理 `docs/日後討論.md` 裡跟選擇器有關的：被擋品項排在最後、基本資料設定要按「計算」才存（可放 Phase 0 或 B-1）。
-   - Phase 0 屬於改骨架/重大畫面流程：開工前先改 PRD/decisions，必要時送 Opus 獨立審核（問答逐字存 `collab/opus-review-log/`）。
-2. `docs/日後討論.md` 的 −1b 待評估項目（低碳主食槽、超商隔天重複、shown_count 不衰減、煎蛋清淡、不加調味、溫沙拉沙拉醬、補一筆成分完整的醬料、外食升級 TFDA derived）要另外送 C3 審核。運動分頁「連續紀錄」仍暫緩。
-3. `collab/pdf/` 有兩份 PDF 超過 50 MB（GitHub 警告），要不要改 Git LFS 或移出 repo 待使用者決定。
+1. **Phase 0 計畫改第三版**：`docs/review/2026-09-29-Phase0-實作計畫.md`（第二版）。審核紀錄 `collab/opus-review-log/2026-09-29-phase0-plan-review.md`（兩輪問答逐字＋最後的「實作者檢討」自查表）。
+   - 第二輪【一定要改】3 項：**N1** `data/catalog.js` 的 `fromCustomFood` 照 PRD 10.1 讀 role/channel/valid_slots/飲食標記，`tools/diff-recs.js` 的 `CUSTOM_FOODS` 範例改成 10.1 格式（會動 picker 快照，放 commit 3 或 5）；**N2** commit 2 採 (a)：slotGaps 的 null、飲料移出 composeTotals 延到 commit 3，composeProblem 免開火排在 allow 前、提示文字跟舊的逐字相同，舊畫面傳推導出的 meal_type；**N3** 選項灰階做成 engine 的 `composeOptionProblem(item, axis, draft, { tier })`。
+   - 第二輪【建議】N4–N15 一併寫進第三版（醬料也算免開火、假骨架斷言、contentTotals 用 sumProducts＋composeTotals＋addContributions 且推薦路徑不動、commit 3 拿掉過渡相容與 contentFromProducts、我的品項組例外與外食來源順序、meal_type 一律等於分頁值、預告不誘導改確認不含、PRD 10.4/10.6 改寫與死路登記、maxTierRank 共用、全素宣告與過敏原矛盾提示、walkthrough 用 auto 時段驗 lastPicked、commit 3–5 一起推）。另補 `composeProblem`「餐型不完整 → 擋」的斷言。
+   - 寫完用檢討表自查，再送第三輪核對（問答逐字存同一個檔）。
+2. **待使用者決定：手動記錄主餐上限**（計畫第 6 節）：A 維持 1／B 放寬到 2（審核與實作者建議）／C 改角色（不建議）。使用者還沒回覆，下午接續時先問。B 的話：`manualSelectionProblem` 的訊息改依常數產生、check-engine「兩個主餐要擋」改三個。
+3. 計畫通過＋使用者決定後開工，照計畫第 5 節 commit 拆法；每個畫面 commit 跑 `mobile-walkthrough` 並看截圖（章程 C6.5）。
+4. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
+5. `collab/pdf/` 兩份 PDF 超過 50 MB，要不要移出 repo 或改 Git LFS 待使用者決定（不急）。
 
 ## 5. 工作方式
 
