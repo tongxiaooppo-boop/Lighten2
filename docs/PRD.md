@@ -245,19 +245,19 @@ v1 的大餐預約是「預先登記未來某天某時段要吃什麼、預扣�
 | **Phase −1b 修正** | 依[資料 review](review/2026-09-28-食物資料review.md) 重建 `data/ingredients.json`（由 TFDA 產生數值）、修正現成品項（官方數字、過敏原、複合料理未確認）、過敏原詞彙加花生與軟體動物；用油與調味隱含成分、基本資料「用油習慣」；鈉與飽和脂肪（顯示規則見第 3 節）；null 傳染修正；自訂食物的過敏原：拿掉例外＋`db.js` 寫入驗證（表單在 Phase 0）；低碳獨立開關與推薦縮放上限；手動記錄放寬；`daysSince` 時區；食材 id 定案後凍結。推薦的近期降權與累計扣分以「今天開始時」的狀態計算、今天已記錄的餐佔用跨時段不重複的名額（decisions #39；修 v1 同一天重建時剛顯示的組合整批換掉，diff-recs `flow/rebuild-same-day`）；毛豆仁移到蛋白質軸、骨架 `seasoned`（decisions #37、#38）；**圖片政策提前落實**（decisions #8，原排 Phase 0）：品項卡片全面純文字，推薦卡片只用 5 張時段插畫，刪除 `images/food/`。 | 每一項各更新推薦快照，快照差異就是差異報告（哪些推薦變了、熱量變多少、哪些品項對有過敏原設定的人消失、低碳設定下各時段候選數量）；check-data、check-engine 全過。 |
 | **Phase 0（2026-09-29 已驗收：自動測試全過＋使用者手機短清單通過）** | 「自己選」modal 改成型態分頁（超商｜外食｜自煮），自煮分頁含快煮/開伙子切換與用油、調味選項；飲料抽成三分頁共用的獨立步驟；蛋白質/蔬菜多選（蛋白質最多 2、蔬菜最多 3）；外食分頁最上方「找不到？直接估算」卡片（`estimate` 元件，S/M/L 熱量常數放 `core/config.js`）；**「我的品項」快速新增**（名稱、熱量、角色、過敏原、飲食宣告；超商/外食分頁都有）；`picker_last_meal_type`；手動主餐上限依時段。範圍與 commit 拆法見 [Phase 0 實作計畫](review/2026-09-29-Phase0-實作計畫.md)。 | [Phase 0 實作計畫](review/2026-09-29-Phase0-實作計畫.md) 第 4 節（推薦、候選池、矩陣、體重校正快照每個 commit 逐字不變；check-engine 斷言；mobile-walkthrough）。 |
 | ~~Phase 1~~ | 原內容已併入：MealContent 與快照 → −1a；`estimate` 卡片 → Phase 0；美饗日曆主餐＋飲品 → 美饗日曆已移除。 | — |
-| **Phase 2** | 新增 `meal_plan` store＋解析規則；今日建議讀「有效型態」；支援「只指定型態」跟「型態＋內容」兩種計畫粒度；「照計畫記下」。 | |
+| **Phase 2** | 新增 `meal_plan` store＋解析規則；今日建議讀「有效型態」；支援「只指定型態」跟「型態＋內容」兩種計畫粒度；「照計畫記下」。匯出匯入涵蓋 `meal_plan`；`BACKUP_SCHEMA_VERSION` +1；驗收做一次來回並凍結新版 fixture。 | |
 | **Phase 3** | 「餐點日曆」週格子（新做，沒有遷移）：直接用三分頁編輯器；依日期決定寫 `meal_plan`（未來）或 `daily_log`（回填過去／今天已過的時段，沿用時段結束時間檢查）；「複製上週」。 | 回填過去日期、預約未來、複製上週的兩個陷阱（5.4）。 |
 | **Phase 4** | 採買清單 MVP（補 `purchase_key`、`purchase_unit`、`g_per_unit`、`pantry`）。只彙總 `ingredient` 元件；我的料理不進 MVP（decisions #62）。 | 用手算範例核對聚合結果再上線。 |
 | **Phase 5（可選）** | 自動排一週菜單、週模板、包裝規格換算、自助餐支援。自動排菜不能挑我的料理（章程 C4.17）。 | 視實際使用狀況再決定。 |
 | **平行工作線 A** | 擴充餐型骨架（目前只有 5 個，午晚餐可用的只有 3 個）。 | 沒有這條線，週規劃做得再好，使用者兩週後會覺得菜色單調。新骨架可一批一起送獨立審核（章程 B7）。 |
-| **平行工作線 B-3（下一個做）** | 資料匯出/匯入（JSON）。 | Phase 0 起使用者可以自建品項，瀏覽器資料被清掉就全部沒了，所以排在 Phase 0 之後第一個做（decisions #55）。匯出格式帶 `schema_version` 與 store 清單，之後新增的 store 接得上，匯入時缺少的 store 當成空的；範圍是當時已有的資料（我的品項、設定、紀錄…）；第 12 節的新 store 由 B-4a、B-4b 各自把匯出匯入補上並驗收；匯入規則見 11.6。 |
-| **平行工作線 B-1a** | 我的品項管理（`updateCustomFood`、編輯、封存、補填過敏原；解除 decisions #49 的死路）＋內建品項的隱藏清單＋複製成我的版本（明細並列內建目前的數值）＋選擇器的份量倍數（`qty`，第 12.3 節）。 | B-3 之後。第 12 節要先通過獨立審核。 |
+| **平行工作線 B-3（下一個做；[實作計畫](review/2026-09-29-B3-實作計畫.md) 三輪審核定案）** | 資料匯出/匯入（JSON）：完整備份與還原（取代），格式與規則見 11.6。 | Phase 0 起使用者可以自建品項，瀏覽器資料被清掉就全部沒了，所以排在 Phase 0 之後第一個做（decisions #55）。匯出格式帶 `schema_version` 與 store 清單，之後新增的 store 接得上，匯入時缺少的 store 當成空的；範圍是當時已有的資料（我的品項、設定、紀錄…）；第 12 節的新 store 由 B-4a、B-4b 各自把匯出匯入補上並驗收；匯入規則見 11.6。 |
+| **平行工作線 B-1a** | 我的品項管理（`updateCustomFood`、編輯、封存、補填過敏原；解除 decisions #49 的死路）＋內建品項的隱藏清單＋複製成我的版本（明細並列內建目前的數值）＋選擇器的份量倍數（`qty`，第 12.3 節）。匯出匯入涵蓋 `hidden_catalog_uids`（登記進 `SETTING_KEYS`）；`BACKUP_SCHEMA_VERSION` +1；驗收做一次來回並凍結新版 fixture。 | B-3 之後。第 12 節要先通過獨立審核。 |
 | **平行工作線 B-1b** | 第 12.2 節「食物資料」查詢：`data/tfda_lookup.json` 的產生工具與 check-data 逐筆比對、搜尋與明細畫面。 | B-1a 之後。 |
 | **平行工作線 B-1c** | 第 12.2 節成分明細（選擇器摘要與推薦卡片）。 | B-3 之後，跟 B-1a、B-1b 無依賴。 |
 | **平行工作線 B-2** | 「我的品項」資料填得夠完整（有 kcal/protein_g，過敏原已確認）時，自動併入今日建議候選池。 | B-1a 之後隨時可做，跟 Phase 2–4 沒有依賴。 |
-| **平行工作線 B-4a** | 第 12.4 節：我的食材＝常買清單（從衛福部加入或自填、`settings.favorite_ingredient_ids`、封存語意）；章程 B8、C4.17 的檢查；匯出匯入涵蓋 `custom_ingredients` 與常買 id，匯入時依 `tfda_id` 核對（編號存在或標已下架、`filled` 只留衛福部仍是 null 的欄位；編號在查詢檔完全找不到的那一筆拒絕匯入並列出，引用它的料理也一起拒絕並列出，不放寬 ref 驗證）；匯入重新產生 id 時料理對我的食材的引用跟著改寫（斷言）。 | B-1b 之後（要用衛福部查詢檔）。 |
-| **平行工作線 B-4b** | 第 12.5 節：我的料理＋MealContent 的 `dish` 元件（第 3 節、`db.js` 驗證、`contentTotals`、硬性過濾）；匯出匯入涵蓋 `custom_dishes`，匯入重新產生 id 時組合對料理的引用跟著改寫（斷言）；`tools/check-engine.js` 目前用 `kind: "dish"` 當不合法元件的測資，要換一個。 | B-4a 之後。跟 Phase 2 誰先做，後做的那個驗收要加「計畫含料理」的斷言。 |
-| **平行工作線 C** | 「我的組合」（第 11 節）：`saved_meals` store、`toSavedContent`／`remapSavedRefs`／`resolveSavedMeal`、存成組合的兩個入口、選擇器裡的「我的組合」列、基本資料分頁的管理區塊（含直接編輯內容，第 12.6 節）、餐點日曆引用（Phase 3 起）。 | Phase 0 之後即可開始，不依賴 B-1；組合包含我的料理要等 B-4b。驗收：`resolveSavedMeal`／`remapSavedRefs` 的 check-engine 斷言（過敏原、隱藏後改用複製版本、下架、骨架已刪除、骨架 `allow` 失效、軸上限、免開火、角色超量依順序擋後者）；`toSavedContent` 的 `keepImplicit` 兩種情況；帶入時被擋元件不預選；自煮份量依當天預算重算；推薦引擎不讀（check-arch）。 |
+| **平行工作線 B-4a** | 第 12.4 節：我的食材＝常買清單（從衛福部加入或自填、`settings.favorite_ingredient_ids`、封存語意）；章程 B8、C4.17 的檢查；匯出匯入涵蓋 `custom_ingredients` 與常買 id（`BACKUP_SCHEMA_VERSION` +1、凍結新版 fixture；`exportAllData` 列進 C4.17 的讀取函式清單；`validateBackup` 的 `ctx` 傳入衛福部查詢表），匯入時依 `tfda_id` 核對（編號存在或標已下架、`filled` 只留衛福部仍是 null 的欄位；編號在查詢檔完全找不到的那一筆拒絕匯入並列出，引用它的料理也一起拒絕並列出，不放寬 ref 驗證）；匯入重新產生 id 時料理對我的食材的引用跟著改寫（斷言；合併匯入上線時才適用，B-3 的還原不改 id）。 | B-1b 之後（要用衛福部查詢檔）。 |
+| **平行工作線 B-4b** | 第 12.5 節：我的料理＋MealContent 的 `dish` 元件（第 3 節、`db.js` 驗證、`contentTotals`、硬性過濾）；匯出匯入涵蓋 `custom_dishes`（`BACKUP_SCHEMA_VERSION` +1、凍結新版 fixture），匯入重新產生 id 時組合對料理的引用跟著改寫（斷言；合併匯入上線時才適用）；`tools/check-engine.js` 目前用 `kind: "dish"` 當不合法元件的測資，要換一個。 | B-4a 之後。跟 Phase 2 誰先做，後做的那個驗收要加「計畫含料理」的斷言。 |
+| **平行工作線 C** | 「我的組合」（第 11 節）：`saved_meals` store、`toSavedContent`／`remapSavedRefs`／`resolveSavedMeal`、存成組合的兩個入口、選擇器裡的「我的組合」列、基本資料分頁的管理區塊（含直接編輯內容，第 12.6 節）、餐點日曆引用（Phase 3 起）；匯出匯入涵蓋 `saved_meals`（`BACKUP_SCHEMA_VERSION` +1、凍結新版 fixture）。 | Phase 0 之後即可開始，不依賴 B-1；組合包含我的料理要等 B-4b。驗收：`resolveSavedMeal`／`remapSavedRefs` 的 check-engine 斷言（過敏原、隱藏後改用複製版本、下架、骨架已刪除、骨架 `allow` 失效、軸上限、免開火、角色超量依順序擋後者）；`toSavedContent` 的 `keepImplicit` 兩種情況；帶入時被擋元件不預選；自煮份量依當天預算重算；推薦引擎不讀（check-arch）。 |
 
 ---
 
@@ -431,7 +431,50 @@ v1 的 `passesHardFilters` 對自訂食物完全跳過過敏原檢查（`!item.i
 
 ### 11.6 匯出匯入（平行工作線 B-3）
 
-組合引用我的品項的 id。匯入時 `saved_meals`、`custom_foods`、`hidden_catalog_uids` 在同一個 IndexedDB transaction 寫入；若匯入會重新產生我的品項 id，要同步改寫組合裡的 `ref`。第 12 節新增的 `custom_ingredients`、`custom_dishes` 也在同一個 transaction，id 改寫要連動（我的料理引用我的食材、組合引用我的料理）。
+組合引用我的品項的 id。匯入時 `saved_meals`、`custom_foods`、`hidden_catalog_uids` 在同一個 IndexedDB transaction 寫入；若匯入會重新產生我的品項 id，要同步改寫組合裡的 `ref`。第 12 節新增的 `custom_ingredients`、`custom_dishes` 也在同一個 transaction，id 改寫要連動（我的料理引用我的食材、組合引用我的料理）。（以上是**合併匯入**的規則，分享包上線時才適用。）
+
+**B-3 做的是完整備份與還原（取代）**（decisions #71；實作計畫 [B-3](review/2026-09-29-B3-實作計畫.md)）：
+
+- **位置**：基本資料分頁最下面的「資料備份」區塊。說明一句「資料只存在這台裝置的瀏覽器裡，換手機或清除瀏覽器資料前請先匯出」。
+- **匯出**：下載 `lighten2-backup-YYYY-MM-DD.json`，內容是所有 store 的全部資料（不含內建資料）。匯出當下對「JSON 來回一次」的結果跑還原時同一套驗證；有還原不了的紀錄（例：驗證器變嚴之前寫入的舊格式）就在下載的同時用中性文字列出類別與日期。
+- **還原＝取代，不是合併，也不是同步**：一個 IndexedDB transaction 清空全部 store 後寫入檔案內容（全有全無），id 原樣保留，所以不需要上面的 id 改寫。完成後通知其他開著的 App 分頁重新載入，自己也重新載入。
+  - 預覽：匯出時間；每一類檔案與目前的筆數、最後一筆日期；還原後變成 0 筆的類別；目前有 `created_at` 晚於檔案匯出時間的紀錄時寫「目前有 M 月 D 日之後新增的紀錄，還原後不會保留」。
+  - 目前資料不是空的（有基本資料，或飲食、體重、運動紀錄、我的品項任一類有資料）時，要先按過「先匯出目前的資料」或勾「目前的資料不需要保留」，「還原」才能按（使用者決定 A，待確認）。
+  - 驗證失敗（格式不對、版本較新、任一筆不合法、基本資料讓目標計算丟錯）時不寫入任何東西，列出前 5 個問題。
+- **檔案格式**：
+
+```js
+{
+  format: "lighten2-backup",
+  schema_version: 1,                 // db.js 的 BACKUP_SCHEMA_VERSION；新增 store、settings key 或改變區塊結構就 +1（跟 DB_VERSION 分開計）
+  exported_at, app_version,          // 只供人看；缺也放行
+  manifest: { <store>: 筆數, ... },   // 必須跟 sections 的實際筆數一致
+  sections: {
+    system: { user_profile: {...} | null, settings: [{ id, value }], recipe_feedback: [{ id, value }] },
+    logs: { daily_log: [...], weight_log: [...], exercise_log: [...] },
+    custom_foods: [...],
+  },
+}
+```
+
+  - 檔案只描述含哪些區塊，不描述匯入語意；日後的分享包是同一種檔案、只含食物類區塊，由匯入端提供合併（見 `docs/日後討論.md`）。每筆紀錄都帶自己的 `id`，合併時存成 `origin_id` 去重與追溯。
+  - 版本：檔案版本較新 → 拒絕；較舊 → 逐版升級，舊檔沒有的區塊當成空的；同版本出現不認得的區塊或 settings key → 拒絕。`tools/fixtures/backup-v<N>.json` 每一版凍結一份，之後的版本都要讀得了。
+  - store 與 settings key 的清單由 db.js 的 `STORE`、`BACKUP_SECTIONS`、`SETTING_KEYS` 決定，check-engine 斷言每個 store 都在某個區塊裡；之後新增 store 或 key 的工作線要一起補匯出（第 7 節各列）。
+
+**`user_profile` 欄位**（由基本資料表單寫入；還原時由 `validateProfile` 驗型別）：
+
+| 欄位 | 型別 | 還原時 |
+|---|---|---|
+| `age`、`height_cm`、`weight_kg` | 有限正數 | 必填 |
+| `body_fat_pct` | 有限正數或 null | 可缺 |
+| `gender`、`activity_mode`、`goal_mode`、`diet_restriction`、`oil_habit` | 字串 | 可缺；選項值不在 db.js 另列，由 engine 的實際行為決定：性別認不得 `calculateTargets` 會丟錯 → 擋下；目標、活動量認不得會退回維持、久坐；飲食限制認不得會往保守方向（推薦變空）——後兩種只會出現在手改過的檔案，不擋 |
+| `low_carb` | 布林 | 可缺 |
+| `allergens` | 字串或字串陣列（舊資料是自由文字） | 可缺 |
+| `disliked_ingredients` | 陣列，每項 `key` 是字串（`type` 不檢查，decisions #40） | 可缺 |
+| `meal_prefs`、`enabled_slots` | 物件（值可以是 `"off"`） | 可缺 |
+| `activity_value`、`protein_g_per_kg`、`fat_pct`、`fiber_target_g` | 數字（表單沒有，engine 會讀） | 可缺 |
+
+平常按「計算」存基本資料時還沒有寫入驗證，另排（`docs/日後討論.md`）。
 
 ---
 

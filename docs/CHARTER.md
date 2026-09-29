@@ -279,7 +279,7 @@ ui/  →  data/    →  core/
 11. 自煮一律包含用油與調味兩個隱含成分（我的料理的用油與調味已含在 `dish` 元件的快照裡，那一餐的 `implicit` 記 0 與 null，PRD 12.5），推薦、自己選、計畫、採買清單都走 `engine/meal-content.js`〔機：check-engine 斷言隱含成分；check-arch 禁止 `ui/` 出現營養加總寫法（`kcal +=`、`protein_g +` 等；啟發式檢查，不是完整證明）；`data/db.js` 寫入驗證自煮紀錄必有 `implicit`〕。
 
 **核心原則**
-12. 運動與飲食脫鉤：讀取運動紀錄的函式只允許出現在 `ui/tab-exercise.js` 與 `data/db.js`〔機：check-arch grep〕；飲食畫面不出現運動內容，反之亦然〔人〕。
+12. 運動與飲食脫鉤：讀取運動紀錄的函式（包括整批匯出）只允許出現在 `ui/tab-exercise.js`、`data/db.js` 與負責備份匯出匯入的檔案〔機：check-arch grep〕；備份畫面只顯示筆數與日期，不顯示、不加總運動內容〔人〕；飲食畫面不出現運動內容，反之亦然〔人〕。
 13. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品不依熱量排序或上色；飲料不做糖量警告〔機：check-arch 對 `ui/` 做禁用字 grep；〔人〕：配色與排序〕。
 14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：顯示欄位（鈉、飽和脂肪）只在 `engine/meal-content.js` 處理，其他 engine 模組只能把 `displayFields(...)` 原封併進輸出物件；啟發式檢查；〔人〕：畫面〕。
 15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取〔機：check-arch grep——這個 key 只允許出現在 `data/db.js` 與「自己選」modal 的檔案〕。
