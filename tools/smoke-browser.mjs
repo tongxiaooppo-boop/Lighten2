@@ -1,7 +1,7 @@
 // 輕盈計畫 — 瀏覽器冒煙測試：用無頭 Edge/Chrome 實際操作 App（ES modules、import map、IndexedDB 都是真的）。
 // 用法：node tools/smoke-browser.mjs            （全部通過 exit 0）
 //       SMOKE_BROWSER=/path/to/chrome node tools/smoke-browser.mjs
-// 流程：填基本資料 → 今日建議 → 記錄推薦 → 撤銷 → 自己選（現成品項、自己煮）→ 本週 → 運動 → 體重；
+// 流程：填基本資料 → 今日建議 → 記錄推薦 → 撤銷 → 自己選（超商、外食＋飲料）→ 本週 → 運動 → 體重；
 // 最後檢查 console 沒有錯誤、資料庫是 lighten2、daily_log 是新格式。約 30 秒，不放進 pre-commit，Phase 驗收時跑。
 // 手機版面與手機實機腳本的步驟由 tools/mobile-walkthrough.mjs 自動跑（模擬手機尺寸＋截圖）。
 
@@ -54,20 +54,22 @@ async function run() {
 
   console.log("[自己選]");
   await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
-  await until(`!document.getElementById('manual-picker-overlay').hidden && document.querySelectorAll('#manual-picker-items .item-card').length > 0`, "自己選沒有打開或沒有品項");
-  await js(`document.querySelector('#manual-picker-items .item-card[data-uid=conv_bx04]').click()`);
-  await until(`${text("#manual-picker-summary")}.indexOf("已選 1 件") !== -1`, "選一個品項後摘要沒有更新");
-  await js(`document.getElementById('manual-picker-submit').click()`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.querySelectorAll('#meal-picker-panel .item-card').length > 0`, "自己選沒有打開或沒有品項");
+  await js(`document.querySelector('#meal-picker-panel .item-card[data-uid=conv_bx04]').click()`);
+  await until(`${text("#meal-picker-summary")}.indexOf("已選 1 件") !== -1`, "選一個品項後摘要沒有更新");
+  await js(`document.getElementById('meal-picker-submit').click()`);
   await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "自己選送出後午餐沒有變成已記錄");
 
+  // 外食分頁＋飲料步驟
   await js(`document.querySelector('#rec-dinner .rec-pick-btn').click()`);
-  await until(`!document.getElementById('manual-picker-overlay').hidden`, "晚餐自己選沒有打開");
-  await js(`document.querySelector('input[name=manual-picker-mode][value=compose]').click()`);
-  await js(`document.querySelector('#manual-picker-compose-mode .compose-option[data-axis=archetype]').click()`);
-  await js(`['protein', 'staple', 'method'].forEach((ax) => { const b = document.querySelector('#manual-picker-compose-mode .compose-option[data-axis=' + ax + ']:not([disabled])'); if (b) b.click(); })`);
-  await until(`${text("#manual-picker-summary")}.indexOf("已配好") !== -1 && !document.getElementById('manual-picker-submit').disabled`, "自己煮選好後不能送出");
-  await js(`document.getElementById('manual-picker-submit').click()`);
-  await until(`${text("#rec-dinner")}.indexOf("已記錄") !== -1`, "自己煮送出後晚餐沒有變成已記錄");
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "晚餐自己選沒有打開");
+  await js(`document.querySelector('#meal-picker-tabs [data-tab=delivery]').click()`);
+  await until(`document.querySelectorAll('#meal-picker-panel .item-card').length > 0`, "外食分頁沒有品項");
+  await js(`document.querySelector('#meal-picker-panel .item-card:not([disabled])').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-drink]:not([data-drink=""]):not([disabled])').click()`);
+  await until(`${text("#meal-picker-summary")}.indexOf("已選 2 件") !== -1 && !document.getElementById('meal-picker-submit').disabled`, "外食選一個品項＋飲料後不能送出");
+  await js(`document.getElementById('meal-picker-submit').click()`);
+  await until(`${text("#rec-dinner")}.indexOf("已記錄") !== -1`, "外食送出後晚餐沒有變成已記錄");
 
   console.log("[本週、運動、體重]");
   await js(`document.querySelector('.tab-btn[data-tab=week]').click()`);

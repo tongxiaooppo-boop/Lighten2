@@ -537,52 +537,129 @@ body {
 .modal-overlay[hidden] {
   display: none;
 }
-.modal.manual-picker {
+/* 「自己選」選擇器：標題＋分頁列在上、內容區自己捲動、摘要＋按鈕固定在底部（Phase 0：手機剛打開就看得到「記下這餐」） */
+.modal.meal-picker {
   background-color: #fff;
   border-radius: 16px;
-  padding: 1rem 1.1rem;
   max-width: 720px;
   width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   box-shadow: 0 12px 40px rgba(60, 40, 20, 0.25);
 }
-.manual-picker .item-grid {
-  max-height: 42vh;
-  overflow-y: auto;
-  padding: 0.2rem;
+.meal-picker-head {
+  padding: 0.9rem 1.1rem 0.4rem;
+  border-bottom: 1px solid #F3EADF;
 }
-.manual-picker-summary {
-  margin: 0.6rem 0 0.2rem;
-  font-weight: 600;
+.meal-picker-head h3 {
+  margin: 0 0 0.5rem;
+}
+.meal-picker-tabs {
+  display: flex;
+  gap: 0.4rem;
+}
+.meal-picker-tab {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid #EFE3D2;
+  border-radius: 10px;
+  background-color: #fff;
+  color: #5A4C3A;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.meal-picker-tab.selected {
+  border-color: #C1652F;
+  background-color: #FBF0E6;
   color: #3A2E22;
+  font-weight: 600;
 }
-.manual-picker-gap {
-  margin: 0.2rem 0 0.6rem;
+.meal-picker-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.6rem 1.1rem;
+}
+.meal-picker-foot {
+  padding: 0.5rem 1.1rem 0.8rem;
+  border-top: 1px solid #F3EADF;
+  background-color: #fff;
+}
+.meal-picker-step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #8A5A2B;
+  margin: 0.2rem 0 0.35rem;
+}
+.meal-picker-note {
+  font-size: 0.8rem;
+  color: #8A7A63;
+  margin: 0.2rem 0 0.5rem;
+}
+.meal-picker-role {
+  font-size: 0.9rem;
+  color: #5A4C3A;
+  margin: 0.8rem 0 0.2rem;
+}
+.meal-picker-category {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #8A7A63;
+  margin: 0.4rem 0 0.25rem;
+}
+.meal-picker-group summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
   font-size: 0.85rem;
   color: #8A7A63;
+  cursor: pointer;
+  list-style: none;
 }
-.manual-picker-gap p {
-  margin: 0.2rem 0;
+.meal-picker-group summary::-webkit-details-marker {
+  display: none;
 }
-.manual-picker-actions {
+.meal-picker-group summary::before {
+  content: "▸";
+  margin-right: 0.4rem;
+}
+.meal-picker-group[open] summary::before {
+  content: "▾";
+}
+.meal-picker-drinks {
+  margin-top: 0.9rem;
+}
+.meal-picker-hint {
+  font-size: 0.8rem;
+  color: #a33;
+  margin: 0 0 0.3rem;
+}
+.meal-picker-summary {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #3A2E22;
+}
+.meal-picker-gap {
+  font-size: 0.8rem;
+  color: #8A7A63;
+}
+.meal-picker-gap p {
+  margin: 0.15rem 0;
+}
+.meal-picker-actions {
   display: flex;
   gap: 0.6rem;
   justify-content: flex-end;
-  margin-top: 0.6rem;
+  margin-top: 0.5rem;
+}
+.meal-picker-actions button {
+  min-height: 44px;
 }
 
-/* 「現成品項／自己煮」模式切換 + 自己煮三層流程 */
-.manual-picker-mode {
-  display: flex;
-  gap: 1rem;
-  margin: 0.4rem 0 0.6rem;
-  font-size: 0.9rem;
-}
-.manual-picker-mode label {
-  cursor: pointer;
-  color: #5A4C3A;
-}
 .compose-step {
   margin-bottom: 0.7rem;
 }
@@ -606,6 +683,8 @@ body {
   gap: 0.35rem;
 }
 .compose-option {
+  min-height: 44px;
+  justify-content: center;
   padding: 0.3rem 0.65rem;
   font-size: 0.85rem;
   border: 1px solid #EFE3D2;
