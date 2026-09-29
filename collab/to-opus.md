@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29 下午，Phase 0 實作到 commit 4，還沒推送）
+# 給接手的 Opus：Lighten2 交接（2026-09-29 傍晚，Phase 0 完成並推送；PRD 第 12 節送審中）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -39,13 +39,11 @@
 
 ## 4. 下一步
 
-1. **Phase 0 實作進行中**（計畫 `docs/review/2026-09-29-Phase0-實作計畫.md` 第 5 節的 commit 拆法）：
-   - 已完成（都在本機 master、**還沒推送**）：commit 1 文件 `402ad83`、commit 2 engine `5cce978`、commit 3 三分頁＋飲料步驟 `92f06ce`、commit 4 自煮分頁 `21547d5`。
-   - 下一步 commit 5：外食分頁「找不到？直接估算」卡片、「我的品項」快速新增（計畫 2.1 第 6、7 項）、`protein_stir_fry` note；同步 adapter（加 pickerEstimate／pickerQuickAdd）、diff-recs、check-engine、mobile-walkthrough、手機實機腳本第 3 節。
-   - 然後 commit 6 驗收：全部工具＋截圖逐張看＋使用者短清單；**commit 3–5 一起推**（推送前先問使用者）。
-   - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
-2. **手動記錄主餐上限（使用者 2026-09-29 決定）：早餐、午餐、晚餐 2；下午茶、宵夜 1**（decisions #41，已實作）。
-3. **待回報使用者**：推薦卡片「配額已經不多了」「暫無適合的組合」時沒有「自己選」按鈕，那個時段無法手動記錄（v1 既有，已登記日後討論最後一條）；建議修，但不在 Phase 0 計畫範圍，等使用者決定。
+1. **Phase 0 完成並已推送**（2026-09-29，commit `402ad83`～`0d727b1`；smoke-browser 14 項、mobile-walkthrough 144 項全過）。待使用者用手機跑「使用者短清單」（`docs/手機實機腳本.md` 開頭），這次看「自己選」上方有沒有「超商／外食／自煮」三個分頁。
+   - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
+2. **食物資料查詢與修訂（PRD 第 12 節草案、decisions #50–#55）**：使用者 2026-09-29 同意實作者建議（三層資料、食物資料查詢頁、內建餐點複製後改＋份量倍數、我的食材、我的料理、我的組合可直接編輯、順序 B-3 → B-1 → B-4）。獨立審核送出中，問答逐字存 `collab/opus-review-log/2026-09-29-food-data-review.md`；審核結果要照修 PRD／decisions，並補章程 B1、B8（C3）。
+3. **下一個實作：平行工作線 B-3 匯出／匯入**（decisions #55）；先寫實作計畫、照「寫計畫前先查依賴」查 import 與資料路徑，再送審。
+4. **待使用者決定**：推薦卡片「配額已經不多了」「暫無適合的組合」時沒有「自己選」按鈕，那個時段無法手動記錄（v1 既有，日後討論最後一條）。建議修，改動小。
 4. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
 5. `collab/pdf/` 兩份 PDF 超過 50 MB，要不要移出 repo 或改 Git LFS 待使用者決定（不急）。
 
