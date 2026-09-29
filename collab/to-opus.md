@@ -43,7 +43,7 @@
    - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
 2. **食物資料查詢與修訂（PRD 第 12 節草案、decisions #50–#55）**：使用者 2026-09-29 同意實作者建議（三層資料、食物資料查詢頁、內建餐點複製後改＋份量倍數、我的食材、我的料理、我的組合可直接編輯、順序 B-3 → B-1 → B-4）。獨立審核送出中，問答逐字存 `collab/opus-review-log/2026-09-29-food-data-review.md`；審核結果要照修 PRD／decisions，並補章程 B1、B8（C3）。
 3. **下一個實作：平行工作線 B-3 匯出／匯入**（decisions #55）；先寫實作計畫、照「寫計畫前先查依賴」查 import 與資料路徑，再送審。
-4. **待使用者決定**：推薦卡片「配額已經不多了」「暫無適合的組合」時沒有「自己選」按鈕，那個時段無法手動記錄（v1 既有，日後討論最後一條）。建議修，改動小。
+4. **下一輪要修（使用者 2026-09-29 決定修）**：推薦卡片「配額已經不多了」「暫無適合的組合」時沒有「自己選」按鈕，那個時段無法手動記錄（v1 既有，`js/ui/tab-today.js` renderRecCards 的 `rec.lowBudget` 與 `!rec` 兩個分支；日後討論最後一條）。修法：這兩種卡片也放「自己選」按鈕。照章程 C5：先在 mobile-walkthrough／手機實機腳本加重現步驟（例：前面時段記大餐讓配額不足，確認該時段仍能「自己選」並記錄），再修；smoke-browser 目前靠「每次送出後撤銷」避開，修好後可以拿掉這個繞法。
 4. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
 5. `collab/pdf/` 兩份 PDF 超過 50 MB，要不要移出 repo 或改 Git LFS 待使用者決定（不急）。
 
