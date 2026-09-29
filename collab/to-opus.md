@@ -43,7 +43,7 @@
    - 第二輪【一定要改】3 項：**N1** `data/catalog.js` 的 `fromCustomFood` 照 PRD 10.1 讀 role/channel/valid_slots/飲食標記，`tools/diff-recs.js` 的 `CUSTOM_FOODS` 範例改成 10.1 格式（會動 picker 快照，放 commit 3 或 5）；**N2** commit 2 採 (a)：slotGaps 的 null、飲料移出 composeTotals 延到 commit 3，composeProblem 免開火排在 allow 前、提示文字跟舊的逐字相同，舊畫面傳推導出的 meal_type；**N3** 選項灰階做成 engine 的 `composeOptionProblem(item, axis, draft, { tier })`。
    - 第二輪【建議】N4–N15 一併寫進第三版（醬料也算免開火、假骨架斷言、contentTotals 用 sumProducts＋composeTotals＋addContributions 且推薦路徑不動、commit 3 拿掉過渡相容與 contentFromProducts、我的品項組例外與外食來源順序、meal_type 一律等於分頁值、預告不誘導改確認不含、PRD 10.4/10.6 改寫與死路登記、maxTierRank 共用、全素宣告與過敏原矛盾提示、walkthrough 用 auto 時段驗 lastPicked、commit 3–5 一起推）。另補 `composeProblem`「餐型不完整 → 擋」的斷言。
    - 寫完用檢討表自查，再送第三輪核對（問答逐字存同一個檔）。
-2. **待使用者決定：手動記錄主餐上限**（計畫第 6 節）：A 維持 1／B 放寬到 2（審核與實作者建議）／C 改角色（不建議）。使用者還沒回覆，下午接續時先問。B 的話：`manualSelectionProblem` 的訊息改依常數產生、check-engine「兩個主餐要擋」改三個。
+2. **手動記錄主餐上限：使用者 2026-09-29 決定午餐、晚餐放寬到 2，其他時段維持 1**（計畫第 6 節）。上限要依時段（`manualSelectionProblem`／`canAddManualItem` 收時段參數、訊息依常數產生、check-engine 斷言跟著改）。已告知使用者：蒸地瓜 `conv_bx05` 只在早餐/宵夜可選，「雞胸＋地瓜」在午晚餐本來組不出來，待確認早餐要不要也放寬。
 3. 計畫通過＋使用者決定後開工，照計畫第 5 節 commit 拆法；每個畫面 commit 跑 `mobile-walkthrough` 並看截圖（章程 C6.5）。
 4. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
 5. `collab/pdf/` 兩份 PDF 超過 50 MB，要不要移出 repo 或改 Git LFS 待使用者決定（不急）。
