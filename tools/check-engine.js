@@ -741,6 +741,10 @@ async function main() {
   console.log("[資料庫寫入驗證]");
   await checkDbValidation();
 
+  // ---------- 7. 備份格式（PRD 11.6、decisions #71；純函式，碰資料庫的部分在 smoke-browser） ----------
+  console.log("[備份格式]");
+  await checkBackupFormat();
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -892,6 +896,115 @@ async function checkDbValidation() {
     ["營養欄位是負數", Object.assign({}, food, { fat_g: -1 }), /fat_g/],
   ];
   for (const b of brokenFoods) await rejectsWith(() => db.validateCustomFood(b[1]), b[2], "我的品項 " + b[0] + " 沒有被擋下");
+}
+
+// 備份檔的驗證、升級、摘要都是純函式；importAllData 在碰 IndexedDB 之前就驗證，所以壞檔在 Node 裡也擋得到。
+async function checkBackupFormat() {
+  const db = M.db;
+  const FIXTURE = path.join(ROOT, "tools", "fixtures", "backup-v1.json");
+  const fixture = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const problemsOf = (obj) => db.validateBackup(db.migrateBackup(obj));
+
+  // 每個 store 都有備份位置、每個 settings key 都有驗證（之後加 store 或 key 卻沒補匯出就在這裡失敗）
+  db.STORE_NAMES.forEach((name) => check(Array.isArray(db.BACKUP_SECTIONS[name]), "store「" + name + "」沒有登記在 BACKUP_SECTIONS（新增 store 要補匯出匯入）"));
+  check(db.SETTING_KEY_NAMES.length > 0, "SETTING_KEYS 是空的");
+  db.SETTING_KEY_NAMES.forEach((k) => {
+    let msg = null;
+    try { db.validateSetting(k, undefined); } catch (e) { msg = e.message; }
+    check(msg !== null && msg.indexOf("沒有登記") === -1, "settings key「" + k + "」沒有自己的驗證函式");
+  });
+
+  // 凍結的 v1 fixture：之後的每個版本都要讀得了（PRD 11.6）
+  let p = problemsOf(fixture);
+  check(p.length === 0, "凍結的 backup-v1.json 不能還原：" + p.slice(0, 3).join("；"));
+  const migrated = db.migrateBackup(fixture);
+  check(migrated !== fixture && JSON.stringify(fixture) === JSON.stringify(JSON.parse(fs.readFileSync(FIXTURE, "utf8"))), "migrateBackup 改到了輸入");
+  const noProfile = clone(fixture);
+  noProfile.sections.system.user_profile = null;
+  noProfile.manifest.user_profile = 0;
+  p = problemsOf(noProfile);
+  check(p.length === 0, "基本資料是 null 的備份不能還原：" + p.join("；"));
+  const sum = db.summarizeBackup(fixture);
+  check(sum.daily_log.count === 3 && sum.daily_log.last_date === "2026-09-29" && sum.daily_log.last_created_at === "2026-09-29T11:00:00.000Z" &&
+    sum.user_profile.count === 1 && sum.weight_log.last_date === "2026-09-29" && sum.custom_foods.last_date === "2026-09-29",
+    "summarizeBackup 的筆數或日期不對：" + JSON.stringify(sum));
+
+  // 壞檔：每一種都要回報，而且指出是哪一類第幾筆
+  const bad = (label, mutate, pattern) => {
+    const f = clone(fixture);
+    const out = mutate(f);
+    const ps = problemsOf(out === undefined ? f : out);
+    check(ps.length > 0 && ps.some((x) => pattern.test(x)), "壞檔「" + label + "」沒有擋下或訊息不對：" + JSON.stringify(ps.slice(0, 3)));
+  };
+  const L = fixture.sections.logs;
+  bad("不是物件", () => [], /不是輕盈計畫的備份/);
+  bad("format 不對", (f) => { f.format = "other"; }, /不是輕盈計畫的備份/);
+  bad("版本號不是整數", (f) => { f.schema_version = "1"; }, /版本號/);
+  bad("版本號小於 1", (f) => { f.schema_version = 0; }, /版本號/);
+  bad("版本較新", (f) => { f.schema_version = db.BACKUP_SCHEMA_VERSION + 1; }, /較新的版本/);
+  bad("缺 sections", (f) => { delete f.sections; }, /缺少資料區塊/);
+  bad("不認得的區塊", (f) => { f.sections.saved_meals = []; }, /不認得的資料區塊「saved_meals」/);
+  bad("不認得的巢狀區塊", (f) => { f.sections.logs.meal_plan = []; }, /不認得的資料區塊「logs\.meal_plan」/);
+  bad("缺一類", (f) => { delete f.sections.logs.exercise_log; }, /缺少「運動紀錄」/);
+  bad("不認得的 settings key", (f) => { f.sections.system.settings.push({ id: "hidden_catalog_uids", value: [] }); f.manifest.settings++; }, /設定第 3 筆.*沒有登記/);
+  bad("settings 值不合法", (f) => { f.sections.system.settings[0].value = { lunch: "cook" }; }, /設定第 1 筆.*值格式不對/);
+  bad("manifest 跟實際不符", (f) => { f.manifest.daily_log = 2; }, /飲食紀錄」的筆數跟筆數清單不一致/);
+  bad("缺 manifest", (f) => { delete f.manifest; }, /manifest/);
+  bad("匯出時間不是日期", (f) => { f.exported_at = "昨天"; }, /匯出時間/);
+  bad("daily_log 缺 totals.kcal", (f) => { delete f.sections.logs.daily_log[1].totals.kcal; }, /飲食紀錄第 2 筆.*totals\.kcal/);
+  bad("daily_log 缺 id", (f) => { delete f.sections.logs.daily_log[0].id; }, /飲食紀錄第 1 筆：沒有 id/);
+  bad("daily_log id 重複", (f) => { f.sections.logs.daily_log[2].id = L.daily_log[0].id; }, /飲食紀錄第 3 筆：id 重複/);
+  bad("weight_log 同一天兩筆", (f) => { f.sections.logs.weight_log[1].log_date = L.weight_log[0].log_date; }, /體重紀錄第 2 筆：日期重複/);
+  bad("exercise_log 缺 activity_type", (f) => { delete f.sections.logs.exercise_log[0].activity_type; }, /運動紀錄第 1 筆/);
+  bad("custom_foods 缺 allergen_tags", (f) => { delete f.sections.custom_foods[0].allergen_tags; }, /我的品項第 1 筆.*allergen_tags/);
+  bad("recipe_feedback rating 亂字串", (f) => { f.sections.system.recipe_feedback[1].value.rating = "meh"; }, /推薦紀錄第 2 筆.*rating/);
+  bad("recipe_feedback id 跟 recipe_template_id 不同", (f) => { f.sections.system.recipe_feedback[0].id = "combo_x"; }, /推薦紀錄第 1 筆.*recipe_template_id/);
+  bad("profile age 是負數", (f) => { f.sections.system.user_profile.age = -3; }, /基本資料：age/);
+  bad("profile 身高是 null", (f) => { f.sections.system.user_profile.height_cm = null; }, /基本資料：height_cm/);
+  bad("profile allergens 是數字", (f) => { f.sections.system.user_profile.allergens = 3; }, /基本資料：allergens/);
+  bad("profile 表單外的數值欄位是字串", (f) => { f.sections.system.user_profile.fat_pct = "0.3"; }, /基本資料：fat_pct/);
+  // 舊格式的飲食紀錄（驗證器在 053d5d7、9aa7db0 變嚴之前寫入的）→ 匯出時的自我驗證要抓得到（PRD 11.6）
+  bad("舊格式：totals 沒有鈉與飽和脂肪", (f) => { const t = f.sections.logs.daily_log[0].totals; delete t.sat_fat_g; delete t.sodium_mg; delete t.partial; }, /飲食紀錄第 1 筆/);
+  bad("舊格式：自煮沒有 implicit", (f) => { delete f.sections.logs.daily_log[1].content.implicit; }, /飲食紀錄第 2 筆.*implicit/);
+
+  // validateProfile 放行 lighten2 以來寫過的舊形狀
+  const baseProfile = fixture.sections.system.user_profile;
+  const legacy = [
+    ["自由文字過敏原", { allergens: "蝦、花生" }],
+    ["過敏原含詞彙外字串", { allergens: ["蝦"] }],
+    ["舊 type 的不吃項目", { disliked_ingredients: [{ type: "staple", key: "edamame", label: "毛豆仁" }] }],
+    ["缺 −1b 新欄位", { oil_habit: undefined, low_carb: undefined, enabled_slots: undefined, meal_prefs: undefined }],
+    ["時段偏好是 off", { meal_prefs: { breakfast: "off" } }],
+    ["體脂 null", { body_fat_pct: null }],
+  ];
+  legacy.forEach((g) => {
+    const prof = JSON.parse(JSON.stringify(Object.assign({}, baseProfile, g[1])));
+    let msg = null;
+    try { db.validateProfile(prof); } catch (e) { msg = e.message; }
+    check(msg === null, "舊形狀的基本資料（" + g[0] + "）被擋下：" + msg);
+  });
+
+  // 寫入端：setSetting 拒絕沒登記的 key 與不合法的值（C1.5）；合法值不會丟驗證錯誤
+  async function errorOf(fn) { try { await fn(); } catch (e) { return String(e && e.message); } return null; }
+  let msg = await errorOf(() => db.setSetting("hidden_catalog_uids", []));
+  check(msg !== null && /沒有登記/.test(msg), "setSetting 沒登記的 key 沒有擋下（實際：" + msg + "）");
+  msg = await errorOf(() => db.setSetting("picker_last_meal_type", "xxx"));
+  check(msg !== null && /值格式不對/.test(msg), "setSetting 不合法的值沒有擋下（實際：" + msg + "）");
+  msg = await errorOf(() => db.setSetting("picker_last_meal_type", { lunch: "delivery" }));
+  check(msg === null || !/\[db\.js\]/.test(msg), "setSetting 合法的值被驗證擋下（實際：" + msg + "）");
+  msg = await errorOf(() => db.saveTdeeState(M.tdee.defaultTdeeState()));
+  check(msg === null || !/\[db\.js\]/.test(msg), "saveTdeeState 的預設狀態被驗證擋下（實際：" + msg + "）");
+
+  // importAllData：陣列報錯；壞檔在碰資料庫之前就丟驗證錯誤（Node 沒有 indexedDB，丟的若是 indexedDB is not defined 就代表沒先驗證）
+  msg = await errorOf(() => db.importAllData([fixture]));
+  check(msg !== null && /不能傳陣列/.test(msg), "importAllData 傳入陣列沒有報「不能傳陣列」（實際：" + msg + "）");
+  const broken = clone(fixture);
+  broken.sections.logs.daily_log[0].slot = "brunch";
+  msg = await errorOf(() => db.importAllData(broken));
+  check(msg !== null && /備份不能還原：飲食紀錄第 1 筆/.test(msg), "importAllData 壞檔沒有在碰資料庫前擋下（實際：" + msg + "）");
+  msg = await errorOf(() => db.importAllData(fixture));
+  check(msg === null || !/\[db\.js\]/.test(msg), "importAllData 合法的 fixture 被驗證擋下（實際：" + msg + "）");
 }
 
 main().catch((err) => {

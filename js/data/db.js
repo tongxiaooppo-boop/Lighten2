@@ -23,6 +23,28 @@ const STORE = {
   settings: "settings",              // key = "lighten2." + 名稱
 };
 
+// 備份檔的格式版本（PRD 11.6）：新增 store、新增 settings key、改變區塊結構就 +1，並在 tools/fixtures/ 凍結一份新版 fixture。
+// 跟 DB_VERSION 分開計：資料庫升級不一定改備份格式。
+export const BACKUP_SCHEMA_VERSION = 1;
+const BACKUP_FORMAT = "lighten2-backup";
+
+// 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
+export const BACKUP_SECTIONS = {
+  user_profile: ["system", "user_profile"],
+  settings: ["system", "settings"],
+  recipe_feedback: ["system", "recipe_feedback"],
+  daily_log: ["logs", "daily_log"],
+  weight_log: ["logs", "weight_log"],
+  exercise_log: ["logs", "exercise_log"],
+  custom_foods: ["custom_foods"],
+};
+export const STORE_NAMES = Object.values(STORE);
+
+const BACKUP_LABELS = {
+  user_profile: "基本資料", settings: "設定", recipe_feedback: "推薦紀錄", daily_log: "飲食紀錄",
+  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項",
+};
+
 let _dbPromise = null;
 
 // 依舊版本分段升級：之後加 store（Phase 2 的 meal_plan、工作線 C 的 saved_meals）就在後面加一段、DB_VERSION +1。
@@ -67,17 +89,21 @@ function reqPromise(req) {
 }
 
 // 在一個 transaction 裡做事；fn(stores) 回傳的值在 transaction 完成後 resolve（全有全無）。
-async function withStores(names, mode, fn) {
+// fn 同步丟錯（例：put() 的 DataError、DataCloneError）也要 abort，不然已送出的請求會照樣 commit。
+async function withStores(names, mode, fn, options) {
   const db = await openDb();
   return new Promise(function (resolve, reject) {
-    const tx = db.transaction(names, mode);
+    const tx = options ? db.transaction(names, mode, options) : db.transaction(names, mode);
     const stores = {};
     names.forEach(function (n) { stores[n] = tx.objectStore(n); });
     let result;
-    Promise.resolve(fn(stores)).then(function (r) { result = r; }, function (err) {
+    function abortWith(err) {
       try { tx.abort(); } catch (e) { /* transaction 已經結束 */ }
       reject(err);
-    });
+    }
+    let ret;
+    try { ret = fn(stores); } catch (err) { abortWith(err); return; }
+    Promise.resolve(ret).then(function (r) { result = r; }, abortWith);
     tx.oncomplete = function () { resolve(result); };
     tx.onerror = function (e) { reject((e && e.target && e.target.error) || tx.error); };
     tx.onabort = function (e) { reject((e && e.target && e.target.error) || tx.error || new Error("[db.js] transaction aborted")); };
@@ -216,6 +242,234 @@ export function validateCustomFood(food) {
     if (!(k in food) || (food[k] !== null && (!isNum(food[k]) || food[k] < 0))) problems.push(k);
   });
   if (problems.length > 0) throw new Error("[db.js] 我的品項格式不對：" + problems.join("、"));
+}
+
+function isPlainObject(v) {
+  return v !== null && typeof v === "object" && !Array.isArray(v);
+}
+
+function isPositive(v) {
+  return isNum(v) && v > 0;
+}
+
+// 基本資料（PRD 11.6 的欄位表）：只驗型別，選項值不在這裡另列——認不得的性別由 engine 的 calculateTargets 丟錯（還原預覽時試算）。
+// 放行 lighten2 開始使用以來寫過的舊形狀：自由文字 allergens、舊 type 的不吃項目、缺 −1b 新欄位。
+function profileProblems(p) {
+  if (!isPlainObject(p)) return ["不是物件"];
+  const problems = [];
+  ["age", "height_cm", "weight_kg"].forEach(function (k) { if (!isPositive(p[k])) problems.push(k); });
+  if (p.body_fat_pct != null && !isPositive(p.body_fat_pct)) problems.push("body_fat_pct");
+  ["gender", "activity_mode", "goal_mode", "diet_restriction", "oil_habit"].forEach(function (k) {
+    if (p[k] !== undefined && p[k] !== null && typeof p[k] !== "string") problems.push(k);
+  });
+  ["activity_value", "protein_g_per_kg", "fat_pct", "fiber_target_g"].forEach(function (k) {
+    if (p[k] !== undefined && p[k] !== null && !isNum(p[k])) problems.push(k);
+  });
+  if (p.low_carb !== undefined && typeof p.low_carb !== "boolean") problems.push("low_carb");
+  const al = p.allergens;
+  if (al !== undefined && al !== null && typeof al !== "string" &&
+      !(Array.isArray(al) && al.every(function (x) { return typeof x === "string"; }))) problems.push("allergens");
+  const dis = p.disliked_ingredients;
+  if (dis !== undefined && dis !== null && !(Array.isArray(dis) &&
+      dis.every(function (d) { return isPlainObject(d) && typeof d.key === "string"; }))) problems.push("disliked_ingredients");
+  ["meal_prefs", "enabled_slots"].forEach(function (k) {
+    if (p[k] !== undefined && p[k] !== null && !isPlainObject(p[k])) problems.push(k);
+  });
+  return problems;
+}
+
+export function validateProfile(profile) {
+  assertRecord(profile, "user_profile");
+  const problems = profileProblems(profile);
+  if (problems.length > 0) throw new Error("[db.js] 基本資料格式不對：" + problems.join("、"));
+}
+
+// settings 的每個 key 都要登記在這裡（附驗證）；setSetting 拒絕沒登記的 key 與不合法的值，備份也用同一張表。
+// 之後加 key（例：B-1a 的 hidden_catalog_uids）要登記並把 BACKUP_SCHEMA_VERSION +1；
+// dedicatedOnly：只准專用函式讀寫的 key（B-4a 的 favorite_ingredient_ids，章程 C4.17②）。
+const SETTING_KEYS = {
+  tdee_state: {
+    validate: function (v) { return isPlainObject(v) && "version" in v; },
+  },
+  picker_last_meal_type: {
+    validate: function (v) {
+      return isPlainObject(v) && Object.keys(v).every(function (slot) {
+        return SLOTS.indexOf(slot) !== -1 && MEAL_TYPES.indexOf(v[slot]) !== -1;
+      });
+    },
+  },
+};
+export const SETTING_KEY_NAMES = Object.keys(SETTING_KEYS);
+
+function hasOwn(obj, k) {
+  return Object.prototype.hasOwnProperty.call(obj, k);
+}
+
+export function validateSetting(key, value) {
+  if (typeof key !== "string" || !hasOwn(SETTING_KEYS, key)) throw new Error("[db.js] 設定「" + key + "」沒有登記在 SETTING_KEYS");
+  if (!SETTING_KEYS[key].validate(value)) throw new Error("[db.js] 設定「" + key + "」的值格式不對");
+}
+
+function recipeFeedbackProblems(entry) {
+  if (!isPlainObject(entry) || typeof entry.id !== "string" || entry.id === "" || !isPlainObject(entry.value)) return ["格式應為 { id, value }"];
+  const v = entry.value;
+  const problems = [];
+  if (v.recipe_template_id !== undefined && v.recipe_template_id !== entry.id) problems.push("recipe_template_id 跟 id 不同");
+  if (v.rating !== undefined && v.rating !== null && v.rating !== "like" && v.rating !== "dislike") problems.push("rating");
+  if (v.shown_count !== undefined && !(Number.isInteger(v.shown_count) && v.shown_count >= 0)) problems.push("shown_count");
+  if (v.last_shown_date !== undefined && !isDateStr(v.last_shown_date)) problems.push("last_shown_date");
+  return problems;
+}
+
+// ---------- 備份（PRD 11.6：完整備份與還原＝取代） ----------
+
+function getPath(obj, path) {
+  let cur = obj;
+  for (const k of path) {
+    if (!isPlainObject(cur) || !hasOwn(cur, k)) return undefined;
+    cur = cur[k];
+  }
+  return cur;
+}
+
+function setPath(obj, path, value) {
+  let cur = obj;
+  path.slice(0, -1).forEach(function (k) {
+    if (!isPlainObject(cur[k])) cur[k] = {};
+    cur = cur[k];
+  });
+  cur[path[path.length - 1]] = value;
+}
+
+function sectionCount(store, v) {
+  if (store === STORE.userProfile) return v ? 1 : 0;
+  return Array.isArray(v) ? v.length : 0;
+}
+
+function errText(e) {
+  return String(e && e.message || e).replace(/^\[db\.js\] /, "");
+}
+
+// 逐版升級（比照 upgrade）：BACKUP_MIGRATIONS[n] 把 v(n) 的檔案升到 v(n+1)。v1 沒有步驟。
+// 升級後補上舊檔沒有的區塊（當成空的）。回傳深拷貝，不改輸入。
+const BACKUP_MIGRATIONS = {};
+
+export function migrateBackup(obj) {
+  const out = JSON.parse(JSON.stringify(obj === undefined ? null : obj));
+  if (!isPlainObject(out) || !Number.isInteger(out.schema_version) || out.schema_version < 1 ||
+      out.schema_version >= BACKUP_SCHEMA_VERSION) return out;
+  for (let v = out.schema_version; v < BACKUP_SCHEMA_VERSION; v++) {
+    if (BACKUP_MIGRATIONS[v]) BACKUP_MIGRATIONS[v](out);
+  }
+  if (!isPlainObject(out.sections)) out.sections = {};
+  const manifest = isPlainObject(out.manifest) ? out.manifest : {};
+  STORE_NAMES.forEach(function (store) {
+    if (getPath(out.sections, BACKUP_SECTIONS[store]) === undefined) {
+      setPath(out.sections, BACKUP_SECTIONS[store], store === STORE.userProfile ? null : []);
+      manifest[store] = 0;
+    }
+  });
+  out.manifest = manifest;
+  out.schema_version = BACKUP_SCHEMA_VERSION;
+  return out;
+}
+
+// 純函式：回傳問題清單（空陣列＝可以還原）。ctx 先留空，B-4a 起傳衛福部查詢表與 catalog（章程 B8）。
+// 檔案只描述內容，不描述匯入語意（decisions #71）。
+export function validateBackup(obj, ctx) { // eslint-disable-line no-unused-vars
+  if (!isPlainObject(obj) || obj.format !== BACKUP_FORMAT) return ["檔案不是輕盈計畫的備份"];
+  const v = obj.schema_version;
+  if (!Number.isInteger(v) || v < 1) return ["備份的版本號不對"];
+  if (v > BACKUP_SCHEMA_VERSION) return ["這個備份來自較新的版本，請重新整理頁面後再試"];
+  if (v < BACKUP_SCHEMA_VERSION) return ["備份還沒有升級到目前的格式（要先經過 migrateBackup）"];
+  const problems = [];
+  if (obj.exported_at !== undefined && (typeof obj.exported_at !== "string" || isNaN(Date.parse(obj.exported_at)))) problems.push("匯出時間格式不對");
+  if (obj.app_version !== undefined && typeof obj.app_version !== "string") problems.push("版本字串格式不對");
+  if (!isPlainObject(obj.sections)) return problems.concat(["缺少資料區塊"]);
+
+  // 不認得的區塊：比對 BACKUP_SECTIONS 推出來的合法路徑
+  const known = {};
+  STORE_NAMES.forEach(function (store) {
+    const path = BACKUP_SECTIONS[store];
+    for (let i = 1; i <= path.length; i++) known[path.slice(0, i).join(".")] = i === path.length ? "leaf" : "branch";
+  });
+  (function walk(node, prefix) {
+    Object.keys(node).forEach(function (k) {
+      const p = prefix ? prefix + "." + k : k;
+      if (!known[p]) problems.push("不認得的資料區塊「" + p + "」");
+      else if (known[p] === "branch" && isPlainObject(node[k])) walk(node[k], p);
+    });
+  })(obj.sections, "");
+
+  const counts = {};
+  STORE_NAMES.forEach(function (store) {
+    const label = BACKUP_LABELS[store] || store;
+    const val = getPath(obj.sections, BACKUP_SECTIONS[store]);
+    if (val === undefined) { problems.push("缺少「" + label + "」"); return; }
+    if (store === STORE.userProfile) {
+      counts[store] = val ? 1 : 0;
+      if (val !== null) profileProblems(val).forEach(function (p) { problems.push(label + "：" + p); });
+      return;
+    }
+    if (!Array.isArray(val)) { problems.push("「" + label + "」應該是清單"); return; }
+    counts[store] = val.length;
+    const seen = {};
+    val.forEach(function (rec, i) {
+      const at = label + "第 " + (i + 1) + " 筆：";
+      const key = store === STORE.weightLog ? rec && rec.log_date : rec && rec.id;
+      if (store !== STORE.weightLog && (typeof key !== "string" || key === "")) problems.push(at + "沒有 id");
+      else if (seen[key]) problems.push(at + (store === STORE.weightLog ? "日期重複" : "id 重複"));
+      else seen[key] = true;
+      try {
+        if (store === STORE.settings) {
+          if (!isPlainObject(rec) || !("value" in rec)) throw new Error("格式應為 { id, value }");
+          validateSetting(rec.id, rec.value);
+        } else if (store === STORE.recipeFeedback) {
+          const rp = recipeFeedbackProblems(rec);
+          if (rp.length) throw new Error(rp.join("、"));
+        } else if (store === STORE.dailyLog) validateDailyLog(rec);
+        else if (store === STORE.weightLog) validateWeightLog(rec);
+        else if (store === STORE.exerciseLog) validateExerciseLog(rec);
+        else if (store === STORE.customFoods) validateCustomFood(rec);
+        else throw new Error("沒有驗證器（新增 store 要在 validateBackup 補上）");
+      } catch (e) {
+        problems.push(at + errText(e));
+      }
+    });
+  });
+
+  const m = obj.manifest;
+  if (!isPlainObject(m)) problems.push("缺少筆數清單（manifest）");
+  else {
+    Object.keys(m).forEach(function (k) { if (STORE_NAMES.indexOf(k) === -1) problems.push("筆數清單有不認得的「" + k + "」"); });
+    STORE_NAMES.forEach(function (store) {
+      if (counts[store] !== undefined && m[store] !== counts[store]) problems.push("「" + (BACKUP_LABELS[store] || store) + "」的筆數跟筆數清單不一致（檔案可能被截斷或改過）");
+    });
+  }
+  return problems;
+}
+
+function dateOfIso(s) {
+  return typeof s === "string" && s.length >= 10 ? s.slice(0, 10) : null;
+}
+
+// 純函式：各類筆數、最後一筆日期（紀錄用 log_date、我的品項用 created_at）、最新的 created_at（還原預覽比對「匯出之後新增的紀錄」）。
+export function summarizeBackup(obj) {
+  const out = {};
+  STORE_NAMES.forEach(function (store) {
+    const val = isPlainObject(obj) ? getPath(obj.sections, BACKUP_SECTIONS[store]) : undefined;
+    const list = Array.isArray(val) ? val : [];
+    let lastDate = null;
+    let lastCreatedAt = null;
+    list.forEach(function (r) {
+      if (!r) return;
+      const d = r.log_date || dateOfIso(r.created_at);
+      if (typeof d === "string" && (lastDate === null || d > lastDate)) lastDate = d;
+      if (typeof r.created_at === "string" && (lastCreatedAt === null || r.created_at > lastCreatedAt)) lastCreatedAt = r.created_at;
+    });
+    out[store] = { label: BACKUP_LABELS[store] || store, count: sectionCount(store, val), last_date: lastDate, last_created_at: lastCreatedAt };
+  });
+  return out;
 }
 
 // ---------- 1. user_profile（單例） ----------
@@ -382,8 +636,65 @@ export async function getSetting(key) {
 }
 
 export async function setSetting(key, value) {
+  validateSetting(key, value);
   await withStores([STORE.settings], "readwrite", function (s) {
     return reqPromise(s[STORE.settings].put(value, SETTING_PREFIX + key));
   });
   return value;
+}
+
+// ---------- 9. 備份匯出與還原（PRD 11.6） ----------
+
+function sortBy(key) {
+  return function (a, b) { return a[key] < b[key] ? -1 : a[key] > b[key] ? 1 : 0; };
+}
+
+// 讀出全部 store（一個 readonly transaction），組成備份檔的內容（不含 exported_at、app_version，由畫面補）。
+// 陣列依 id（體重依日期）排序，同一份資料匯出兩次內容相同。
+export async function exportAllData() {
+  const raw = await withStores(STORE_NAMES, "readonly", function (s) {
+    const out = {};
+    return Promise.all(STORE_NAMES.map(function (name) {
+      const store = s[name];
+      if (name === STORE.userProfile) return reqPromise(store.get(PROFILE_KEY)).then(function (v) { out[name] = v === undefined ? null : v; });
+      if (store.keyPath) return reqPromise(store.getAll()).then(function (v) { out[name] = v; });
+      return Promise.all([reqPromise(store.getAllKeys()), reqPromise(store.getAll())]).then(function (r) {
+        out[name] = r[0].map(function (k, i) {
+          return { id: name === STORE.settings ? String(k).replace(SETTING_PREFIX, "") : k, value: r[1][i] };
+        });
+      });
+    })).then(function () { return out; });
+  });
+  const sections = {};
+  const manifest = {};
+  STORE_NAMES.forEach(function (name) {
+    let v = raw[name];
+    if (Array.isArray(v)) v = v.slice().sort(sortBy(name === STORE.weightLog ? "log_date" : "id"));
+    setPath(sections, BACKUP_SECTIONS[name], v);
+    manifest[name] = sectionCount(name, v);
+  });
+  return { format: BACKUP_FORMAT, schema_version: BACKUP_SCHEMA_VERSION, manifest: manifest, sections: sections };
+}
+
+// 還原＝取代（decisions #71）：先升級、驗證，有問題就丟錯、完全不碰資料庫；
+// 沒問題才在一個 transaction 裡清空全部 store 再逐筆寫入（全有全無）。回傳還原內容的摘要。
+export async function importAllData(obj) {
+  assertRecord(obj, "備份");
+  const data = migrateBackup(obj);
+  const problems = validateBackup(data);
+  if (problems.length > 0) throw new Error("[db.js] 備份不能還原：" + problems.slice(0, 5).join("；"));
+  await withStores(STORE_NAMES, "readwrite", function (s) {
+    STORE_NAMES.forEach(function (name) { s[name].clear(); });
+    STORE_NAMES.forEach(function (name) {
+      const val = getPath(data.sections, BACKUP_SECTIONS[name]);
+      const store = s[name];
+      if (name === STORE.userProfile) { if (val) store.put(val, PROFILE_KEY); return; }
+      val.forEach(function (rec) {
+        if (name === STORE.settings) store.put(rec.value, SETTING_PREFIX + rec.id);
+        else if (name === STORE.recipeFeedback) store.put(rec.value, rec.id);
+        else store.put(rec);
+      });
+    });
+  }, { durability: "strict" });
+  return summarizeBackup(data);
 }

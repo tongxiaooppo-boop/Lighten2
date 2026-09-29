@@ -1,0 +1,83 @@
+{
+  "format": "lighten2-backup",
+  "schema_version": 1,
+  "exported_at": "2026-09-29T12:00:00.000Z",
+  "app_version": "20260929-000000",
+  "manifest": {
+    "user_profile": 1,
+    "weight_log": 2,
+    "daily_log": 3,
+    "exercise_log": 1,
+    "custom_foods": 1,
+    "recipe_feedback": 2,
+    "settings": 2
+  },
+  "sections": {
+    "system": {
+      "user_profile": {
+        "age": 35,
+        "gender": "男",
+        "height_cm": 175,
+        "weight_kg": 80,
+        "body_fat_pct": null,
+        "activity_mode": "輕度",
+        "diet_restriction": "一般",
+        "low_carb": false,
+        "oil_habit": "normal",
+        "allergens": [],
+        "meal_prefs": { "breakfast": "convenience", "lunch": "convenience", "afternoon_tea": "off", "dinner": "cook_full", "snack": "off" },
+        "goal_mode": "減脂",
+        "disliked_ingredients": [{ "type": "protein", "key": "salmon", "label": "鮭魚" }],
+        "enabled_slots": { "breakfast": true, "lunch": true, "afternoon_tea": false, "dinner": true, "snack": false }
+      },
+      "settings": [
+        { "id": "picker_last_meal_type", "value": { "lunch": "delivery" } },
+        { "id": "tdee_state", "value": { "version": 1, "offset_kcal": 0, "prev_offset_kcal": 0, "effective_date": null, "last_adjusted_date": null, "last_evaluated_date": "2026-09-29", "goal_mode": "減脂", "mode_since_date": "2026-09-29", "pending": null, "dismissed_until": null, "announce_until": null, "last_result": null, "history": [] } }
+      ],
+      "recipe_feedback": [
+        { "id": "combo_a", "value": { "recipe_template_id": "combo_a", "shown_count": 2, "last_shown_date": "2026-09-29" } },
+        { "id": "combo_b", "value": { "recipe_template_id": "combo_b", "rating": "dislike", "shown_count": 1, "last_shown_date": "2026-09-28" } }
+      ]
+    },
+    "logs": {
+      "daily_log": [
+        {
+          "id": "log_a1", "log_date": "2026-09-29", "slot": "breakfast", "meal_type": "convenience", "source": "manual", "name": "健身餐盒",
+          "content": { "meal_type": "convenience", "archetype_id": null, "method_id": null, "implicit": null,
+            "components": [{ "kind": "product", "role": "main", "ref": "conv_bx04", "qty": 1, "snapshot": { "name": "健身餐盒", "kcal": 420 } }] },
+          "totals": { "kcal": 420, "protein_g": 30, "carb_g": 45, "fat_g": 12, "fiber_g": 4, "sat_fat_g": null, "sodium_mg": 800, "partial": [] },
+          "created_at": "2026-09-29T00:30:00.000Z"
+        },
+        {
+          "id": "log_a2", "log_date": "2026-09-29", "slot": "dinner", "meal_type": "cook_quick", "source": "manual", "name": "煎蛋",
+          "content": { "meal_type": "cook_quick", "archetype_id": "egg_pan", "method_id": "method_pan_fry", "implicit": { "oil_g": 5, "seasoning": "normal" },
+            "components": [{ "kind": "ingredient", "axis": "protein", "ref": "egg", "is_primary": true, "scale": 1 }] },
+          "totals": { "kcal": 230, "protein_g": 14, "carb_g": 1, "fat_g": 18, "fiber_g": 0, "sat_fat_g": 4, "sodium_mg": 400, "partial": [] },
+          "created_at": "2026-09-29T11:00:00.000Z"
+        },
+        {
+          "id": "log_a3", "log_date": "2026-09-28", "slot": "lunch", "meal_type": "delivery", "source": "manual", "name": "喜宴",
+          "content": { "meal_type": "delivery", "archetype_id": null, "method_id": null, "implicit": null,
+            "components": [{ "kind": "estimate", "name": "喜宴", "size": "L", "snapshot": { "kcal": 1200 } }] },
+          "totals": { "kcal": 1200, "protein_g": null, "carb_g": null, "fat_g": null, "fiber_g": null, "sat_fat_g": null, "sodium_mg": null, "partial": ["sat_fat_g", "sodium_mg"] },
+          "created_at": "2026-09-28T05:00:00.000Z"
+        }
+      ],
+      "weight_log": [
+        { "log_date": "2026-09-28", "weight_kg": 80.2 },
+        { "log_date": "2026-09-29", "weight_kg": 80 }
+      ],
+      "exercise_log": [
+        { "id": "ex_a1", "log_date": "2026-09-29", "activity_type": "快走", "duration_min": 30 }
+      ]
+    },
+    "custom_foods": [
+      {
+        "id": "custom_a1", "name": "巷口新開的便當", "channel": "delivery", "role": "main", "valid_slots": ["lunch", "dinner"], "kcal": 620,
+        "protein_g": null, "carb_g": null, "fat_g": null, "fiber_g": null, "sat_fat_g": null, "sodium_mg": null,
+        "allergen_tags": null, "vegan": false, "lacto_ovo": false, "copied_from": null, "archived": false,
+        "created_at": "2026-09-29T04:00:00.000Z", "updated_at": "2026-09-29T04:00:00.000Z"
+      }
+    ]
+  }
+}
