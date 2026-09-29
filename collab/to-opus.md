@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29 下午，Phase 0 計畫第三版三輪審核通過，可以開工）
+# 給接手的 Opus：Lighten2 交接（2026-09-29 下午，Phase 0 實作到 commit 4，還沒推送）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -39,10 +39,13 @@
 
 ## 4. 下一步
 
-1. **Phase 0 計畫第三版已定案，可以開工**：`docs/review/2026-09-29-Phase0-實作計畫.md`。三輪審核問答逐字＋實作者處理在 `collab/opus-review-log/2026-09-29-phase0-plan-review.md`（第三輪只有 F1 一定要改，已改，審核者說不用送第四輪）。
-   - 開工前重讀計畫第 3 節（engine 函式與單一來源）、第 4 節（斷言 1–13、walkthrough）、第 5 節（commit 拆法）。重點提醒：commit 2 保留四項舊行為、所有快照逐字不變；舊畫面用 `toDraft` 轉形狀、engine 不留相容分支；`sumProducts`／`composeTotals` 拆出不進位內部函式、`contentTotals` 只進位一次；斷言 13 在 commit 2 凍結參考值；commit 3–5 一起推。
-2. **手動記錄主餐上限（使用者 2026-09-29 決定）：早餐、午餐、晚餐 2；下午茶、宵夜 1**（計畫第 6 節，`MANUAL_MAIN_MAX_BY_SLOT = { breakfast: 2, lunch: 2, dinner: 2 }`）。「雞胸＋蒸地瓜」早餐要能記成一餐。
-3. 照計畫第 5 節 commit 拆法開工，從 commit 1（docs：PRD、decisions #41 起、日後討論）開始；每個畫面 commit 跑 `mobile-walkthrough` 並看截圖（章程 C6.5）。
+1. **Phase 0 實作進行中**（計畫 `docs/review/2026-09-29-Phase0-實作計畫.md` 第 5 節的 commit 拆法）：
+   - 已完成（都在本機 master、**還沒推送**）：commit 1 文件 `402ad83`、commit 2 engine `5cce978`、commit 3 三分頁＋飲料步驟 `92f06ce`、commit 4 自煮分頁 `21547d5`。
+   - 下一步 commit 5：外食分頁「找不到？直接估算」卡片、「我的品項」快速新增（計畫 2.1 第 6、7 項）、`protein_stir_fry` note；同步 adapter（加 pickerEstimate／pickerQuickAdd）、diff-recs、check-engine、mobile-walkthrough、手機實機腳本第 3 節。
+   - 然後 commit 6 驗收：全部工具＋截圖逐張看＋使用者短清單；**commit 3–5 一起推**（推送前先問使用者）。
+   - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
+2. **手動記錄主餐上限（使用者 2026-09-29 決定）：早餐、午餐、晚餐 2；下午茶、宵夜 1**（decisions #41，已實作）。
+3. **待回報使用者**：推薦卡片「配額已經不多了」「暫無適合的組合」時沒有「自己選」按鈕，那個時段無法手動記錄（v1 既有，已登記日後討論最後一條）；建議修，但不在 Phase 0 計畫範圍，等使用者決定。
 4. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
 5. `collab/pdf/` 兩份 PDF 超過 50 MB，要不要移出 repo 或改 Git LFS 待使用者決定（不急）。
 
