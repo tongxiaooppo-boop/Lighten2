@@ -4,6 +4,7 @@
 import { escapeHtml } from "../core/html.js";
 import { fromCustomFood } from "../data/catalog.js";
 import { passesHardFilters } from "../engine/filters.js";
+import { fitsSlot } from "../engine/picker.js";
 
 // 「整套便當」分類：自己選要排除
 const WHOLE_MEAL_CATEGORIES = ["健身餐盒", "蔬食餐盒", "減醣餐盒", "連鎖健康餐盒", "宅配健身餐"];
@@ -29,10 +30,6 @@ function pickerItems(catalog, customFoods, opts) {
   });
   customFoods.forEach(function (f) { items.push(toPickerItem(fromCustomFood(f))); });
   return items;
-}
-
-function fitsSlot(item, slot) {
-  return item.role === "drink" || (Array.isArray(item.valid_slots) && item.valid_slots.indexOf(slot) !== -1);
 }
 
 export function filterForSlot(catalog, customFoods, slot, profile, opts) {

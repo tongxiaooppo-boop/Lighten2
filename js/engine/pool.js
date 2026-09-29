@@ -5,11 +5,12 @@
 //   2、3 共用同一個「統一成分模型」生成器：品項在資料裡標 role/valid_slots，依一張規則表組合。
 
 import { SLOTS } from "../core/slots.js";
-import { WIDE_RANGE_RATIO, RANK_TO_TIER, NO_COOK_METHOD_ID, tierRank } from "../core/config.js";
+import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
 import {
   sumProducts, ingredientContribution, addContributions, displayFields, defaultImplicit, implicitContribution, ZERO_CONTRIBUTION,
+  noCookViolation, maxTierRank,
 } from "./meal-content.js";
 
 function r1(v) {
@@ -65,7 +66,7 @@ function composedCombos(catalog) {
             if (season && season.kcal_100g == null) return;
             methodList.forEach(function (m) {
               // 食安：免開火只能配不需要煮熟的食材，適用於這個組合裡出現的每一個槽位（章程 C4.3）。
-              if (m.id === NO_COOK_METHOD_ID && [p, s, v, season].some(function (it) { return it && it.requires_cooking; })) return;
+              if (noCookViolation(m, [p, s, v, season])) return;
 
               const primaryItem = hasStapleSlot ? s : p;
               const primaryContribution = primaryItem ? ingredientContribution(primaryItem) : ZERO_CONTRIBUTION;
@@ -81,7 +82,7 @@ function composedCombos(catalog) {
               ].filter(Boolean));
 
               const items = [p, s, v, season].filter(Boolean);
-              const rank = Math.max(tierRank(m.prep_tier), items.reduce(function (r, it) { return Math.max(r, tierRank(it.prep_tier)); }, 0));
+              const rank = maxTierRank(m, items);
               const nameParts = [p.name, s && s.name, v && v.name, season && season.name].filter(Boolean);
 
               combos.push(Object.assign({

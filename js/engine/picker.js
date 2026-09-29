@@ -1,0 +1,134 @@
+// 輕盈計畫 — 「自己選」三分頁選擇器的純函式（PRD 第 4 節、6.3、10.3；Phase 0 計畫第 3 節）。
+// 預設分頁、品項分到哪個分頁、分頁內怎麼分組、快速新增的預設值與送出前預告。
+// 不碰 DOM、不 import data（章程 C1）；選擇器記住的「上次選的型態」由 ui 讀好，這裡只收 lastPicked 值（章程 C4.15）。
+
+import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
+import { SLOTS } from "../core/slots.js";
+import { passesHardFilters, normalizeAllergens } from "./filters.js";
+import { emptyOptionalNutrients } from "./meal-content.js";
+
+function validMealType(v) {
+  return MEAL_TYPES.indexOf(v) !== -1 ? v : null;
+}
+
+// 打開時停在哪個型態：計畫（Phase 2 才有）→ 時段偏好（有效型態值）→ 上次這個時段送出的型態 → 超商。
+// 刻意跟推薦的有效偏好（recommend.js：不合法的偏好退回預設偏好）不同：這裡不合法（含 "auto"）就往下找，不要合併成同一個函式。
+export function resolveDefaultMealType(o) {
+  const x = o || {};
+  return validMealType(x.planned) || validMealType(x.pref) || validMealType(x.lastPicked) || "convenience";
+}
+
+// 選擇器的分頁：自煮的兩個型態都在自煮分頁（子切換）
+export function tabOfMealType(mealType) {
+  return mealType === "cook_quick" || mealType === "cook_full" ? "cook" : mealType;
+}
+
+// 飲料任何時段都能選（decisions #44）；其他品項照 valid_slots
+export function fitsSlot(item, slot) {
+  return item.role === "drink" || (Array.isArray(item.valid_slots) && item.valid_slots.indexOf(slot) !== -1);
+}
+
+// 品項分到分頁：超商分頁＝超商的非飲料；外食分頁＝台式外食非飲料在前、宅配/連鎖餐盒在後；
+// 我的品項依自己的 channel 放在分頁最後；飲料（含我的品項的飲料，不分 channel）進共用的飲料步驟。
+// products：catalog.products；customs：已經過 fromCustomFood 的我的品項（archived 的不列出）。
+export function partitionByMealType(products, customs, slot) {
+  const fits = function (it) { return fitsSlot(it, slot); };
+  const own = (customs || []).filter(function (it) { return !it.archived && fits(it); });
+  const builtin = products.filter(fits);
+  const nonDrink = function (it) { return it.role !== "drink"; };
+  return {
+    convenience: builtin.filter(function (p) { return !p.is_taiwan && p.channel === "convenience" && nonDrink(p); })
+      .concat(own.filter(function (p) { return p.channel === "convenience" && nonDrink(p); })),
+    delivery: builtin.filter(function (p) { return p.is_taiwan && nonDrink(p); })
+      .concat(builtin.filter(function (p) { return !p.is_taiwan && p.channel === "delivery" && nonDrink(p); }))
+      .concat(own.filter(function (p) { return p.channel === "delivery" && nonDrink(p); })),
+    drinks: builtin.filter(function (p) { return p.is_taiwan && !nonDrink(p); })
+      .concat(builtin.filter(function (p) { return !p.is_taiwan && !nonDrink(p); }))
+      .concat(own.filter(function (p) { return !nonDrink(p); })),
+  };
+}
+
+const ROLE_ORDER = ["main", "side", "snack"];
+
+// 分頁內的分組（PRD 6.3）：內建品項先依角色分區（主餐 → 配菜 → 點心），區內依 category 分組，
+// 組的順序與組內順序都照資料原順序（不按熱量排，PRD 6.1）；被擋的排在組內最後。我的品項整組放最後、不進角色分區。
+// reasonOf(item)：被擋的原因或 null。回傳 [{ role, category, is_custom, entries: [{ item, reason }], blocked }]
+export function groupForTab(items, reasonOf) {
+  const groups = [];
+  const byKey = {};
+  const add = function (key, base, item) {
+    if (!byKey[key]) { byKey[key] = Object.assign({ entries: [] }, base); groups.push(byKey[key]); }
+    byKey[key].entries.push({ item: item, reason: reasonOf(item) || null });
+  };
+  ROLE_ORDER.forEach(function (role) {
+    items.forEach(function (it) {
+      if (it.is_custom || it.role !== role) return;
+      add(role + "|" + (it.category || ""), { role: role, category: it.category || null, is_custom: false }, it);
+    });
+  });
+  items.forEach(function (it) {
+    if (it.is_custom) add("custom", { role: null, category: null, is_custom: true }, it);
+  });
+  groups.forEach(function (g) {
+    g.entries = g.entries.filter(function (e) { return !e.reason; }).concat(g.entries.filter(function (e) { return e.reason; }));
+    g.blocked = g.entries.filter(function (e) { return e.reason; }).length;
+  });
+  return groups;
+}
+
+// ---------- 「我的品項」快速新增（PRD 10.3） ----------
+
+const ROLE_DEFAULT_SLOTS = {
+  main: ["breakfast", "lunch", "dinner", "snack"],
+  side: SLOTS,
+  snack: ["afternoon_tea", "snack"],
+  drink: SLOTS,
+};
+
+export function defaultQuickAddRole(slot) {
+  return slot === "afternoon_tea" || slot === "snack" ? "snack" : "main";
+}
+
+// 依角色推 valid_slots，一定包含目前時段（否則新增完在這個時段看不到它），照時段順序
+export function quickAddSlots(role, slot) {
+  const base = ROLE_DEFAULT_SLOTS[role] || SLOTS;
+  return SLOTS.filter(function (s) { return base.indexOf(s) !== -1 || s === slot; });
+}
+
+// 快速新增表單的預設記錄（PRD 10.1 格式；archived、copied_from、時間戳由 db.addCustomFood 補）
+export function quickAddDefaults(slot, role, channel) {
+  const r = role || defaultQuickAddRole(slot);
+  return Object.assign({ name: "", kcal: null, role: r, channel: channel, valid_slots: quickAddSlots(r, slot) },
+    emptyOptionalNutrients(), { allergen_tags: null, vegan: false, lacto_ovo: false });
+}
+
+const NOT_VEGAN = ["蛋", "乳製品", "魚", "甲殼類", "軟體動物"];
+const NOT_LACTO_OVO = ["魚", "甲殼類", "軟體動物"];
+
+// 送出前預告（Phase 0 計畫 2.1 第 7 項）。item：ui 用 fromCustomFood 轉好的品項形狀。
+// 回傳 { blocked, conflict }：blocked＝以目前設定會被哪個設定擋住（中性說明，不引導改填「確認不含」，章程 C4.1）；
+// conflict＝飲食宣告跟過敏原互相矛盾（只提示不擋；我的品項只受章程 B8 驗證，B6.8 不適用）。
+// 「全素但過敏原未確認」不提示：未確認是預設值。
+export function quickAddProblem(item, profile) {
+  const p = profile || {};
+  const res = passesHardFilters(item, p);
+  let blocked = null;
+  if (!res.ok) {
+    const mine = normalizeAllergens(p.allergens);
+    const names = mine.list.concat(mine.unknown).join("、");
+    const tags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [UNVERIFIED_ALLERGEN];
+    if (res.reason === "成分未確認") blocked = "你設了過敏原「" + names + "」，過敏原未確認的品項不能選。";
+    else if (res.reason === "含過敏原") {
+      const hit = mine.list.filter(function (a) { return tags.indexOf(a) !== -1; });
+      blocked = "你設了過敏原「" + hit.join("、") + "」，含有它的品項不能選。";
+    } else if (res.reason === "飲食限制未確認") blocked = "你設了飲食限制「" + p.diet_restriction + "」，沒有宣告符合的品項不能選。";
+    else blocked = res.reason;
+  }
+  const tags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [];
+  const diet = item.diet_tags || [];
+  let conflict = null;
+  const clash = function (list) { return tags.filter(function (t) { return list.indexOf(t) !== -1 && ALLERGEN_OPTIONS.indexOf(t) !== -1; }); };
+  if (diet.indexOf("全素") !== -1 && clash(NOT_VEGAN).length > 0) conflict = "宣告全素，但過敏原勾了「" + clash(NOT_VEGAN).join("、") + "」。";
+  else if (diet.indexOf("蛋奶素") !== -1 && clash(NOT_LACTO_OVO).length > 0) conflict = "宣告蛋奶素，但過敏原勾了「" + clash(NOT_LACTO_OVO).join("、") + "」。";
+  return { blocked: blocked, conflict: conflict };
+}
