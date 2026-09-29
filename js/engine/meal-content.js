@@ -11,7 +11,11 @@
 // 自煮一律帶隱含成分（章程 B5.6–B5.7、C4.11）：implicit = { oil_g, seasoning: "light" | "normal" | null }。
 // 用油與調味不跟主要槽位縮放；推薦、自己選、紀錄快照都用這裡的函式。
 
-import { PRIMARY_SLOT_SCALE_RANGE, MANUAL_ROLE_MAX, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, tierRank } from "../core/config.js";
+import {
+  PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
+  ROLE_LABELS, tierRank, isQuickTier, manualRoleMax,
+} from "../core/config.js";
+import { SLOT_LABELS } from "../core/slots.js";
 import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
@@ -19,6 +23,13 @@ const CONTRIB_FIELDS = ["kcal"].concat(NUTRIENT_FIELDS);
 // 只用於顯示的欄位（不 null 傳染）
 export const DISPLAY_FIELDS = ["sat_fat_g", "sodium_mg"];
 
+
+// 我的品項的選填營養欄位（PRD 10.1），沒填是 null
+export function emptyOptionalNutrients() {
+  const out = {};
+  NUTRIENT_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) { out[k] = null; });
+  return out;
+}
 
 function round1OrNull(v) {
   return v == null ? null : round1(v);
@@ -161,23 +172,29 @@ export function lowCarbMaxScale(c, maxCarbG) {
 
 // ---------- 現成品項多選（自己選） ----------
 
-// 熱量是現成品項與我的品項的必填欄位（章程 B4、B8），不會是 null
-export function sumProducts(items) {
-  const display = addContributions(items.map(function (it) { return { sat_fat_g: it.sat_fat_g, sodium_mg: it.sodium_mg }; }));
+// 公開的合計函式都在最後才進位一次（Phase 0 計畫 F1：先各自進位再相加，兩位小數的資料會差 0.1）
+function roundTotals(t) {
+  const out = Object.assign({}, t);
+  CONTRIB_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) { out[k] = round1OrNull(out[k]); });
+  return out;
+}
+
+// 一件商品或估算的營養值：品項（或記錄當下的快照）乘份數。熱量是必填欄位（章程 B4、B8），不會是 null。
+function productPart(p, qty) {
+  const q = qty != null ? qty : 1;
+  const per = function (v) { return v == null ? null : v * q; };
   return {
-    kcal: round1(items.reduce(function (s, it) { return s + it.kcal; }, 0)),
-    protein_g: sumOrNull(items, "protein_g"),
-    carb_g: sumOrNull(items, "carb_g"),
-    fat_g: sumOrNull(items, "fat_g"),
-    fiber_g: sumOrNull(items, "fiber_g"),
-    sat_fat_g: round1OrNull(display.sat_fat_g),
-    sodium_mg: round1OrNull(display.sodium_mg),
-    partial: display.partial,
+    kcal: per(p.kcal), protein_g: per(p.protein_g), carb_g: per(p.carb_g), fat_g: per(p.fat_g), fiber_g: per(p.fiber_g),
+    sat_fat_g: per(p.sat_fat_g), sodium_mg: per(p.sodium_mg),
   };
 }
 
+export function sumProducts(items) {
+  return roundTotals(addContributions(items.map(function (it) { return productPart(it, 1); })));
+}
+
 // ---------- 手動記錄規則（章程 C4.8） ----------
-// 比推薦寬：只限制每個角色的數量，不要求主餐（一杯拿鐵可以記成一餐），不看時段、不套用低碳。
+// 比推薦寬：只限制每個角色的數量（主餐上限依時段，decisions #41），不要求主餐（一杯拿鐵可以記成一餐），不套用低碳。
 
 function roleCounts(items) {
   const n = {};
@@ -185,16 +202,18 @@ function roleCounts(items) {
   return n;
 }
 
-// 可以送出回傳 null，否則回傳原因
-export function manualSelectionProblem(items) {
-  if (items.length === 0) return "請至少選一個品項。";
+// 可以送出回傳 null，否則回傳原因。opts.estimates：這一餐的「直接估算」筆數（不佔角色名額，但算有選東西）
+export function manualSelectionProblem(items, slot, opts) {
+  const estimates = (opts && opts.estimates) || 0;
+  if (items.length === 0 && estimates === 0) return "請至少選一個品項。";
   const n = roleCounts(items);
-  const over = Object.keys(n).filter(function (r) { return n[r] > (MANUAL_ROLE_MAX[r] || 1); });
-  return over.length > 0 ? "每種角色最多選 1 個。" : null;
+  const over = Object.keys(n).filter(function (r) { return n[r] > manualRoleMax(r, slot); })[0];
+  if (!over) return null;
+  return (SLOT_LABELS[slot] ? SLOT_LABELS[slot] + "的" : "") + (ROLE_LABELS[over] || over) + "最多選 " + manualRoleMax(over, slot) + " 個。";
 }
 
-export function canAddManualItem(items, item) {
-  return (roleCounts(items)[item.role] || 0) < (MANUAL_ROLE_MAX[item.role] || 1);
+export function canAddManualItem(items, item, slot) {
+  return (roleCounts(items)[item.role] || 0) < manualRoleMax(item.role, slot);
 }
 
 // 自己選的單餐缺口提示：熱量超出份額多少、蛋白質/纖維還差多少（share 來自 budget.js slotNutrientShare）
@@ -223,29 +242,111 @@ export function suggestFillers(passItems, selItems, gap, field, share) {
   return out.slice(0, 3).map(function (o) { return o.label; });
 }
 
-// ---------- 自己煮（自己選） ----------
+// ---------- 自煮：推薦候選池與自煮分頁共用的判斷（章程 C2） ----------
 
-// 自己煮的隱含成分：目前一律用預設（用油與調味的選項在 Phase 0 的自煮分頁）
-export function composeImplicit(c, oilHabit) {
-  return defaultImplicit(c.method, c.archetype, !!c.vegetable, !!c.seasoning, oilHabit);
+// 烹調法（可為 null）與食材的最高難度
+export function maxTierRank(method, items) {
+  return items.reduce(function (r, it) { return it ? Math.max(r, tierRank(it.prep_tier)) : r; },
+    method ? tierRank(method.prep_tier) : 0);
 }
 
-// c = { protein, staple, vegetable, seasoning, drink, primaryScale }；primary＝被縮放的那個食材（主食或蛋白質）
-// implicit：composeImplicit 的結果；implicitItems：catalog.implicit。
+// 自煮紀錄沒有明確的快煮/開伙來源時（推薦偏好是 auto 或退回），依最高難度推導（PRD 第 3 節）
+export function deriveCookMealType(rank) {
+  return isQuickTier(rank) ? "cook_quick" : "cook_full";
+}
+
+// 食安：免開火只能配不需要煮熟的食材，任一食材（蛋白質、主食、蔬菜、醬料）需要加熱就不行（章程 C4.3）
+export function noCookViolation(method, items) {
+  return !!method && method.id === NO_COOK_METHOD_ID && items.some(function (it) { return it && it.requires_cooking; });
+}
+
+export function archetypeHasStaple(a) {
+  return !!(a && a.staple && a.staple.allow && a.staple.allow.length > 0);
+}
+
+// 自煮草稿：d = { archetype, proteins: [], staple, vegetables: [], seasoning, method, primaryScale, drink }
+// 蛋白質最多 2、蔬菜最多 3（COMPOSE_MAX），其餘單選。
+const AXIS_FIELDS = { protein: "proteins", staple: "staple", vegetable: "vegetables", seasoning: "seasoning" };
+const AXIS_LABELS = { protein: "蛋白質", staple: "主食", vegetable: "蔬菜", seasoning: "醬料" };
+
+function onAxis(d, axis) {
+  const v = d[AXIS_FIELDS[axis]];
+  return Array.isArray(v) ? v : v ? [v] : [];
+}
+
+// 食材依 蛋白質 → 主食 → 蔬菜 → 醬料 的順序（MealContent 的元件順序也是這個）
+export function draftIngredients(d) {
+  return onAxis(d, "protein").concat(onAxis(d, "staple"), onAxis(d, "vegetable"), onAxis(d, "seasoning"));
+}
+
+// 主要槽位（被縮放的那個）：有主食槽用主食；沒有的用蛋白質，但選了 2 個蛋白質就不縮放
+export function composePrimary(d) {
+  if (archetypeHasStaple(d.archetype)) return d.staple || null;
+  const proteins = onAxis(d, "protein");
+  return proteins.length === 1 ? proteins[0] : null;
+}
+
+// 自煮分頁的一個選項能不能加進目前的草稿：回傳原因或 null。axis：protein／staple／vegetable／seasoning／method。
+// opts.tier：這一餐的子切換值（"cook_quick" 時限制難度）。過敏原、飲食、不吃清單不在這裡，照舊走 passesHardFilters。
+export function composeOptionProblem(item, axis, d, opts) {
+  const quick = !!(opts && opts.tier === "cook_quick");
+  if (axis === "method") {
+    if (noCookViolation(item, draftIngredients(d))) return "已選的食材需要加熱";
+    if (quick && !isQuickTier(tierRank(item.prep_tier))) return "快煮不含這個烹調法";
+    return null;
+  }
+  if (noCookViolation(d.method, [item])) return "這個食材需要加熱";
+  if (quick && !isQuickTier(tierRank(item.prep_tier))) return "快煮不含這個食材";
+  const max = COMPOSE_MAX[axis];
+  const selected = onAxis(d, axis);
+  if (max && selected.length >= max && !selected.some(function (x) { return x.id === item.id; })) return "最多選 " + max + " 個";
+  return null;
+}
+
+// 自煮草稿能不能送出：回傳原因或 null。順序固定：餐型不完整 → 免開火（食安優先顯示）→ 骨架 allow → 軸上限 → 快煮難度。
+export function composeProblem(d, opts) {
+  const a = d.archetype;
+  if (!a) return "請先選餐型";
+  if (onAxis(d, "protein").length === 0) return "請選蛋白質";
+  if (archetypeHasStaple(a) && !d.staple) return "請選主食";
+  if (!d.method) return "請選烹調法";
+  const items = draftIngredients(d);
+  if (noCookViolation(d.method, items)) return "免開火不能搭配需要加熱的食材，請換烹調法或換食材。";
+  const axes = Object.keys(AXIS_FIELDS);
+  for (let i = 0; i < axes.length; i++) {
+    const allow = (a[axes[i]] && a[axes[i]].allow) || [];
+    const outside = onAxis(d, axes[i]).filter(function (it) { return allow.indexOf(it.id) === -1; })[0];
+    if (outside) return "「" + outside.name + "」不在「" + a.name + "」的選項裡";
+  }
+  if ((a.methods || []).indexOf(d.method.id) === -1) return "「" + d.method.name + "」不在「" + a.name + "」的選項裡";
+  const capped = Object.keys(COMPOSE_MAX).filter(function (ax) { return onAxis(d, ax).length > COMPOSE_MAX[ax]; })[0];
+  if (capped) return AXIS_LABELS[capped] + "最多選 " + COMPOSE_MAX[capped] + " 個";
+  if (opts && opts.tier === "cook_quick") {
+    const slow = [d.method].concat(items).filter(function (it) { return !isQuickTier(tierRank(it.prep_tier)); })[0];
+    if (slow) return "快煮不含「" + slow.name + "」，請換成開伙或換掉它。";
+  }
+  return null;
+}
+
+// 自煮的隱含成分：目前一律用預設（用油與調味的選項在 Phase 0 的自煮分頁）
+export function composeImplicit(d, oilHabit) {
+  return defaultImplicit(d.method, d.archetype, onAxis(d, "vegetable").length > 0, !!d.seasoning, oilHabit);
+}
+
+// 不進位的自煮合計。primary＝被縮放的那個食材（composePrimary）；implicit：composeImplicit 的結果；implicitItems：catalog.implicit。
 // 食材與飲料任一項某欄未知，合計那一欄就是 null。
-export function composeTotals(c, primary, implicit, implicitItems) {
-  const parts = [c.protein, c.staple, c.vegetable, c.seasoning].filter(Boolean).map(function (it) {
+function composeContributions(d, primary, implicit, implicitItems) {
+  const parts = draftIngredients(d).map(function (it) {
     const serving = it.serving_g != null ? it.serving_g : 100;
-    return ingredientContribution(it, serving * (it === primary ? (c.primaryScale || 1) : 1));
+    return ingredientContribution(it, serving * (it === primary ? (d.primaryScale || 1) : 1));
   });
   parts.push(implicitContribution(implicit, implicitItems));
-  if (c.drink) {
-    const d = c.drink;
-    parts.push({ kcal: d.kcal, protein_g: d.protein_g, carb_g: d.carb_g, fat_g: d.fat_g, fiber_g: d.fiber_g, sat_fat_g: d.sat_fat_g, sodium_mg: d.sodium_mg });
-  }
-  const total = addContributions(parts);
-  CONTRIB_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) { total[k] = round1OrNull(total[k]); });
-  return total;
+  if (d.drink) parts.push(productPart(d.drink, 1));
+  return addContributions(parts);
+}
+
+export function composeTotals(d, primary, implicit, implicitItems) {
+  return roundTotals(composeContributions(d, primary, implicit, implicitItems));
 }
 
 // ---------- 紀錄的加總 ----------
@@ -346,10 +447,6 @@ function productComponent(p) {
   return { kind: "product", role: p.role, ref: p.uid, qty: 1, snapshot: productSnapshot(p) };
 }
 
-function cookMealType(maxTierRank) {
-  return maxTierRank <= 1 ? "cook_quick" : "cook_full";
-}
-
 // 推薦組合 → MealContent。productsByUid：catalog 的現成品項查表（快照用）。
 // 型態：時段偏好是快煮/開伙、而且沒有退回一般推薦時，就是那個偏好；否則（auto 或退回）才依難度推導（PRD 第 3 節）。
 export function contentFromRec(rec, productsByUid) {
@@ -364,7 +461,7 @@ export function contentFromRec(rec, productsByUid) {
     const pref = rec.source_pref;
     const fromPref = !rec.fallback_to_auto && (pref === "cook_quick" || pref === "cook_full");
     return {
-      meal_type: fromPref ? pref : cookMealType(rec.tier_rank),
+      meal_type: fromPref ? pref : deriveCookMealType(rec.tier_rank),
       archetype_id: rec.archetype_id, method_id: rec.method_id,
       components: comps, implicit: rec.implicit ? { oil_g: rec.implicit.oil_g, seasoning: rec.implicit.seasoning } : null,
     };
@@ -389,27 +486,84 @@ export function contentFromProducts(items) {
   };
 }
 
-// 自己煮 → MealContent。c = { archetype, protein, staple, vegetable, seasoning, method, drink, primaryScale }；implicit：實際採用的用油與調味
-// −1a 過渡：v1 的自己煮沒有快煮/開伙的選擇，依難度推導；Phase 0 起用自煮分頁的子切換值。
-export function contentFromCompose(c, primary, implicit) {
+// 自煮草稿 → MealContent。primary：composePrimary(d)；implicit：實際採用的用油與調味；
+// mealType：自煮分頁的子切換值（decisions #34、#47），不從食材反推。
+export function contentFromCompose(d, primary, implicit, mealType) {
+  if (mealType !== "cook_quick" && mealType !== "cook_full") throw new Error("[meal-content.js] 自煮的 meal_type 要由呼叫端傳入：" + mealType);
   const comps = [];
-  const ingredients = [["protein", c.protein], ["staple", c.staple], ["vegetable", c.vegetable], ["seasoning", c.seasoning]];
-  ingredients.forEach(function (a) {
-    if (!a[1]) return;
-    const comp = { kind: "ingredient", axis: a[0], ref: a[1].id };
-    if (a[1] === primary) { comp.is_primary = true; comp.scale = c.primaryScale; }
-    comps.push(comp);
+  [["protein", onAxis(d, "protein")], ["staple", onAxis(d, "staple")], ["vegetable", onAxis(d, "vegetable")], ["seasoning", onAxis(d, "seasoning")]].forEach(function (a) {
+    a[1].forEach(function (it) {
+      const comp = { kind: "ingredient", axis: a[0], ref: it.id };
+      if (it === primary) { comp.is_primary = true; comp.scale = d.primaryScale; }
+      comps.push(comp);
+    });
   });
-  if (c.drink) comps.push(productComponent(c.drink));
-  const items = ingredients.map(function (a) { return a[1]; }).filter(Boolean);
-  const rank = Math.max(c.method ? tierRank(c.method.prep_tier) : 0,
-    items.reduce(function (r, it) { return Math.max(r, tierRank(it.prep_tier)); }, 0));
+  if (d.drink) comps.push(productComponent(d.drink));
   return {
-    meal_type: cookMealType(rank),
-    archetype_id: c.archetype ? c.archetype.id : null,
-    method_id: c.method ? c.method.id : null,
+    meal_type: mealType,
+    archetype_id: d.archetype ? d.archetype.id : null,
+    method_id: d.method ? d.method.id : null,
     components: comps, implicit: { oil_g: implicit.oil_g, seasoning: implicit.seasoning },
   };
+}
+
+// 「找不到？直接估算」的元件：只存在這一餐，熱量取 S/M/L 常數，其餘營養素未知（章程 C4.5）
+export function estimateComponent(size, name) {
+  if (!ESTIMATE_SIZE_KCAL.hasOwnProperty(size)) throw new Error("[meal-content.js] 估算的份量不對：" + size);
+  return {
+    kind: "estimate", name: name && name.trim() ? name.trim() : "外食估算", size: size,
+    snapshot: { kcal: ESTIMATE_SIZE_KCAL[size], protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null },
+  };
+}
+
+// 選擇器的草稿 → MealContent（摘要與送出共用，看到的＝存下的）。
+// draft.kind："products"（超商/外食分頁：items、estimates [{ size, name }]、drink）或 "cook"（自煮草稿，見 composeProblem）。
+// draft.meal_type：分頁值或自煮子切換值，飲料不影響（decisions #47）。opts.oilHabit：基本資料的用油習慣。
+export function buildDraftContent(draft, opts) {
+  if (draft.kind === "cook") {
+    const implicit = composeImplicit(draft, opts && opts.oilHabit);
+    return contentFromCompose(draft, composePrimary(draft), implicit, draft.meal_type);
+  }
+  const comps = (draft.items || []).map(productComponent)
+    .concat((draft.estimates || []).map(function (e) { return estimateComponent(e.size, e.name); }))
+    .concat(draft.drink ? [productComponent(draft.drink)] : []);
+  return { meal_type: draft.meal_type, archetype_id: null, method_id: null, components: comps, implicit: null };
+}
+
+const _ingredientIndex = new WeakMap();
+
+function ingredientById(catalog, id) {
+  let idx = _ingredientIndex.get(catalog);
+  if (!idx) {
+    idx = {};
+    catalog.ingredients.forEach(function (it) { idx[it.id] = it; });
+    _ingredientIndex.set(catalog, idx);
+  }
+  const it = idx[id];
+  if (!it) throw new Error("[meal-content.js] 找不到食材：" + id);
+  return it;
+}
+
+// 一餐 MealContent 的營養合計。商品與估算一律用快照乘份數、不查 catalog（我的品項不在 catalog 裡）；
+// 食材依 ref 查 catalog，只有主要槽位乘倍數，隱含成分不縮放。食材與商品各自加總（空的一組不放進來，
+// 否則只有自煮的一餐會被標成鈉「部分無資料」），最後才進位一次。
+export function contentTotals(content, catalog) {
+  const ingredientParts = [];
+  const productParts = [];
+  content.components.forEach(function (c) {
+    if (c.kind === "ingredient") {
+      const it = ingredientById(catalog, c.ref);
+      const serving = it.serving_g != null ? it.serving_g : 100;
+      ingredientParts.push(ingredientContribution(it, serving * (c.is_primary ? (c.scale || 1) : 1)));
+    } else {
+      productParts.push(productPart(c.snapshot, c.qty));
+    }
+  });
+  if (content.implicit) ingredientParts.push(implicitContribution(content.implicit, catalog.implicit));
+  const groups = [];
+  if (ingredientParts.length > 0) groups.push(addContributions(ingredientParts));
+  if (productParts.length > 0) groups.push(addContributions(productParts));
+  return roundTotals(addContributions(groups));
 }
 
 // 一筆 daily_log（一筆一餐）。totals 是記錄當下的營養快照，食材資料之後修正也不回溯。

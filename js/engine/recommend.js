@@ -11,7 +11,7 @@
 //   - 依序處理時段，前面時段挑到的真實熱量跟配額的差額帶到下一個時段
 
 import { SLOTS, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
-import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G } from "../core/config.js";
+import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G, QUICK_MAX_TIER_RANK, isQuickTier } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
@@ -28,14 +28,14 @@ function getSourcePref(mealPrefs, slot) {
 }
 
 function maxRankForSource(sourcePref) {
-  return sourcePref === "cook_quick" ? 1 : 2; // 其餘來源不靠 tier 限制（超商/delivery 恆為🟢；cook_full 不限）
+  return sourcePref === "cook_quick" ? QUICK_MAX_TIER_RANK : 2; // 其餘來源不靠 tier 限制（超商/delivery 恆為🟢；cook_full 不限）
 }
 
 function filterBySource(candidates, sourcePref) {
   if (!sourcePref || sourcePref === "auto") return candidates;
   if (sourcePref === "convenience") return candidates.filter(function (c) { return c.is_convenience; });
   if (sourcePref === "delivery") return candidates.filter(function (c) { return !!c.is_delivery; });
-  if (sourcePref === "cook_quick") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery && c.tier_rank <= 1; });
+  if (sourcePref === "cook_quick") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery && isQuickTier(c.tier_rank); });
   if (sourcePref === "cook_full") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery; });
   return candidates;
 }

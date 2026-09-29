@@ -3,7 +3,6 @@
 
 import { SLOT_LABELS } from "../core/slots.js";
 import { escapeHtml } from "../core/html.js";
-import { NO_COOK_METHOD_ID } from "../core/config.js";
 import { $, notIncludedText, sodiumText } from "./dom.js";
 import { getProfile, getDailyLogs, getCustomFoods, addDailyLog } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
@@ -12,6 +11,7 @@ import { slotNutrientShare } from "../engine/budget.js";
 import {
   sumProducts, composeTotals, composeImplicit, suggestFillers, slotGaps,
   contentFromProducts, contentFromCompose, buildLogEntry, manualSelectionProblem, canAddManualItem,
+  composeProblem, composeOptionProblem, composePrimary, archetypeHasStaple, draftIngredients, maxTierRank, deriveCookMealType,
 } from "../engine/meal-content.js";
 import { filterForSlot, cardHtml } from "./item-picker.js";
 import { getCalibratedTargets } from "./calibration.js";
@@ -93,23 +93,27 @@ function composePassFilter(candidate, axisType) {
 }
 
 function composeHasStapleSlot() {
-  const a = manualPicker.compose.archetype;
-  return !!(a && a.staple && a.staple.allow && a.staple.allow.length > 0);
+  return archetypeHasStaple(manualPicker.compose.archetype);
 }
 
-function composePrimaryItem() {
-  const c = manualPicker.compose;
-  return composeHasStapleSlot() ? c.staple : c.protein;
+// Phase 0 commit 2 過渡：舊畫面的單一蛋白質/蔬菜包成 engine 的草稿形狀；commit 3 跟這個檔一起刪（Phase 0 計畫 S2）
+function toDraft(c) {
+  return {
+    archetype: c.archetype, proteins: c.protein ? [c.protein] : [], staple: c.staple,
+    vegetables: c.vegetable ? [c.vegetable] : [], seasoning: c.seasoning, method: c.method,
+    primaryScale: c.primaryScale, drink: c.drink,
+  };
 }
 
 export function currentComposeTotals() {
-  const c = manualPicker.compose;
-  return composeTotals(c, composePrimaryItem(), composeImplicit(c, manualPicker.profile.oil_habit), c.axes.implicit);
+  const d = toDraft(manualPicker.compose);
+  return composeTotals(d, composePrimary(d), composeImplicit(d, manualPicker.profile.oil_habit), manualPicker.compose.axes.implicit);
 }
 
+// 舊畫面沒有快煮/開伙子切換，不限難度（tier: null）；原因依 engine（免開火）→ 硬性過濾
 function composeBlockedReason(it, axisType, c) {
-  // 免開火食安：選了免開火，需煮熟的食材擋掉（跟推薦候選池同一條規則）
-  if (c.method && c.method.id === NO_COOK_METHOD_ID && it.requires_cooking) return "這個食材需要加熱";
+  const reason = composeOptionProblem(it, axisType === "sauce" ? "seasoning" : axisType, toDraft(c), { tier: null });
+  if (reason) return reason;
   const res = composePassFilter(it, axisType);
   if (!res.ok) return res.reason;
   return null;
@@ -174,7 +178,7 @@ function renderComposeMode() {
     html += composeMethodAxisHtml(c);
     html += "</div>";
 
-    const primary = composePrimaryItem();
+    const primary = composePrimary(toDraft(c));
     if (primary) {
       html += '<div class="compose-step"><div class="compose-step-label">3. 份量（' + escapeHtml(primary.name) + '）</div><div class="compose-scale">';
       html += '<input type="range" min="0.5" max="2.0" step="0.1" value="' + c.primaryScale + '" id="compose-scale-slider">' +
@@ -205,19 +209,6 @@ function renderComposeMode() {
   }
 }
 
-function composeMissingReason() {
-  const c = manualPicker.compose;
-  if (!c.archetype) return "請先選餐型";
-  if (!c.protein) return "請選蛋白質";
-  if (composeHasStapleSlot() && !c.staple) return "請選主食";
-  if (!c.method) return "請選烹調法";
-  // 免開火食安：選了免開火，任何已選食材需要加熱就要擋（跟推薦候選池同一條規則）。
-  if (c.method.id === NO_COOK_METHOD_ID) {
-    const needsCooking = [c.protein, c.staple, c.vegetable, c.seasoning].some(function (it) { return it && it.requires_cooking; });
-    if (needsCooking) return "免開火不能搭配需要加熱的食材，請換烹調法或換食材。";
-  }
-  return null;
-}
 
 function onComposeClick(e) {
   const btn = e.target.closest(".compose-option");
@@ -317,9 +308,9 @@ export function updateManualSummary() {
   const hint = document.getElementById("manual-picker-main-hint");
   let missingReason = null;
   if (isCompose) {
-    missingReason = composeMissingReason();
+    missingReason = composeProblem(toDraft(manualPicker.compose), { tier: null });
   } else {
-    missingReason = manualSelectionProblem(selItems);
+    missingReason = manualSelectionProblem(selItems, manualPicker.slot);
   }
   if (submitBtn) submitBtn.disabled = missingReason != null;
   if (hint) {
@@ -340,7 +331,7 @@ function onManualItemClick(e) {
   if (!it) return;
   const idx = manualPicker.selectedUids.indexOf(uid);
   if (idx === -1) {
-    if (!canAddManualItem(manualSelectedItems(), it)) {
+    if (!canAddManualItem(manualSelectedItems(), it, manualPicker.slot)) {
       alert("這個時段的「" + roleLabel(it.role) + "」已經選過了，要不要先取消上一個？");
       return;
     }
@@ -354,20 +345,21 @@ function onManualItemClick(e) {
 export async function onManualSubmit() {
   let entry;
   if (manualPicker.mode === "compose") {
-    const missing = composeMissingReason();
-    if (missing) { alert(missing); return; }
     const c = manualPicker.compose;
-    const primary = composePrimaryItem();
-    const implicit = composeImplicit(c, manualPicker.profile.oil_habit);
-    const totals = composeTotals(c, primary, implicit, c.axes.implicit);
+    const d = toDraft(c);
+    const missing = composeProblem(d, { tier: null });
+    if (missing) { alert(missing); return; }
+    const primary = composePrimary(d);
+    const implicit = composeImplicit(d, manualPicker.profile.oil_habit);
+    const totals = composeTotals(d, primary, implicit, c.axes.implicit);
     const nameParts = [c.archetype.name, c.protein.name, c.staple && c.staple.name, c.vegetable && c.vegetable.name, c.seasoning && c.seasoning.name, c.drink && c.drink.name].filter(Boolean);
     entry = buildLogEntry({
       date: todayStr(), slot: manualPicker.slot, source: "manual", name: nameParts.join("＋"),
-      content: contentFromCompose(c, primary, implicit), totals: totals, createdAt: nowIso(),
+      content: contentFromCompose(d, primary, implicit, deriveCookMealType(maxTierRank(c.method, draftIngredients(d)))), totals: totals, createdAt: nowIso(),
     });
   } else {
     const selItems = manualSelectedItems();
-    const problem = manualSelectionProblem(selItems);
+    const problem = manualSelectionProblem(selItems, manualPicker.slot);
     if (problem) { alert(problem); return; }
     entry = buildLogEntry({
       date: todayStr(), slot: manualPicker.slot, source: "manual",

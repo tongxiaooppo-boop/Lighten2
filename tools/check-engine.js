@@ -73,6 +73,7 @@ async function main() {
     matcher: await imp("js/engine/matcher.js"),
     today: await imp("js/engine/today.js"),
     nutrition: await imp("js/engine/nutrition.js"),
+    picker: await imp("js/engine/picker.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -266,7 +267,7 @@ async function main() {
     const ing = (o) => Object.assign({ id: "x", name: "x", serving_g: 100, kcal_100g: 100, protein_100g: 10, carb_100g: 10, fat_100g: 1, fiber_100g: 1 }, o);
     check(mc.ingredientContribution(ing({ protein_100g: null })).protein_g === null, "食材蛋白質未知，一份的蛋白質要是 null");
     check(mc.ingredientContribution(ing({})).protein_g === 10, "食材蛋白質已知時照常計算");
-    const t = mc.composeTotals({ protein: ing({ fiber_100g: null }), staple: ing({ id: "s" }), primaryScale: 1 }, null);
+    const t = mc.composeTotals({ proteins: [ing({ fiber_100g: null })], staple: ing({ id: "s" }), primaryScale: 1 }, null);
     check(t.fiber_g === null, "自己煮：任一食材纖維未知，合計纖維要是 null（實際 " + t.fiber_g + "）");
     check(t.protein_g === 20, "自己煮：已知欄位照常加總（實際 " + t.protein_g + "）");
 
@@ -307,7 +308,7 @@ async function main() {
     check(na2.value === 500 && na2.partial === true, "鈉：紀錄本身是部分無資料，合計也要註明（實際 " + JSON.stringify(na2) + "）");
     check(mc.sumDisplayLogTotals([N(null), N(null)], "sodium_mg").value === null, "鈉：全部沒資料是 null");
     check(mc.sumDisplayLogTotals([N(300), N(200)], "sodium_mg").partial === false, "鈉：全部有資料不註明");
-    const ct = mc.composeTotals({ protein: ing({ sodium_100g: 50 }), staple: ing({ id: "s", sodium_100g: null }), primaryScale: 1 }, null);
+    const ct = mc.composeTotals({ proteins: [ing({ sodium_100g: 50 })], staple: ing({ id: "s", sodium_100g: null }), primaryScale: 1 }, null);
     check(ct.sodium_mg === 50 && ct.partial.indexOf("sodium_mg") !== -1 && ct.protein_g === 20, "自己煮：一個食材沒鈉資料，鈉照加有資料的部分並註明（實際 " + JSON.stringify(ct) + "）");
   }
 
@@ -320,7 +321,7 @@ async function main() {
     check(mc.manualSelectionProblem([it("snack")]) === null, "只記一份點心要可以送出");
     check(mc.manualSelectionProblem([it("main"), it("side"), it("drink"), it("snack")]) === null, "四種角色各一件要可以送出（手動不限 3 件）");
     check(mc.manualSelectionProblem([]) !== null, "什麼都沒選不能送出");
-    check(mc.manualSelectionProblem([it("main", "a"), it("main", "b")]) !== null, "兩個主餐超過角色上限要擋");
+    check(mc.manualSelectionProblem([it("main", "a"), it("main", "b")], "afternoon_tea") !== null, "下午茶兩個主餐超過角色上限要擋（早午晚的上限 2 見 4j）");
     check(mc.canAddManualItem([it("drink", "a")], it("drink", "b")) === false, "已經選了飲料，再加一杯要擋");
     check(mc.canAddManualItem([it("drink", "a")], it("main", "b")) === true, "已經選了飲料，加主餐要可以");
   }
@@ -445,6 +446,269 @@ async function main() {
     check(cf.sat_fat_g === 0.4 && cf.sodium_mg === 250, "我的品項要帶飽和脂肪與鈉（實際 " + cf.sat_fat_g + "、" + cf.sodium_mg + "）");
     const cfPicked = picker.filterForSlot(catalog, [{ id: "custom_y", name: "y", kcal: 100, sat_fat_g: 0.4, sodium_mg: 250, allergen_tags: [] }], "lunch", {}).pass.find((it) => it.uid === "custom_y");
     check(cfPicked && cfPicked.sodium_mg === 250, "自己選裡的我的品項要帶鈉");
+  }
+
+  // ---------- 4j. Phase 0 選擇器的 engine（Phase 0 計畫第 4 節斷言 1–13） ----------
+  console.log("[Phase 0 選擇器]");
+  {
+    const mc = M.mc;
+    const pk = M.picker;
+    const ing = (id) => catalog.ingredients.find((x) => x.id === id);
+    const arch = (id) => catalog.archetypes.find((a) => a.id === id);
+
+    // 1. 預設分頁：計畫 → 偏好 → 上次 → 超商；auto、off、undefined、不合法值都往下找
+    const R = (planned, pref, lastPicked) => pk.resolveDefaultMealType({ planned, pref, lastPicked });
+    check(R(null, "cook_full", "delivery") === "cook_full", "預設分頁：有效偏好優先於上次");
+    check(R("delivery", "cook_full", "convenience") === "delivery", "預設分頁：計畫優先於偏好");
+    check(R(null, "auto", "delivery") === "delivery", "預設分頁：偏好 auto 時用上次");
+    check(R(null, "off", "cook_quick") === "cook_quick", "預設分頁：偏好不合法時用上次");
+    check(R(null, undefined, "bogus") === "convenience", "預設分頁：上次不合法時退回超商");
+    check(R(null, "auto", undefined) === "convenience", "預設分頁：都沒有時退回超商");
+    check(R() === "convenience", "預設分頁：沒傳參數退回超商");
+    check(pk.tabOfMealType("cook_quick") === "cook" && pk.tabOfMealType("cook_full") === "cook" && pk.tabOfMealType("delivery") === "delivery", "快煮、開伙都在自煮分頁");
+
+    // 2. 分頁與分組
+    const own = (o) => Object.assign({ uid: o.id, is_custom: true, archived: false, valid_slots: SLOTS.slice(), allergen_tags: [], diet_tags: [], category: null }, o);
+    const customs = [
+      own({ id: "c_conv_main", role: "main", channel: "convenience" }),
+      own({ id: "c_del_side", role: "side", channel: "delivery" }),
+      own({ id: "c_drink", role: "drink", channel: "delivery" }),
+      own({ id: "c_gone", role: "main", channel: "convenience", archived: true }),
+      own({ id: "c_dinner_only", role: "main", channel: "convenience", valid_slots: ["dinner"] }),
+    ];
+    SLOTS.forEach((slot) => {
+      const t = pk.partitionByMealType(catalog.products, customs, slot);
+      check(t.convenience.concat(t.delivery).every((it) => it.role !== "drink"), slot + "：分頁內不能有飲料");
+      check(t.drinks.every((it) => it.role === "drink"), slot + "：飲料步驟只有飲料");
+      check(t.drinks.length === catalog.products.filter((p) => p.role === "drink").length + 1, slot + "：飲料不看時段、我的品項的飲料也在（不分 channel）");
+      check(t.convenience.concat(t.delivery).concat(t.drinks).every((it) => it.uid !== "c_gone"), slot + "：封存的我的品項不列出");
+      check(t.convenience.some((it) => it.uid === "c_conv_main") && t.delivery.some((it) => it.uid === "c_del_side"), slot + "：我的品項依 channel 進分頁");
+      check(t.convenience.some((it) => it.uid === "c_dinner_only") === (slot === "dinner"), slot + "：我的品項照 valid_slots");
+      check(t.convenience.concat(t.delivery).every((it) => it.is_custom || it.valid_slots.indexOf(slot) !== -1), slot + "：內建品項照 valid_slots");
+      check(t.convenience.every((it) => it.is_custom || (!it.is_taiwan && it.channel === "convenience")), slot + "：超商分頁只有超商品項");
+      const del = t.delivery.filter((it) => !it.is_custom);
+      const firstNonTw = del.findIndex((it) => !it.is_taiwan);
+      check(firstNonTw === -1 || del.slice(firstNonTw).every((it) => !it.is_taiwan), slot + "：外食分頁台式在前、宅配/連鎖餐盒在後");
+      ["convenience", "delivery"].forEach((tab) => {
+        const items = t[tab];
+        const blockedUids = {};
+        items.filter((it, i) => i % 3 === 0).forEach((it) => { blockedUids[it.uid] = true; });
+        const groups = pk.groupForTab(items, (it) => (blockedUids[it.uid] ? "測試用原因" : null));
+        const flat = [].concat(...groups.map((g) => g.entries.map((e) => e.item)));
+        check(flat.length === items.length, slot + "/" + tab + "：分組後品項數不變");
+        const roleRank = { main: 0, side: 1, snack: 2 };
+        const builtinGroups = groups.filter((g) => !g.is_custom);
+        check(builtinGroups.every((g, i) => i === 0 || roleRank[builtinGroups[i - 1].role] <= roleRank[g.role]), slot + "/" + tab + "：角色分區順序 主餐 → 配菜 → 點心");
+        const customIdx = groups.findIndex((g) => g.is_custom);
+        check(customIdx === -1 || customIdx === groups.length - 1, slot + "/" + tab + "：我的品項整組在最後");
+        groups.forEach((g) => {
+          const firstBlocked = g.entries.findIndex((e) => e.reason);
+          check(firstBlocked === -1 || g.entries.slice(firstBlocked).every((e) => e.reason), slot + "/" + tab + "：被擋的排組內最後");
+          check(g.blocked === g.entries.filter((e) => e.reason).length, slot + "/" + tab + "：被擋數量");
+          // 組內可選的、被擋的各自照資料原順序（不是依熱量）
+          [g.entries.filter((e) => !e.reason), g.entries.filter((e) => e.reason)].forEach((part) => {
+            const pos = part.map((e) => items.indexOf(e.item));
+            check(pos.every((p, i) => i === 0 || pos[i - 1] < p), slot + "/" + tab + "：組內照資料原順序");
+          });
+        });
+      });
+    });
+    const lunch = pk.partitionByMealType(catalog.products, [], "lunch");
+    check(lunch.convenience.concat(lunch.delivery).some((it) => /餐盒/.test(it.category || "")), "整份餐盒要列出（不再排除）");
+    check(lunch.delivery.some((it) => it.is_taiwan && it.role === "main"), "台式主餐要列出（不再只留飲料）");
+
+    // 3. 快煮一致：推薦 cook_quick 會收 ⇔ 自煮分頁快煮下不灰掉它任何元件與烹調法
+    const composed = candidatePool.filter((c) => c.is_composed);
+    const draftOf = (c, drink) => ({
+      archetype: arch(c.archetype_id), proteins: [ing(c.protein_id)], staple: c.staple_id ? ing(c.staple_id) : null,
+      vegetables: c.vegetable_id ? [ing(c.vegetable_id)] : [], seasoning: c.sauce_id ? ing(c.sauce_id) : null,
+      method: ing(c.method_id), primaryScale: 1, drink: drink || null,
+    });
+    let quickMismatch = 0;
+    composed.forEach((c) => {
+      const d = draftOf(c);
+      const axes = [["protein", d.proteins[0]], ["staple", d.staple], ["vegetable", d.vegetables[0]], ["seasoning", d.seasoning]].filter((a) => a[1]);
+      const clean = axes.every((a) => mc.composeOptionProblem(a[1], a[0], d, { tier: "cook_quick" }) === null) &&
+        mc.composeOptionProblem(d.method, "method", d, { tier: "cook_quick" }) === null;
+      if (clean !== M.config.isQuickTier(c.tier_rank)) quickMismatch++;
+      // 5（部分）：共用的難度與免開火判斷跟候選池一致
+      if (mc.maxTierRank(d.method, mc.draftIngredients(d)) !== c.tier_rank) quickMismatch++;
+      if (mc.noCookViolation(d.method, mc.draftIngredients(d))) quickMismatch++;
+      if (mc.composeProblem(d, { tier: M.config.isQuickTier(c.tier_rank) ? "cook_quick" : "cook_full" }) !== null) quickMismatch++;
+    });
+    check(composed.length > 0 && quickMismatch === 0, "候選池的自組組合：快煮灰階、最高難度、免開火、送出規則要跟推薦一致（不一致 " + quickMismatch + " 處）");
+
+    // 4. composeProblem（假骨架：真實資料的免開火骨架只有燕麥碗，它的蛋白質都不需加熱）
+    const fake = (o) => Object.assign({ id: "x", name: "x", prep_tier: "🟢", requires_cooking: false, serving_g: 100,
+      kcal_100g: 100, protein_100g: 10, carb_100g: 10, fat_100g: 1, fiber_100g: 1, sat_fat_100g: 0, sodium_100g: 0 }, o);
+    const p1 = fake({ id: "fp1", name: "免煮蛋白" }), p2 = fake({ id: "fp2", name: "生肉", requires_cooking: true });
+    const p3 = fake({ id: "fp3", name: "第三個蛋白" }), hot = fake({ id: "fs1", name: "要煮的醬", requires_cooking: true });
+    const red = fake({ id: "fp4", name: "費工蛋白", prep_tier: "🔴" });
+    const nocook = ing("method_no_cook");
+    const fakeArch = { id: "fake", name: "假骨架", protein: { allow: ["fp1", "fp2", "fp3", "fp4"] }, staple: { allow: [] },
+      vegetable: { allow: [] }, seasoning: { allow: ["fs1"] }, methods: ["method_no_cook", "method_pan_fry"], seasoned: false };
+    const D = (o) => Object.assign({ archetype: fakeArch, proteins: [p1], staple: null, vegetables: [], seasoning: null, method: nocook, primaryScale: 1 }, o);
+    check(mc.composeProblem(D({ archetype: null })) === "請先選餐型", "餐型不完整：沒選餐型");
+    check(mc.composeProblem(D({ proteins: [] })) === "請選蛋白質", "餐型不完整：沒蛋白質");
+    check(mc.composeProblem({ archetype: arch("grain_bowl_baked"), proteins: [ing(arch("grain_bowl_baked").protein.allow[0])], vegetables: [] }) === "請選主食", "餐型不完整：有主食槽沒主食");
+    check(mc.composeProblem(D({ method: null })) === "請選烹調法", "餐型不完整：沒烹調法");
+    const NOCOOK_TEXT = "免開火不能搭配需要加熱的食材，請換烹調法或換食材。";
+    check(mc.composeProblem(D({ proteins: [p1, p2] })) === NOCOOK_TEXT, "免開火＋第二個蛋白質需加熱要擋");
+    check(mc.composeProblem(D({ seasoning: hot })) === NOCOOK_TEXT, "免開火＋需加熱的醬料要擋");
+    check(mc.composeProblem(D({ proteins: [fake({ id: "outside", requires_cooking: true })] })) === NOCOOK_TEXT, "同時不在 allow 又違反免開火：先回免開火");
+    check(/不在/.test(mc.composeProblem(D({ proteins: [fake({ id: "outside" })] })) || ""), "不在 allow 要擋");
+    check(/不在/.test(mc.composeProblem(D({ method: ing("method_stir_fry") })) || ""), "烹調法不在骨架裡要擋");
+    check(/最多選 2 個/.test(mc.composeProblem(D({ proteins: [p1, p3, red] })) || ""), "超過 COMPOSE_MAX 要擋");
+    check(/快煮/.test(mc.composeProblem(D({ proteins: [red] }), { tier: "cook_quick" }) || ""), "快煮選了 🔴 要擋");
+    check(mc.composeProblem(D({ proteins: [red] }), { tier: "cook_full" }) === null, "開伙可以選 🔴");
+    check(mc.composeProblem(D({ proteins: [p1, p3], method: ing("method_pan_fry") })) === null, "合法的兩個蛋白質可以送出");
+
+    // 5. composeOptionProblem
+    check(mc.composeOptionProblem(p2, "protein", D({}), {}) === "這個食材需要加熱", "免開火下需加熱的食材要灰");
+    check(mc.composeOptionProblem(nocook, "method", D({ method: null, proteins: [p2] }), {}) === "已選的食材需要加熱", "已選需加熱的食材時，免開火要灰");
+    check(/最多選 2 個/.test(mc.composeOptionProblem(red, "protein", D({ proteins: [p1, p3] }), {}) || ""), "達上限時未選的選項要灰");
+    check(mc.composeOptionProblem(p3, "protein", D({ proteins: [p1, p3] }), {}) === null, "已選的選項不因上限被標");
+    check(mc.composeOptionProblem(red, "protein", D({ proteins: [] }), { tier: "cook_quick" }) === "快煮不含這個食材", "快煮下 🔴 食材要灰");
+
+    // 6. 多選合計：等於各元件相加；只有主要槽位乘倍數；用油與調味不縮放；有醬料預設清淡；無主食槽選 2 個蛋白質不縮放
+    const bowl = arch("grain_bowl_baked");
+    const md = (scale, extra) => Object.assign({ kind: "cook", meal_type: "cook_full", archetype: bowl,
+      proteins: bowl.protein.allow.slice(0, 2).map(ing), staple: ing(bowl.staple.allow[0]),
+      vegetables: bowl.vegetable.allow.slice(0, 3).map(ing), seasoning: null, method: ing("method_pan_fry"), primaryScale: scale }, extra);
+    const t1 = mc.contentTotals(mc.buildDraftContent(md(1), { oilHabit: "normal" }), catalog);
+    const t2 = mc.contentTotals(mc.buildDraftContent(md(2), { oilHabit: "normal" }), catalog);
+    const byHand = mc.addContributions(mc.draftIngredients(md(1)).map((it) => mc.ingredientContribution(it))
+      .concat([mc.implicitContribution(mc.composeImplicit(md(1), "normal"), catalog.implicit)]));
+    check(Math.abs(t1.kcal - byHand.kcal) < 0.051, "多選合計等於各元件相加（" + t1.kcal + " vs " + byHand.kcal + "）");
+    const staple1 = mc.ingredientContribution(md(1).staple);
+    check(Math.abs((t2.kcal - t1.kcal) - staple1.kcal) < 0.11, "倍數只乘主要槽位（主食），蛋白質、蔬菜、用油不縮放");
+    check(mc.composeImplicit(md(1, { seasoning: ing(bowl.seasoning.allow[0]) }), "normal").seasoning === "light", "有醬料時預設清淡");
+    const twoP = D({ proteins: [p1, p3], method: ing("method_pan_fry") });
+    check(mc.composePrimary(twoP) === null && mc.composePrimary(D({ method: ing("method_pan_fry") })) === p1, "無主食槽：選 1 個蛋白質才有主要槽位，2 個不縮放");
+
+    // 7. meal_type 由呼叫端傳入，不從食材反推
+    const green = composed.find((c) => c.tier_rank === 0);
+    const gd = draftOf(green);
+    check(mc.contentFromCompose(gd, mc.composePrimary(gd), mc.composeImplicit(gd, "normal"), "cook_full").meal_type === "cook_full", "全 🟢 選開伙仍是 cook_full");
+    check(mc.deriveCookMealType(0) === "cook_quick" && mc.deriveCookMealType(1) === "cook_quick" && mc.deriveCookMealType(2) === "cook_full", "依難度推導：≤🟡 快煮、🔴 開伙");
+    let threw = false;
+    try { mc.contentFromCompose(gd, null, { oil_g: 0, seasoning: null }); } catch (e) { threw = true; }
+    check(threw, "自煮沒傳 meal_type 要報錯");
+
+    // 8. 估算：營養素未知是 null；跟商品合計時蛋白質 null、鈉照加並標 partial
+    const est = mc.estimateComponent("L", "  喜宴 ");
+    check(est.snapshot.kcal === 1200 && est.name === "喜宴" && ["protein_g", "carb_g", "fat_g", "fiber_g", "sodium_mg"].every((k) => est.snapshot[k] === null), "估算：熱量 1200、其他營養素 null");
+    check(mc.estimateComponent("S", "").name === "外食估算", "估算沒填名稱用「外食估算」");
+    const latte = catalog.productsByUid["tw_dr05"];
+    const et = mc.contentTotals(mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "M" }], drink: latte }), catalog);
+    check(et.kcal === 700 + latte.kcal && et.protein_g === null && et.sodium_mg === latte.sodium_mg && et.partial.indexOf("sodium_mg") !== -1, "估算＋拿鐵：蛋白質 null、鈉照加並標部分無資料（實際 " + JSON.stringify(et) + "）");
+
+    // 9. 快速新增
+    const profileEgg = { allergens: ["蛋"] };
+    SLOTS.forEach((slot) => {
+      ["main", "side", "snack", "drink"].forEach((role) => {
+        ["convenience", "delivery"].forEach((channel) => {
+          const rec = Object.assign(pk.quickAddDefaults(slot, role, channel), { name: "測試", kcal: 300 });
+          let ok = true;
+          try { M.db.validateCustomFood(rec); } catch (e) { ok = false; }
+          check(ok, "快速新增預設要通過寫入驗證：" + slot + "/" + role + "/" + channel);
+          check(rec.valid_slots.indexOf(slot) !== -1, "快速新增的 valid_slots 要含目前時段：" + slot + "/" + role);
+        });
+      });
+      check(pk.quickAddDefaults(slot, null, "convenience").role === (slot === "afternoon_tea" || slot === "snack" ? "snack" : "main"), "快速新增的預設角色：" + slot);
+    });
+    const unverified = M.catalog.fromCustomFood(Object.assign(pk.quickAddDefaults("lunch", "main", "convenience"), { id: "custom_q", name: "q", kcal: 300 }));
+    const qp = pk.quickAddProblem(unverified, profileEgg);
+    check(qp.blocked && /未確認/.test(qp.blocked) && !/確認不含/.test(qp.blocked), "有設過敏原時預告過敏原未確認會被擋，不引導改填確認不含（實際 " + qp.blocked + "）");
+    check(pk.quickAddProblem(unverified, {}).blocked === null, "沒設過敏原時不預告");
+    check(pk.quickAddProblem({ allergen_tags: ["蛋"], diet_tags: ["全素"] }, {}).conflict !== null, "宣告全素又含蛋要提示矛盾");
+    check(pk.quickAddProblem({ allergen_tags: ["乳製品"], diet_tags: ["蛋奶素"] }, {}).conflict === null, "蛋奶素含乳製品不矛盾");
+    check(pk.quickAddProblem({ allergen_tags: null, diet_tags: ["全素"] }, {}).conflict === null, "全素但過敏原未確認不提示");
+
+    // 10. 手動記錄的角色上限依時段（decisions #41）
+    const R2 = (role, uid) => ({ uid: uid, role: role });
+    const mains = (n) => Array.from({ length: n }, (_, i) => R2("main", "m" + i));
+    ["breakfast", "lunch", "dinner"].forEach((slot) => {
+      check(mc.manualSelectionProblem(mains(2), slot) === null, slot + "：兩個主餐可以");
+      check(/最多選 2 個/.test(mc.manualSelectionProblem(mains(3), slot) || ""), slot + "：三個主餐要擋，訊息寫出上限 2");
+      check(mc.canAddManualItem(mains(1), R2("main", "x"), slot) === true && mc.canAddManualItem(mains(2), R2("main", "x"), slot) === false, slot + "：第二個主餐可加、第三個不行");
+    });
+    ["afternoon_tea", "snack"].forEach((slot) => {
+      check(/最多選 1 個/.test(mc.manualSelectionProblem(mains(2), slot) || ""), slot + "：兩個主餐要擋，訊息寫出上限 1");
+    });
+    check(mc.manualSelectionProblem([], "lunch", { estimates: 1 }) === null, "只有估算可以送出");
+    check(mc.manualSelectionProblem([R2("drink", "d")], "breakfast") === null, "只有飲料可以送出");
+    check(/最多選 1 個/.test(mc.manualSelectionProblem([R2("drink", "a"), R2("drink", "b")], "lunch") || ""), "兩杯飲料要擋");
+    const chicken = catalog.productsByUid["conv_bx04"], potato = catalog.productsByUid["conv_bx05"];
+    check(chicken.role === "main" && potato.role === "main" && potato.valid_slots.indexOf("breakfast") !== -1 &&
+      mc.manualSelectionProblem([chicken, potato], "breakfast") === null, "早餐「雞胸＋蒸地瓜」要能記成一餐");
+
+    // 11–12. engine 產生的每種 content 都通過寫入驗證；存下的 totals 就是 contentTotals
+    const stir = arch("protein_stir_fry");
+    const bigCook = { kind: "cook", meal_type: "cook_full", archetype: stir, proteins: stir.protein.allow.slice(0, 2).map(ing),
+      staple: ing(stir.staple.allow[0]), vegetables: stir.vegetable.allow.slice(0, 3).map(ing), seasoning: null,
+      method: ing("method_stir_fry"), primaryScale: 1.3, drink: latte };
+    check(mc.composeProblem(bigCook, { tier: "cook_full" }) === null, "測試前提：快炒 2 蛋白質＋3 蔬菜合法");
+    const drafts = {
+      "自煮 2 蛋白質＋3 蔬菜＋飲料": bigCook,
+      "只有估算": { kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "L", name: "喜宴" }] },
+      "估算＋商品＋飲料": { kind: "products", meal_type: "delivery", items: [catalog.productsByUid["tw_bf03"] || lunch.delivery[0]], estimates: [{ size: "S" }], drink: latte },
+      "只有飲料": { kind: "products", meal_type: "convenience", items: [], drink: latte },
+    };
+    Object.keys(drafts).forEach((k) => {
+      const content = mc.buildDraftContent(drafts[k], { oilHabit: "less" });
+      const totals = mc.contentTotals(content, catalog);
+      const entry = mc.buildLogEntry({ date: "2026-09-29", slot: "lunch", source: "manual", name: k, content: content, totals: totals, createdAt: "2026-09-29T04:00:00.000Z" });
+      let err = null;
+      try { M.db.validateDailyLog(entry); } catch (e) { err = e.message; }
+      check(err === null, k + "：要通過 daily_log 寫入驗證（" + err + "）");
+      check(JSON.stringify(mc.contentTotals(entry.content, catalog)) === JSON.stringify(totals), k + "：存下的內容重算合計要等於摘要看到的");
+    });
+    check(mc.contentTotals(mc.buildDraftContent(bigCook, { oilHabit: "less" }), catalog).partial.indexOf("sodium_mg") === -1 ||
+      latte.sodium_mg == null, "有鈉資料的自煮＋飲料不該標部分無資料");
+
+    // 13. 等價：新的草稿路徑逐欄等於舊的合計（含兩位小數的飲料 conv_dr05），並跟凍結的參考值比
+    const drinks = [null].concat(catalog.products.filter((p) => p.role === "drink"));
+    check(drinks.some((d) => d && d.uid === "conv_dr05"), "測試前提：飲料要含 conv_dr05（纖維 3.25）");
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+    const lines = {};
+    let oldMismatch = 0, soloPartial = 0;
+    drinks.forEach((drink) => {
+      const key = drink ? drink.uid : "none";
+      const cookLines = [], itemLines = [];
+      composed.forEach((c) => {
+        [1, 1.7].forEach((scale) => {
+          const d = Object.assign(draftOf(c, drink), { kind: "cook", meal_type: M.config.isQuickTier(c.tier_rank) ? "cook_quick" : "cook_full", primaryScale: scale });
+          const nt = mc.contentTotals(mc.buildDraftContent(d, { oilHabit: "normal" }), catalog);
+          if (!drink && nt.partial.length > 0 && mc.composeTotals(d, mc.composePrimary(d), mc.composeImplicit(d, "normal"), catalog.implicit).partial.length === 0) soloPartial++;
+          if (!same(nt, mc.composeTotals(d, mc.composePrimary(d), mc.composeImplicit(d, "normal"), catalog.implicit))) oldMismatch++;
+          cookLines.push(c.id + "@" + scale + "=" + JSON.stringify(nt));
+        });
+      });
+      catalog.products.filter((p) => p.role !== "drink").forEach((p) => {
+        const nt = mc.contentTotals(mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [p], drink: drink }), catalog);
+        if (!same(nt, mc.sumProducts(drink ? [p, drink] : [p]))) oldMismatch++;
+        itemLines.push(p.uid + "=" + JSON.stringify(nt));
+      });
+      lines["cook:" + key] = cookLines;
+      lines["items:" + key] = itemLines;
+    });
+    check(oldMismatch === 0, "草稿路徑的合計要逐欄等於舊的 composeTotals／sumProducts（不一致 " + oldMismatch + " 組）");
+    check(soloPartial === 0, "只有自煮、沒有飲料的一餐不能被標部分無資料（" + soloPartial + " 組）");
+    const hashes = {};
+    Object.keys(lines).forEach((k) => { hashes[k] = require("crypto").createHash("sha256").update(lines[k].join("\n")).digest("hex").slice(0, 16); });
+    const refPath = path.join(ROOT, "tools", "fixtures", "draft-totals.json");
+    if (process.argv.indexOf("--freeze-draft-totals") !== -1) {
+      fs.mkdirSync(path.dirname(refPath), { recursive: true });
+      fs.writeFileSync(refPath, JSON.stringify(hashes, null, 2) + "\n");
+      console.log("  已凍結草稿合計參考值：" + path.relative(ROOT, refPath));
+    }
+    const ref = fs.existsSync(refPath) ? JSON.parse(fs.readFileSync(refPath, "utf8")) : null;
+    check(ref !== null, "缺凍結的草稿合計參考值（tools/fixtures/draft-totals.json）");
+    if (ref) {
+      const diff = Object.keys(Object.assign({}, ref, hashes)).filter((k) => ref[k] !== hashes[k]);
+      check(diff.length === 0, "草稿合計跟凍結的參考值不同（" + diff.join("、") + "）；食材或品項資料刻意改動時才用 --freeze-draft-totals 重錄，並附差異報告");
+    }
   }
 
   // ---------- 5. 體重趨勢斜率估計 ----------

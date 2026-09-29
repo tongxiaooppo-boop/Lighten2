@@ -26,6 +26,18 @@ export const LOW_CARB_MEAL_MAX_G = 30;
 
 // 手動記錄（自己選）每個角色的數量上限；不要求必須有主餐（章程 C4.8、decisions #20）。推薦生成另有更嚴的規則（C4.7，pool.js）
 export const MANUAL_ROLE_MAX = { main: 1, side: 1, drink: 1, snack: 1 };
+// 主餐上限依時段（decisions #41）：「雞胸＋蒸地瓜」這類兩個主餐的一餐要能記；沒列的時段用 MANUAL_ROLE_MAX
+export const MANUAL_MAIN_MAX_BY_SLOT = { breakfast: 2, lunch: 2, dinner: 2 };
+
+export function manualRoleMax(role, slot) {
+  if (role === "main" && MANUAL_MAIN_MAX_BY_SLOT.hasOwnProperty(slot)) return MANUAL_MAIN_MAX_BY_SLOT[slot];
+  return MANUAL_ROLE_MAX[role] || 1;
+}
+
+export const ROLE_LABELS = { main: "主餐", side: "配菜", drink: "飲料", snack: "點心" };
+
+// 自煮分頁的多選上限（PRD 6.3 的軸上限）；主食、醬料、烹調法單選
+export const COMPOSE_MAX = { protein: 2, vegetable: 3 };
 
 // 自煮的隱含成分（章程 B5.6–B5.7）：用油食材 id、基本資料「家裡用油習慣」的倍數、調味程度對應的食材 id
 export const COOKING_OIL_ID = "cooking_oil";
@@ -46,6 +58,13 @@ export const RANK_TO_TIER = { 0: "🟢", 1: "🟡", 2: "🔴" };
 
 export function tierRank(t) {
   return TIER_RANK.hasOwnProperty(t) ? TIER_RANK[t] : 2;
+}
+
+// 快煮＝食材與烹調法都 ≤🟡（PRD 第 3 節）；推薦的來源過濾、紀錄型態推導、自煮分頁的灰階共用這一個門檻
+export const QUICK_MAX_TIER_RANK = 1;
+
+export function isQuickTier(rank) {
+  return rank <= QUICK_MAX_TIER_RANK;
 }
 
 // 「找不到？直接估算」的 S/M/L 熱量（沿用 v1 美饗日曆的大餐份量估算；Phase 0 的估算卡片使用，PRD 第 9 節）
