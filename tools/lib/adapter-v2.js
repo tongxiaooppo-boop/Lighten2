@@ -222,6 +222,13 @@ module.exports = async function createV2Adapter(ROOT) {
       const t = mp.tabs[mp.tab];
       return { notes: notes, saved: saved ? saved.id : null, message: mp.quickAddMessage, selected: t.selected.slice(), drink: mp.drinkUid };
     },
+    // 份量倍數（PRD 12.3）：設定某個已選品項或飲料的份量，回傳摘要用的合計
+    pickerSetQty(uid, q) {
+      const mp = picker.mealPicker;
+      mp.qtyByUid[uid] = q;
+      picker.renderMealPicker();
+      return picker.currentTotals();
+    },
     pickerSubmit: () => picker.onMealSubmit(),
     pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,
 

@@ -2,7 +2,7 @@
 // 讀取順序照 IndexedDB：依日期範圍讀的依 log_date、再依 id 排序；custom_foods 依 id 排序。
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
-import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting } from "../../js/data/db.js";
+import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -68,11 +68,49 @@ export async function getCustomFoods() {
 // 照 db.js：寫入驗證（章程 B8）＋補 copied_from、archived、時間戳
 export async function addCustomFood(food) {
   validateCustomFood(food);
+  if (food.copied_from != null) throw new Error("[fake-db] 複製內建品項要用 copyBuiltinToCustom");
   const now = new Date().toISOString();
   const record = Object.assign({ copied_from: null, archived: false, created_at: now }, clone(food),
     { id: food.id || "custom_" + String(++seq).padStart(4, "0"), updated_at: now });
   S().customFoods.push(record);
   S().writes.push({ op: "addCustomFood", record: clone(record) });
+  return clone(record);
+}
+
+// B-1a：修改、隱藏清單、複製成我的版本（照 db.js 的語意）
+export async function updateCustomFood(id, patch) {
+  const i = S().customFoods.findIndex((f) => f.id === id);
+  if (i === -1) throw new Error("[fake-db] 找不到我的品項：" + id);
+  const next = applyCustomFoodPatch(S().customFoods[i], patch, new Date().toISOString());
+  S().customFoods[i] = clone(next);
+  S().writes.push({ op: "updateCustomFood", id: id, record: clone(next) });
+  return clone(next);
+}
+export async function getHiddenCatalogUids() {
+  const v = S().settings.hidden_catalog_uids;
+  return Array.isArray(v) ? v.slice() : [];
+}
+export async function hideCatalogItem(uid) {
+  const list = (await getHiddenCatalogUids()).filter((u) => u !== uid).concat([uid]);
+  S().settings.hidden_catalog_uids = list;
+  S().writes.push({ op: "hideCatalogItem", uid: uid });
+  return list.slice();
+}
+export async function unhideCatalogItem(uid) {
+  const list = (await getHiddenCatalogUids()).filter((u) => u !== uid);
+  S().settings.hidden_catalog_uids = list;
+  S().writes.push({ op: "unhideCatalogItem", uid: uid });
+  return list.slice();
+}
+export async function copyBuiltinToCustom(food) {
+  validateCustomFood(food);
+  if (!food.copied_from) throw new Error("[fake-db] 複製的品項要有 copied_from");
+  const now = new Date().toISOString();
+  const record = Object.assign({ archived: false, created_at: now }, clone(food),
+    { id: food.id || "custom_" + String(++seq).padStart(4, "0"), updated_at: now });
+  S().customFoods.push(record);
+  S().settings.hidden_catalog_uids = (await getHiddenCatalogUids()).filter((u) => u !== record.copied_from).concat([record.copied_from]);
+  S().writes.push({ op: "copyBuiltinToCustom", record: clone(record) });
   return clone(record);
 }
 
@@ -108,6 +146,6 @@ export async function getSetting(key) { return clone(S().settings[key]) ?? null;
 export async function setSetting(key, value) { validateSetting(key, value); S().settings[key] = clone(value); return value; }
 
 // 備份（PRD 11.6）：純函式直接用真的 db.js；讀寫資料庫的兩個函式 diff-recs 不會呼叫，只為了讓模組連結得起來。
-export { BACKUP_SCHEMA_VERSION, migrateBackup, validateBackup, summarizeBackup, validateProfile } from "../../js/data/db.js";
+export { BACKUP_SCHEMA_VERSION, migrateBackup, validateBackup, summarizeBackup, validateProfile, applyCustomFoodPatch } from "../../js/data/db.js";
 export async function exportAllData() { throw new Error("[fake-db] 不支援 exportAllData"); }
 export async function importAllData() { throw new Error("[fake-db] 不支援 importAllData"); }

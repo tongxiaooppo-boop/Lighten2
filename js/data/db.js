@@ -4,7 +4,7 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
+import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
@@ -26,7 +26,8 @@ const STORE = {
 
 // 備份檔的格式版本（PRD 11.6）：新增 store、新增 settings key、改變區塊結構就 +1，並在 tools/fixtures/ 凍結一份新版 fixture。
 // 跟 DB_VERSION 分開計：資料庫升級不一定改備份格式。
-export const BACKUP_SCHEMA_VERSION = 1;
+// v2（B-1a）：settings 多了 hidden_catalog_uids；v1→v2 沒有資料要改（v1 檔只是沒有這個 key），BACKUP_MIGRATIONS 不放步驟。
+export const BACKUP_SCHEMA_VERSION = 2;
 const BACKUP_FORMAT = "lighten2-backup";
 
 // 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
@@ -177,7 +178,7 @@ function contentProblems(c, mealType) {
       if ("scale" in comp && !isNum(comp.scale)) problems.push(at + ".scale");
     } else if (comp.kind === "product") {
       if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
-      if (!isNum(comp.qty) || comp.qty <= 0) problems.push(at + ".qty");
+      if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty"); // 只能是 0.5／1／1.5／2（PRD 12.3）
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
     } else {
       if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
@@ -242,11 +243,32 @@ export function validateCustomFood(food) {
   OPTIONAL_NUTRIENTS.forEach(function (k) {
     if (!(k in food) || (food[k] !== null && (!isNum(food[k]) || food[k] < 0))) problems.push(k);
   });
+  ["archived", "vegan", "lacto_ovo"].forEach(function (k) {
+    if (food[k] !== undefined && typeof food[k] !== "boolean") problems.push(k);
+  });
+  if (food.copied_from !== undefined && food.copied_from !== null && (typeof food.copied_from !== "string" || food.copied_from === "")) problems.push("copied_from");
+  ["vendor", "category", "note"].forEach(function (k) {
+    if (food[k] !== undefined && food[k] !== null && typeof food[k] !== "string") problems.push(k);
+  });
   if (problems.length > 0) throw new Error("[db.js] 我的品項格式不對：" + problems.join("、"));
 }
 
 function isPlainObject(v) {
   return v !== null && typeof v === "object" && !Array.isArray(v);
+}
+
+// 修改我的品項的純函式（check-engine 直接測）：合併 → 不能改的欄位跟原值不同就丟錯（相同放行，表單整筆回傳不誤擋）
+// → 更新 updated_at → 寫入驗證。回傳新紀錄，不改輸入。
+const CUSTOM_FOOD_FIXED = ["id", "created_at", "copied_from"];
+export function applyCustomFoodPatch(old, patch, nowIso) {
+  assertRecord(old, "custom_foods");
+  assertRecord(patch, "custom_foods 的修改");
+  CUSTOM_FOOD_FIXED.forEach(function (k) {
+    if (k in patch && patch[k] !== old[k]) throw new Error("[db.js] 我的品項的 " + k + " 不能修改");
+  });
+  const next = Object.assign({}, old, patch, { updated_at: nowIso });
+  validateCustomFood(next);
+  return next;
 }
 
 function isPositive(v) {
@@ -297,6 +319,13 @@ const SETTING_KEYS = {
       return isPlainObject(v) && Object.keys(v).every(function (slot) {
         return SLOTS.indexOf(slot) !== -1 && MEAL_TYPES.indexOf(v[slot]) !== -1;
       });
+    },
+  },
+  // 隱藏的內建品項（PRD 10.2）：只能用 hideCatalogItem／unhideCatalogItem 寫（同一個 transaction 讀改寫，兩個分頁同時隱藏不互蓋）
+  hidden_catalog_uids: {
+    dedicatedOnly: true,
+    validate: function (v) {
+      return Array.isArray(v) && v.every(function (u, i) { return typeof u === "string" && u !== "" && v.indexOf(u) === i; });
     },
   },
 };
@@ -578,11 +607,84 @@ export async function getCustomFoods() {
 // 新增一筆我的品項（Phase 0 的快速新增表單呼叫）。回傳寫入的紀錄。
 export async function addCustomFood(food) {
   validateCustomFood(food);
+  if (food.copied_from != null) throw new Error("[db.js] 複製內建品項要用 copyBuiltinToCustom（會同時隱藏原品項）");
   const now = new Date().toISOString();
   const record = Object.assign({ copied_from: null, archived: false, created_at: now }, food,
     { id: food.id || generateId("custom"), updated_at: now });
   await withStores([STORE.customFoods], "readwrite", function (s) {
     return reqPromise(s[STORE.customFoods].add(record));
+  });
+  return record;
+}
+
+// 修改我的品項（B-1a 的編輯、補填、封存／還原）。一個 transaction 讀改寫；找不到 id 丟錯。
+export async function updateCustomFood(id, patch) {
+  if (typeof id !== "string" || id === "") throw new Error("[db.js] updateCustomFood 需要品項 id");
+  assertRecord(patch, "custom_foods 的修改");
+  const now = new Date().toISOString();
+  return withStores([STORE.customFoods], "readwrite", function (s) {
+    const store = s[STORE.customFoods];
+    return reqPromise(store.get(id)).then(function (old) {
+      if (!old) throw new Error("[db.js] 找不到我的品項：" + id);
+      const next = applyCustomFoodPatch(old, patch, now);
+      return reqPromise(store.put(next)).then(function () { return next; });
+    });
+  });
+}
+
+const HIDDEN_KEY = SETTING_PREFIX + "hidden_catalog_uids";
+
+function hiddenFrom(v) {
+  return Array.isArray(v) ? v.slice() : [];
+}
+
+// 隱藏的內建品項清單（沒存過回傳 []）
+export async function getHiddenCatalogUids() {
+  const v = await withStores([STORE.settings], "readonly", function (s) {
+    return reqPromise(s[STORE.settings].get(HIDDEN_KEY));
+  });
+  return hiddenFrom(v);
+}
+
+function checkUid(uid, fn) {
+  if (typeof uid !== "string" || uid === "") throw new Error("[db.js] " + fn + " 需要品項 uid" + (Array.isArray(uid) ? "，不能傳陣列" : ""));
+}
+
+function changeHidden(uid, add) {
+  return withStores([STORE.settings], "readwrite", function (s) {
+    const store = s[STORE.settings];
+    return reqPromise(store.get(HIDDEN_KEY)).then(function (v) {
+      const list = hiddenFrom(v).filter(function (u) { return u !== uid; });
+      if (add) list.push(uid);
+      return reqPromise(store.put(list, HIDDEN_KEY)).then(function () { return list; });
+    });
+  });
+}
+
+export async function hideCatalogItem(uid) {
+  checkUid(uid, "hideCatalogItem");
+  return changeHidden(uid, true);
+}
+
+export async function unhideCatalogItem(uid) {
+  checkUid(uid, "unhideCatalogItem");
+  return changeHidden(uid, false);
+}
+
+// 複製成我的版本（PRD 10.2）：一個 transaction 新增我的品項並隱藏原品項（全有全無）。回傳寫入的紀錄。
+export async function copyBuiltinToCustom(food) {
+  validateCustomFood(food);
+  if (typeof food.copied_from !== "string" || food.copied_from === "") throw new Error("[db.js] 複製的品項要有 copied_from");
+  const now = new Date().toISOString();
+  const record = Object.assign({ archived: false, created_at: now }, food, { id: food.id || generateId("custom"), updated_at: now });
+  await withStores([STORE.customFoods, STORE.settings], "readwrite", function (s) {
+    s[STORE.customFoods].add(record);
+    const settings = s[STORE.settings];
+    return reqPromise(settings.get(HIDDEN_KEY)).then(function (v) {
+      const list = hiddenFrom(v).filter(function (u) { return u !== record.copied_from; });
+      list.push(record.copied_from);
+      settings.put(list, HIDDEN_KEY);
+    });
   });
   return record;
 }
@@ -640,6 +742,7 @@ export async function getSetting(key) {
 
 export async function setSetting(key, value) {
   validateSetting(key, value);
+  if (SETTING_KEYS[key].dedicatedOnly) throw new Error("[db.js] 設定「" + key + "」只能用專用函式寫入");
   await withStores([STORE.settings], "readwrite", function (s) {
     return reqPromise(s[STORE.settings].put(value, SETTING_PREFIX + key));
   });

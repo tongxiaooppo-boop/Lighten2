@@ -13,7 +13,7 @@
 
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
-  ROLE_LABELS, tierRank, isQuickTier, manualRoleMax,
+  ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN,
 } from "../core/config.js";
 import { SLOT_LABELS } from "../core/slots.js";
 import { round1, isNum } from "../core/num.js";
@@ -446,8 +446,28 @@ function productSnapshot(p) {
   };
 }
 
-function productComponent(p) {
-  return { kind: "product", role: p.role, ref: p.uid, qty: 1, snapshot: productSnapshot(p) };
+function productComponent(p, qty) {
+  return { kind: "product", role: p.role, ref: p.uid, qty: qty != null ? qty : 1, snapshot: productSnapshot(p) };
+}
+
+// 草稿裡某個品項的份量（PRD 12.3）：選擇器的 qtyByUid，缺或不合法＝1
+function draftQty(draft, uid) {
+  const q = draft.qtyByUid && draft.qtyByUid[uid];
+  return QTY_OPTIONS.indexOf(q) !== -1 ? q : 1;
+}
+
+// 份量的顯示文字：0.5「半份」、1.5／2「×1.5」「×2」、1 不顯示
+export function qtyLabel(q) {
+  if (q === 0.5) return "半份";
+  return q != null && q !== 1 ? "×" + q : "";
+}
+
+// convenience_items.json 的 note 格式是「資料來源說明；實際內容物描述」，只取「；」後半段給使用者看（推薦卡片、複製成我的版本）。
+export function contentNote(note) {
+  if (!note) return null;
+  const idx = note.indexOf("；");
+  if (idx === -1) return null;
+  return note.slice(idx + 1).trim() || null;
 }
 
 // 推薦組合 → MealContent。productsByUid：catalog 的現成品項查表（快照用）。
@@ -510,13 +530,13 @@ export function estimateComponent(size, name) {
 // draft.kind："products"（超商/外食分頁：items、estimates [{ size, name }]、drink）或 "cook"（自煮草稿，見 composeProblem）。
 // draft.meal_type：分頁值或自煮子切換值，飲料不影響（decisions #47）。opts.oilHabit：基本資料的用油習慣。
 export function buildDraftContent(draft, opts) {
-  const drink = draft.drink ? [productComponent(draft.drink)] : [];
+  const drink = draft.drink ? [productComponent(draft.drink, draftQty(draft, draft.drink.uid))] : [];
   if (draft.kind === "cook") {
     const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
     content.components = content.components.concat(drink);
     return content;
   }
-  const comps = (draft.items || []).map(productComponent)
+  const comps = (draft.items || []).map(function (p) { return productComponent(p, draftQty(draft, p.uid)); })
     .concat((draft.estimates || []).map(function (e) { return estimateComponent(e.size, e.name); }))
     .concat(drink);
   return { meal_type: draft.meal_type, archetype_id: null, method_id: null, components: comps, implicit: null };
@@ -579,4 +599,46 @@ export function buildLogEntry(o) {
     },
     created_at: o.createdAt,
   };
+}
+
+// 選擇器草稿的記錄名稱（原本在 ui/meal-picker/index.js）：自煮＝餐型＋食材＋飲料；商品＝各品項（帶份量）＋估算＋飲料，以「＋」串接。
+// 份量：「便當（半份）」「茶葉蛋 ×2」（PRD 12.3）。
+export function draftLogName(d) {
+  const withQty = function (p) {
+    const q = draftQty(d, p.uid);
+    return p.name + (q === 0.5 ? "（半份）" : q !== 1 ? " " + qtyLabel(q) : "");
+  };
+  if (d.kind === "cook") return [d.archetype.name].concat(draftIngredients(d).map(function (it) { return it.name; }), d.drink ? [withQty(d.drink)] : []).join("＋");
+  return d.items.map(withQty)
+    .concat(d.estimates.map(function (x) { return x.name || "外食估算"; }), d.drink ? [withQty(d.drink)] : []).join("＋");
+}
+
+// ---------- B-1a：複製成我的版本（PRD 10.2、decisions #61；有鈉與飽和脂肪，放在這裡，章程 C4.14） ----------
+
+// 內建品項 → PRD 10.1 的我的品項記錄（「複製成我的版本」的預帶值；時間戳與 id 由 db 補）。
+// 內建的過敏原「未確認」→ null（我的品項用 null 表示未確認）；note 只留內容物描述，不帶資料來源說明。
+export function copyFromBuiltin(p) {
+  const tags = Array.isArray(p.allergen_tags) ? p.allergen_tags : null;
+  const orNull = function (v) { return v != null ? v : null; };
+  return {
+    name: p.name, channel: p.channel, role: p.role, valid_slots: (p.valid_slots || []).slice(), kcal: p.kcal,
+    protein_g: orNull(p.protein_g), carb_g: orNull(p.carb_g), fat_g: orNull(p.fat_g), fiber_g: orNull(p.fiber_g),
+    sat_fat_g: orNull(p.sat_fat_g), sodium_mg: orNull(p.sodium_mg),
+    vendor: orNull(p.vendor), category: orNull(p.category), note: p.is_taiwan ? null : contentNote(p.note),
+    allergen_tags: !tags || tags.indexOf(UNVERIFIED_ALLERGEN) !== -1 ? null : tags.slice(),
+    vegan: (p.diet_tags || []).indexOf("全素") !== -1,
+    lacto_ovo: (p.diet_tags || []).indexOf("蛋奶素") !== -1,
+    copied_from: p.uid,
+  };
+}
+
+const BUILTIN_VALUE_KEYS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+
+// 複製來的我的品項：內建目前的數值（decisions #61）。內建已查不到回傳 null（章程 B9）。
+export function builtinCurrentValues(copiedFrom, productsByUid) {
+  const p = copiedFrom && productsByUid ? productsByUid[copiedFrom] : null;
+  if (!p) return null;
+  const out = { name: p.name, allergen_tags: Array.isArray(p.allergen_tags) ? p.allergen_tags.slice() : [UNVERIFIED_ALLERGEN] };
+  BUILTIN_VALUE_KEYS.forEach(function (k) { out[k] = p[k] != null ? p[k] : null; });
+  return out;
 }

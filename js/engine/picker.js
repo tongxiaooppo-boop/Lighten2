@@ -5,7 +5,7 @@
 import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
-import { emptyOptionalNutrients } from "./meal-content.js";
+import { emptyOptionalNutrients, canAddManualItem, manualSelectionProblem } from "./meal-content.js";
 
 function validMealType(v) {
   return MEAL_TYPES.indexOf(v) !== -1 ? v : null;
@@ -31,10 +31,13 @@ export function fitsSlot(item, slot) {
 // 品項分到分頁：超商分頁＝超商的非飲料；外食分頁＝台式外食非飲料在前、宅配/連鎖餐盒在後；
 // 我的品項依自己的 channel 放在分頁最後；飲料（含我的品項的飲料，不分 channel）進共用的飲料步驟。
 // products：catalog.products；customs：已經過 fromCustomFood 的我的品項（archived 的不列出）。
-export function partitionByMealType(products, customs, slot) {
+// hiddenUids：使用者隱藏的內建品項（PRD 10.2；可省略＝不過濾），只影響內建，不影響我的品項。
+export function partitionByMealType(products, customs, slot, hiddenUids) {
   const fits = function (it) { return fitsSlot(it, slot); };
   const own = (customs || []).filter(function (it) { return !it.archived && fits(it); });
-  const builtin = products.filter(fits);
+  const hidden = {};
+  (hiddenUids || []).forEach(function (u) { hidden[u] = true; });
+  const builtin = products.filter(function (p) { return fits(p) && !hidden[p.uid]; });
   const nonDrink = function (it) { return it.role !== "drink"; };
   return {
     convenience: builtin.filter(function (p) { return !p.is_taiwan && p.channel === "convenience" && nonDrink(p); })
@@ -131,4 +134,33 @@ export function quickAddProblem(item, profile) {
   if (diet.indexOf("全素") !== -1 && clash(NOT_VEGAN).length > 0) conflict = "宣告全素，但過敏原勾了「" + clash(NOT_VEGAN).join("、") + "」。";
   else if (diet.indexOf("蛋奶素") !== -1 && clash(NOT_LACTO_OVO).length > 0) conflict = "宣告蛋奶素，但過敏原勾了「" + clash(NOT_LACTO_OVO).join("、") + "」。";
   return { blocked: blocked, conflict: conflict };
+}
+
+// ---------- B-1a：我的品項管理（PRD 10.2、10.4、10.6） ----------
+
+// 被擋的原因可不可以「補填」：只有「未確認」類（PRD 10.4）。「含過敏原」「不吃」只寫原因，不引導改答案（章程 C4.1）。
+export function fillableReason(reason) {
+  return reason === "成分未確認" || reason === "飲食限制未確認";
+}
+
+// 已隱藏的內建品項清單（照隱藏的順序）；查不到的 uid 略過（章程 B9）。
+export function hiddenEntries(hiddenUids, productsByUid) {
+  return (hiddenUids || []).filter(function (u) { return productsByUid && productsByUid[u]; })
+    .map(function (u) { return { uid: u, name: productsByUid[u].name, channel: productsByUid[u].channel, role: productsByUid[u].role }; });
+}
+
+// 新存的我的品項放到選擇器的哪裡、要不要選中（快速新增、複製、補填共用；說明文字由各入口在 ui 組）。
+// ctx：{ slot, currentTab, profile, roleItems（目前這一餐已選的品項，角色上限用） }。
+// 順序跟 Phase 0 的快速新增相同：先決定放哪裡，再判斷選不選中；被擋的照樣放進清單並記原因。
+// 飲料：沒被擋就直接取代目前的飲料（不跑角色名額）。
+export function placeNewCustom(item, ctx) {
+  const check = passesHardFilters(item, ctx.profile || {});
+  const reason = check.ok ? null : check.reason;
+  if (item.role === "drink") return { dest: "drinks", tab: null, select: !reason, reason: reason, roleProblem: null };
+  if (!fitsSlot(item, ctx.slot)) return { dest: null, tab: null, select: false, reason: reason, roleProblem: null };
+  const tab = item.channel;
+  if (tab !== ctx.currentTab || reason) return { dest: "tab", tab: tab, select: false, reason: reason, roleProblem: null };
+  const roleItems = ctx.roleItems || [];
+  if (canAddManualItem(roleItems, item, ctx.slot)) return { dest: "tab", tab: tab, select: true, reason: null, roleProblem: null };
+  return { dest: "tab", tab: tab, select: false, reason: null, roleProblem: manualSelectionProblem(roleItems.concat([item]), ctx.slot) };
 }
