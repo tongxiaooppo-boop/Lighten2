@@ -745,6 +745,10 @@ async function main() {
   console.log("[備份格式]");
   await checkBackupFormat();
 
+  // ---------- 8. 我的品項管理＋份量倍數（B-1a） ----------
+  console.log("[我的品項管理與份量]");
+  await checkMyItems(catalog, candidatePool);
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -902,7 +906,9 @@ async function checkDbValidation() {
 async function checkBackupFormat() {
   const db = M.db;
   const FIXTURE = path.join(ROOT, "tools", "fixtures", "backup-v1.json");
-  const fixture = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  const fixtureV1 = JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
+  // 壞檔測試用「目前版本」的檔案當底（舊版檔案會先升級，舊檔沒有的區塊當成空的，缺區塊不算壞）
+  const fixture = db.migrateBackup(fixtureV1);
   const clone = (x) => JSON.parse(JSON.stringify(x));
   const problemsOf = (obj) => db.validateBackup(db.migrateBackup(obj));
 
@@ -916,10 +922,21 @@ async function checkBackupFormat() {
   });
 
   // 凍結的 v1 fixture：之後的每個版本都要讀得了（PRD 11.6）
-  let p = problemsOf(fixture);
-  check(p.length === 0, "凍結的 backup-v1.json 不能還原：" + p.slice(0, 3).join("；"));
-  const migrated = db.migrateBackup(fixture);
-  check(migrated !== fixture && JSON.stringify(fixture) === JSON.stringify(JSON.parse(fs.readFileSync(FIXTURE, "utf8"))), "migrateBackup 改到了輸入");
+  let p = problemsOf(fixtureV1);
+  check(p.length === 0, "凍結的 backup-v1.json 升級後不能還原：" + p.slice(0, 3).join("；"));
+  check(fixture.schema_version === db.BACKUP_SCHEMA_VERSION, "backup-v1.json 升級後的版本號不是目前版本");
+  const migrated = db.migrateBackup(fixtureV1);
+  check(migrated !== fixtureV1 && JSON.stringify(fixtureV1) === JSON.stringify(JSON.parse(fs.readFileSync(FIXTURE, "utf8"))), "migrateBackup 改到了輸入");
+  // 目前版本（v2）的凍結 fixture：由 smoke-browser 真的匯出（含隱藏清單、複製品、份量 ×2 的紀錄）
+  const fixtureV2 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v2.json"), "utf8"));
+  p = problemsOf(fixtureV2);
+  check(p.length === 0, "凍結的 backup-v2.json 不能還原：" + p.slice(0, 3).join("；"));
+  const v2hidden = fixtureV2.sections.system.settings.find((x) => x.id === "hidden_catalog_uids");
+  check(!!v2hidden && fixtureV2.sections.custom_foods.some((x) => x.copied_from) &&
+    fixtureV2.sections.logs.daily_log.some((l) => l.content.components.some((c) => c.qty === 2)), "backup-v2.json 缺隱藏清單、複製品或份量 ×2 的紀錄");
+  const dupHidden = clone(fixtureV2);
+  dupHidden.sections.system.settings.find((x) => x.id === "hidden_catalog_uids").value.push(v2hidden.value[0]);
+  check(problemsOf(dupHidden).some((x) => /hidden_catalog_uids/.test(x)), "備份裡的隱藏清單重複沒有擋下");
   const noProfile = clone(fixture);
   noProfile.sections.system.user_profile = null;
   noProfile.manifest.user_profile = 0;
@@ -947,7 +964,7 @@ async function checkBackupFormat() {
   bad("不認得的區塊", (f) => { f.sections.saved_meals = []; }, /不認得的資料區塊「saved_meals」/);
   bad("不認得的巢狀區塊", (f) => { f.sections.logs.meal_plan = []; }, /不認得的資料區塊「logs\.meal_plan」/);
   bad("缺一類", (f) => { delete f.sections.logs.exercise_log; }, /缺少「運動紀錄」/);
-  bad("不認得的 settings key", (f) => { f.sections.system.settings.push({ id: "hidden_catalog_uids", value: [] }); f.manifest.settings++; }, /設定第 3 筆.*沒有登記/);
+  bad("不認得的 settings key", (f) => { f.sections.system.settings.push({ id: "__unregistered_key", value: [] }); f.manifest.settings++; }, /設定第 3 筆.*沒有登記/);
   bad("settings 值不合法", (f) => { f.sections.system.settings[0].value = { lunch: "cook" }; }, /設定第 1 筆.*值格式不對/);
   bad("manifest 跟實際不符", (f) => { f.manifest.daily_log = 2; }, /飲食紀錄」的筆數跟筆數清單不一致/);
   bad("缺 manifest", (f) => { delete f.manifest; }, /manifest/);
@@ -987,7 +1004,7 @@ async function checkBackupFormat() {
 
   // 寫入端：setSetting 拒絕沒登記的 key 與不合法的值（C1.5）；合法值不會丟驗證錯誤
   async function errorOf(fn) { try { await fn(); } catch (e) { return String(e && e.message); } return null; }
-  let msg = await errorOf(() => db.setSetting("hidden_catalog_uids", []));
+  let msg = await errorOf(() => db.setSetting("__unregistered_key", []));
   check(msg !== null && /沒有登記/.test(msg), "setSetting 沒登記的 key 沒有擋下（實際：" + msg + "）");
   msg = await errorOf(() => db.setSetting("picker_last_meal_type", "xxx"));
   check(msg !== null && /值格式不對/.test(msg), "setSetting 不合法的值沒有擋下（實際：" + msg + "）");
@@ -1005,6 +1022,160 @@ async function checkBackupFormat() {
   check(msg !== null && /備份不能還原：飲食紀錄第 1 筆/.test(msg), "importAllData 壞檔沒有在碰資料庫前擋下（實際：" + msg + "）");
   msg = await errorOf(() => db.importAllData(fixture));
   check(msg === null || !/\[db\.js\]/.test(msg), "importAllData 合法的 fixture 被驗證擋下（實際：" + msg + "）");
+}
+
+// B-1a 我的品項管理＋份量倍數（PRD 10.x、12.3；B-1a 計畫第 4 節 1–14）。碰 IndexedDB 的部分在 smoke-browser。
+async function checkMyItems(catalog, candidatePool) {
+  const db = M.db, mc = M.mc, pk = M.picker;
+  async function errorOf(fn) { try { await fn(); } catch (e) { return String(e && e.message); } return null; }
+  const throwsOf = (fn) => { try { fn(); return null; } catch (e) { return String(e && e.message); } };
+  const base = { id: "custom_x1", name: "新品飯糰", channel: "convenience", role: "main", valid_slots: ["breakfast", "lunch"], kcal: 250,
+    protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null,
+    allergen_tags: null, vegan: false, lacto_ovo: false, copied_from: null, archived: false,
+    created_at: "2026-09-29T01:00:00.000Z", updated_at: "2026-09-29T01:00:00.000Z" };
+
+  // 1. applyCustomFoodPatch：合併後過驗證；不能改的欄位改成不同值丟錯、相同值放行；updated_at 更新；不改輸入
+  const patched = db.applyCustomFoodPatch(base, { kcal: 300, archived: true }, "2026-09-29T02:00:00.000Z");
+  check(patched.kcal === 300 && patched.archived === true && patched.updated_at === "2026-09-29T02:00:00.000Z" && base.kcal === 250, "applyCustomFoodPatch 合併或 updated_at 不對，或改到了輸入");
+  ["id", "created_at", "copied_from"].forEach((k) => {
+    check(/不能修改/.test(throwsOf(() => db.applyCustomFoodPatch(base, { [k]: "other" }, "x")) || ""), "applyCustomFoodPatch 改 " + k + " 沒有擋下");
+    check(throwsOf(() => db.applyCustomFoodPatch(base, { [k]: base[k] }, "2026-09-29T02:00:00.000Z")) === null, "applyCustomFoodPatch 帶相同的 " + k + " 被誤擋");
+  });
+  check(/kcal/.test(throwsOf(() => db.applyCustomFoodPatch(base, { kcal: 0 }, "x")) || ""), "applyCustomFoodPatch 合併後不合法沒有擋下");
+
+  // 2. validateCustomFood 補驗；舊的快速新增紀錄（沒有 vendor／category／note）照樣通過
+  [["archived 是字串", { archived: "false" }, /archived/], ["vegan 是數字", { vegan: 1 }, /vegan/], ["note 是數字", { note: 3 }, /note/],
+   ["copied_from 是空字串", { copied_from: "" }, /copied_from/], ["vendor 是物件", { vendor: {} }, /vendor/]].forEach((b) => {
+    check(b[2].test(throwsOf(() => db.validateCustomFood(Object.assign({}, base, b[1]))) || ""), "我的品項 " + b[0] + " 沒有擋下");
+  });
+  const legacy = Object.assign({}, base); delete legacy.copied_from; delete legacy.archived;
+  check(throwsOf(() => db.validateCustomFood(legacy)) === null, "舊的快速新增紀錄被新的驗證擋下");
+
+  // 3. 寫入函式傳陣列丟錯（C1.5）；碰資料庫前的驗證
+  const ARR = /陣列/;
+  check(ARR.test(await errorOf(() => db.updateCustomFood("custom_x1", [{}])) || ""), "updateCustomFood 傳陣列沒有報錯");
+  check(ARR.test(await errorOf(() => db.copyBuiltinToCustom([base])) || ""), "copyBuiltinToCustom 傳陣列沒有報錯");
+  check(ARR.test(await errorOf(() => db.hideCatalogItem(["a"])) || ""), "hideCatalogItem 傳陣列沒有報錯");
+  check(ARR.test(await errorOf(() => db.unhideCatalogItem(["a"])) || ""), "unhideCatalogItem 傳陣列沒有報錯");
+  check(/uid/.test(await errorOf(() => db.hideCatalogItem("")) || ""), "hideCatalogItem(\"\") 沒有報錯");
+  check(/copied_from/.test(await errorOf(() => db.copyBuiltinToCustom(Object.assign({}, base, { copied_from: null }))) || ""), "copyBuiltinToCustom 缺 copied_from 沒有報錯");
+  check(/格式不對/.test(await errorOf(() => db.copyBuiltinToCustom(Object.assign({}, base, { copied_from: "conv_bx04", kcal: -1 }))) || ""), "copyBuiltinToCustom 格式不對沒有報錯");
+  check(/copyBuiltinToCustom/.test(await errorOf(() => db.addCustomFood(Object.assign({}, base, { copied_from: "conv_bx04" }))) || ""), "addCustomFood 帶 copied_from 沒有擋下（複製只能走 copyBuiltinToCustom）");
+  check(/專用函式/.test(await errorOf(() => db.setSetting("hidden_catalog_uids", [])) || ""), "setSetting 寫隱藏清單沒有擋下（只能用專用函式）");
+
+  // 4. 隱藏清單的驗證器（validateSetting 不看 dedicatedOnly，備份還原才讀得回來）
+  check(throwsOf(() => db.validateSetting("hidden_catalog_uids", [])) === null && throwsOf(() => db.validateSetting("hidden_catalog_uids", ["conv_bx04", "tw_dr05"])) === null, "合法的隱藏清單被擋下");
+  [["a", "a"], [""], "a", [1], null].forEach((v) => check(throwsOf(() => db.validateSetting("hidden_catalog_uids", v)) !== null, "不合法的隱藏清單 " + JSON.stringify(v) + " 沒有擋下"));
+
+  // 5. qty 只能是 0.5／1／1.5／2
+  const logWith = (qty) => ({ log_date: "2026-09-23", slot: "lunch", meal_type: "convenience", source: "manual", name: "x",
+    content: { meal_type: "convenience", archetype_id: null, method_id: null, implicit: null,
+      components: [{ kind: "product", role: "main", ref: "conv_bx04", qty: qty, snapshot: { name: "x", kcal: 120 } }] },
+    totals: { kcal: 120, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null, partial: [] },
+    created_at: "2026-09-23T04:00:00.000Z" });
+  [0.5, 1, 1.5, 2].forEach((q) => check(throwsOf(() => db.validateDailyLog(logWith(q))) === null, "份量 " + q + " 被擋下"));
+  [0, 3, 0.25, "2", null].forEach((q) => check(/qty/.test(throwsOf(() => db.validateDailyLog(logWith(q))) || ""), "份量 " + JSON.stringify(q) + " 沒有擋下"));
+
+  // 6. 份量合計：qty 2 每個欄位 2 倍、null 照 null；0.5 的部分無資料照樣記 partial；沒有 qtyByUid 跟 1 相同
+  const main = catalog.products.find((p) => p.uid === "conv_bx04");
+  const totalsOf = (items, qtyByUid) => mc.contentTotals(mc.buildDraftContent({ kind: "products", meal_type: "convenience", items: items, estimates: [], drink: null, qtyByUid: qtyByUid }), catalog);
+  const one = totalsOf([main]);
+  const two = totalsOf([main], { conv_bx04: 2 });
+  ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"].forEach((k) => {
+    check(one[k] == null ? two[k] == null : Math.abs(two[k] - 2 * one[k]) < 0.11, "份量 ×2 的 " + k + " 不是兩倍（" + one[k] + " → " + two[k] + "）");
+  });
+  check(JSON.stringify(totalsOf([main], {})) === JSON.stringify(one) && JSON.stringify(totalsOf([main], { conv_bx04: 1 })) === JSON.stringify(one), "沒有份量或份量 1 跟預設不同");
+  // 只有台式外食的飲料有鈉資料：半份主餐（沒有鈉）＋有鈉的飲料 → 鈉記部分無資料
+  const sodiumDrink = catalog.products.find((p) => p.role === "drink" && p.sodium_mg != null);
+  check(!!sodiumDrink && main.sodium_mg == null, "找不到有鈉資料的飲料或主餐已有鈉（測試前提不成立）");
+  if (sodiumDrink) {
+    const half = mc.contentTotals(mc.buildDraftContent({ kind: "products", meal_type: "convenience", items: [main], estimates: [], drink: sodiumDrink, qtyByUid: { conv_bx04: 0.5 } }), catalog);
+    check(half.partial.indexOf("sodium_mg") !== -1 && half.sodium_mg === sodiumDrink.sodium_mg, "半份的品項鈉無資料時沒有記 partial：" + JSON.stringify(half));
+  }
+  const content2 = mc.buildDraftContent({ kind: "products", meal_type: "convenience", items: [main], estimates: [], drink: null, qtyByUid: { conv_bx04: 2 } });
+  check(content2.components[0].qty === 2, "草稿的份量沒有寫進元件 qty");
+
+  // 7. withoutHidden 與 planToday
+  const hidden = ["conv_bx04", "不存在的_uid"];
+  const filtered = M.pool.withoutHidden(candidatePool, hidden);
+  check(filtered.every((c) => c.is_composed || c.components.indexOf("conv_bx04") === -1), "withoutHidden 後還有含隱藏品項的現成組合");
+  check(filtered.filter((c) => c.is_composed).length === candidatePool.filter((c) => c.is_composed).length, "withoutHidden 影響到自組食譜");
+  check(filtered.length < candidatePool.length, "withoutHidden 沒有拿掉任何組合（測試前提不成立）");
+  check(M.pool.withoutHidden(candidatePool, []) === candidatePool && M.pool.withoutHidden(candidatePool) === candidatePool, "withoutHidden 空清單沒有回傳同一個池");
+  const prof = { age: 35, gender: "男", height_cm: 175, weight_kg: 80, activity_mode: "輕度", goal_mode: "減脂", meal_prefs: null, enabled_slots: null, diet_restriction: "一般", allergens: [], disliked_ingredients: [] };
+  const targets = M.nutrition.calculateTargets(prof);
+  const nowMs7 = new Date(2026, 8, 23, 6, 0).getTime();
+  const planWith = (h) => M.today.planToday({ profile: prof, targets, todayLogs: [], weekLogs: [], feedbackMap: {}, pool: candidatePool, hiddenUids: h, today: "2026-09-23", nowMs: nowMs7 });
+  const plain = M.today.planToday({ profile: prof, targets, todayLogs: [], weekLogs: [], feedbackMap: {}, pool: candidatePool, today: "2026-09-23", nowMs: nowMs7 });
+  check(JSON.stringify(plain.recs) === JSON.stringify(planWith([]).recs), "planToday 不帶 hiddenUids 跟帶 [] 不同");
+  const target = SLOTS.map((s) => plain.recs[s]).find((r) => r && !r.lowBudget && !r.is_composed && Array.isArray(r.components));
+  check(!!target, "找不到現成品項的推薦（測試前提不成立）");
+  if (target) {
+    const uid = target.components[0];
+    const after = planWith([uid]).recs;
+    check(SLOTS.every((s) => !after[s] || after[s].lowBudget || after[s].is_composed || after[s].components.indexOf(uid) === -1), "隱藏推薦裡的品項 " + uid + " 之後，推薦還含它");
+  }
+
+  // 8. partitionByMealType 帶隱藏：內建隱藏品項（含飲料）不出現；我的品項不受影響；第四參數缺＝不過濾
+  const drinkUid = catalog.products.find((p) => p.role === "drink" && (p.valid_slots || []).indexOf("lunch") !== -1).uid;
+  const own = [Object.assign(M.catalog.fromCustomFood(Object.assign({}, base, { id: "conv_bx04_mine", valid_slots: ["lunch"] })))];
+  const all = pk.partitionByMealType(catalog.products, own, "lunch");
+  const hid = pk.partitionByMealType(catalog.products, own, "lunch", ["conv_bx04", drinkUid]);
+  const uidsOf = (parts) => parts.convenience.concat(parts.delivery, parts.drinks).map((it) => it.uid);
+  check(uidsOf(all).indexOf("conv_bx04") !== -1 && uidsOf(hid).indexOf("conv_bx04") === -1 && uidsOf(hid).indexOf(drinkUid) === -1, "partitionByMealType 沒有濾掉隱藏的內建品項或飲料");
+  check(uidsOf(hid).indexOf("conv_bx04_mine") !== -1, "partitionByMealType 隱藏影響到我的品項");
+  check(uidsOf(hid).length === uidsOf(all).length - 2, "partitionByMealType 隱藏後的數量不對");
+
+  // 9. copyFromBuiltin：每一筆內建都通過寫入驗證；未確認 → null；素食照 diet_tags；note 只剩內容物；copied_from 是 uid
+  catalog.products.forEach((p) => {
+    const r = mc.copyFromBuiltin(p);
+    const err = throwsOf(() => db.validateCustomFood(r));
+    check(err === null, "複製內建 " + p.uid + " 不通過驗證：" + err);
+    check(r.copied_from === p.uid, "複製內建 " + p.uid + " 的 copied_from 不是 uid");
+    check((p.allergen_tags || []).indexOf("未確認") !== -1 ? r.allergen_tags === null : Array.isArray(r.allergen_tags), "複製內建 " + p.uid + " 的過敏原轉換不對");
+    check(r.vegan === (p.diet_tags || []).indexOf("全素") !== -1, "複製內建 " + p.uid + " 的全素宣告不對");
+    check(r.note === null || r.note.indexOf("；") === -1, "複製內建 " + p.uid + " 的 note 還帶資料來源說明");
+  });
+  check(catalog.products.some((p) => p.is_taiwan && mc.copyFromBuiltin(p).copied_from.indexOf("tw_") === 0), "台式外食的 copied_from 沒有 tw_ 前綴");
+
+  // 10. fillableReason：只有未確認類
+  check(pk.fillableReason("成分未確認") && pk.fillableReason("飲食限制未確認") && !pk.fillableReason("含過敏原") && !pk.fillableReason("你已設定不吃：鮭魚") && !pk.fillableReason(null),
+    "fillableReason 對四種原因的判斷不對（只有未確認類可以補填）");
+
+  // 11. B9：查不到的 uid 不拋錯、不列出
+  const cur = mc.builtinCurrentValues("conv_bx04", catalog.productsByUid);
+  check(cur && cur.kcal === main.kcal && "sodium_mg" in cur, "builtinCurrentValues 的內建數值不對");
+  check(mc.builtinCurrentValues("已下架_uid", catalog.productsByUid) === null && mc.builtinCurrentValues(null, catalog.productsByUid) === null, "builtinCurrentValues 查不到時沒有回傳 null");
+  const he = pk.hiddenEntries(["conv_bx04", "已下架_uid", "tw_dr05"], catalog.productsByUid);
+  check(he.length === 2 && he[0].uid === "conv_bx04" && he[1].uid === "tw_dr05", "hiddenEntries 沒有略過查不到的 uid 或順序不對：" + JSON.stringify(he));
+  check(pk.hiddenEntries(undefined, catalog.productsByUid).length === 0, "hiddenEntries 沒有清單時出錯");
+
+  // 12. placeNewCustom
+  const item = (patch) => M.catalog.fromCustomFood(Object.assign({}, base, { valid_slots: ["lunch"] }, patch));
+  const ctx = (patch) => Object.assign({ slot: "lunch", currentTab: "convenience", profile: prof, roleItems: [] }, patch);
+  const pl = (it, c) => pk.placeNewCustom(it, c);
+  let r = pl(item({}), ctx());
+  check(r.dest === "tab" && r.tab === "convenience" && r.select && !r.reason, "placeNewCustom 可選的品項沒有選中：" + JSON.stringify(r));
+  r = pl(item({}), ctx({ profile: Object.assign({}, prof, { allergens: ["蛋"] }) }));
+  check(r.dest === "tab" && !r.select && r.reason === "成分未確認", "placeNewCustom 被擋的品項沒有放進清單並記原因：" + JSON.stringify(r));
+  r = pl(item({ valid_slots: ["breakfast"] }), ctx());
+  check(r.dest === null && !r.select, "placeNewCustom 不在這個時段的品項被放進清單：" + JSON.stringify(r));
+  const mains = catalog.products.filter((p) => !p.is_taiwan && p.role === "main" && (p.valid_slots || []).indexOf("afternoon_tea") !== -1).slice(0, 1);
+  r = pl(item({ valid_slots: ["afternoon_tea"] }), ctx({ slot: "afternoon_tea", roleItems: mains.length ? mains : [main] }));
+  check(r.dest === "tab" && !r.select && typeof r.roleProblem === "string" && r.roleProblem.length > 0, "placeNewCustom 名額已滿沒有說明：" + JSON.stringify(r));
+  r = pl(item({ channel: "delivery" }), ctx());
+  check(r.dest === "tab" && r.tab === "delivery" && !r.select, "placeNewCustom 別的分頁的品項被選中或放錯分頁：" + JSON.stringify(r));
+  r = pl(item({ role: "drink" }), ctx({ roleItems: [catalog.productsByUid[drinkUid]] }));
+  check(r.dest === "drinks" && r.select, "placeNewCustom 已選一杯飲料時，新的飲料沒有取代（不跑角色名額）：" + JSON.stringify(r));
+  // 複製時原品項已從選取拿掉：下午茶主餐上限 1，仍能選進新的那筆（ui 先拿掉再呼叫）
+  r = pl(item({ valid_slots: ["afternoon_tea"] }), ctx({ slot: "afternoon_tea", roleItems: [] }));
+  check(r.select, "placeNewCustom 名額空出來後沒有選中");
+
+  // 13. qtyLabel 與 draftLogName
+  check(mc.qtyLabel(0.5) === "半份" && mc.qtyLabel(1) === "" && mc.qtyLabel(1.5) === "×1.5" && mc.qtyLabel(2) === "×2", "qtyLabel 的文字不對");
+  const egg = catalog.products.find((p) => p.role === "side") || main;
+  const nm = mc.draftLogName({ kind: "products", items: [main, egg], estimates: [{ name: "喜宴", size: "L" }], drink: catalog.productsByUid[drinkUid], qtyByUid: { conv_bx04: 0.5, [egg.uid]: 2 } });
+  check(nm === main.name + "（半份）＋" + egg.name + " ×2＋喜宴＋" + catalog.productsByUid[drinkUid].name, "draftLogName 的份量文字不對：" + nm);
 }
 
 main().catch((err) => {

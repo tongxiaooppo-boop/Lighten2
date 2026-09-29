@@ -480,6 +480,11 @@ quickadd/VEGAN/lunch/convenience/undeclared	{"drink":null,"message":"已存成�
 quickadd/VEGAN/lunch/convenience/undeclared/write0	{"allergen_tags":[],"archived":false,"carb_g":null,"channel":"convenience","copied_from":null,"created_at":"2026-09-23T02:00:00.000Z","fat_g":null,"fiber_g":null,"id":"custom_0001","kcal":600,"lacto_ovo":false,"name":"沒宣告的便當","protein_g":null,"role":"main","sat_fat_g":null,"sodium_mg":null,"updated_at":"2026-09-23T02:00:00.000Z","valid_slots":["breakfast","lunch","dinner","snack"],"vegan":false}
 quickadd/M/lunch/convenience/vegan-conflict	{"drink":null,"message":"已存成我的品項，並選進這一餐。","notes":["宣告全素，但過敏原勾了「蛋」。"],"saved":"custom_0001","selected":["custom_0001"]}
 quickadd/M/lunch/convenience/vegan-conflict/write0	{"allergen_tags":["蛋"],"archived":false,"carb_g":null,"channel":"convenience","copied_from":null,"created_at":"2026-09-23T02:00:00.000Z","fat_g":null,"fiber_g":null,"id":"custom_0001","kcal":300,"lacto_ovo":false,"name":"矛盾的品項","protein_g":null,"role":"side","sat_fat_g":null,"sodium_mg":null,"updated_at":"2026-09-23T02:00:00.000Z","valid_slots":["breakfast","lunch","afternoon_tea","dinner","snack"],"vegan":true}
+quickadd/M/breakfast/convenience/drink-replace	{"drink":"custom_0001","message":"已存成我的品項，並選進這一餐。","notes":[],"saved":"custom_0001","selected":[]}
+qty/M/lunch/convenience/x2	kcal=1232 P=72 C=171.6 F=28.2 Fb=11.5 SF=null Na=null
+qty/M/lunch/convenience/x2/submit0	addDailyLog lunch "全家 健身G肉餐盒（健身工廠聯名） ×2＋燕麥奶／牛奶（一杯約240ml） ×2" kcal=1232 P=72 C=171.6 F=28.2 Fb=11.5 SF=null Na=null type=convenience source=manual content=convenience|-/-|conv_bx01x2@481,tw_bf02x2@135|implicit=null
+qty/M/lunch/convenience/half	kcal=510.5 P=27 C=71.7 F=12.8 Fb=4.4 SF=null Na=null
+qty/M/lunch/convenience/half/submit0	addDailyLog lunch "全家 健身G肉餐盒（健身工廠聯名）（半份）＋燕麥奶／牛奶（一杯約240ml） ×2" kcal=510.5 P=27 C=71.7 F=12.8 Fb=4.4 SF=null Na=null type=convenience source=manual content=convenience|-/-|conv_bx01x0.5@481,tw_bf02x2@135|implicit=null
 tab/no-last/breakfast	convenience
 tab/no-last/lunch	convenience
 tab/no-last/afternoon_tea	convenience

@@ -586,6 +586,38 @@ async function snapPicker() {
     uiLines(k);
   }
 
+  // B-1a：已選一杯飲料時再快速新增一杯 → 取代成新的（不跑角色名額，跟 Phase 0 相同）
+  {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: [], customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen("breakfast");
+    A.pickerTab("convenience");
+    A.pickerSelectItems([A.pickerPassItems().find((it) => it.role === "drink").uid]);
+    A.takeDom();
+    const res = await A.pickerQuickAdd({ name: "自己帶的黑咖啡", kcal: "5", role: "drink", allergenMode: "none" });
+    emit("picker", "quickadd/M/breakfast/convenience/drink-replace", stable(res));
+    A.takeWrites(); A.takeDom();
+  }
+
+  // B-1a 份量倍數（PRD 12.3）：主餐 ×2／半份＋飲料 ×2，摘要合計與送出的紀錄（名稱帶份量、content 的 qty）
+  for (const [name, q] of [["x2", 2], ["half", 0.5]]) {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: [], customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen("lunch");
+    A.pickerTab("convenience");
+    const pass = A.pickerPassItems();
+    const mainUid = pass.find((it) => it.role === "main").uid;
+    const drinkUid = pass.find((it) => it.role === "drink").uid;
+    A.pickerSelectItems([mainUid, drinkUid]);
+    A.pickerSetQty(drinkUid, 2);
+    const k = "qty/M/lunch/convenience/" + name;
+    emit("picker", k, normTotals(A.pickerSetQty(mainUid, q)));
+    A.takeDom();
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", k + "/submit" + i, normWrite(w)); });
+    A.takeAlerts(); A.takeEngineIO(); A.takeDom();
+  }
+
   // 預設分頁（PRD 第 4 節）：偏好是有效型態就用偏好；auto 時用上次這個時段送出的型態；都沒有停在超商
   const last = { picker_last_meal_type: { lunch: "delivery", afternoon_tea: "delivery", dinner: "convenience" } };
   const prefProfile = (prefs) => Object.assign({}, P.M, { meal_prefs: Object.assign({}, P.M.meal_prefs, prefs) });

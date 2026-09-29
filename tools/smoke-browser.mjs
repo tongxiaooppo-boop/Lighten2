@@ -97,10 +97,61 @@ async function run() {
   await js(`(() => { const f = document.getElementById('weight-form'); f.elements.weight_kg.value = 79.5; f.requestSubmit(); })()`);
   await until(`${text("#weight-log-status")}.indexOf("79.5") !== -1`, "體重沒有記錄");
 
+  console.log("[我的品項：隱藏、複製、份量（真的 IndexedDB）]");
+  {
+    const DBM = `(await import('./js/data/db.js'))`;
+    const CAT = `(await (await import('./js/data/catalog.js')).loadCatalog())`;
+    // 複製成我的版本全有全無：add 或 put 同步丟錯時，我的品項沒新增、隱藏清單沒變
+    const snap = () => js(`(async () => { const m = ${DBM}; return JSON.stringify([await m.getCustomFoods(), await m.getHiddenCatalogUids()]); })()`);
+    for (const op of ["add", "put"]) {
+      const before = await snap();
+      const msg = await js(`(async () => { const m = ${DBM}; const mc = await import('./js/engine/meal-content.js'); const c = ${CAT};
+        const rec = mc.copyFromBuiltin(c.productsByUid['conv_bx04']);
+        const orig = IDBObjectStore.prototype.${op};
+        IDBObjectStore.prototype.${op} = function () { throw new DOMException('模擬的 ${op} 失敗', 'DataError'); };
+        try { await m.copyBuiltinToCustom(rec); return null; } catch (e) { return String(e && e.message); }
+        finally { IDBObjectStore.prototype.${op} = orig; } })()`);
+      check(msg !== null, "copyBuiltinToCustom 的 " + op + " 丟錯時沒有回報失敗");
+      check((await snap()) === before, "copyBuiltinToCustom 的 " + op + " 丟錯後資料被改了（不是全有全無）");
+    }
+    // 隱藏「目前推薦卡片裡的品項」→ 今日建議重算後推薦不含它；取消隱藏後回來
+    await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
+    await until(`!!document.querySelector('#rec-lunch .rec-log-btn') || !!document.querySelector('#rec-lunch .rec-undo-btn') || !!document.querySelector('#rec-lunch .rec-pick-btn')`, "今日建議沒有午餐卡片");
+    // 推薦卡片「順便不要」的 chip 帶著現成品項的 uid（data-type=item）
+    const recUid = await js(`(() => { const c = document.querySelector('[id^=rec-] .dislike-chip[data-type=item]'); return c ? c.dataset.key : null; })()`);
+    check(!!recUid, "找不到推薦卡片裡的現成品項（測試前提不成立）");
+    if (recUid) {
+      await js(`(async () => { const m = ${DBM}; await m.hideCatalogItem(${JSON.stringify(recUid)}); })()`);
+      await js(`document.querySelector('.tab-btn[data-tab=week]').click()`);
+      await js(`document.querySelectorAll('[id^=rec-]').forEach((el) => el.insertAdjacentHTML('beforeend', '<i class="smoke-stale"></i>'))`);
+      await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
+      await until(`!document.querySelector('.smoke-stale')`, "隱藏後今日建議沒有重算");
+      check(!(await js(`!!document.querySelector('[id^=rec-] .dislike-chip[data-key=${JSON.stringify(recUid).slice(1, -1)}]')`)), "隱藏推薦裡的品項 " + recUid + " 後，今日建議還推薦它");
+      await js(`(async () => { const m = ${DBM}; await m.unhideCatalogItem(${JSON.stringify(recUid)}); })()`);
+    }
+    // 備份來回（M9）：先寫進一個隱藏 uid、一筆複製品、一筆份量 ×2 的紀錄，下一段的匯出→還原要逐字相同
+    await js(`(async () => { const m = ${DBM}; const mc = await import('./js/engine/meal-content.js'); const c = ${CAT};
+      await m.hideCatalogItem('tw_dr05');
+      await m.copyBuiltinToCustom(mc.copyFromBuiltin(c.productsByUid['conv_bx04']));
+      const p = c.productsByUid['conv_bx01'];
+      const content = mc.buildDraftContent({ kind: 'products', meal_type: 'convenience', items: [p], estimates: [], drink: null, qtyByUid: { conv_bx01: 2 } });
+      await m.addDailyLog(mc.buildLogEntry({ date: '2026-09-20', slot: 'lunch', source: 'manual', name: mc.draftLogName({ kind: 'products', items: [p], estimates: [], drink: null, qtyByUid: { conv_bx01: 2 } }),
+        content: content, totals: mc.contentTotals(content, c), createdAt: new Date().toISOString() })); })()`);
+    const hiddenNow = await js(`(async () => { const m = ${DBM}; return await m.getHiddenCatalogUids(); })()`);
+    check(hiddenNow.indexOf("tw_dr05") !== -1 && hiddenNow.indexOf("conv_bx04") !== -1, "隱藏清單沒有 tw_dr05 與複製後自動隱藏的 conv_bx04：" + JSON.stringify(hiddenNow));
+  }
+
   console.log("[備份與還原（真的 IndexedDB）]");
   // import('./js/data/db.js') 經過 import map，跟 App 是同一個模組實體（PRD 11.6、B-3 計畫第 4 節 9–11）
   const DB = `(await import('./js/data/db.js'))`;
   const exported = await js(`(async () => { const m = ${DB}; const e = await m.exportAllData(); return JSON.stringify(e); })()`);
+  // B-1a：用這次真的匯出凍結目前版本的 fixture（只在明確要求時寫檔，平常不動 repo）
+  if (process.env.SMOKE_FREEZE_BACKUP) {
+    const fsm = await import("node:fs");
+    const obj = JSON.parse(exported);
+    fsm.writeFileSync(process.env.SMOKE_FREEZE_BACKUP, JSON.stringify(Object.assign({ format: obj.format, schema_version: obj.schema_version, exported_at: "2026-09-29T12:00:00.000Z", app_version: "smoke" }, obj), null, 2) + String.fromCharCode(10));
+    console.log("  已凍結 " + process.env.SMOKE_FREEZE_BACKUP);
+  }
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
   // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）

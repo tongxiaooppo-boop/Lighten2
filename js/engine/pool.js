@@ -10,7 +10,7 @@ import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
 import {
   sumProducts, ingredientContribution, addContributions, displayFields, defaultImplicit, implicitContribution, ZERO_CONTRIBUTION,
-  noCookViolation, maxTierRank,
+  noCookViolation, maxTierRank, contentNote,
 } from "./meal-content.js";
 
 function r1(v) {
@@ -138,14 +138,6 @@ function composedCombos(catalog) {
 //   - 下午茶：不需要 main，snack、drink 各 ≤1，至少 1 件。
 // 每個成分都要在該時段的 valid_slots 裡才會被拿來組合；不同來源（超商／外食）不互相混搭。
 
-// convenience_items.json 的 note 格式是「資料來源說明；實際內容物描述」，只取「；」後半段給使用者看。
-function contentNote(note) {
-  if (!note) return null;
-  const idx = note.indexOf("；");
-  if (idx === -1) return null;
-  return note.slice(idx + 1).trim() || null;
-}
-
 // 候選池裡的成分：營養值未知就是 null，組合時 null 傳染（章程 C4.5）；熱量一定有值（沒有熱量的品項不進池）
 function toMember(p) {
   return Object.assign({
@@ -247,4 +239,15 @@ export function buildCandidatePool(catalog) {
 
   _pools.set(catalog, combos);
   return combos;
+}
+
+// 拿掉含隱藏內建品項的現成組合（PRD 10.2：隱藏是使用者主動操作，推薦也要濾掉）。自組食譜不受影響（隱藏只針對內建超商／外食品項）。
+// 隱藏清單裡查不到的 uid 自然不會命中（章程 B9）。空清單回傳同一個陣列（推薦快照不變）。
+export function withoutHidden(pool, hiddenUids) {
+  if (!Array.isArray(hiddenUids) || hiddenUids.length === 0) return pool;
+  const hidden = {};
+  hiddenUids.forEach(function (u) { hidden[u] = true; });
+  return pool.filter(function (c) {
+    return c.is_composed || !(c.components || []).some(function (uid) { return hidden[uid]; });
+  });
 }

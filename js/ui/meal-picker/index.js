@@ -5,15 +5,15 @@
 import { SLOT_LABELS, DEFAULT_MEAL_PREFS } from "../../core/slots.js";
 import { escapeHtml } from "../../core/html.js";
 import { $, sodiumText, notIncludedText } from "../dom.js";
-import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting } from "../../data/db.js";
+import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting, getHiddenCatalogUids } from "../../data/db.js";
 import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
 import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
-  composeProblem, composeImplicit, draftIngredients, oilOptions,
+  composeProblem, composeImplicit, oilOptions, draftLogName,
 } from "../../engine/meal-content.js";
-import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab } from "../../engine/picker.js";
+import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab, placeNewCustom } from "../../engine/picker.js";
 import { productTabHtml, drinkStepHtml } from "./product-tab.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
 import { estimateCardHtml } from "./estimate-card.js";
@@ -77,7 +77,10 @@ export async function openMealPicker(slot, onLogged) {
   const catalog = await loadCatalog();
   const customs = (await getCustomFoods()).map(fromCustomFood);
   const lastPicked = await readLastPicked();
-  const parts = partitionByMealType(catalog.products, customs, slot);
+  // 隱藏清單讀不到不擋選擇器（比照 readLastPicked），當成沒有隱藏
+  let hiddenUids = [];
+  try { hiddenUids = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
+  const parts = partitionByMealType(catalog.products, customs, slot, hiddenUids);
 
   const m = mealPicker;
   m.slot = slot; m.profile = profile; m.targets = targets; m.todayLogs = todayLogs; m.catalog = catalog;
@@ -88,6 +91,7 @@ export async function openMealPicker(slot, onLogged) {
   m.tabs.delivery.estimates = [];
   m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile) };
   m.drinkUid = null;
+  m.qtyByUid = {}; // 份量倍數（PRD 12.3）：uid → 0.5／1.5／2，缺＝1；商品分頁的品項與飲料共用
   m.quickAdd = null;
   m.quickAddMessage = null;
   // 沒存過的時段用預設偏好（跟推薦、基本資料表單顯示的一樣）；不合法的值（含 auto）由 engine 往下找上次送出的型態
@@ -137,10 +141,11 @@ function selectedDrink() {
 // 目前分頁的草稿（摘要與送出共用同一份，看到的＝存下的）；meal_type 一律是分頁值（decisions #47）；估算只在外食分頁（decisions #46）
 export function currentDraft() {
   const m = mealPicker;
-  if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink() }, m.cook.draft);
+  const qtyByUid = Object.assign({}, m.qtyByUid);
+  if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink(), qtyByUid: qtyByUid }, m.cook.draft);
   return {
     kind: "products", meal_type: m.tab, items: selectedItems(m.tab),
-    estimates: m.tab === "delivery" ? m.tabs.delivery.estimates.slice() : [], drink: selectedDrink(),
+    estimates: m.tab === "delivery" ? m.tabs.delivery.estimates.slice() : [], drink: selectedDrink(), qtyByUid: qtyByUid,
   };
 }
 
@@ -257,25 +262,33 @@ export async function saveQuickAdd(values) {
     return null;
   }
   const item = fromCustomFood(saved);
-  const check = passesHardFilters(item, m.profile);
-  const reason = check.ok ? null : check.reason;
-  let note = null;
-  if (item.role === "drink") {
-    m.drinks.items.push(item);
-    if (reason) m.drinks.reasons[item.uid] = reason;
-    else m.drinkUid = item.uid;
-  } else {
-    const t = m.tabs[tab];
-    t.items.push(item);
-    const roleItems = draftRoleItems(currentDraft());
-    if (reason) t.reasons[item.uid] = reason;
-    else if (canAddManualItem(roleItems, item, m.slot)) t.selected.push(item.uid);
-    else note = "已存成我的品項。" + manualSelectionProblem(roleItems.concat([item]), m.slot) + "這次沒有幫你選。";
-  }
+  const place = placeInPicker(item);
   m.quickAdd = null;
-  m.quickAddMessage = reason ? "已存成我的品項。以你目前的設定不能選：" + reason : note || "已存成我的品項，並選進這一餐。";
+  m.quickAddMessage = place.reason ? "已存成我的品項。以你目前的設定不能選：" + place.reason
+    : place.roleProblem ? "已存成我的品項。" + place.roleProblem + "這次沒有幫你選。" : "已存成我的品項，並選進這一餐。";
   renderMealPicker();
   return saved;
+}
+
+// 新存的我的品項放進選擇器（快速新增、複製、補填共用；engine placeNewCustom 決定放哪裡、選不選中）。
+// 飲料沒被擋就取代目前的飲料（舊飲料的份量清掉）。回傳 placeNewCustom 的結果，說明文字由呼叫端組。
+function placeInPicker(item) {
+  const m = mealPicker;
+  const place = placeNewCustom(item, { slot: m.slot, currentTab: m.tab, profile: m.profile, roleItems: draftRoleItems(currentDraft()) });
+  if (place.dest === "drinks") {
+    m.drinks.items.push(item);
+    if (place.reason) m.drinks.reasons[item.uid] = place.reason;
+    else {
+      if (m.drinkUid) delete m.qtyByUid[m.drinkUid];
+      m.drinkUid = item.uid;
+    }
+  } else if (place.dest === "tab") {
+    const t = m.tabs[place.tab];
+    t.items.push(item);
+    if (place.reason) t.reasons[item.uid] = place.reason;
+    else if (place.select) t.selected.push(item.uid);
+  }
+  return place;
 }
 
 // 其他分頁還有選取時提醒一行（送出只算目前分頁＋飲料）
@@ -475,12 +488,6 @@ function onTabClick(e) {
   if (btn) selectTab(btn.getAttribute("data-tab"));
 }
 
-function logName(d) {
-  if (d.kind === "cook") return [d.archetype.name].concat(draftIngredients(d).map(function (it) { return it.name; }), d.drink ? [d.drink.name] : []).join("＋");
-  return d.items.map(function (it) { return it.name; })
-    .concat(d.estimates.map(function (x) { return x.name || "外食估算"; }), d.drink ? [d.drink.name] : []).join("＋");
-}
-
 async function rememberMealType(slot, mealType) {
   try {
     const next = Object.assign({}, await readLastPicked());
@@ -498,7 +505,7 @@ export async function onMealSubmit() {
   if (problem) { alert(problem); return; }
   const content = buildDraftContent(d, { oilHabit: m.profile.oil_habit });
   const entry = buildLogEntry({
-    date: todayStr(), slot: m.slot, source: "manual", name: logName(d),
+    date: todayStr(), slot: m.slot, source: "manual", name: draftLogName(d),
     content: content, totals: contentTotals(content, m.catalog), createdAt: nowIso(),
   });
   try {

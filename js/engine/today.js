@@ -5,6 +5,7 @@ import { SLOTS, isSlotEnabled } from "../core/slots.js";
 import { recalcTodayBudget } from "./budget.js";
 import { checkHardConstraints } from "./matcher.js";
 import { getTodayRecommendation } from "./recommend.js";
+import { withoutHidden } from "./pool.js";
 
 // o = { profile, targets, todayLogs, weekLogs（本週一到今天）, feedbackMap, pool, today, nowMs }
 export function planToday(o) {
@@ -24,7 +25,7 @@ export function planToday(o) {
   });
 
   const recs = getTodayRecommendation({
-    pool: o.pool,
+    pool: withoutHidden(o.pool, o.hiddenUids), // 使用者隱藏的內建品項（PRD 10.2；缺＝不過濾）
     feedbackMap: o.feedbackMap,
     remainingBudget: remainingBudget,
     hardConstraints: hardConstraints,

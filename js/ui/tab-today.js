@@ -7,7 +7,7 @@ import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
   getProfile, saveProfile, getDailyLogs, addDailyLog, undoDailyLog,
-  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown,
+  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids,
 } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { buildCandidatePool } from "../engine/pool.js";
@@ -174,9 +174,12 @@ export async function buildRecommendation() {
     loadCatalog(),
   ]);
 
+  // 隱藏清單讀不到不擋推薦（隱藏不是安全規則），當成沒有隱藏
+  let hiddenUids = [];
+  try { hiddenUids = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
   const plan = planToday({
     profile: profile, targets: targets, todayLogs: todayLogs, weekLogs: weekLogs,
-    feedbackMap: feedbackMap, pool: buildCandidatePool(catalog), today: today, nowMs: nowMs(),
+    feedbackMap: feedbackMap, pool: buildCandidatePool(catalog), hiddenUids: hiddenUids, today: today, nowMs: nowMs(),
   });
   const recs = plan.recs;
   currentRecs = recs;
