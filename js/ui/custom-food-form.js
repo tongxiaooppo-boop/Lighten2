@@ -12,7 +12,7 @@ import { quickAddProblem, quickAddSlots } from "../engine/picker.js";
 export const MORE_FIELDS = [["protein_g", "蛋白質（g）"], ["carb_g", "碳水（g）"], ["fat_g", "脂肪（g）"], ["fiber_g", "纖維（g）"], ["sat_fat_g", "飽和脂肪（g）"], ["sodium_mg", "鈉（mg）"]];
 export const DIET_LABELS = { none: "都不是", vegan: "全素", lacto_ovo: "蛋奶素" };
 export const ROLES = ["main", "side", "snack", "drink"];
-const CHANNEL_LABELS = { convenience: "超商", delivery: "外食" };
+export const CHANNEL_LABELS = { convenience: "超商", delivery: "外食" };
 
 // 使用者有設飲食限制（全素、蛋奶素）時，飲食宣告放在必填區；沒設時收在「更多」
 export function hasDietRestriction(profile) {

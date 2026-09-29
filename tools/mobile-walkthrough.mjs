@@ -638,6 +638,60 @@ async function run() {
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "6-4 取消過敏原後按計算沒有完成");
 
+  // ---------- 7. 基本資料的「我的品項」區塊（B-1a） ----------
+  console.log("[7. 我的品項管理]");
+  const rowOf = (name) => `[...document.querySelectorAll('#custom-foods-section .custom-food-row')].find((r) => r.querySelector('.custom-food-name') && r.querySelector('.custom-food-name').innerText === ${JSON.stringify(name)})`;
+  const rowText = (name) => js(`(() => { const r = ${rowOf(name)}; return r ? r.innerText : null; })()`);
+  const clickInRow = (name, sel) => js(`(() => { const r = ${rowOf(name)}; const b = r && r.querySelector(${JSON.stringify(sel)}); if (!b) throw new Error("找不到 ${sel}"); b.scrollIntoView({ block: "center" }); b.click(); })()`);
+  await tab("profile");
+  await until(`!!(${rowOf(builtinName)})`, "7-1 我的品項清單沒有剛才的複製品");
+  check((await rowText(builtinName)).indexOf("從內建複製") !== -1, "7-1 複製品的狀態沒有「從內建複製」");
+  await clickInRow(builtinName, "[data-cf-edit]");
+  await until(`!!document.querySelector('#profile-custom-food-form .builtin-compare')`, "7-1 編輯複製品時沒有「內建目前的數值」");
+  check((await js(text("#profile-custom-food-form .builtin-compare"))).indexOf("內建目前的數值") !== -1, "7-1 並列區塊沒有「內建目前的數值」字樣");
+  await shot("我的品項-編輯複製品", "#profile-custom-food-form");
+  await click("#profile-custom-food-form [data-cf-cancel]");
+
+  // 7-2 補填只給未確認類：設過敏原「蛋」並按計算 → 未確認的有「補填」、含蛋的沒有
+  await setAllergens(["蛋"]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1" && !!(${rowOf("巷口新開的便當")}) && (${rowOf("巷口新開的便當")}).innerText.indexOf("不能選") !== -1`, "7-2 設過敏原後，未確認的我的品項沒有標「不能選」");
+  check(await js(`!!(${rowOf("巷口新開的便當")}).querySelector('[data-cf-fill]')`), "7-2 未確認的我的品項沒有「補填」");
+  check((await rowText("有蛋的三明治")).indexOf("含過敏原") !== -1 && !(await js(`!!(${rowOf("有蛋的三明治")}).querySelector('[data-cf-fill]')`)), "7-2 含蛋的我的品項沒有寫原因、或出現「補填」（不能引導改答案）");
+  await shot("我的品項-清單狀態", "#custom-foods-section");
+  await setAllergens([]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1" && (${rowOf("巷口新開的便當")}).innerText.indexOf("不能選") === -1`, "7-2 取消過敏原後狀態沒有更新");
+
+  // 7-3 封存複製品 → 移到「已封存」、提示原品項仍隱藏；還原
+  await clickInRow(builtinName, "[data-cf-archive]");
+  await until(`!!document.querySelector('#custom-foods-section .custom-foods-archived') && ${text("#custom-foods-status")}.indexOf("仍是隱藏的") !== -1`, "7-3 封存複製品後沒有移到已封存或沒有「仍是隱藏的」提示");
+  await js(`document.querySelector('#custom-foods-section .custom-foods-archived').open = true`);
+  await clickInRow(builtinName, "[data-cf-restore]");
+  await until(`${text("#custom-foods-status")}.indexOf("已還原") !== -1 && !document.querySelector('#custom-foods-section .custom-foods-archived')`, "7-3 還原後沒有回到清單");
+
+  // 7-4 已隱藏的內建品項：取消隱藏，有複製品時提示
+  await js(`document.querySelector('#custom-foods-hidden details').open = true`);
+  check((await js(text("#custom-foods-hidden"))).indexOf(builtinName) !== -1, "7-4 已隱藏的內建品項沒有列出複製時自動隱藏的原品項");
+  await shot("我的品項-已隱藏", "#custom-foods-hidden");
+  await js(`(() => { const b = [...document.querySelectorAll('#custom-foods-hidden .custom-food-row')].find((r) => r.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1).querySelector('[data-cf-unhide]'); b.click(); })()`);
+  await until(`${text("#custom-foods-status")}.indexOf("你有一筆從它複製的我的品項") !== -1`, "7-4 取消隱藏時沒有提示有複製品");
+
+  // 7-5 搜尋
+  await js(`(() => { const el = document.getElementById('custom-foods-search'); el.value = '三明治'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  check((await js(`[...document.querySelectorAll('#custom-foods-list > .custom-food-row .custom-food-name')].map((n) => n.innerText).join('|')`)) === "有蛋的三明治", "7-5 搜尋「三明治」後清單不是只剩有蛋的三明治");
+  await js(`(() => { const el = document.getElementById('custom-foods-search'); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+
+  // 7-6 ＋新增我的品項
+  await click("#custom-foods-add");
+  await until(`!!document.querySelector('#custom-foods-form-slot #profile-custom-food-form')`, "7-6 按新增沒有出現表單");
+  await js(`(() => { const f = document.getElementById('profile-custom-food-form'); f.querySelector('[data-cf=name]').value = '在家整理的新品'; f.querySelector('[data-cf=kcal]').value = '210'; })()`);
+  await click(`#profile-custom-food-form [data-cf-channel=delivery]`);
+  await shot("我的品項-新增表單", "#custom-foods-form-slot");
+  await click("#profile-custom-food-form [data-cf-save]");
+  await until(`${text("#custom-foods-status")}.indexOf("已新增") !== -1 && !!(${rowOf("在家整理的新品")})`, "7-6 新增後清單沒有新的一筆");
+  check((await rowText("在家整理的新品")).indexOf("外食") !== -1, "7-6 新增的品項不是外食");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

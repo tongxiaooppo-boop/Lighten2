@@ -1196,3 +1196,59 @@ body {
 .hide-notice .secondary-btn {
   min-height: 44px;
 }
+
+/* B-1a：基本資料的「我的品項」區塊（狀態只用中性文字，不上色） */
+.custom-foods-search {
+  flex: 1 1 10rem;
+  min-height: 44px;
+  padding: 0 0.6rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.custom-foods-widget .secondary-btn {
+  min-height: 44px;
+}
+.custom-food-row {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #EFE3D2;
+}
+.custom-food-name {
+  font-weight: 600;
+  color: #3A2E22;
+}
+.custom-food-meta,
+.custom-food-status {
+  color: #8A7A63;
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+.custom-foods-archived,
+.custom-foods-hidden {
+  margin-top: 0.8rem;
+}
+.custom-foods-archived > summary,
+.custom-foods-hidden > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #3A2E22;
+}
+.builtin-compare {
+  margin: 0.6rem 0;
+  padding: 0.6rem;
+  border: 1px dashed #EFE3D2;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+.builtin-compare p {
+  margin: 0 0 0.3rem;
+}
+.builtin-compare ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
