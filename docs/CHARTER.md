@@ -189,17 +189,17 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 寫入前必須通過：名稱非空、`kcal` 為正數、`role` 與 `channel` 合法、有 `allergen_tags` 欄位（表單預設「未確認」＝`null`）；沒填的營養欄位是 `null`〔機：`data/db.js` 寫入驗證〕。它進不進推薦候選池，依 PRD 10.5 的條件判斷，不看本章程的可信度。
 
-**我的食材**（PRD 12.4）：名稱非空；`source` 是 `tfda` 或 `user`；`tfda` 時有 `tfda_id`、`per_100g` 是 `null`、`filled` 只能填衛福部是 null 的欄位（衛福部改版後違反的欄位在更新時先自動清掉），更新時不得修改 `source`、`tfda_id`；`user` 時 `per_100g` 七個欄位齊全，`kcal` 必須是數字且 ≥ 0（跟我的品項要求正數不同：鹽、黑咖啡可以是 0），其餘是 ≥ 0 的數字或 `null`；`filled` 的鍵只能是那七個欄位、值是 ≥ 0 的數字；`state` 合法；`default_g > 0`；有 `allergen_tags` 欄位，只用 B6.1 的詞驗證函式是不碰資料庫的純函式，衛福部查詢表、catalog、我的食材由呼叫端當參數傳入〔機：`data/db.js` 寫入驗證＋check-engine 斷言〕。
+**我的食材**（PRD 12.4）：名稱非空；`source` 是 `tfda` 或 `user`；`tfda` 時有 `tfda_id`、`per_100g` 是 `null`、`filled` 只能填衛福部是 null 的欄位（衛福部改版後違反的欄位在更新時先自動清掉），更新時不得修改 `source`、`tfda_id`；`user` 時 `per_100g` 七個欄位齊全，`kcal` 必須是數字且 ≥ 0（跟我的品項要求正數不同：鹽、黑咖啡可以是 0），其餘是 ≥ 0 的數字或 `null`；`filled` 的鍵只能是那七個欄位、值是 ≥ 0 的數字；`state` 合法；`default_g > 0`；有 `allergen_tags` 欄位，只用 B6.1 的詞。驗證函式是不碰資料庫的純函式，衛福部查詢表、catalog、我的食材由呼叫端當參數傳入〔機：`data/db.js` 寫入驗證＋check-engine 斷言〕。
 
-**我的料理**（PRD 12.5）：名稱非空；食材至少 1 項、每項 `grams > 0`、`ref` 存在且是蛋白質／主食／蔬菜／醬料軸的內建食材或我的食材（`data/db.js` 可以讀 catalog 與我的食材來檢查）；`oil_g ≥ 0`；`seasoning` 是 `light` 或 `normal`；`servings` 是 ≥ 1 的整數；`role` 與 `valid_slots` 合法；查表由呼叫端當參數傳入〔機：`data/db.js` 寫入驗證〕。
+**我的料理**（PRD 12.5）：名稱非空；食材至少 1 項、每項 `grams > 0`、`ref` 存在且是蛋白質／主食／蔬菜／醬料軸的內建食材或我的食材；`oil_g ≥ 0`；`seasoning` 是 `light` 或 `normal`；`servings` 是 ≥ 1 的整數；`role` 與 `valid_slots` 合法；查表由呼叫端當參數傳入〔機：`data/db.js` 寫入驗證〕。
 
 ## B9. 資料下架
 
-刪除一個食材或品項時，`meal_plan`、`daily_log` 快照、「我的品項」的 `copied_from`、「我的組合」（`saved_meals`）、「我的料理」（`custom_dishes`）、常買清單（`settings.favorite_ingredient_ids`）若還指著它：紀錄照樣用快照顯示；計畫顯示中性提示「這個品項已不提供」；組合由 `resolveSavedMeal` 歸入「已不提供」並顯示中性提示；料理的任一食材查不到時整道歸「已不提供」、不做部分加總；常買清單略過查不到的 id；程式不得因為查不到而出錯〔機：check-engine 斷言，含組合引用已刪除 id 時解析不拋錯並回報缺少的元件〕。
+刪除一個食材或品項時，`meal_plan`、`daily_log` 快照、「我的品項」的 `copied_from`、「我的組合」（`saved_meals`）、「我的料理」（`custom_dishes`）、常買清單（`settings.favorite_ingredient_ids`）若還指著它：紀錄照樣用快照顯示；計畫顯示中性提示「這個品項已不提供」；組合由 `resolveSavedMeal` 歸入「已不提供」並顯示中性提示；料理的任一食材查不到時整道歸「已不提供」、不做部分加總（衛福部查詢檔載入失敗不算查不到，暫停料理相關動作）；常買清單略過查不到的 id；程式不得因為查不到而出錯〔機：check-engine 斷言，含組合引用已刪除 id 時解析不拋錯並回報缺少的元件；傳入「查詢檔載入失敗」時料理不歸已不提供〕。
 
 ## B10. 參考資料與 TFDA 改版
 
-- 檢查程式依賴的參考資料放 `data/reference/`（TFDA json、`label_unsourced` 凍結清單），不放 `collab/`〔機〕。
+- 檢查程式依賴的參考資料放 `data/reference/`（TFDA json、`label_unsourced` 凍結清單），不放 `collab/`〔機〕。TFDA 改版後**舊版參考檔保留不刪**：`tfda_lookup.json` 裡標了已下架的編號要跟它最後出現的那一版比對（B12）。
 - TFDA 出新版時：放進新檔 → 重跑 `tools/build-ingredients.js` 與 `data/tfda_lookup.json` 的產生工具 → 列出所有數值差異與消失的編號（查詢檔保留消失的編號並標已下架，使用者的我的食材不會失去數值，PRD 12.2）→ 逐項確認後提交，commit 訊息 `data(tfda): 升級到 <版本>`〔人〕。
 
 ## B11. 修改資料的流程
@@ -212,7 +212,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 ## B12. `tools/check-data.js` 檢查項目
 
-**錯誤**：格式與必填欄位、列舉值、id 唯一；熱量非負（B5.2）；null 規則；TFDA 食材數值與參考資料完全相等；`tfda_lookup.json` 逐筆與參考資料算出來的值完全相等；出處順位（B2.1、B2.2）；`label_unsourced` 凍結清單只減不增；`cooked` 有 `cooked_to_raw` 與公式；蔬菜為 `raw`；烹調法有 `implicit`；骨架有 `seasoned`、`allow` 引用正確；過敏原詞彙、複合料理未確認規則（B6.3）、飲食限制與過敏原一致（B6.8）；巨量營養素驗算（B5.4）；`kcal_range` 低 ≤ 代表值 ≤ 高。
+**錯誤**：格式與必填欄位、列舉值、id 唯一；熱量非負（B5.2）；null 規則；TFDA 食材數值與參考資料完全相等；`tfda_lookup.json` 逐筆與參考資料算出來的值完全相等（現行編號比對最新版；標了已下架的編號比對它最後出現的那一版，B10）；出處順位（B2.1、B2.2）；`label_unsourced` 凍結清單只減不增；`cooked` 有 `cooked_to_raw` 與公式；蔬菜為 `raw`；烹調法有 `implicit`；骨架有 `seasoned`、`allow` 引用正確；過敏原詞彙、複合料理未確認規則（B6.3）、飲食限制與過敏原一致（B6.8）；巨量營養素驗算（B5.4）；`kcal_range` 低 ≤ 代表值 ≤ 高。
 
 **警告**：食材沒被骨架引用；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）。
 
@@ -283,8 +283,8 @@ ui/  →  data/    →  core/
 13. 不評判：不顯示遵循率、「偏離計畫」、「未完成」、連續達成天數；不依型態做頻率統計配評價文字；商品不依熱量排序或上色；飲料不做糖量警告〔機：check-arch 對 `ui/` 做禁用字 grep；〔人〕：配色與排序〕。
 14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：顯示欄位（鈉、飽和脂肪）只在 `engine/meal-content.js` 處理，其他 engine 模組只能把 `displayFields(...)` 原封併進輸出物件；啟發式檢查；〔人〕：畫面〕。
 15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取〔機：check-arch grep——這個 key 只允許出現在 `data/db.js` 與「自己選」modal 的檔案〕。
-16. 「我的組合」（`saved_meals`）只供手動引用，推薦、統計、hero 不得讀取〔機：check-arch——`data/db.js` 的讀取函式 `listSavedMeals`、`getSavedMeal` 只允許白名單檔案 import；白名單寫在 `tools/check-arch.js` 的設定裡，只能加入負責「選擇器、組合管理區、餐點日曆、食物資料頁、備份匯出匯入」這五類職責的檔案，檔名調整不算修改本章程；寫入函式不限〕。每次引用都經過 `engine/meal-content.js` 的 `resolveSavedMeal`（元件級的硬性過濾、依目前骨架重新驗證含免開火與軸上限、下架與隱藏處理）〔機：check-engine 對 `resolveSavedMeal` 斷言；〔人〕：ui 引用時都呼叫它〕。
-17. 「我的食材」「我的料理」與常買清單（`custom_ingredients`、`custom_dishes`、`settings.favorite_ingredient_ids`）只供手動使用，推薦、統計、hero 不得讀取〔機：check-arch——① `data/db.js` 的讀取函式只允許白名單檔案 import，白名單寫在 `tools/check-arch.js`，只能加入負責「選擇器、料理編輯器、食物資料頁、組合管理區、餐點日曆、計畫顯示模組、備份匯出匯入」的檔案，`js/ui/tab-today.js`、hero 與 `engine/` 一律不得 import；② 常買清單只能用 `getFavoriteIngredientIds`／`setFavoriteIngredientIds` 讀寫，`favorite_ingredient_ids` 字串只准出現在 `data/db.js`；③ 啟發式輔助：`engine/pool.js`、`recommend.js`、`today.js`、`matcher.js` 不得出現字面量 `"dish"`〕（PRD 12.1、12.5、12.7）。
+16. 「我的組合」（`saved_meals`）只供手動引用，推薦、統計、hero 不得讀取〔機：check-arch——`data/db.js` 的讀取函式 `listSavedMeals`、`getSavedMeal`（以及之後任何會回傳 `saved_meals` 內容的函式，包括整批匯出）只允許白名單檔案 import；白名單寫在 `tools/check-arch.js` 的設定裡，只能加入負責「選擇器、組合管理區、餐點日曆、食物資料頁、備份匯出匯入」這五類職責的檔案，檔名調整不算修改本章程；寫入函式不限〕。每次引用都經過 `engine/meal-content.js` 的 `resolveSavedMeal`（元件級的硬性過濾、依目前骨架重新驗證含免開火與軸上限、下架與隱藏處理）〔機：check-engine 對 `resolveSavedMeal` 斷言；〔人〕：ui 引用時都呼叫它〕。
+17. 「我的食材」「我的料理」與常買清單（`custom_ingredients`、`custom_dishes`、`settings.favorite_ingredient_ids`）只供手動使用，推薦、統計、hero 不得讀取〔機：check-arch——① `data/db.js` 裡凡是會回傳這兩個 store 內容的函式（包括整批匯出）都列進讀取函式清單，只允許白名單檔案 import，白名單寫在 `tools/check-arch.js`，只能加入負責「選擇器、料理編輯器、食物資料頁、組合管理區、餐點日曆、計畫顯示模組、備份匯出匯入」的檔案，`js/ui/tab-today.js`、`js/ui/today-hero.js` 與 `engine/` 一律不得 import；② 常買清單只能用 `getFavoriteIngredientIds`／`setFavoriteIngredientIds` 讀寫，`favorite_ingredient_ids` 字串只准出現在 `data/db.js`；③ 啟發式輔助：`engine/pool.js`、`recommend.js`、`today.js`、`matcher.js` 不得出現字面量 `"dish"`〕（PRD 12.1、12.5、12.7）。
 
 ## C5. 修 bug 的規則
 
