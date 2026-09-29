@@ -1,7 +1,7 @@
 // 輕盈計畫 — 瀏覽器冒煙測試：用無頭 Edge/Chrome 實際操作 App（ES modules、import map、IndexedDB 都是真的）。
 // 用法：node tools/smoke-browser.mjs            （全部通過 exit 0）
 //       SMOKE_BROWSER=/path/to/chrome node tools/smoke-browser.mjs
-// 流程：填基本資料 → 今日建議 → 記錄推薦 → 撤銷 → 自己選（超商、外食＋飲料、自煮）→ 本週 → 運動 → 體重；
+// 流程：填基本資料 → 今日建議 → 記錄推薦 → 撤銷 → 自己選（超商、外食＋飲料、自煮）→ 本週 → 運動 → 體重 → 備份與還原；
 // 最後檢查 console 沒有錯誤、資料庫是 lighten2、daily_log 是新格式。約 30 秒，不放進 pre-commit，Phase 驗收時跑。
 // 手機版面與手機實機腳本的步驟由 tools/mobile-walkthrough.mjs 自動跑（模擬手機尺寸＋截圖）。
 
@@ -96,6 +96,29 @@ async function run() {
   await js(`document.querySelector('.tab-btn[data-tab=profile]').click()`);
   await js(`(() => { const f = document.getElementById('weight-form'); f.elements.weight_kg.value = 79.5; f.requestSubmit(); })()`);
   await until(`${text("#weight-log-status")}.indexOf("79.5") !== -1`, "體重沒有記錄");
+
+  console.log("[備份與還原（真的 IndexedDB）]");
+  // import('./js/data/db.js') 經過 import map，跟 App 是同一個模組實體（PRD 11.6、B-3 計畫第 4 節 9–11）
+  const DB = `(await import('./js/data/db.js'))`;
+  const exported = await js(`(async () => { const m = ${DB}; const e = await m.exportAllData(); return JSON.stringify(e); })()`);
+  const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
+  check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
+  // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）
+  await js(`(async () => { const m = ${DB}; await m.addWeightLog({ log_date: '2000-01-01', weight_kg: 70 }); await m.setSetting('picker_last_meal_type', { snack: 'delivery' }); })()`);
+  check((await js(`(async () => { const m = ${DB}; return JSON.stringify(await m.exportAllData()); })()`)) !== exported, "多寫一筆後匯出內容沒變（測試前提不成立）");
+  await js(`(async () => { const m = ${DB}; await m.importAllData(JSON.parse(${JSON.stringify(exported)})); })()`);
+  check((await js(`(async () => { const m = ${DB}; return JSON.stringify(await m.exportAllData()); })()`)) === exported, "還原後再匯出，跟原本的備份不是逐字相同");
+  // 全有全無：put 第 5 次呼叫「同步」丟錯（模擬 DataError；不能改成回傳失敗的 request，那樣測不到 withStores 的同步丟錯）
+  await js(`(async () => { const m = ${DB}; await m.addWeightLog({ log_date: '2000-01-02', weight_kg: 71 }); })()`);
+  const beforeFail = await js(`(async () => { const m = ${DB}; return JSON.stringify(await m.exportAllData()); })()`);
+  const failMsg = await js(`(async () => { const m = ${DB}; const orig = IDBObjectStore.prototype.put; let n = 0;
+    IDBObjectStore.prototype.put = function () { n++; if (n === 5) throw new DOMException('模擬的 put 失敗', 'DataError'); return orig.apply(this, arguments); };
+    try { await m.importAllData(JSON.parse(${JSON.stringify(exported)})); return null; } catch (e) { return String(e && e.message); }
+    finally { IDBObjectStore.prototype.put = orig; } })()`);
+  check(failMsg !== null, "put 中途丟錯時 importAllData 沒有回報失敗");
+  const afterFail = await js(`(async () => { const m = ${DB}; return JSON.stringify(await m.exportAllData()); })()`);
+  check(afterFail === beforeFail, "put 中途丟錯後資料庫被改了（不是全有全無）：匯入前 " + beforeFail.length + " 字、之後 " + afterFail.length + " 字");
+  await js(`(async () => { const m = ${DB}; await m.importAllData(JSON.parse(${JSON.stringify(exported)})); })()`);
 
   console.log("[儲存與錯誤]");
   check((await js(`indexedDB.databases().then((d) => d.map((x) => x.name).join(','))`)) === "lighten2", "IndexedDB 不是只有 lighten2");

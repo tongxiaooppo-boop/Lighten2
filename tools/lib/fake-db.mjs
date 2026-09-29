@@ -2,7 +2,7 @@
 // 讀取順序照 IndexedDB：依日期範圍讀的依 log_date、再依 id 排序；custom_foods 依 id 排序。
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
-import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood } from "../../js/data/db.js";
+import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -105,4 +105,9 @@ export async function getExerciseLogs(r) {
 }
 
 export async function getSetting(key) { return clone(S().settings[key]) ?? null; }
-export async function setSetting(key, value) { S().settings[key] = clone(value); return value; }
+export async function setSetting(key, value) { validateSetting(key, value); S().settings[key] = clone(value); return value; }
+
+// 備份（PRD 11.6）：純函式直接用真的 db.js；讀寫資料庫的兩個函式 diff-recs 不會呼叫，只為了讓模組連結得起來。
+export { BACKUP_SCHEMA_VERSION, migrateBackup, validateBackup, summarizeBackup, validateProfile } from "../../js/data/db.js";
+export async function exportAllData() { throw new Error("[fake-db] 不支援 exportAllData"); }
+export async function importAllData() { throw new Error("[fake-db] 不支援 importAllData"); }

@@ -23,7 +23,7 @@ const DUP_NAME_ALLOW = new Set(["render", "init", "ready", "$", "onActivate", "m
 
 // 「我的組合」讀取函式只允許這些檔案 import（C4.16）。
 // 只能加入負責「選擇器、組合管理區、餐點日曆、備份匯出匯入」這四類職責的檔案。
-const SAVED_MEAL_READERS = ["listSavedMeals", "getSavedMeal"];
+const SAVED_MEAL_READERS = ["listSavedMeals", "getSavedMeal", "exportAllData"];
 const SAVED_MEAL_READER_FILES = [
   /^js\/ui\/meal-picker\//,        // 選擇器（Phase 0）
   /^js\/ui\/profile\/saved-meals\.js$/, // 組合管理區（平行工作線 C）
@@ -32,9 +32,9 @@ const SAVED_MEAL_READER_FILES = [
   /^js\/data\/db\.js$/,
 ];
 
-// 讀取運動紀錄只允許這兩個檔案（C4.12）
-const EXERCISE_READERS = ["getExerciseLogs"];
-const EXERCISE_FILES = [/^js\/ui\/tab-exercise\.js$/, /^js\/data\/db\.js$/];
+// 讀取運動紀錄（包括整批匯出）只允許運動分頁、db.js 與備份匯出匯入（C4.12，decisions #72）
+const EXERCISE_READERS = ["getExerciseLogs", "exportAllData"];
+const EXERCISE_FILES = [/^js\/ui\/tab-exercise\.js$/, /^js\/data\/db\.js$/, /^js\/ui\/backup\.js$/];
 
 // picker_last_meal_type 只允許出現在 db.js 與「自己選」選擇器（C4.15）
 const PICKER_LAST_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//];
@@ -271,7 +271,7 @@ function restrictNames(names, allowFiles, label) {
     });
   }
 }
-restrictNames(EXERCISE_READERS, EXERCISE_FILES, "只有運動分頁與 db.js 可以讀運動紀錄");
+restrictNames(EXERCISE_READERS, EXERCISE_FILES, "只有運動分頁、db.js 與備份匯出匯入可以讀運動紀錄");
 for (const f of files.filter((x) => x.layer === "engine")) check(!/exercise/i.test(f.code), f.rel + " engine 出現 exercise（運動與飲食脫鉤）");
 
 console.log("[不評判的禁用字 C4.13]");
