@@ -538,6 +538,54 @@ async function snapPicker() {
     }
   }
 
+  // 外食分頁「找不到？直接估算」（decisions #46）：只有估算、估算＋外食主餐＋飲料，送出的紀錄
+  const uiLines = (k) => A.takeDom().forEach((line, i) => {
+    if (/^#meal-picker-(summary|gap|hint|submit) /.test(line)) emit("ui", "picker/" + k + "/dom" + String(i).padStart(2, "0"), line);
+  });
+  for (const slot of ["lunch", "dinner"]) {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    const r = await A.pickerOpen(slot);
+    A.takeDom();
+    const k = "estimate/" + slot;
+    emit("picker", k + "/L-only", normTotals(A.pickerEstimate("L", " 喜宴 ")));
+    uiLines(k + "/L-only");
+    const main = A.pickerPassItems().find((it) => it.role === "main");
+    emit("picker", k + "/L+main+drink", normTotals(A.pickerSelectItems([main.uid, r.drinks.pass[0]])));
+    uiLines(k + "/L+main+drink");
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", k + "/submit" + i, normWrite(w)); });
+    A.takeAlerts().forEach((m, i) => emit("picker", k + "/alert" + i, m));
+    A.takeDom(); A.takeEngineIO();
+  }
+
+  // 「我的品項」快速新增（decisions #48）：存完能選且有名額就選中；被擋或名額滿不選中並說明；送出前預告不引導改「確認不含」
+  const quickCases = [
+    ["M/lunch/convenience/main", P.M, "lunch", "convenience", [], { name: "新品健身餐盒", kcal: "520", role: "main", nutrients: { protein_g: "32" } }],
+    ["M/lunch/convenience/main-full", P.M, "lunch", "convenience", ["mains2"], { name: "第三個主餐", kcal: "300", role: "main" }],
+    ["M/afternoon_tea/delivery/snack", P.M, "afternoon_tea", "delivery", [], { name: "巷口雞蛋糕", kcal: "250" }],
+    ["M/breakfast/convenience/drink", P.M, "breakfast", "convenience", [], { name: "自己帶的黑咖啡", kcal: "5", role: "drink", allergenMode: "none" }],
+    ["M/lunch/delivery/empty-name", P.M, "lunch", "delivery", [], { name: " ", kcal: "abc" }],
+    ["ALLERGY/lunch/delivery/unverified", P.ALLERGY, "lunch", "delivery", [], { name: "朋友做的便當", kcal: "700" }],
+    ["ALLERGY/lunch/delivery/confirmed", P.ALLERGY, "lunch", "delivery", [], { name: "確認過的便當", kcal: "700", allergenMode: "none" }],
+    ["VEGAN/lunch/convenience/vegan", P.VEGAN, "lunch", "convenience", [], { name: "全素便當", kcal: "600", allergenMode: "none", diet: "vegan" }],
+    ["VEGAN/lunch/convenience/undeclared", P.VEGAN, "lunch", "convenience", [], { name: "沒宣告的便當", kcal: "600", allergenMode: "none" }],
+    ["M/lunch/convenience/vegan-conflict", P.M, "lunch", "convenience", [], { name: "矛盾的品項", kcal: "300", role: "side", allergenMode: "some", allergens: ["蛋"], diet: "vegan" }],
+  ];
+  for (const [name, profile, slot, tab, pre, values] of quickCases) {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: profile, dailyLogs: [], customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen(slot);
+    A.pickerTab(tab);
+    if (pre.indexOf("mains2") !== -1) A.pickerSelectItems(A.pickerPassItems().filter((it) => it.role === "main").slice(0, 2).map((it) => it.uid));
+    A.takeDom();
+    const res = await A.pickerQuickAdd(values);
+    const k = "quickadd/" + name;
+    emit("picker", k, stable(res));
+    A.takeWrites().forEach((w, i) => { if (w.op === "addCustomFood") emit("picker", k + "/write" + i, stable(w.record)); });
+    uiLines(k);
+  }
+
   // 預設分頁（PRD 第 4 節）：偏好是有效型態就用偏好；auto 時用上次這個時段送出的型態；都沒有停在超商
   const last = { picker_last_meal_type: { lunch: "delivery", afternoon_tea: "delivery", dinner: "convenience" } };
   const prefProfile = (prefs) => Object.assign({}, P.M, { meal_prefs: Object.assign({}, P.M.meal_prefs, prefs) });

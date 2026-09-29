@@ -36,7 +36,9 @@ export function productTabHtml(groups, selected, tabLabel) {
   let role = null;
   groups.forEach(function (g) {
     if (g.is_custom) {
-      html += '<details class="meal-picker-group meal-picker-custom"><summary>我的品項（' + g.entries.length + "）</summary>" +
+      // 預設收合；有已選的（例：剛快速新增並選中）就展開，讓人看得到
+      const open = g.entries.some(function (e) { return selected.indexOf(e.item.uid) !== -1; });
+      html += '<details class="meal-picker-group meal-picker-custom"' + (open ? " open" : "") + "><summary>我的品項（" + g.entries.length + "）</summary>" +
         cardsHtml(g.entries, selected) + "</details>";
       return;
     }

@@ -5,7 +5,7 @@
 import { SLOT_LABELS, DEFAULT_MEAL_PREFS } from "../../core/slots.js";
 import { escapeHtml } from "../../core/html.js";
 import { $, sodiumText, notIncludedText } from "../dom.js";
-import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, getSetting, setSetting } from "../../data/db.js";
+import { getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting } from "../../data/db.js";
 import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
@@ -16,6 +16,8 @@ import {
 import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab } from "../../engine/picker.js";
 import { productTabHtml, drinkStepHtml } from "./product-tab.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
+import { estimateCardHtml } from "./estimate-card.js";
+import { emptyQuickAdd, quickAddRecord, quickAddNotes, quickAddFormHtml, readQuickAddInputs } from "./quick-add.js";
 import { getCalibratedTargets } from "../calibration.js";
 import { todayStr, nowIso } from "../clock.js";
 
@@ -30,12 +32,15 @@ export const mealPicker = {
   lastPicked: {},
   tabs: {
     convenience: { items: [], reasons: {}, selected: [] },
-    delivery: { items: [], reasons: {}, selected: [] },
+    delivery: { items: [], reasons: {}, selected: [], estimates: [] },
   },
   drinks: { items: [], reasons: {} },
   drinkUid: null,
   // 自煮分頁：tier＝快煮/開伙子切換（就是這餐的 meal_type，decisions #34）；draft＝engine 的自煮草稿
   cook: { tier: "cook_full", draft: null },
+  // 快速新增表單（null＝收起）：{ tab, values }；quickAddMessage：存完之後的中性說明
+  quickAdd: null,
+  quickAddMessage: null,
 };
 
 function emptyCookDraft() {
@@ -80,8 +85,11 @@ export async function openMealPicker(slot, onLogged) {
   ["convenience", "delivery"].forEach(function (t) {
     m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), selected: [] };
   });
+  m.tabs.delivery.estimates = [];
   m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile) };
   m.drinkUid = null;
+  m.quickAdd = null;
+  m.quickAddMessage = null;
   // 沒存過的時段用預設偏好（跟推薦、基本資料表單顯示的一樣）；不合法的值（含 auto）由 engine 往下找上次送出的型態
   const prefs = Object.assign({}, DEFAULT_MEAL_PREFS, profile.meal_prefs);
   const mealType = resolveDefaultMealType({ planned: null, pref: prefs[slot], lastPicked: lastPicked[slot] });
@@ -103,7 +111,9 @@ export async function openMealPicker(slot, onLogged) {
 
 export function selectTab(tab) {
   if (TABS.indexOf(tab) === -1) return;
+  syncQuickAdd();
   mealPicker.tab = tab;
+  mealPicker.quickAddMessage = null;
   renderMealPicker();
   const body = $("#meal-picker-body");
   if (body) body.scrollTop = 0;
@@ -124,11 +134,14 @@ function selectedDrink() {
   return m.drinkUid ? m.drinks.items.filter(function (d) { return d.uid === m.drinkUid && !m.drinks.reasons[d.uid]; })[0] || null : null;
 }
 
-// 目前分頁的草稿（摘要與送出共用同一份，看到的＝存下的）；meal_type 一律是分頁值（decisions #47）
+// 目前分頁的草稿（摘要與送出共用同一份，看到的＝存下的）；meal_type 一律是分頁值（decisions #47）；估算只在外食分頁（decisions #46）
 export function currentDraft() {
   const m = mealPicker;
   if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink() }, m.cook.draft);
-  return { kind: "products", meal_type: m.tab, items: selectedItems(m.tab), estimates: [], drink: selectedDrink() };
+  return {
+    kind: "products", meal_type: m.tab, items: selectedItems(m.tab),
+    estimates: m.tab === "delivery" ? m.tabs.delivery.estimates.slice() : [], drink: selectedDrink(),
+  };
 }
 
 // 送出規則用的品項（角色上限含飲料）
@@ -176,9 +189,30 @@ function renderPanel() {
     bindSlider();
     return;
   }
+  syncQuickAdd();
   const t = m.tabs[m.tab];
   const groups = groupForTab(t.items, function (it) { return t.reasons[it.uid]; });
-  panel.innerHTML = '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab]);
+  let html = m.tab === "delivery" ? estimateCardHtml(t.estimates) : "";
+  html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab]);
+  if (m.quickAddMessage) html += '<p class="meal-picker-note">' + escapeHtml(m.quickAddMessage) + "</p>";
+  html += m.quickAdd && m.quickAdd.tab === m.tab
+    ? quickAddFormHtml(m.quickAdd.values, TAB_LABELS[m.tab], m.profile, quickAddNotes(m.quickAdd.values, m.slot, m.tab, m.profile))
+    : '<button type="button" class="secondary-btn meal-picker-add-btn" data-quick-add-open>＋新增到我的' + TAB_LABELS[m.tab] + "品項</button>";
+  panel.innerHTML = html;
+}
+
+// 快速新增表單的文字欄位在重畫前先讀回來，重畫不會吃掉使用者打的字
+function syncQuickAdd() {
+  const m = mealPicker;
+  if (m.quickAdd && m.quickAdd.tab === m.tab) readQuickAddInputs(document.getElementById("quick-add-form"), m.quickAdd.values);
+}
+
+function refreshQuickAddNotes() {
+  const m = mealPicker;
+  if (!m.quickAdd) return;
+  syncQuickAdd();
+  const el = document.getElementById("quick-add-notes");
+  if (el) el.innerHTML = quickAddNotes(m.quickAdd.values, m.slot, m.quickAdd.tab, m.profile).map(function (t) { return "<p>" + escapeHtml(t) + "</p>"; }).join("");
 }
 
 function renderDrinks() {
@@ -196,11 +230,60 @@ export function renderMealPicker() {
   updateSummary();
 }
 
+// 「找不到？直接估算」：加一筆估算到這一餐（外食分頁）
+export function addEstimate(size, name) {
+  mealPicker.tabs.delivery.estimates.push({ size: size, name: name && name.trim() ? name.trim() : "" });
+  renderPanel();
+  updateSummary();
+}
+
+// 存成我的品項（PRD 10.3）：寫入 → 放進目前分頁（飲料進飲料步驟）→ 能選且有名額就選中，否則不選中並說明原因
+export async function saveQuickAdd(values) {
+  const m = mealPicker;
+  const tab = m.tab;
+  const r = quickAddRecord(values, m.slot, tab);
+  if (r.errors.length > 0) {
+    m.quickAddMessage = r.errors.join("；");
+    renderPanel();
+    return null;
+  }
+  let saved;
+  try {
+    saved = await addCustomFood(r.record);
+  } catch (err) {
+    console.error(err);
+    m.quickAddMessage = "存檔失敗，請重試。";
+    renderPanel();
+    return null;
+  }
+  const item = fromCustomFood(saved);
+  const check = passesHardFilters(item, m.profile);
+  const reason = check.ok ? null : check.reason;
+  let note = null;
+  if (item.role === "drink") {
+    m.drinks.items.push(item);
+    if (reason) m.drinks.reasons[item.uid] = reason;
+    else m.drinkUid = item.uid;
+  } else {
+    const t = m.tabs[tab];
+    t.items.push(item);
+    const roleItems = draftRoleItems(currentDraft());
+    if (reason) t.reasons[item.uid] = reason;
+    else if (canAddManualItem(roleItems, item, m.slot)) t.selected.push(item.uid);
+    else note = "已存成我的品項。" + manualSelectionProblem(roleItems.concat([item]), m.slot) + "這次沒有幫你選。";
+  }
+  m.quickAdd = null;
+  m.quickAddMessage = reason ? "已存成我的品項。以你目前的設定不能選：" + reason : note || "已存成我的品項，並選進這一餐。";
+  renderMealPicker();
+  return saved;
+}
+
 // 其他分頁還有選取時提醒一行（送出只算目前分頁＋飲料）
 function leftoverLine() {
   const m = mealPicker;
-  return ["convenience", "delivery"].filter(function (t) { return t !== m.tab && selectedItems(t).length > 0; }).map(function (t) {
-    return TAB_LABELS[t] + "分頁還有 " + selectedItems(t).length + " 項沒有算進這餐";
+  const count = function (t) { return selectedItems(t).length + (t === "delivery" ? m.tabs.delivery.estimates.length : 0); };
+  return ["convenience", "delivery"].filter(function (t) { return t !== m.tab && count(t) > 0; }).map(function (t) {
+    return TAB_LABELS[t] + "分頁還有 " + count(t) + " 項沒有算進這餐";
   });
 }
 
@@ -230,7 +313,12 @@ export function updateSummary() {
     if (isCook ? !!d.archetype : pickedCount(d) > 0) {
       const share = slotNutrientShare(m.targets, m.todayLogs, m.profile.enabled_slots, m.slot);
       const gaps = slotGaps(share, totals);
-      if (gaps.overKcal > 0) lines.push("這組合約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + gaps.overKcal + "），仍可送出。");
+      if (gaps.overKcal > 0 && !isCook && d.estimates.length > 0) {
+        // 估算的一餐（聚餐、喜宴）：延續 PRD 第 9 節的說法
+        lines.push("這餐約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + gaps.overKcal + "），先記下來，其他餐會自動調整。");
+      } else if (gaps.overKcal > 0) {
+        lines.push("這組合約 " + Math.round(totals.kcal) + " kcal，這個時段配額約 " + Math.round(share.kcalShare) + " kcal（+" + gaps.overKcal + "），仍可送出。");
+      }
       if (gaps.proteinGap == null) lines.push("蛋白質：無資料");
       else if (gaps.proteinGap > 0) lines.push("蛋白質缺口約 " + gaps.proteinGap + "g");
       if (gaps.fiberGap == null) lines.push("纖維：無資料");
@@ -303,8 +391,54 @@ function bindSlider() {
   });
 }
 
+// 估算卡片與快速新增表單的點選；有處理回傳 true
+function onProductExtrasClick(e) {
+  const m = mealPicker;
+  const q = m.quickAdd && m.quickAdd.values;
+  const at = function (sel) { return e.target.closest(sel); };
+  let el;
+  if ((el = at("[data-estimate-size]"))) {
+    const nameEl = document.getElementById("meal-picker-estimate-name");
+    addEstimate(el.getAttribute("data-estimate-size"), nameEl ? nameEl.value : "");
+    return true;
+  }
+  if ((el = at("[data-estimate-remove]"))) {
+    m.tabs.delivery.estimates.splice(parseInt(el.getAttribute("data-estimate-remove"), 10), 1);
+  } else if (at("[data-quick-add-open]")) {
+    m.quickAdd = { tab: m.tab, values: emptyQuickAdd(m.slot) };
+    m.quickAddMessage = null;
+  } else if (at("[data-qa-cancel]")) {
+    m.quickAdd = null;
+  } else if (at("[data-qa-save]")) {
+    syncQuickAdd();
+    saveQuickAdd(q);
+    return true;
+  } else if (q && (el = at("[data-qa-role]"))) {
+    q.role = el.getAttribute("data-qa-role");
+  } else if (q && (el = at("[data-qa-allergen-mode]"))) {
+    q.allergenMode = el.getAttribute("data-qa-allergen-mode");
+  } else if (q && (el = at("[data-qa-allergen]"))) {
+    const a = el.getAttribute("data-qa-allergen");
+    const i = q.allergens.indexOf(a);
+    if (i === -1) q.allergens.push(a); else q.allergens.splice(i, 1);
+  } else if (q && (el = at("[data-qa-diet]"))) {
+    q.diet = el.getAttribute("data-qa-diet");
+  } else {
+    return false;
+  }
+  // 重畫表單時保留「更多（選填）」展開的狀態
+  const more = document.querySelector("#quick-add-form .quick-add-more");
+  const moreOpen = !!(more && more.open);
+  renderPanel();
+  updateSummary();
+  const moreAfter = document.querySelector("#quick-add-form .quick-add-more");
+  if (moreAfter && moreOpen) moreAfter.open = true;
+  return true;
+}
+
 function onPanelClick(e) {
   if (mealPicker.tab === "cook") { onCookClick(e); return; }
+  if (onProductExtrasClick(e)) return;
   const card = e.target.closest(".item-card");
   if (!card || card.disabled) return;
   const m = mealPicker;
@@ -391,7 +525,10 @@ export function initMealPicker() {
   const tabs = $("#meal-picker-tabs");
   if (tabs) tabs.addEventListener("click", onTabClick);
   const panel = $("#meal-picker-panel");
-  if (panel) panel.addEventListener("click", onPanelClick);
+  if (panel) {
+    panel.addEventListener("click", onPanelClick);
+    panel.addEventListener("input", function (e) { if (e.target.closest && e.target.closest("#quick-add-form")) refreshQuickAddNotes(); });
+  }
   const drinks = $("#meal-picker-drinks");
   if (drinks) drinks.addEventListener("click", onDrinkClick);
   const cancel = $("#meal-picker-cancel");
