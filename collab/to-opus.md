@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29 深夜，B-1a 完成未推送；B-3 已推送待使用者手機測；Phase 0 已驗收）
+# 給接手的 Opus：Lighten2 交接（2026-09-29 深夜，B-1a、B-3 已推送，待使用者手機測；Phase 0 已驗收）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -43,12 +43,12 @@
    - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
 2. **PRD 第 12 節「食物資料：查詢與修訂」已定案**（2026-09-29，四輪獨立審核，問答逐字在 `collab/opus-review-log/2026-09-29-food-data-review.md`；decisions #50–#70；CHARTER B1、B2、B5.6、B5.7、B8、B9、B10、B12、C1.5、C4.11、C4.16、新增 C4.17 已同步）。要點：三層資料；我的食材＝常買清單（衛福部來源只存 `tfda_id`、執行時讀 `data/tfda_lookup.json`）；我的料理＝MealContent 新元件 `dish`（store `custom_dishes`，不綁骨架、不進推薦）；我的組合可直接編輯；份量倍數 `qty`。路線圖：B-3 → B-1a → B-1b／B-1c → B-4a → B-4b；C 不依賴 B-1。
 3. **B-3 匯出／匯入已實作（2026-09-29，commit `8a5035a`～`21c836c`，已推送）**：計畫 [docs/review/2026-09-29-B3-實作計畫.md](../docs/review/2026-09-29-B3-實作計畫.md)，三輪審核逐字在 `collab/opus-review-log/2026-09-29-b3-plan-review.md`；PRD 11.6、decisions #71–#72、章程 C4.12 已改。db.js：`exportAllData`／`importAllData`（一個 transaction 清空後寫入）、`validateBackup`／`migrateBackup`／`summarizeBackup`、`SETTING_KEYS`（`setSetting` 會驗 key 與值）、`BACKUP_SCHEMA_VERSION`（加 store 或 settings key 要 +1 並在 `tools/fixtures/` 凍結新 fixture）；順手修了 `withStores` 同步丟錯不 abort 的 bug。畫面在 `js/ui/backup.js`。**待使用者**：手機短清單第 4 項；決定 A 已定案（還原前要先匯出或勾「不需要保留」）、決定 B 已定案（不處理舊資料：App 還沒給別人用；維持不合法就擋下）。內建資料編輯器、分享包仍是日後討論（未定案）。
-3a. **B-1a 我的品項管理＋份量倍數已實作（2026-09-29，commit `b276f39`～`6d4a317`，未推送）**：計畫 [docs/review/2026-09-29-B1a-實作計畫.md](../docs/review/2026-09-29-B1a-實作計畫.md)，兩輪審核逐字在 `collab/opus-review-log/2026-09-29-b1a-plan-review.md`；PRD 10.x／12.3、decisions #73。
+3a. **B-1a 我的品項管理＋份量倍數已實作（2026-09-29，commit `b276f39`～`6d4a317`，已推送）**：計畫 [docs/review/2026-09-29-B1a-實作計畫.md](../docs/review/2026-09-29-B1a-實作計畫.md)，兩輪審核逐字在 `collab/opus-review-log/2026-09-29-b1a-plan-review.md`；PRD 10.x／12.3、decisions #73。
    - 選擇器：已選段（清單上方）份量晶片、隱藏＋復原、複製成我的版本（`js/ui/custom-food-form.js` 完整表單）、補填（只給「成分未確認」「飲食限制未確認」）；飲料的份量在飲料步驟。
    - 基本資料「我的品項」區塊：`js/ui/profile/custom-foods.js`。
    - db：`updateCustomFood`（`applyCustomFoodPatch` 純函式）、隱藏清單專用函式（`hidden_catalog_uids` 是 dedicatedOnly，只擋在 setSetting）、`copyBuiltinToCustom`（一個 transaction 新增＋隱藏）、qty 只能 0.5／1／1.5／2、備份 v2（`tools/fixtures/backup-v2.json` 凍結自 smoke 真的匯出；`SMOKE_FREEZE_BACKUP=路徑 node tools/smoke-browser.mjs` 可重新凍結）。
    - 跟計畫不同的兩處：`copyFromBuiltin`／`builtinCurrentValues` 放 `meal-content.js`（有鈉與飽和脂肪，章程 C4.14 只准那裡處理），不是計畫寫的 picker.js；飲料份量跟品項共用 `qtyByUid`，沒有另設 `drinkQty`。
-   - **待使用者**：推送（B-1a 共 6 個 commit）；手機短清單第 4 項（備份）、第 5 項（我的品項）；確認 decisions #73 的預設（入口在已選段、隱藏有復原、取消隱藏不擋只提示、管理區可以直接新增）。
+   - **待使用者**：手機短清單第 4 項（備份）、第 5 項（我的品項）；確認 decisions #73 的預設（入口在已選段、隱藏有復原、取消隱藏不擋只提示、管理區可以直接新增）。
    - **下一個**：B-1c（成分明細，只依賴 B-3）或 B-1b（食物資料查詢，要先做 `data/tfda_lookup.json` 產生工具）；平行工作線 A（擴充餐型）也可以插進來。
 4. **已修並推送（2026-09-29，`ad63a06`）**：推薦卡片「配額已經不多了」「暫無適合的組合」也有「自己選」（`js/ui/tab-today.js` `pickBtnHtml`）；重現步驟 mobile-walkthrough 3-12、手機實機腳本 3-12。使用者還沒在手機上看。
 5. `docs/日後討論.md`：−1b 待評估項目（送 C3）、手機截圖發現的畫面問題（百分比誤解、44px 等）。運動分頁「連續紀錄」仍暫緩。
