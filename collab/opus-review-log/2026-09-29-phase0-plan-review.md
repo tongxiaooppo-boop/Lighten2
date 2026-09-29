@@ -354,3 +354,190 @@
 4. 「手動主餐上限」是使用者要決定的（計畫第 6 節），請確認計畫在 A、B 兩種決定下都能照做，沒有其他地方被這個決定卡住。
 
 格式：每個發現標【一定要改】或【建議】，附依據。最後一行寫總結論（計畫可以開工（待使用者決定主餐上限）／要再修改）。
+
+---
+
+## 第二輪：審核回覆（逐字）
+
+# Phase 0 實作計畫 獨立審核意見（第二輪核對）
+
+審核對象：`docs/review/2026-09-29-Phase0-實作計畫.md` 第二版（以下簡稱「計畫」，行號都指這個檔）。
+我逐條對照了第一輪回覆，也重新讀了這些地方：
+- PRD 第 3、4、6、7、9、10 節，CHARTER B5–C6，decisions #1–#40；
+- 程式：`js/engine/meal-content.js`、`pool.js`、`recommend.js`、`filters.js`，`js/data/catalog.js`、`db.js`，`js/core/config.js`、`slots.js`，`js/ui/manual-picker.js`、`item-picker.js`；
+- 工具：`tools/diff-recs.js`、`tools/lib/adapter-v2.js`、`tools/check-engine.js`、`tools/check-arch.js`、`tools/snapshots/picker.txt`、`ui.txt`，以及 hook 與 CI 設定。
+
+另外用 node 讀了 `data/dish_archetypes.json` 與 `data/ingredients.json`，確認骨架的 allow 清單和各食材是否 `requires_cooking`。repo 檔案沒有改動。
+
+---
+
+## 1. 第一輪 12 項【一定要改】
+
+| 編號 | 狀態 | 計畫第二版的位置與說明 |
+|---|---|---|
+| 1-1 快速新增死路 | **部分** | L38–47 加了飲食宣告欄、送出前預告、「被擋或名額滿就不選中」，設計上已解決。但 `data/catalog.js` 的 `fromCustomFood` 會把角色、`channel`、`valid_slots` 寫死，也不讀 `vegan`／`lacto_ovo`，計畫沒列要改它。所以宣告欄實際上沒有作用，死路還在。見新問題 N1。 |
+| 1-2 缺「更多（選填）」 | 已解決 | L42：六個營養欄位，沒填是 null。 |
+| 1-3 用油違反 B5.6 | 已解決 | L32：只在煎、炒時出現；預設／1 茶匙／2 茶匙；相同的只列一次；不加「不用油」，送 C3。 |
+| 2-1 分組跟 PRD 6.3 不一致 | 已解決 | L23：先依角色分區，區內再依 category 分組。「我的品項」組放在哪裡還有歧義，見 N8。 |
+| 2-2 commit 1 要改的 PRD 範圍不足 | 已解決（小漏） | L112 已補第 3 節 meal_type、Phase 0 驗收欄、6.3、10.3、L108。漏了 PRD 10.6（L336「新增完直接選中」，現在改成有條件）與 10.4 的死路說法，見 N11。 |
+| 2-3 自煮送出規則搬進 engine | **部分** | L71 已有 `composeProblem`，也和 pool 共用免開火判斷。但選項灰階（快煮 tier、免開火）的判斷沒搬，而且文字漏了醬料，見 N3、N4。 |
+| 3-1 草稿 → MealContent → 合計單一路徑 | 已解決（要補細節） | L72 定了 `buildDraftContent`／`contentTotals`。跟 `sumProducts`／`composeTotals`／`contentFromRec` 的關係沒寫，見 N6。 |
+| 3-5 自煮分頁「只有飲料」 | 已解決 | L36。 |
+| 4-1 推薦快照不變條件 | 已解決 | L82。 |
+| 4-2 畫面問題自動檢查 | 已解決 | L98。 |
+| 6-1 commit 3–5 被 pre-commit 擋 | 已解決 | L110、L114–116：工具修改跟改畫面放同一個 commit。 |
+| 6-2 commit 2 讓舊畫面照跑 | **部分** | L73、L113 有相容舊形狀，也寫了「所有快照不變」。但照目前寫法，commit 2 的快照一定會變，見 N2。 |
+
+## 2. 第一輪【建議】
+
+**已採納**
+- 1-4、1-5（四小項都有）、1-6
+- 2-4（但 pool.js 那一份其實是「算最高難度」，不是 ≤1 門檻，見 N12）
+- 2-5、2-6
+- 3-2（L94 斷言 10）、3-3、3-4、3-6、3-7
+- 4-4、4-5
+- 第 1、3、4、5、6、7、8 題
+- 第 9 題：分頁殘留選取提示、空狀態、快速新增細節、飲料不看時段明確決定
+- 第 2 題延伸（qty 登記日後討論）
+- 6-3、6-4、6-5
+
+**漏掉（小）**
+- 4-3：沒有「自煮沒選餐型或骨架不完整 → 擋」的 `composeProblem` 斷言（3-5 的規則），斷言 4 只列了免開火、數量上限、allow、tier。
+- 第 7 題：平行工作線 C 要能從草稿判斷「含估算」。現在的 content 本來就看得出 `kind: "estimate"`，可以不處理。
+
+**刻意不採**：沒有。
+
+---
+
+## 3. 第二版的新問題與新衝突
+
+**N1【一定要改】`fromCustomFood` 沒改，快速新增的角色、分頁、時段、飲食宣告都不會生效**
+- 現況：`js/data/catalog.js` L55–69 把 `role` 寫死成 `"side"`、`channel: null`、`valid_slots` 全時段、`diet_tags: []`，註解還是「v1 的自訂食物沒有角色與時段」。
+- 不改的後果：
+  - 快速新增一筆主餐，會被當成配菜；
+  - `partitionByMealType` 依 `channel` 分頁會拿到 null；
+  - 宣告「全素」照樣被 `passesDiet` 擋下，1-1 的死路原封不動。
+- decisions #34 已經寫明「自訂食物算外食只是 −1a 過渡，Phase 0 改用我的品項的 channel」。PRD 0.1 第 1 點也說不留 `channel: null` 分支。
+- 要改：
+  - 計畫第 3 節加 `data/catalog.js`：`fromCustomFood` 照 PRD 10.1 讀 `role`、`channel`、`valid_slots`，飲食標記用現有的 `dietTags(f)`。
+  - 同時把 `tools/diff-recs.js` L156–159 的 `CUSTOM_FOODS` 範例改成 PRD 10.1 格式。現在的範例缺 `role`、`channel`、`valid_slots`、`allergen_tags`，連 `validateCustomFood` 都過不了。
+  - 這會改變 picker 快照（`custom_a`、`custom_b` 出現在哪裡），所以要放在 commit 3 或 5，不能放 commit 2。
+- engine 不能 import data（C1），所以 `quickAddProblem` 不能自己呼叫 `fromCustomFood`。建議寫明：由 ui 把草稿轉成品項形狀，再交給 engine 用 `passesHardFilters` 判斷，不要在 engine 另寫一份轉換。
+
+**N2【一定要改】「commit 2 所有快照不變」照目前的拆法做不到**
+commit 2（L113）列的 engine 變更中，有四處會改到舊畫面的 picker、ui 快照：
+1. **`slotGaps` 對 null 不當 0**：`ui.txt` L1328、L1382、L1436、L1490（`items/*/custom-null`，`custom_b` 的蛋白質是 null）現在顯示「蛋白質缺口約 61g」。改完之後舊畫面的 `if (proteinGap > 0)` 不成立，這行會消失。
+2. **`composeProblem` 加了 allow 檢查**：`picker.txt` L157 `compose/breakfast/no-cook-unsafe` 故意指定一個骨架 allow 以外、需要加熱的蛋白質（diff-recs L502 的註解有寫）。如果 allow 檢查排在免開火前面，提示文字會從免開火那句變成 allow 那句。另外，「請先選餐型」「請選烹調法」等文字也要跟 `composeMissingReason`（manual-picker.js L208–220）逐字相同。
+3. **`contentFromCompose` 改成吃子切換值**：舊畫面沒有子切換。`picker.txt` L158、L191 的 `submit0` 記錄了 `type=cook_quick`，所以舊畫面要傳入「依難度推導」的值，engine 要保留並匯出這個推導函式。推薦的 `contentFromRec` 本來就還要用它。
+4. **「飲料不再放進 `composeTotals`」**：舊畫面的 `compose/*/drink` 合計會少掉飲料。
+
+要改：二選一，並寫進計畫。
+- (a) 這四項在 commit 2 保留舊行為：`slotGaps` 的 null 處理、飲料移出 `composeTotals` 延到 commit 3；`composeProblem` 把免開火排在 allow 前面（安全理由優先顯示也比較合理）；舊畫面傳推導出的 meal_type。
+- (b) commit 2 接受特定行的快照變動，附差異報告，把「所有快照不變」改成「只有下列幾行變」。
+
+我建議 (a)，才保得住「commit 2 不改行為」這個證明。
+
+**N3【一定要改】選項灰階（快煮 tier、免開火）要是 engine 函式，否則驗收斷言 3 測不到**
+- L29 寫快煮下「tier 超過門檻的烹調法和食材要灰階」；現在的免開火灰階在 ui（manual-picker.js L110 `composeBlockedReason`），是這條規則的第三份實作。
+- 驗收 L87 的斷言 3 是「推薦 `cook_quick` 會收」⇔「picker 不灰掉任何元件」。灰階判斷如果留在 ui，check-engine 根本測不到。
+- 依據：章程 C2、C4.3（顯示時也要檢查，由 engine 斷言）。
+- 要改：engine 提供 `composeOptionProblem(item, axis, draft, { tier })`，回傳原因或 null，涵蓋免開火、快煮 tier、已達 `COMPOSE_MAX`。`composeProblem` 內部也呼叫它；硬性過濾照舊走 `passesHardFilters`。ui 只負責顯示。
+
+**N4【建議】`composeProblem` 的免開火範圍漏了醬料**
+- L71 寫「任一蛋白質/主食/蔬菜需加熱就擋」，但 pool.js L68 與現在的 manual-picker.js L215 都包含醬料（`season`）。
+- 目前沒有醬料 `requires_cooking`，所以還看不出差異。但既然要共用同一個函式，範圍必須一致，文字改成「任一食材（含醬料）」。
+
+**N5【建議】免開火的斷言要用假骨架**
+- 實際資料只有 `bowl_oat` 有免開火，它的蛋白質 allow 只有 `soy_milk`、`greek_yogurt`，兩個都不需要加熱，也沒有蔬菜槽。
+- 所以斷言 4 的「免開火＋第二個蛋白質需加熱 → 擋」用真實資料組不出來，要跟第 5 題一樣寫明用 check-engine 的假骨架。
+
+**N6【建議】`contentTotals` 跟現有函式的關係要寫清楚（第 3 題 `buildDraftContent`／`contentTotals` 與 `contentFromRec`／`sumProducts`）**
+- **商品與估算一律用快照加總，不查 catalog**：`catalog.productsByUid` 不含我的品項，查 catalog 會查不到。`qty` 要乘進去，或斷言它是 1。
+- **單一來源**：商品部分直接呼叫 `sumProducts`（pool.js L164 還在用），食材部分呼叫 `composeTotals`，再用 `addContributions` 合併。不要寫第三份「商品 null 傳染」。
+- **推薦那條路不動**：`contentFromRec` 與 `rec_accepted` 的 totals 在 Phase 0 不改走 `contentTotals`，這一句寫進計畫，也是 recs 快照不變的理由。
+- **加一條等價斷言**：用 commit 2 當時的快照案例，比對 `contentTotals(buildDraftContent(x))` 跟舊的 `sumProducts`／`composeTotals` 結果相同。不然 commit 3 改寫整份 picker 快照時，數字變動會混在一大堆差異裡看不出來。
+
+**N7【建議】過渡相容要在 commit 3 拿掉（章程 A1.3）**
+- `composeTotals`／`contentFromCompose` 接受「舊的單一物件」（L73），這只為了 commit 2 讓舊畫面能跑。舊畫面在 commit 3 刪掉後，這層相容也要刪。
+- `contentFromProducts`（「看第一個主餐」）在 commit 3 也被分頁值取代，同樣要刪。
+- 計畫沒寫，建議列進 commit 3，並加進 L106 的 grep 清單。
+
+**N8【建議】「我的品項」組的位置跟角色分區互相矛盾**
+- L23 說先依角色分區（主餐 → 配菜 → 點心），L25 說「我的品項」放在最後一組。我的品項本身也有角色，要寫明它是例外：永遠整組放最後、不進角色分區。
+- 外食分頁把 `taiwan_items` 和 `convenience_items` 的 delivery 品項合在一起，要寫明兩個來源誰先。現況是台式在前（item-picker.js L17–29）。
+- 這兩點都寫進 `groupForTab` 的斷言。
+
+**N9【建議】meal_type 一律等於分頁值**
+- L53 的「我的品項用自己的 channel」跟共用飲料步驟會衝突。例如在超商分頁只選了一杯 `channel: delivery` 的自建飲料，照這句會記成 delivery。
+- 我的品項本來就依 `channel` 放進對應分頁，這個括號是多餘的，而且有歧義。建議改成「商品分頁的 meal_type＝分頁值，飲料不影響」。
+
+**N10【建議】送出前預告的文字不要誘導改成「確認不含」**
+- 預告只寫是哪個設定擋住，例如「你設了過敏原『蛋』；過敏原未確認的品項不能選」。
+- 不要寫「改成確認不含就能選」這類引導。章程 C4.1 的精神是沒確認就保守排除，UI 不該讓人為了能選而去勾「確認不含」。
+
+**N11【建議】Phase 0 到 B-1 之間仍然有死路，要登記**
+- 飲食宣告欄只在使用者已經設了飲食限制時出現（L41）。之後才改成素食、或之後才設過敏原的人，以前建的品項全部變灰，要到 B-1 才有編輯畫面。
+- PRD 10.4（「沒有新增入口，所以不會出現死路」）的說法在 Phase 0 之後不再成立。
+- 要處理：commit 1 修改 10.4 並登記日後討論，或考慮宣告欄一律顯示。
+- PRD 10.6 L336「新增完直接選中」也要跟著 L45 改寫。
+
+**N12【建議】tier 單一來源的描述要修正**
+- pool.js L84 不是 ≤1 門檻，而是「烹調法與食材的最高難度」，跟 `contentFromCompose` L405–406 重複。
+- 建議除了 `isQuickTier` 之外，在 engine 加 `maxTierRank(method, items)`，讓 pool、推導 meal_type、N3 的灰階共用。
+- 門檻本身在 recommend.js 有兩處（L29–31 `maxRankForSource`、L38 `filterBySource`），加上 meal-content.js 的 `cookMealType`。
+
+**N13【建議】快速新增的全素宣告跟過敏原要一致**
+- 可能出現宣告「全素」卻勾「含：蛋」，或全素但過敏原未確認。
+- 章程 B1 表格規定我的品項只受 B8 驗證，B6.8 形式上不適用。但表單至少要在 `quickAddProblem` 用中性文字提示矛盾，或在計畫明寫「B6.8 不適用於我的品項」。
+
+**N14【建議】walkthrough 的「送出後重開停在送出的分頁」只能在 auto 時段驗**
+- 預設偏好中，早、午餐是超商，晚餐是開伙（`core/slots.js` L28），這三個時段都不會讀 lastPicked。
+- 腳本要指定下午茶或宵夜，或先把偏好設成 auto。
+
+**N15【建議】commit 3 到 commit 4 之間沒有自煮**
+- commit 3 刪掉整個舊 modal（含自己煮），自煮分頁要到 commit 4 才有。如果推上去就會部署，中間那一版會少掉自煮記錄。
+- 建議 commit 3–5 一起推，或 commit 3 保留自煮分頁的空殼與中性提示。
+- `compose/*` 快照會在 commit 3 消失、commit 4 回來，差異報告要寫明。
+
+**確認沒有衝突的**
+- **飲料不看時段**：PRD、章程都沒有相反的規定（C4.8 只限角色數量）。這是既有行為，計畫也寫了理由，推薦仍照 `valid_slots`，可以。
+- **估算不過硬性過濾**：不違反 C4.1，估算不是 catalog 品項。
+- **`composeProblem` 與 pool 共用免開火**：方向正確，要補 N4 的範圍、N2 的判斷順序。另外 pool 在迴圈裡只能呼叫純判斷函式（例如 `noCookViolation(method, items)`），不要讓 pool 去組草稿。
+
+---
+
+## 4. 手動主餐上限：A、B 兩種決定下都能照做嗎
+
+- **A（維持 1）**：計畫照寫即可，不影響其他段落。
+- **B（主餐上限 2）**：也能照做，推薦與 pool 不讀 `MANUAL_ROLE_MAX`，recs、pool 快照不變。要跟著處理兩件事：
+  - 【建議】`manualSelectionProblem` 的訊息「每種角色最多選 1 個。」寫死在 meal-content.js L193，B 之下會變錯，要改成依 `MANUAL_ROLE_MAX` 產生，例如「主餐最多 2 個」。
+  - check-engine L323「兩個主餐要擋」要改成三個，跟常數在同一個 commit 改。現有的 picker、ui 快照沒有兩個主餐的案例，所以 commit 2 快照不變的條件不受影響。
+- 快速新增的「名額已滿」、平行工作線 C 的「超量依順序擋後者」都走 `canAddManualItem`／常數，會自動跟上。
+- **被卡住的只有 commit 1**：PRD L108 與 decisions 要寫哪個值。commit 2 以後都只讀常數，沒有其他地方被這個決定卡住。
+
+---
+
+【一定要改】共 3 項：
+- N1：`fromCustomFood` 要照 PRD 10.1 改寫，並更新 diff-recs 的範例資料；
+- N2：commit 2「所有快照不變」照目前的拆法做不到，要改拆法或改說法；
+- N3：選項灰階的判斷要搬進 engine。
+
+這三項都是計畫文字層級的修正，不需要改變方向。另有 1-1、2-3、6-2 三項第一輪問題因此只算部分解決，會隨這三項一起解決。
+
+總結論：要再修改
+
+---
+
+## 實作者檢討（2026-09-29，兩輪都「要再修改」之後）
+
+計畫的方向兩輪都沒被推翻，退回的都是「沒對照現有程式與工具就寫下的承諾」。共同原因：第一版是從 PRD／round2 往下寫，沒有從要動的程式往外查依賴。
+
+| 問題 | 本來該做的查核 |
+|---|---|
+| 刪舊 modal 會讓 pre-commit 失敗（1輪 6-1） | 要刪／改名的檔案，先 `grep -rn "<檔名>" tools/ js/` 找出所有 import |
+| `fromCustomFood` 寫死角色、channel、飲食標記（2輪 N1） | 每個新欄位追一遍資料路徑：表單 → db 驗證 → catalog 正規化 → engine 過濾（跟 −1b「taiwan_items 從未寫入 DB」同一類教訓） |
+| 「commit 2 所有快照不變」做不到（2輪 N2） | 宣稱快照不變之前，逐項對照會影響哪些快照行（`grep` 快照檔裡的情境名） |
+| 用油選項違反 B5.6、快速新增死路、分組違反 PRD 6.3（1輪） | 每個 UI 細節先搜章程與 PRD 有沒有現成條文，不憑記憶或 round2 的舊文字 |
+| 灰階判斷留在 ui、tier 規則多份（2輪 N3、N12） | 寫「搬到 engine」時列出現有的每一份實作位置，一次收斂 |
+
+下一版計畫（第三版）送審前，用上表逐條自查一次。
