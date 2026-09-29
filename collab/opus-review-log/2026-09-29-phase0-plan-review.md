@@ -541,3 +541,157 @@ commit 2（L113）列的 engine 變更中，有四處會改到舊畫面的 picke
 | 灰階判斷留在 ui、tier 規則多份（2輪 N3、N12） | 寫「搬到 engine」時列出現有的每一份實作位置，一次收斂 |
 
 下一版計畫（第三版）送審前，用上表逐條自查一次。
+
+---
+
+## 第三輪：送審問題（逐字）
+
+你是 Lighten2 Phase 0 實作計畫的獨立審核者（第三輪核對），不是實作者。**只讀不改**任何 repo 檔案（repo 在 `D:\ok\lighten`）。用中文回答。
+
+第一、二輪審核意見全文在 `collab/opus-review-log/2026-09-29-phase0-plan-review.md`。第二輪結論「要再修改」，一定要改 3 項（N1 `fromCustomFood`、N2 commit 2 快照不變、N3 選項灰階進 engine），另有建議 N4–N15 與「漏掉（小）」兩項。檔案最後有實作者的檢討表。實作者已把 `docs/review/2026-09-29-Phase0-實作計畫.md` 改成第三版，第二輪的修訂標〔N#〕，第 7 節是依檢討表的自查。
+
+請做：
+1. 第二輪 N1–N3 逐條一行：已解決／部分／未解決，指出第三版的哪一段。
+2. N4–N15 與第二輪「漏掉（小）」：已採納／刻意不採（有寫理由）／漏掉。
+3. 第三版有沒有引入新的問題或跟 PRD、章程、decisions、現有程式的新衝突。請實際對照程式與工具查證，特別是：
+   - commit 2 保留四項舊行為後，picker、ui 快照是否真的逐字不變（`tools/diff-recs.js`、`tools/snapshots/picker.txt`、`ui.txt`、`js/ui/manual-picker.js`）；手動主餐上限依時段在 commit 2 生效，是否真的不影響任何快照行；
+   - `composeProblem` 的判斷順序與文字是否跟 `composeMissingReason` 逐字相容；
+   - `contentTotals` 用快照＋`sumProducts`＋`composeTotals`＋`addContributions`、只進位一次，跟等價斷言 13 能否做到逐欄相等；
+   - `fromCustomFood` 改寫放在 commit 3 時，check-engine 與 diff-recs 所有依賴點是否都列到了；
+   - 第 7 節自查表的宣稱是否屬實（例如 grep 結果）。
+4. 手動主餐上限：使用者已決定午晚餐 2、其他時段 1，早餐是否放寬待確認。確認計畫在「早餐 1」或「早餐 2」下都能照做。
+
+格式：每個發現標【一定要改】或【建議】，附依據（檔案與行號或章節）。最後一行寫總結論（計畫可以開工／要再修改）。
+
+**審核進行中補充的訊息（逐字）**：
+
+計畫第 6 節與斷言 10 在你開始後更新了：使用者確認早餐也放寬，手動主餐上限變成早餐、午餐、晚餐 2，下午茶、宵夜 1（`MANUAL_MAIN_MAX_BY_SLOT = { breakfast: 2, lunch: 2, dinner: 2 }`）。請用檔案現在的內容審第 4 題，特別確認 commit 2 在早餐也放寬後，picker、ui 快照仍逐字不變（例如 `items/breakfast/*` 的情境）。
+
+---
+
+## 第三輪：審核回覆（逐字）
+
+# Phase 0 實作計畫第三版審核（第三輪核對）
+
+這次審的是 `docs/review/2026-09-29-Phase0-實作計畫.md` 的現行版本，包含第 6 節和斷言 10 改成「早餐也放寬」的更新。repo 檔案沒有改動。我寫了兩支 node 腳本驗證進位差異，放在 scratchpad。
+
+## 1. 第二輪一定要改的 3 項
+
+| 項目 | 狀態 | 第三版位置與查證結果 |
+|---|---|---|
+| N1 `fromCustomFood` | **已解決**（剩一個小尾巴，見 S5） | 第 1 節 L13、2.1-7 L55 資料路徑、第 3 節 L109、commit 3 L169、斷言 9。查過 `fromCustomFood` 的所有使用處：`item-picker.js` L30（commit 3 刪掉）、check-engine L229／L444／L446、diff-recs L156–158。adapter L84 和 fake-db 只是原樣傳遞，不用改。計畫已列齊。 |
+| N2 commit 2 快照不變 | **已解決**，已實際查證 | L116、L165–166、L88、L91–96、L107。見下方說明。 |
+| N3 選項灰階搬進 engine | **已解決** | 2.1-5 L40、第 3 節 L90 `composeOptionProblem`、斷言 3、5。舊畫面在 commit 2 改呼叫它（L163）。`composeBlockedReason` 原本的順序是先免開火、再硬性過濾，計畫也是先 `composeOptionProblem`、再 `passesHardFilters`，順序一致。compose 選項的 HTML 本來就不進 ui 快照（diff-recs L493–494 只收 summary／gap／submit／hint）。 |
+
+**N2 的查證**
+- **`picker.txt` 的 `items/*`**：每個情境最多只有一個主餐。`custom_a`、`custom_b` 在現在的 `fromCustomFood` 下是配菜。
+- **adapter 繞過名額判斷**：`pickerSelectItems` 直接設定 `selectedUids`（adapter-v2 L173–179），不會經過 `canAddManualItem`。
+- **ui 快照裡的提示文字**：`ui.txt` 的 `#manual-picker-main-hint` 只出現三種：hidden（109 行）、「請至少選一個品項。」（6 行）、「請選烹調法」（10 行）。沒有任何角色超量的訊息。
+- **`composeProblem` 與 `composeMissingReason` 逐字相容**：
+  - 舊的判斷順序是餐型 → 蛋白質 → 主食 → 烹調法 → 免開火（L210–217）。
+  - 新的第 1、2 段照原文，免開火排在 allow 前面，所以 `compose/breakfast/no-cook-unsafe`（picker.txt L157）的文字不變。
+  - 其餘 compose 情境的選取都在 allow 內，第 3–5 段不會觸發。
+- **`meal_type` 推導不變**：`deriveCookMealType(maxTierRank(method, items))` 跟 meal-content L405–408 等價，`submit0` 的 `type=cook_quick` 不變。
+- **推薦與候選池不受影響**：`MANUAL_ROLE_MAX` 只有 meal-content.js L14、L192、L197 在讀，recs、pool 快照不受主餐上限影響。
+
+## 2. 第二輪建議 N4–N15 與「漏掉（小）」
+
+- **已採納**
+  - N4：L89，斷言 4 加了醬料假食材。
+  - N5：斷言 4 用假骨架。
+  - N6：L97–104、斷言 13。但進位的承諾做不到，見 F1。
+  - N7：L105、L107、commit 3、grep 清單。清單不完整，見 S2。
+  - N8：L31、L34、斷言 2。
+  - N9：L66。
+  - N10：L56、斷言 9。
+  - N11：L52 讓宣告欄永遠可以填、L76 登記、commit 1 改 PRD 10.4／10.6。
+  - N12：第 1 節 L14–16 列出所有位置、L84、L87。行號都核對過，正確。
+  - N14：L143。
+  - N15：L154、L172。
+  - 漏掉的 4-3：斷言 4 第一點已補「餐型不完整 → 擋」。
+- **部分採納**
+  - N13：L57 只提示「全素＋含蛋等」和「蛋奶素＋含魚等」。第二輪也提到的「全素但過敏原未確認」（章程 B6.8 也有列）沒有處理，也沒寫理由。見 S8。
+- **可以不處理**
+  - 第 7 題（平行工作線 C 要能判斷含估算）：第二輪已說可以不處理，因為 content 本來就有 `kind: "estimate"`。
+
+## 3. 第三版的新問題
+
+**F1【一定要改】`contentTotals`「最後只進位一次」照目前寫法做不到，斷言 13 也測不出來**
+- **依據**：計畫 L100–102 說商品部分「呼叫 `sumProducts`」，同時要求「最後只進位一次」。退路只提到要把 `composeTotals` 的進位抽掉。但 `sumProducts` 自己也會進位（meal-content.js L168–174：kcal 用 `round1`、`sumOrNull` 內部進位、顯示欄位用 `round1OrNull`）。
+- **資料裡有兩位小數**：`conv_dr05` 的纖維是 3.25，另外 `conv_sl01` 3.75、`conv_bx02` 蛋白質 27.75。
+- **實測結果**：自煮組合乘上飲料，`composeTotals` 用不進位版本，商品用 `sumProducts`，跟舊的 `composeTotals(含飲料)` 比：
+  - 配 `conv_dr05`：1010 組裡有 896 組的纖維差 0.1。例如 bowl_oat＋soy_milk，舊的 12.6、新的 12.7。
+  - 配 `tw_bf02`：0 組有差。
+- **斷言 13 為什麼抓不到**：斷言 13 只用快照裡的案例，而 compose 的飲料是 `r.drinks[0]`，也就是 `tw_bf02`（diff-recs L482）。所以斷言會通過，差異卻真的存在。
+- **要改**：
+  1. `sumProducts` 也拆出不進位的內部函式，兩邊共用，最外層只進位一次。
+  2. 斷言 13 加上「候選池的自組組合 × 全部飲料」，至少要含 `conv_dr05`。
+  3. 另外寫明：沒有商品或沒有食材時，那一組不要放進 `addContributions`。`sumProducts([])` 的飽和脂肪和鈉是 null，放進去會讓只有自煮的一餐被誤標「部分無資料」（addContributions L64）。這一點斷言 13 抓得到，但計畫該先寫清楚。
+
+**S1【建議】斷言 13 在 commit 3 以後比對的對象沒寫**
+- commit 3 會把飲料移出 `composeTotals`（L170），`compose/*` 快照也會暫時消失（L172）。
+- 這時「舊的 `composeTotals`（含飲料）」已經不存在，自煮合計在 commit 3 到 commit 4 之間沒有防護。
+- 建議在 commit 2 把斷言 13 的參考值凍結成 check-engine 裡的固定數字，後面每個 commit 都跟這組數字比。
+
+**S2【建議】舊形狀相容只列了 `composeTotals`**
+- commit 2 的舊畫面還是單一物件，卻要呼叫 `composeProblem` 和 `composeOptionProblem`（L163）。第 3 節 L105 只寫 `composeTotals`／`contentFromCompose` 會相容舊形狀。
+- 要寫明：由舊畫面轉成新草稿形狀，或 engine 兩種形狀都收。
+- L150 的 grep 清單只列了「`composeTotals` 的單一物件相容分支」，也要把 `contentFromCompose`（以及如果有的話 `composeProblem`）的相容分支加進去。
+
+**S3【建議】L165 還寫「舊畫面在午晚餐多允許一個主餐」**，跟第 6 節新的決定（早、午、晚）不一致，要改成早午晚。
+
+**S4【建議】第 7 節自查表第 1 列不完整**
+- `manual-picker.js` 除了 adapter-v2 L47 之外，還被這些地方用到：
+  - `js/ui/tab-today.js` L18 import、L276、L286 呼叫 `openManualPicker`／`initManualPicker`，整份計畫都沒有提到這個檔；
+  - `index.html` 的 import map L416–417，`stamp-version.js` 會重新產生，不會出問題，但應該列出來；
+  - smoke-browser、mobile-walkthrough 用到的 DOM id（commit 3 已列）。
+- 其餘宣稱都屬實：`cookMealType` 只在 meal-content.js 內部；`contentFromProducts` 只在 manual-picker L14、L375；`item-picker.js` 只被 check-engine L428 import。
+
+**S5【建議】N1 的小尾巴：測試資料**
+- **缺欄位**：`validateCustomFood` 要求 `OPTIONAL_NUTRIENTS` 每個欄位都存在（db.js L200、L215–216）。所以 diff-recs 的 `CUSTOM_FOODS` 除了 L169 列的四個欄位，還要補 `sat_fat_g`、`sodium_mg`（值 null 即可），才真的通過驗證。
+- **角色會改變快照**：如果 `custom_a` 改成主餐，`custom-carb-null`（第一個主餐＋`custom_a`）在下午茶、宵夜會變成兩個主餐而出現超量提示。差異報告要寫這個原因。
+
+**S6【建議】mobile-walkthrough 3-2 和手機實機腳本 L48 在 commit 3 要改寫方向**
+- walkthrough 3-2（L208–222）的做法是：午餐「主餐優先」挑同一角色的兩個品項，點第二個時要出現「已經選過了」。
+- commit 2 不會壞：舊畫面午餐可選的主餐只有 `conv_bx04`，腳本會改挑配菜。
+- commit 3 會壞：新畫面列出便當與台式，午餐主餐有兩個以上，而上限是 2，點第二個主餐不會再有提示。
+- 改寫時要改成測第三個主餐，或下午茶的第二個主餐，提示文字也要跟上新訊息。
+
+**S7【建議】註解要跟著改**：meal-content.js L180 寫「不看時段」，跟依時段的主餐上限矛盾，commit 2 要一起改。
+
+**S8【建議】N13 的空缺**：「全素＋過敏原未確認」要嘛加入提示，要嘛寫明刻意不提示的理由。例如：預設就是未確認，加了會每次都跳出來。
+
+**S9【建議】`validateCustomFood` 不檢查 `vegan`、`lacto_ovo`、`archived` 的型別**
+- `dietTags` 只看真假值（catalog.js L30–31），所以字串 `"false"` 會被當成全素。
+- 建議章程 B8 的寫入驗證補上布林型別檢查，或在計畫寫明不需要。
+
+## 4. 手動主餐上限：早餐 1 或早餐 2
+
+兩種都能照做，而且 commit 2 的 picker、ui 快照在早餐放寬後仍逐字不變：
+- **`items/breakfast/*` 的每個情境最多一個主餐**：`conv_bx04` 是主餐，`conv_sl01` 是配菜，`tw_bf02` 是飲料，`conv_pk03` 是點心，`custom_a`、`custom_b` 目前是配菜。
+- **adapter 不經過 `canAddManualItem`，快照裡也沒有超量訊息**。
+- **mobile-walkthrough 3-2 跑的是午餐，commit 2 會選到配菜**（見 S6）。
+- **check-engine L323 不會失敗**：它沒傳時段，預設上限是 1，照樣會擋兩個主餐，所以在 pre-commit 也不會失敗（計畫本來就會改它）。
+- **推薦與候選池**：recs、pool 不讀這個常數。
+
+如果最後改回早餐 1，只要改 `MANUAL_MAIN_MAX_BY_SLOT` 的一個值、刪掉 L184 那個例子、調整斷言 10，其他段落不受影響。
+
+【一定要改】只有 F1（`sumProducts` 也要用不進位的版本，斷言 13 加入兩位小數的飲料）。這是一段文字層級的修正，改完就可以直接開工，不需要第四輪送審。
+
+總結論：要再修改
+
+---
+
+## 實作者處理第三輪（2026-09-29）
+
+全部採納，寫進計畫第三版（標〔F1〕〔S1〕…）；審核者表示 F1 改完不用送第四輪，計畫定為可以開工。
+- F1：`sumProducts`／`composeTotals` 各拆出不進位的內部函式，`contentTotals` 最外層只進位一次；空的一組不放進 `addContributions`；斷言 13 加「候選池自組組合 × 全部飲料（含 `conv_dr05`）」。
+- S1：commit 2 把斷言 13 的參考值凍結成固定數字，之後每個 commit 都跟它比。
+- S2：engine 不留相容分支，commit 2 的舊畫面用 `toDraft` 轉成新形狀，commit 3 一起刪；grep 清單改成 `toDraft`。
+- S3：改成早、午、晚。
+- S4：commit 3 加 `js/ui/tab-today.js` 的 import 與 index.html import map；自查表補上。
+- S5：`CUSTOM_FOODS` 補 `sat_fat_g`、`sodium_mg`，斷言它們通過 `validateCustomFood`；差異報告寫 `custom-carb-null` 下午茶、宵夜的超量提示。
+- S6：walkthrough 3-2 與手機實機腳本 L48 改測午餐第三個主餐、下午茶第二個主餐。
+- S7：commit 2 改 meal-content.js L180 的註解。
+- S8：「全素但過敏原未確認」刻意不提示（預設值，每次都會跳出來），計畫寫明理由。
+- S9：`fromCustomFood` 對 `vegan`／`lacto_ovo`／`archived` 只認 `=== true`，表單一律寫布林值，不改章程 B8。
