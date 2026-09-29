@@ -454,6 +454,87 @@ async function run() {
   check(!/kcal|熱量/.test(await js(`document.getElementById('tab-exercise').innerText`)), "4-2 運動分頁出現飲食熱量（章程 C4.12）");
   await shot("運動紀錄");
 
+  // ---------- 5. 資料備份（PRD 11.6） ----------
+  console.log("[5. 資料備份]");
+  const DB = `(await import('./js/data/db.js'))`;
+  // 攔截下載：記下檔名與內容（blob URL 在頁面裡讀得到）
+  const hookDownloads = () => js(`(() => { window.__downloads = window.__downloads || [];
+    if (window.__dlHooked) return; window.__dlHooked = true;
+    const orig = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function () {
+      if (this.download) { const a = this; window.__downloads.push({ name: a.download, pending: true });
+        const rec = window.__downloads[window.__downloads.length - 1];
+        fetch(a.href).then((r) => r.text()).then((t) => { rec.text = t; rec.pending = false; }); return; }
+      return orig.apply(this, arguments); }; })()`);
+  const downloads = () => js(`(window.__downloads || []).filter((d) => !d.pending).map((d) => ({ name: d.name, text: d.text }))`);
+  const putFile = (content, name) => js(`(() => { const input = document.getElementById('backup-file-input');
+    const dt = new DataTransfer(); dt.items.add(new File([${JSON.stringify(content)}], ${JSON.stringify(name)}, { type: 'application/json' }));
+    input.files = dt.files; input.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  const todayLocal = await js(`(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`);
+
+  await tab("profile");
+  await hookDownloads();
+  await shot("資料備份-區塊", "#backup-section");
+  // 5-1 匯出：下載一個檔案，檔名是今天，沒有「無法還原」的提示
+  await click("#backup-export-btn");
+  await until(`(window.__downloads || []).length === 1 && !window.__downloads[0].pending`, "5-1 按匯出備份沒有產生下載");
+  const dl1 = (await downloads())[0];
+  check(dl1.name === "lighten2-backup-" + todayLocal + ".json", "5-1 備份檔名不是 lighten2-backup-今天.json：" + dl1.name);
+  const status1 = await js(text("#backup-status"));
+  check(status1.indexOf("已下載") !== -1 && status1.indexOf("無法還原") === -1, "5-1 匯出後的狀態不對（自我驗證有問題？）：" + status1);
+  const backup = JSON.parse(dl1.text);
+  check(backup.format === "lighten2-backup" && backup.sections && backup.manifest && typeof backup.exported_at === "string", "5-1 備份檔缺 format／sections／manifest／exported_at");
+  await shot("資料備份-已匯出", "#backup-section");
+
+  // 5-2 匯出之後改資料：記一餐（早餐記推薦）、改體重
+  await tab("today");
+  await until(`!!document.querySelector('#rec-breakfast .rec-log-btn')`, "5-2 早餐沒有推薦可以記");
+  await click("#rec-breakfast .rec-log-btn");
+  await until(`!!document.querySelector('#rec-breakfast .rec-undo-btn')`, "5-2 早餐記錄後沒有變成已記錄");
+  await tab("profile");
+  await js(`(() => { const f = document.getElementById('weight-form'); f.elements.weight_kg.value = 78.8; f.requestSubmit(); })()`);
+  await until(`${text("#weight-log-status")}.indexOf("78.8") !== -1`, "5-2 體重沒有記錄");
+  const changed = await js(`(async () => { const m = ${DB}; return JSON.stringify((await m.exportAllData()).sections); })()`);
+  check(changed !== JSON.stringify(backup.sections), "5-2 改資料後內容跟備份一樣（測試前提不成立）");
+
+  // 5-3 放一個壞檔：不是 JSON、版本較新 → 列出問題，沒有「還原」
+  await putFile("這不是備份", "note.txt");
+  await until(`!document.getElementById('backup-preview').hidden && ${text("#backup-preview")}.indexOf("不能還原") !== -1`, "5-3 非 JSON 檔沒有顯示「不能還原」");
+  check(!(await js(`!!document.querySelector('#backup-preview [data-backup-restore]')`)), "5-3 壞檔還出現「還原」按鈕");
+  await putFile(JSON.stringify(Object.assign({}, backup, { schema_version: backup.schema_version + 1 })), "newer.json");
+  await until(`${text("#backup-preview")}.indexOf("較新的版本") !== -1`, "5-3 較新版本的備份沒有說明");
+  await shot("資料備份-壞檔", "#backup-preview");
+  await click("#backup-preview [data-backup-cancel]");
+
+  // 5-4 放剛才的備份：預覽有筆數對照、「匯出之後新增的紀錄」、「不是同步」；有資料時「還原」先不能按
+  await putFile(dl1.text, dl1.name);
+  await until(`!!document.querySelector('#backup-preview .backup-table')`, "5-4 選了備份檔沒有出現預覽");
+  const pv = await js(text("#backup-preview"));
+  check(pv.indexOf("飲食紀錄") !== -1 && pv.indexOf("體重紀錄") !== -1 && pv.indexOf("不是同步") !== -1, "5-4 預覽缺筆數對照或「不是同步」說明：" + pv.slice(0, 200));
+  check(pv.indexOf("之後新增的紀錄，還原後不會保留") !== -1, "5-4 目前有匯出之後新記的一餐，預覽沒有提示");
+  check(!/kcal|分鐘/.test(pv), "5-4 預覽出現熱量或運動內容（只能有筆數與日期，章程 C4.12）");
+  check(await js(`document.querySelector('#backup-preview [data-backup-restore]').disabled`), "5-4 目前有資料時，還沒先匯出就能按「還原」");
+  await shot("資料備份-預覽", "#backup-preview");
+  // 5-5 取消 → 資料不變
+  await click("#backup-preview [data-backup-cancel]");
+  check(await js(`document.getElementById('backup-preview').hidden`), "5-5 按取消後預覽沒有關閉");
+  check((await js(`(async () => { const m = ${DB}; return JSON.stringify((await m.exportAllData()).sections); })()`)) === changed, "5-5 按取消後資料變了");
+  // 5-6 先匯出目前的資料 → 產生第二個下載、「還原」可以按
+  await putFile(dl1.text, dl1.name);
+  await until(`!!document.querySelector('#backup-preview [data-backup-export-current]')`, "5-6 預覽沒有「先匯出目前的資料」");
+  await click("#backup-preview [data-backup-export-current]");
+  await until(`(window.__downloads || []).filter((d) => !d.pending).length === 2`, "5-6 按「先匯出目前的資料」沒有產生下載");
+  await until(`!document.querySelector('#backup-preview [data-backup-restore]').disabled`, "5-6 先匯出之後「還原」還是不能按");
+  // 5-7 還原 → 頁面重新載入，改過的資料都回到匯出時的樣子
+  await js(`window.__beforeReload = true`);
+  await click("#backup-preview [data-backup-restore]");
+  await until(`!window.__beforeReload && document.readyState === 'complete' && !!document.getElementById('backup-section')`, "5-7 還原後頁面沒有重新載入");
+  const restored = await js(`(async () => { const m = ${DB}; return JSON.stringify((await m.exportAllData()).sections); })()`);
+  check(restored === JSON.stringify(backup.sections), "5-7 還原後資料跟備份檔不一樣");
+  await tab("today");
+  await until(`!!document.querySelector('#rec-breakfast .rec-log-btn') && ${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "5-7 還原後早餐不是回到推薦、或午餐紀錄不見了");
+  await shot("資料備份-還原後今日建議");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

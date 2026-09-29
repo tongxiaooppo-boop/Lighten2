@@ -7,6 +7,7 @@ import { ALLERGEN_OPTIONS } from "../core/config.js";
 import { $ } from "./dom.js";
 import { getProfile, saveProfile, addWeightLog } from "../data/db.js";
 import { calculateTargets } from "../engine/nutrition.js";
+import { initBackup } from "./backup.js";
 import { normalizeAllergens } from "../engine/filters.js";
 import {
 loadTdeeState, getCalibratedTargets, runCalibrationNow,
@@ -352,6 +353,7 @@ function renderAllergenOptions() {
 
 export async function initProfileTab() {
   renderAllergenOptions();
+  initBackup();
   const dateInput = document.querySelector("#weight-form input[name='log_date']");
   if (dateInput) dateInput.value = todayStr();
 

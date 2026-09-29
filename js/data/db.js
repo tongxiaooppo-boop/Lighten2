@@ -7,6 +7,7 @@
 import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
+import { fmtDate } from "../core/dates.js";
 
 const DB_NAME = "lighten2";
 const DB_VERSION = 1;
@@ -449,8 +450,10 @@ export function validateBackup(obj, ctx) { // eslint-disable-line no-unused-vars
   return problems;
 }
 
+// ISO 時間（UTC）→ 本地日期字串
 function dateOfIso(s) {
-  return typeof s === "string" && s.length >= 10 ? s.slice(0, 10) : null;
+  if (typeof s !== "string" || isNaN(Date.parse(s))) return null;
+  return fmtDate(new Date(s));
 }
 
 // 純函式：各類筆數、最後一筆日期（紀錄用 log_date、我的品項用 created_at）、最新的 created_at（還原預覽比對「匯出之後新增的紀錄」）。
