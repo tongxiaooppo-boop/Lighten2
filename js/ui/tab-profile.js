@@ -27,6 +27,8 @@ function toFloatOrNull(v) {
 }
 
 // 「不吃的食材」清單：只在本分頁顯示＋移除；新增入口在 tab-today.js 的「順便不要」chip。
+// 兩邊都是改了就直接存進資料庫，所以資料庫才是準的：切回本分頁時重讀、移除時對資料庫的最新清單操作、
+// 按「計算」時沿用資料庫的清單（不然會把在今日建議剛加的項目蓋掉）。
 var dislikedIngredients = [];
 
 function renderDislikedList() {
@@ -36,20 +38,22 @@ function renderDislikedList() {
     el.innerHTML = '<p class="taiwan-ref-note">尚未設定。</p>';
     return;
   }
-  el.innerHTML = dislikedIngredients.map(function (d, i) {
+  el.innerHTML = dislikedIngredients.map(function (d) {
     return '<span class="dislike-chip">' + escapeHtml(d.label || d.key) +
-      '<button type="button" class="dislike-chip-x" data-index="' + i + '" aria-label="移除">×</button></span>';
+      '<button type="button" class="dislike-chip-x" data-key="' + escapeHtml(d.key) +
+      '" aria-label="移除">×</button></span>';
   }).join("");
 }
 
-async function removeDisliked(index) {
-  dislikedIngredients.splice(index, 1);
-  renderDislikedList();
+// 只比 key（decisions #40：換軸後舊的 type 也要能移除）
+async function removeDisliked(key) {
   var profile = await getProfile();
-  if (profile) {
-    profile.disliked_ingredients = dislikedIngredients;
-    await saveProfile(profile);
-  }
+  if (!profile) return;
+  var list = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
+  profile.disliked_ingredients = list.filter(function (d) { return d.key !== key; });
+  await saveProfile(profile);
+  dislikedIngredients = profile.disliked_ingredients;
+  renderDislikedList();
 }
 
 function readProfileForm() {
@@ -283,6 +287,9 @@ async function onCalculate(e) {
   }
 
   try {
+    // 不吃清單以資料庫為準（今日建議的「順便不要」會在本分頁不知道的時候加項目）
+    const saved = await getProfile();
+    if (saved && Array.isArray(saved.disliked_ingredients)) profile.disliked_ingredients = saved.disliked_ingredients;
     await saveProfile(profile);
   } catch (err) {
     console.error("saveProfile 失敗", err);
@@ -371,16 +378,18 @@ export async function initProfileTab() {
     dislikedList.addEventListener("click", function (e) {
       const x = e.target.closest(".dislike-chip-x");
       if (!x) return;
-      removeDisliked(parseInt(x.getAttribute("data-index"), 10));
+      removeDisliked(x.getAttribute("data-key"));
     });
   }
 
-  // 切回這個分頁時更新目標跟校正卡片（不重填表單，避免蓋掉還沒按「計算」的修改）。
+  // 切回這個分頁時更新目標、校正卡片與不吃清單（不重填表單，避免蓋掉還沒按「計算」的修改；不吃清單不是表單欄位，改了就存）。
   document.addEventListener("tab:activated", async function (e) {
     if (e.detail !== "profile") return;
     try {
       const profile = await getProfile();
       if (!profile) return;
+      dislikedIngredients = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
+      renderDislikedList();
       showTargets(await getCalibratedTargets(profile));
       await renderCalibrationCard(profile);
     } catch (err) {
