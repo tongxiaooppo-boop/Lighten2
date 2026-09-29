@@ -3,94 +3,15 @@
 //       SMOKE_BROWSER=/path/to/chrome node tools/smoke-browser.mjs
 // 流程：填基本資料 → 今日建議 → 記錄推薦 → 撤銷 → 自己選（現成品項、自己煮）→ 本週 → 運動 → 體重；
 // 最後檢查 console 沒有錯誤、資料庫是 lighten2、daily_log 是新格式。約 30 秒，不放進 pre-commit，Phase 驗收時跑。
-// 手機上的觸控、版面仍要照 docs/手機實機腳本.md 手動跑。
+// 手機版面與手機實機腳本的步驟由 tools/mobile-walkthrough.mjs 自動跑（模擬手機尺寸＋截圖）。
 
-import { spawn } from "node:child_process";
-import { createServer } from "node:http";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, extname, join, normalize } from "node:path";
-import { fileURLToPath } from "node:url";
+import { startHarness } from "./lib/browser-harness.mjs";
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const CANDIDATES = [
-  process.env.SMOKE_BROWSER,
-  "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
-  "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
-  "C:/Program Files/Google/Chrome/Application/chrome.exe",
-  "/usr/bin/google-chrome", "/usr/bin/chromium-browser", "/usr/bin/chromium",
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-].filter(Boolean);
-const BROWSER = CANDIDATES.find((p) => existsSync(p));
-if (!BROWSER) { console.log("找不到 Edge/Chrome，設定 SMOKE_BROWSER 指到瀏覽器執行檔"); process.exit(1); }
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-// ---------- 靜態 server ----------
-const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8", ".jpg": "image/jpeg", ".png": "image/png", ".svg": "image/svg+xml" };
-const server = createServer((req, res) => {
-  const p = normalize(join(ROOT, decodeURIComponent(req.url.split("?")[0]) || "/"));
-  const file = p.endsWith("\\") || p.endsWith("/") ? join(p, "index.html") : p;
-  if (!file.startsWith(ROOT) || !existsSync(file)) { res.writeHead(404); res.end(); return; }
-  res.writeHead(200, { "Content-Type": TYPES[extname(file)] || "application/octet-stream" });
-  res.end(readFileSync(file));
-});
-await new Promise((r) => server.listen(0, "127.0.0.1", r));
-const URL_BASE = "http://127.0.0.1:" + server.address().port + "/index.html";
-
-// ---------- 瀏覽器＋CDP ----------
-const profileDir = mkdtempSync(join(tmpdir(), "lighten-smoke-"));
-const port = 9300 + Math.floor(Math.random() * 500);
-const browser = spawn(BROWSER, ["--headless=new", "--disable-gpu", "--no-first-run", "--no-default-browser-check",
-  "--remote-debugging-port=" + port, "--user-data-dir=" + profileDir, "about:blank"], { stdio: "ignore" });
-
-async function wsUrl() {
-  for (let i = 0; i < 75; i++) {
-    try {
-      const list = await (await fetch("http://127.0.0.1:" + port + "/json/list")).json();
-      const page = list.find((t) => t.type === "page");
-      if (page) return page.webSocketDebuggerUrl;
-    } catch (e) { /* 還沒啟動 */ }
-    await sleep(200);
-  }
-  throw new Error("瀏覽器沒有啟動");
-}
-
-const ws = new WebSocket(await wsUrl());
-await new Promise((r) => ws.addEventListener("open", r));
-let seq = 0;
-const pending = new Map();
-const events = [];
-ws.addEventListener("message", (m) => {
-  const msg = JSON.parse(m.data);
-  if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); } else if (msg.method) events.push(msg);
-});
-const send = (method, params = {}) => new Promise((r) => { const i = ++seq; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
-async function js(expr) {
-  const r = await send("Runtime.evaluate", { expression: expr, awaitPromise: true, returnByValue: true });
-  if (r.result.exceptionDetails) throw new Error("頁面執行錯誤：" + expr.slice(0, 80) + " → " + JSON.stringify(r.result.exceptionDetails.exception && r.result.exceptionDetails.exception.description));
-  return r.result.result.value;
-}
-// 等到條件成立（最多 8 秒）
-async function until(expr, label) {
-  for (let i = 0; i < 80; i++) {
-    if (await js(expr)) return true;
-    await sleep(100);
-  }
-  fail(label + "（等了 8 秒）");
-  return false;
-}
-const text = (sel) => `((document.querySelector(${JSON.stringify(sel)}) || {}).innerText || "")`;
-
-let failures = 0, checks = 0;
-function fail(msg) { failures++; console.log("  ✗ " + msg); }
-function check(cond, msg) { checks++; if (!cond) fail(msg); }
+const H = await startHarness();
+const { send, js, until, check, fail, text } = H;
+const URL_BASE = H.url;
 
 async function run() {
-  await send("Runtime.enable");
-  await send("Log.enable");
-  await send("Page.enable");
   await send("Page.navigate", { url: URL_BASE });
   await until(`${text("#today-status")}.indexOf("基本資料") !== -1`, "沒有基本資料時，今日建議沒有提示先填基本資料");
   check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,week,exercise,shopping",
@@ -162,12 +83,8 @@ async function run() {
   check((await js(`indexedDB.databases().then((d) => d.map((x) => x.name).join(','))`)) === "lighten2", "IndexedDB 不是只有 lighten2");
   const lsKeys = await js(`Object.keys(localStorage)`);
   check(lsKeys.every((k) => k.indexOf("lighten2.") === 0), "localStorage 有沒加 lighten2. 前綴的 key：" + lsKeys.join(","));
-  const errs = events.filter((e) =>
-    e.method === "Runtime.exceptionThrown" ||
-    (e.method === "Runtime.consoleAPICalled" && e.params.type === "error") ||
-    (e.method === "Log.entryAdded" && e.params.entry.level === "error" && !/favicon\.ico/.test(e.params.entry.url || "")));
-  errs.forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
-  checks++;
+  H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
+  H.countCheck();
 }
 
 try {
@@ -175,10 +92,7 @@ try {
 } catch (err) {
   fail(err.message);
 }
-ws.close();
-browser.kill();
-server.close();
-await sleep(300);
-try { rmSync(profileDir, { recursive: true, force: true }); } catch (e) { /* 瀏覽器還沒放開檔案 */ }
+await H.close();
+const { failures, checks } = H.result();
 console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
 process.exit(failures === 0 ? 0 : 1);
