@@ -8,6 +8,7 @@ import { $ } from "./dom.js";
 import { getProfile, saveProfile, addWeightLog } from "../data/db.js";
 import { calculateTargets } from "../engine/nutrition.js";
 import { initBackup } from "./backup.js";
+import { initCustomFoods, refreshCustomFoods } from "./profile/custom-foods.js";
 import { normalizeAllergens } from "../engine/filters.js";
 import {
 loadTdeeState, getCalibratedTargets, runCalibrationNow,
@@ -295,6 +296,7 @@ async function onCalculate(e) {
   } catch (err) {
     console.error("saveProfile 失敗", err);
   }
+  refreshCustomFoods(); // 過敏原、飲食限制改了，我的品項的「能不能選」跟著變
 
   try {
     await runCalibrationNow(profile);
@@ -354,6 +356,7 @@ function renderAllergenOptions() {
 export async function initProfileTab() {
   renderAllergenOptions();
   initBackup();
+  initCustomFoods();
   const dateInput = document.querySelector("#weight-form input[name='log_date']");
   if (dateInput) dateInput.value = todayStr();
 
