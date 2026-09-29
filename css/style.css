@@ -487,6 +487,9 @@ body {
 .rec-pick-btn {
   margin-left: 0.4rem;
 }
+.rec-empty + .rec-pick-btn {
+  margin: 0.6rem 0 0;
+}
 .dislike-chips {
   margin: 0.3rem 0 0.5rem;
   font-size: 0.8rem;
