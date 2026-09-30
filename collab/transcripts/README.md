@@ -1,6 +1,6 @@
 # 官方飲食 PDF 轉錄檔說明
 
-本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4、5 份，其餘 3 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
+本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4、5、6 份，其餘 2 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
 
 ## 已完成
 
@@ -11,6 +11,7 @@
 | `vegetarian_food_guide.json` + `.md` | `collab/pdf/素食飲食指南手冊.pdf` | 全 19 頁 | 純素/蛋素/奶素/奶蛋素四種類型的六大類份數表、豆(蛋)類與乳品類代換份量轉JSON；內文（前言、七大類食物簡介）轉md |
 | `my_plate.json` + `.md` | `collab/pdf/我的餐盤手冊（全穀及未精製雜糧）v2.pdf` | 全 37 頁 | 手測量份量表、六句口訣、中式/西式/素食三種型式各三餐範例、六大類小訣竅轉JSON；內文（前言、設計理念、聰明吃）轉md |
 | `senior_recipes.json` | `collab/pdf/22016.pdf`（高齡營養健康食譜） | 全 16 頁 | 12個月份食譜，各含食材／調味料／作法／推薦理由／每份熱量／我的餐盤六大類份數換算 |
+| `recipes_1600_1800.json` | `collab/pdf/1600_1800_kcal_healthy_recipes.pdf` | 全 2 頁 | ⚠️來源PDF本身數字全缺（見下方說明），只轉錄了存在的文字骨架 |
 
 ### `food_exchange_table.json` 結構
 
@@ -61,10 +62,13 @@
 - `recipes`：12筆（1~12月各一道），每筆含 `month`、`name`、`servings`、`ingredients`（含 `amount_text` 原文與可解析的 `g` 公克數）、`seasonings`、`steps`、`recommendation_reasons`、`nutrition_per_serving.kcal`、`daily_kcal_reference`（固定1700大卡，高齡者每日飲食建議量基準）、`my_plate_servings_per_serving`（該食譜一人份對應「我的餐盤」六大類的份數，原文以圖示+數字表示，`None`代表原圖示是「—」）、`page`。
 - 封面主題：「吃的下、吃的夠、吃的對、吃的巧」（高齡營養三好一巧）。
 
+### `recipes_1600_1800.json` 結構 —— ⚠️ 來源 PDF 本身有缺陷
+
+**這份 PDF 不是完整的官方文件**：全部數字（份量、克數、根數、熱量級距）在文字層與圖片裡都是空白，連標題本身的「1600」「1800」兩個熱量數字都不存在，懷疑是樣板檔案的變數欄位沒被正確填入就匯出。已逐字轉錄實際存在的文字，缺數字處一律 `null`，沒有用猜測或其他食譜的數字去填補。詳見 `collab/from-sonnet.md` #6 一節。
+
 ## 待完成
 
 | # | 來源 | 頁數 | 輸出 |
 |---|---|---|---|
-| 6 | `collab/pdf/1600_1800_kcal_healthy_recipes.pdf` | 2 | `recipes_1600_1800.json` |
 | 7 | `collab/pdf/國民飲食指標手冊.pdf` | 20 | `national_dietary_indicators.md` |
 | 8 | `collab/pdf/20241024102714_90531.pdf` | 66 | `90531.md` |

@@ -1,0 +1,94 @@
+{
+  "_source": "collab/pdf/1600_1800_kcal_healthy_recipes.pdf",
+  "_transcribed_at": "2026-09-30",
+  "_critical_note": "這份來源 PDF 本身有缺陷：所有數字（份量、克數、根數、熱量級距等）在文字層與渲染圖片中都是空白，包括標題本身──標題原文應該是類似「1600大卡與1800大卡一日三餐健康食譜」，但PDF裡實際顯示成「＿＿大卡與＿＿大卡一日三餐健康食譜」，兩個熱量數字都不存在。這不是轉錄或字型顯示的問題（已用200dpi圖片直接看過，數字位置在版面上就是空白），懷疑是產生此PDF的樣板檔案裡數字欄位（可能原本是像 {{count}} 這樣的變數）從未被正確替換就匯出了。以下只逐字轉錄實際存在的文字，缺數字的地方一律填 null，不用其他食譜或代換表的數字去猜測填補。",
+  "plans": [
+    {
+      "plan_name": "＿＿大卡 均衡減＿＿ 飲食計畫",
+      "plan_name_note": "原文「大卡 均衡減　　飲食計畫」，「均衡減」之後應該還有字（可能是「重」或「脂」），版面上是空白，念不出完整詞語",
+      "meals": [
+        {
+          "meal": "早餐",
+          "items": [
+            {"name": "水煮蛋", "amount_text": null, "unit": "顆"},
+            {"name": "鮮奶", "amount_text": null, "unit": "杯"},
+            {"name": "地瓜", "amount_text": null, "unit": "約拳頭大"},
+            {"name": "綜合堅果", "amount_text": null, "unit": "湯匙"}
+          ],
+          "nutrition_note": "高蛋白搭配複合澱粉，開啟一天代謝，提供長效飽足感。"
+        },
+        {
+          "meal": "午餐",
+          "items": [
+            {"name": "乾煎雞胸肉", "amount_text": null, "unit": null},
+            {"name": "糙米飯", "amount_text": null, "unit": "碗"},
+            {"name": "炒綜合蔬菜（綠花椰、香菇）", "amount_text": null, "unit": "碗"},
+            {"name": "橄欖油", "amount_text": null, "unit": "茶匙", "note": "烹調用"}
+          ],
+          "nutrition_note": "低脂優質蛋白與高纖蔬菜，維持血糖穩定、不瞌睡。"
+        },
+        {
+          "meal": "點心",
+          "items": [
+            {"name": "大（或中）蘋果", "amount_text": null, "unit": "顆"}
+          ],
+          "nutrition_note": "補充膳食纖維與維生素，緩解午後飢餓感。"
+        },
+        {
+          "meal": "晚餐",
+          "items": [
+            {"name": "清蒸鱈魚或鮭魚", "amount_text": null, "unit": null},
+            {"name": "嫩煎豆腐", "amount_text": "半盒", "unit": null},
+            {"name": "水煮青江菜", "amount_text": null, "unit": "碗"},
+            {"name": "橄欖油", "amount_text": null, "unit": "茶匙", "note": "烹調用"}
+          ],
+          "nutrition_note": "攝取〔缺字，原文「攝取　　　　好油與好吸收的植物蛋白」，缺的部分應該是形容油的詞，例如「優質」，看不出來〕好油與好吸收的植物蛋白，夜間修復不負擔。"
+        }
+      ]
+    },
+    {
+      "plan_name": "＿＿大卡 增肌減脂 飲食計畫",
+      "meals": [
+        {
+          "meal": "早餐",
+          "items": [
+            {"name": "水煮蛋", "amount_text": null, "unit": "顆"},
+            {"name": "無糖豆漿", "amount_text": null, "unit": "大杯"},
+            {"name": "燕麥片", "amount_text": null, "unit": "沖泡"},
+            {"name": "香蕉", "amount_text": null, "unit": "根"},
+            {"name": "綜合堅果", "amount_text": null, "unit": "湯匙"}
+          ],
+          "nutrition_note": "相較〔缺字，應該是「相較＿＿飲食計畫，額外增加＿＿顆蛋與燕麥份量」，缺的部分是比較對象與具體增加數量〕額外增加顆蛋與燕麥份量，適合活動量較大者。"
+        },
+        {
+          "meal": "午餐",
+          "items": [
+            {"name": "烤里肌肉片", "amount_text": null, "unit": null},
+            {"name": "糙米飯", "amount_text": null, "unit": "碗"},
+            {"name": "炒綜合蔬菜（高麗菜、胡蘿蔔）", "amount_text": null, "unit": "碗"},
+            {"name": "橄欖油", "amount_text": null, "unit": "茶匙", "note": "烹調用"}
+          ],
+          "nutrition_note": "提高蛋白質與油脂比例，滿足肌肉生長或日常消耗所需。"
+        },
+        {
+          "meal": "點心",
+          "items": [
+            {"name": "希臘優格", "amount_text": null, "unit": null},
+            {"name": "奇異果", "amount_text": null, "unit": "顆"}
+          ],
+          "nutrition_note": "豐富益生菌與高維生素〔缺字〕，幫助腸道健康與抗氧化。"
+        },
+        {
+          "meal": "晚餐",
+          "items": [
+            {"name": "鹽烤鯖魚", "amount_text": "約", "unit": "條"},
+            {"name": "滷豆腐", "amount_text": null, "unit": "塊"},
+            {"name": "水煮花椰菜", "amount_text": null, "unit": "碗"},
+            {"name": "地瓜", "amount_text": null, "unit": "約半個拳頭大"}
+          ],
+          "nutrition_note": "晚餐適量補充碳水，有助於維持睡眠品質與肌肉修復。"
+        }
+      ]
+    }
+  ]
+}
