@@ -1,0 +1,946 @@
+{
+  "_source": "衛生福利部國民健康署《高齡營養健康食譜》collab/pdf/22016.pdf",
+  "_transcribed_at": "2026-09-30",
+  "_note": "全書為12個月份食譜（1~12月），封面主題「吃的下、吃的夠、吃的對、吃的巧」（高齡營養三好一巧）。每份食譜皆標示「高齡者每日飲食建議量 熱量1700大卡」作為換算基準，my_plate_servings_per_serving欄位是「我的餐盤」六大類換算後、該食譜一人份對應的份數（原PDF用圖示+數字表示，None代表原圖示為「—」）。",
+  "recipes": [
+    {
+      "month": 1,
+      "name": "青花菜海鮮濃湯",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "南瓜",
+          "amount_text": "55公克",
+          "g": 55
+        },
+        {
+          "name": "蝦仁",
+          "amount_text": "50公克",
+          "g": 50
+        },
+        {
+          "name": "小卷",
+          "amount_text": "35公克",
+          "g": 35
+        },
+        {
+          "name": "蛤蜊(大)",
+          "amount_text": "6個",
+          "g": null
+        },
+        {
+          "name": "洋蔥",
+          "amount_text": "40公克(切末)",
+          "g": 40
+        },
+        {
+          "name": "青花菜",
+          "amount_text": "80公克(切丁)",
+          "g": 80
+        },
+        {
+          "name": "橄欖油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "蒜片",
+          "amount_text": "2~3片",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "白胡椒粉",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "南瓜洗淨，蒸熟後攪拌成泥。",
+        "蝦仁、小卷洗淨，燙熟後備用。",
+        "蛤蜊洗淨，吐完沙後備用。",
+        "洋蔥洗淨後切末，青花菜洗淨後切丁備用。",
+        "用橄欖油炒香蒜片，加入洋蔥炒軟，並加入青花菜、水，開大火煮滾。",
+        "等高湯煮滾，加入蛤蜊煮開後，再加入蝦仁、小卷、南瓜泥，攪拌均勻，最後再加入少許鹽、白胡椒粉等調味即可。"
+      ],
+      "recommendation_reasons": [
+        "冬天是青花菜產季，口感較佳。",
+        "海鮮為中低脂肉類，蛤蜊含有鋅，可增進皮膚健康、有助於維持正常味覺與食慾。",
+        "此湯品中食物多樣化、色彩豐富，是營養均衡的菜餚。",
+        "亦可用胡蘿蔔代替青花菜，薑代替蒜片，烹調出的胡蘿蔔海鮮湯，色澤美，且富含胡蘿蔔素。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 143
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": 0.3,
+        "豆魚蛋肉類(份)": 1.5,
+        "蔬菜類(份)": 0.6,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 0.5
+      },
+      "page": 3,
+      "note": null
+    },
+    {
+      "month": 2,
+      "name": "滷梅花重疊肉",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "梅花肉片(火鍋肉片)",
+          "amount_text": "120公克",
+          "g": 120
+        },
+        {
+          "name": "蔥",
+          "amount_text": "1/4根(約10公克切小段)",
+          "g": 10
+        },
+        {
+          "name": "薑",
+          "amount_text": "2片",
+          "g": null
+        },
+        {
+          "name": "青江菜",
+          "amount_text": "100公克",
+          "g": 100
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "太白粉",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "醬油",
+          "amount_text": "2大匙",
+          "g": null
+        },
+        {
+          "name": "糖",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "酒",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "蒸盤上鋪上一層梅花肉片，灑上少許太白粉再鋪上梅花肉片，相互重疊約5層後，塗上太白粉水固定肉片。",
+        "將作法1加入蔥、薑、醬油、糖、酒及水，放入蒸盤中燉煮30~35分鐘。",
+        "取出後切成易於食用的大小。",
+        "搭配川燙後的青江菜即可食用。"
+      ],
+      "recommendation_reasons": [
+        "利用製作東坡肉方法燉煮梅花重疊肉，可使肉質柔軟，搭配青菜食用，對長者而言，容易入口，且油脂含量較少。",
+        "亦可加入馬鈴薯、紅蘿蔔、洋蔥、蒟蒻等一起燉煮，食材多樣化、營養均衡。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 248
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 1.7,
+        "蔬菜類(份)": 0.5,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": null
+      },
+      "page": 4,
+      "note": null
+    },
+    {
+      "month": 3,
+      "name": "健康蔬菜粥",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "洋蔥",
+          "amount_text": "1/4個(約40公克切丁)",
+          "g": 40
+        },
+        {
+          "name": "胡蘿蔔",
+          "amount_text": "20公克(切丁)",
+          "g": 20
+        },
+        {
+          "name": "高麗菜",
+          "amount_text": "60公克(小片)",
+          "g": 60
+        },
+        {
+          "name": "芹菜末",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "豆皮",
+          "amount_text": "1/2片(切小塊)",
+          "g": null
+        },
+        {
+          "name": "植物油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "豬絞肉",
+          "amount_text": "70公克",
+          "g": 70
+        },
+        {
+          "name": "胚芽米",
+          "amount_text": "1/2米杯",
+          "g": null
+        },
+        {
+          "name": "水",
+          "amount_text": "3杯",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "醬油",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "胡椒粉",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "將洋蔥、胡蘿蔔洗淨後切丁，高麗菜洗淨後切小片，芹菜洗淨後切末，豆皮切小塊，備用。",
+        "鍋中加入植物油，放入洋蔥炒至透明，再加豬絞肉、胡蘿蔔、豆皮後炒熟，加入鹽及醬油調味。",
+        "胚芽米洗淨，加3杯水放入電鍋內鍋，再加入作法2及高麗菜，煮熟後加入胡椒粉、芹菜末即可。"
+      ],
+      "recommendation_reasons": [
+        "粥品對長者而言是容易入口的餐點。",
+        "高麗菜、洋蔥、胡蘿蔔等可以增加纖維的攝取。",
+        "亦可用燕麥代替部分胚芽米，增加纖維質攝取。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 269
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": 2,
+        "豆魚蛋肉類(份)": 1.3,
+        "蔬菜類(份)": 0.6,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 0.5
+      },
+      "page": 5,
+      "note": null
+    },
+    {
+      "month": 4,
+      "name": "塔塔香肉燥飯",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "杏鮑菇",
+          "amount_text": "30公克(切丁)",
+          "g": 30
+        },
+        {
+          "name": "蒜頭",
+          "amount_text": "1顆(切碎)",
+          "g": null
+        },
+        {
+          "name": "九層塔",
+          "amount_text": "10公克(切碎)",
+          "g": 10
+        },
+        {
+          "name": "植物油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "豬絞肉",
+          "amount_text": "70公克",
+          "g": 70
+        },
+        {
+          "name": "胚芽米飯",
+          "amount_text": "1.5碗",
+          "g": null
+        },
+        {
+          "name": "白芝麻",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "醬油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "米酒",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "糖",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "杏鮑菇洗淨後切丁，蒜頭及九層塔洗淨後切碎備用。",
+        "鍋中加入植物油，炒香蒜末及九層塔，再加入豬絞肉、杏鮑菇拌炒均勻，最後加入少許調味料調味。",
+        "將作法2淋在胚芽米飯上，灑上白芝麻即可食用。"
+      ],
+      "recommendation_reasons": [
+        "九層塔的特殊香氣，再加上肉燥，可增加長者食慾。",
+        "白芝麻含有身體必需的脂肪酸，也含有豐富的維生素E，具抗氧化作用，能增進皮膚健康。",
+        "亦可用雞蛋代替豬絞肉，做成九層塔煎蛋。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 315
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": 3,
+        "豆魚蛋肉類(份)": 1,
+        "蔬菜類(份)": 0.2,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 0.5
+      },
+      "page": 6,
+      "note": null
+    },
+    {
+      "month": 5,
+      "name": "咖哩菇菇歐姆蛋",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "鮮香菇",
+          "amount_text": "1朵(切絲)",
+          "g": null
+        },
+        {
+          "name": "金針菇",
+          "amount_text": "20公克(切絲)",
+          "g": 20
+        },
+        {
+          "name": "美白菇",
+          "amount_text": "20公克(切絲)",
+          "g": 20
+        },
+        {
+          "name": "雞蛋",
+          "amount_text": "2個",
+          "g": null
+        },
+        {
+          "name": "蔥花",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "植物油",
+          "amount_text": "2茶匙",
+          "g": null
+        },
+        {
+          "name": "洋蔥",
+          "amount_text": "1/4顆(約40公克切絲)",
+          "g": 40
+        },
+        {
+          "name": "水",
+          "amount_text": "200毫升",
+          "g": 200
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "咖哩粉",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "番茄醬",
+          "amount_text": "2茶匙",
+          "g": null
+        },
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "鮮香菇、金針菇、美白菇洗淨後切絲備用。",
+        "雞蛋打成蛋液，將蔥花放入蛋液中，攪拌均勻。",
+        "製作咖哩醬汁：用1茶匙植物油炒香咖哩粉，加入洋蔥、番茄醬及水，煮滾成醬汁備用。",
+        "鍋中加入1茶匙植物油，將菇類拌炒，取出一半炒熟的菇，另一半留在鍋中並加鹽調味，將蛋液倒入攪拌。",
+        "用筷子將蛋液捲到鍋子邊緣，將蛋翻面後煎熟。",
+        "剩餘一半炒熟的菇加入咖哩醬汁中，等煮滾後淋在歐姆蛋上。"
+      ],
+      "recommendation_reasons": [
+        "咖哩在炎熱夏天可刺激長者食慾。",
+        "咖哩中的薑黃素，具有抗發炎的效果",
+        "搭配米飯、蔬菜一起食用，可攝取多種營養素。",
+        "番茄、番茄醬含有茄紅素，亦可用新鮮番茄代替金針菇、美白菇，做出另一種風味的茄汁歐姆蛋。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 149
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 1,
+        "蔬菜類(份)": 0.5,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 1
+      },
+      "page": 7,
+      "note": null
+    },
+    {
+      "month": 6,
+      "name": "味噌茄子",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "茄子",
+          "amount_text": "2條(約200公克切段)",
+          "g": 200
+        },
+        {
+          "name": "橄欖油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "白芝麻",
+          "amount_text": "1大匙(10公克)",
+          "g": 10
+        },
+        {
+          "name": "水",
+          "amount_text": "3/4杯",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "味噌",
+          "amount_text": "1大匙",
+          "g": null
+        },
+        {
+          "name": "細砂糖",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "開水",
+          "amount_text": "1.5大匙",
+          "g": null
+        }
+      ],
+      "steps": [
+        "將茄子洗淨切長段，斜切十字花後排入盤中，均勻淋上橄欖油。",
+        "將作法1放置電鍋架上，外鍋放入3/4杯水蒸熟。開關跳起後立即取出。",
+        "將調味料混合均勻成味噌醬料備用。",
+        "將味噌醬料與茄子拌勻，灑上白芝麻即可。"
+      ],
+      "recommendation_reasons": [
+        "茄子含有維生素A、B群、C等營養素，紫色外皮含有多酚類抗氧化物。",
+        "蒸過的茄子質地較軟，適合咀嚼困難長者食用。",
+        "味噌含有優良蛋白質、多種微量營養素、大豆異黃酮、卵磷脂等營養素。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 109
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": null,
+        "蔬菜類(份)": 1,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 1.5
+      },
+      "page": 8,
+      "note": null
+    },
+    {
+      "month": 7,
+      "name": "秋葵豆腐",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "豆腐",
+          "amount_text": "1盒",
+          "g": null
+        },
+        {
+          "name": "秋葵",
+          "amount_text": "12根(約100公克)",
+          "g": 100
+        },
+        {
+          "name": "蒜末",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "紅辣椒末",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "蔥花",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "醬油",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "糖",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "黑醋",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "香油",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "豆腐加點鹽去水後，切成小塊狀，放入滾水中川燙後，盛起備用。",
+        "秋葵洗淨，抹少許鹽去除表面絨毛，放入滾水中川燙後，橫切成星星狀。",
+        "將蒜末加入醬油、糖、黑醋調成醬汁。",
+        "碗中放入秋葵、豆腐混合拌勻，淋上作法3，加入香油、紅辣椒末及蔥花拌勻即可。"
+      ],
+      "recommendation_reasons": [
+        "秋葵含有鐵、鈣等多種微量營養素。",
+        "豆腐是良好的植物性蛋白質，對咀嚼困難的長者是道容易入口的菜餚。",
+        "亦可用西洋芹代替秋葵、干絲代替豆腐，也是一道適合長者的菜餚。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 88
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 1,
+        "蔬菜類(份)": 0.5,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": null
+      },
+      "page": 9,
+      "note": null
+    },
+    {
+      "month": 8,
+      "name": "米苔目湯",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "韭菜",
+          "amount_text": "20公克",
+          "g": 20
+        },
+        {
+          "name": "蝦米",
+          "amount_text": "5公克",
+          "g": 5
+        },
+        {
+          "name": "紅蔥頭",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "肉絲",
+          "amount_text": "70公克",
+          "g": 70
+        },
+        {
+          "name": "米苔目(濕)",
+          "amount_text": "200公克",
+          "g": 200
+        },
+        {
+          "name": "綠豆芽",
+          "amount_text": "50公克",
+          "g": 50
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "麻油",
+          "amount_text": "1茶匙",
+          "g": null
+        }
+      ],
+      "steps": [
+        "韭菜洗淨後切成3~5公分小段備用。",
+        "蝦米、紅蔥頭、肉絲炒香備用。",
+        "米苔目放入滾水中，並加入作法1、2之材料及綠豆芽煮滾，起鍋前加入少許鹽及淋上麻油即可。"
+      ],
+      "recommendation_reasons": [
+        "米苔目是國內普遍食用的傳統米食，高齡者接受度高。",
+        "亦可用粄條代替米苔目，適合做為高齡者的點心。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 255
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": 2,
+        "豆魚蛋肉類(份)": 1.2,
+        "蔬菜類(份)": 0.4,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 0.5
+      },
+      "page": 10,
+      "note": null
+    },
+    {
+      "month": 9,
+      "name": "皇宮菜麻油豬肝",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "皇宮菜",
+          "amount_text": "200公克",
+          "g": 200
+        },
+        {
+          "name": "豬肝",
+          "amount_text": "90公克",
+          "g": 90
+        },
+        {
+          "name": "麻油",
+          "amount_text": "1大匙",
+          "g": null
+        },
+        {
+          "name": "薑片",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "米酒",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "皇宮菜洗淨後取嫩葉備用，豬肝洗淨後切塊。",
+        "鍋中以麻油炒香薑片，加入豬肝炒至略微變色後盛起備用，麻油留在鍋中。",
+        "鍋中放入皇宮菜，將皇宮菜炒熟後加入豬肝，再加入少許米酒及鹽調味後立即熄火，燜3分鐘後即可。"
+      ],
+      "recommendation_reasons": [
+        "皇宮菜有滑溜的口感，有助於長者吞嚥，且富含纖維可促進腸道蠕動。",
+        "豬肝富含鐵質，有助於正常紅血球的形成。",
+        "可用紅棗代替皇宮菜，與豬肝搭配煮成豬肝紅棗羹。",
+        "亦可用牛肉代替豬肝。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 175
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 1.5,
+        "蔬菜類(份)": 1,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 1.5
+      },
+      "page": 11,
+      "note": null
+    },
+    {
+      "month": 10,
+      "name": "茄汁秋刀魚",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "秋刀魚",
+          "amount_text": "2尾",
+          "g": null
+        },
+        {
+          "name": "番茄",
+          "amount_text": "1碗(切丁)",
+          "g": null
+        },
+        {
+          "name": "洋蔥",
+          "amount_text": "1/4顆(約40公克)",
+          "g": 40
+        },
+        {
+          "name": "植物油",
+          "amount_text": "2茶匙",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "米酒",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "糖",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "番茄醬",
+          "amount_text": "2大匙",
+          "g": null
+        }
+      ],
+      "steps": [
+        "將秋刀魚去除魚頭、尾巴和內臟後切塊。",
+        "番茄及洋蔥洗淨後切丁。",
+        "鍋中加入植物油，放入番茄及洋蔥拌炒均勻，加入調味料及秋刀魚拌勻，移至壓力鍋燉煮至軟爛。（可用電鍋燉煮，每次外鍋一杯水燉煮，再燜煮半小時，反覆2~3次，燉煮至可用筷子夾碎魚骨為止。）"
+      ],
+      "recommendation_reasons": [
+        "秋天是秋刀魚產季。",
+        "魚骨煮至軟爛，連魚肉一起食用，可攝取鈣質。",
+        "秋刀魚富含EPA、DHA，以及維生素B12，能有助於紅血球的形成，增進神經系統的健康。",
+        "亦可用鯖魚代替秋刀魚，兩者一樣富含EPA及DHA。",
+        "番茄、洋蔥富含植化素及纖維，對高齡者健康有益。",
+        "此菜餚提供較多的蛋白質，建議搭配適量米飯及蔬菜以達到均衡的營養。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 313
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 2,
+        "蔬菜類(份)": 0.5,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": 1
+      },
+      "page": 12,
+      "note": null
+    },
+    {
+      "month": 11,
+      "name": "菠菜起司烘蛋",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "菠菜",
+          "amount_text": "200公克(切段)",
+          "g": 200
+        },
+        {
+          "name": "雞蛋",
+          "amount_text": "2個",
+          "g": null
+        },
+        {
+          "name": "奶油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "大蒜片",
+          "amount_text": "2瓣",
+          "g": null
+        },
+        {
+          "name": "番茄",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "橄欖油",
+          "amount_text": "1茶匙",
+          "g": null
+        },
+        {
+          "name": "起司絲",
+          "amount_text": "35克",
+          "g": 35
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "胡椒粉",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "菠菜洗淨後切段。",
+        "雞蛋打成蛋液，並將作法1加入蛋液中。",
+        "鍋加熱後放入奶油、大蒜片，加入作法2材料，鋪上番茄、少許鹽、胡椒粉，淋上橄欖油，中小火烘至5分熟，灑上起司絲，再加熱5分鐘，待起司融化，即可盛起。"
+      ],
+      "recommendation_reasons": [
+        "秋冬為菠菜主要產季，且富含維生素K及葉黃素。",
+        "起司可以減少菠菜青澀口感，並增加食慾。",
+        "亦可用洋蔥、花椰菜、蘆筍代替菠菜，增加蔬菜多樣性。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 210
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 1,
+        "蔬菜類(份)": 1.1,
+        "水果類(份)": null,
+        "乳品類(杯)": 0.5,
+        "油脂與堅果種子類(份)": 0.8
+      },
+      "page": 13,
+      "note": null
+    },
+    {
+      "month": 12,
+      "name": "白菜燉雞湯",
+      "servings": "二人份",
+      "ingredients": [
+        {
+          "name": "大白菜",
+          "amount_text": "1/4顆(250公克)",
+          "g": 250
+        },
+        {
+          "name": "白蘿蔔",
+          "amount_text": "1/4條(150公克)(切塊)",
+          "g": 150
+        },
+        {
+          "name": "香菇",
+          "amount_text": "3~4朵(切塊)",
+          "g": null
+        },
+        {
+          "name": "去骨雞腿",
+          "amount_text": "1/3支(200公克)(切塊)",
+          "g": 200
+        },
+        {
+          "name": "薑片",
+          "amount_text": "3~4片",
+          "g": null
+        },
+        {
+          "name": "枸杞",
+          "amount_text": "少許",
+          "g": null
+        },
+        {
+          "name": "水",
+          "amount_text": "1杯",
+          "g": null
+        }
+      ],
+      "seasonings": [
+        {
+          "name": "鹽",
+          "amount_text": "少許",
+          "g": null
+        }
+      ],
+      "steps": [
+        "大白菜洗淨，白蘿蔔及香菇洗淨後切塊備用。",
+        "去骨雞腿切塊後用滾水川燙備用。",
+        "將所有食材放入鍋中，加水淹過食材，放入電鍋中(外鍋1杯水)，開關跳起後，再燜30分鐘，起鍋前加入少許鹽即可。"
+      ],
+      "recommendation_reasons": [
+        "冬天為大白菜產季。",
+        "雞肉肉質較軟，適合高齡者食用。",
+        "芥菜是冬天盛產的十字花科蔬菜，含有胡蘿蔔素、維生素B群、維生素C、鐵等營養素，亦可用來代替白菜、白蘿蔔等。"
+      ],
+      "nutrition_per_serving": {
+        "kcal": 200
+      },
+      "daily_kcal_reference": 1700,
+      "my_plate_servings_per_serving": {
+        "全穀雜糧類(碗)": null,
+        "豆魚蛋肉類(份)": 2.5,
+        "蔬菜類(份)": 2.5,
+        "水果類(份)": null,
+        "乳品類(杯)": null,
+        "油脂與堅果種子類(份)": null
+      },
+      "page": 14,
+      "note": "推薦理由第3點提到「芥菜」，但本食譜食材並未使用芥菜（用的是大白菜、白蘿蔔），原文如此，屬PDF本身的敘述與食材不一致，未替它改字。"
+    }
+  ]
+}
