@@ -7,6 +7,7 @@
 const fs = require("fs");
 const path = require("path");
 const { loadReferences, computePer100g, FIELDS, DERIVED_REF } = require("./lib/ingredient-values");
+const { exchangeNames, loadExchange } = require("./lib/food-tree-values");
 
 const ROOT = path.join(__dirname, "..");
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "data", f), "utf8"));
@@ -56,7 +57,7 @@ function checkDietTags(where, it) {
   }
 }
 const MEAT_WORDS = /雞|豬|牛|羊|鴨|肉|排骨|火腿|培根|魚|蝦/;
-const NOT_MEAT_WORDS = /雞蛋|牛奶|牛乳|植物肉|素肉|果肉|肉桂/g;
+const NOT_MEAT_WORDS = /雞蛋|牛奶|牛乳|牛蒡|植物肉|素肉|果肉|肉桂/g;
 
 // TFDA 內容物描述有沒有完整列出成分（章程 B6.3）：括號裡用逗號列出成分，而且任何成分清單都沒有「等」
 // （TFDA 常見「樣品狀態:…(A,B等); 前處理描述:…」，清單以「等」結尾但整段描述不是）
@@ -95,6 +96,40 @@ function sampleAllergenGaps(tags, text, code) {
   return SAMPLE_ALLERGEN_WORDS
     .filter(([tag, re]) => skip.indexOf(tag) === -1 && re.test(text) && !hasTagOrUnverified(tags, tag))
     .map(([tag]) => tag);
+}
+
+// 代換表轉錄與標註（章程 B1、B10）。decisions #35 與食物資料 review 引用的份量要在轉錄檔裡仍成立
+const EXCHANGE_CITED = [
+  ["附-4", "米、黑米、小米、糯米等", "edible_g", 20], ["附-4", "糙米、什穀米、胚芽米", "edible_g", 20],
+  ["附-4", "飯", "edible_g", 40], ["附-4", "蕃薯(4個/斤)", "edible_g", 55], ["附-4", "南瓜", "edible_g", 85],
+  ["附-3-1", "毛豆（+5公克碳水化合物）", "raw_g", 50], ["附-3-1", "雞里肉、雞胸肉", "raw_g", 30],
+  ["附-3-1", "◎ 膽肝", "raw_g", 20], ["附-3-2", "虱目魚、烏魚、肉鯽、鹹馧魚、鮭魚", "raw_g", 35],
+  ["附-3-2", "虱目魚、烏魚、肉鯽、鹹馧魚、鮭魚", "cooked_g", 30],
+];
+function checkExchangeReference(table, tags) {
+  EXCHANGE_CITED.forEach(([t, text, k, v]) => {
+    const row = table.items.find((r) => r.table === t && r.row_text === text);
+    if (!row) err("代換表轉錄找不到 " + t + "「" + text + "」（decisions #35 引用）");
+    else if (row[k] !== v) err("代換表 " + t + "「" + text + "」" + k + " 是 " + row[k] + "，decisions #35 引用的是 " + v);
+  });
+  const names = exchangeNames(table);
+  if (names.length !== 374) err("代換表品名應為 374 個，實際 " + names.length);
+  const byKey = {};
+  tags.items.forEach((x, i) => {
+    const w = "food_exchange_tags[" + i + "] " + x.key;
+    if (byKey[x.key]) err(w + "：key 重複");
+    byKey[x.key] = x;
+    checkAllergenTags(w, x.allergen_tags, false);
+    if (typeof x.vegan !== "boolean" || typeof x.lacto_ovo !== "boolean") err(w + "：vegan、lacto_ovo 要是 true/false");
+    if (x.vegan && !x.lacto_ovo) err(w + "：全素一定也是蛋奶素");
+    checkDietTags(w, { name: x.name, allergen_tags: x.allergen_tags, vegan: x.vegan, lacto_ovo: x.lacto_ovo, note: x.reason });
+  });
+  names.forEach((n) => {
+    const x = byKey[n.key];
+    if (!x) err("代換表標註缺 " + n.key + "「" + n.name + "」");
+    else if (x.name !== n.name) err("代換表標註 " + n.key + " 的品名「" + x.name + "」跟轉錄「" + n.name + "」不同");
+  });
+  if (tags.items.length !== names.length) err("代換表標註 " + tags.items.length + " 筆，品名 " + names.length + " 個");
 }
 
 // 二手官方數字凍結（章程 B2.2）：frozen＝{ "檔名.id": { 欄位: 值 } }，productByKey＝同樣 key 的品項
@@ -458,6 +493,17 @@ function checkToolRules(refs) {
   if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "M1100101").length) err("工具自我檢查：大豆油（decisions #89 例外）卻被警告");
   if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "X0000000").join() !== "黃豆") err("工具自我檢查：不在例外清單的大豆樣品沒被警告");
   if (sampleAllergenGaps([], "豆漿 樣品狀態:大豆分離蛋白質", "X").indexOf("蛋") !== -1) err("工具自我檢查：「分離蛋白質」被當成蛋");
+  // 代換表參考資料：#35 引用的數字、標註跟品名一一對應
+  {
+    const ex = loadExchange();
+    const clone = (o) => JSON.parse(JSON.stringify(o));
+    const t1 = clone(ex.table); t1.items.find((r) => r.row_text === "飯").edible_g = 45;
+    if (!reports(/decisions #35/, () => checkExchangeReference(t1, ex.tags))) err("工具自我檢查：代換表「飯」被改成 45g 卻沒報錯（decisions #35）");
+    const g1 = clone(ex.tags); g1.items.pop();
+    if (!reports(/代換表標註缺/, () => checkExchangeReference(ex.table, g1))) err("工具自我檢查：代換表標註少一筆卻沒報錯");
+    if (reports(/./, () => checkExchangeReference(ex.table, ex.tags))) err("工具自我檢查：代換表參考資料沒被改卻報錯");
+  }
+  if (reports(/素食依據/, product({ name: "牛蒡絲", allergen_tags: [], vegan: true, lacto_ovo: true }))) err("工具自我檢查：牛蒡標全素卻被當成肉類");
   // T13：id 全資料庫唯一
   if (!reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["超商", "egg"]]))) err("工具自我檢查：食材與超商 id 重複卻沒報錯");
   if (reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["台式", "tw_egg"]]))) err("工具自我檢查：不同 id 卻報重複");
@@ -488,6 +534,10 @@ function main() {
       .concat(readJson("taiwan_items.json").map((p) => ({ file: "taiwan_items", p: p }))),
     readJson("reference/label_unsourced_frozen.json").fields, refs
   );
+
+  console.log("[代換表參考資料]");
+  const exchange = loadExchange();
+  checkExchangeReference(exchange.table, exchange.tags);
 
   // 食材 id 跟現成品項 uid（台式加 tw_）不得重複
   checkUniqueIds(ingredients.map((it) => ["食材", it.id])

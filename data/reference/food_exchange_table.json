@@ -1,216 +1,8083 @@
 {
-  "_source": "衛生福利部國民健康署《食物代換表》，collab/食物代換表.pdf 全 12 頁逐項轉錄（2026-09-28 抽查 8 項與 PDF 相符）",
-  "_note": "官方公開資料，非爬蟲取得，供 Lighten2 資料層核對/擴充用。cooked_g 缺值代表官方表格未提供熟重（多半是本來就以熟重/現成品計量的品項，例如豆漿、豆包）。",
-  "_unit_conversion": {
-    "1杯": "16湯匙",
-    "1湯匙": "3茶匙 = 15毫升",
-    "1公斤": "1000公克 = 2.2磅",
-    "1台斤(斤)": "600公克",
-    "1市斤": "500公克",
-    "1磅": "16盎司 = 454公克",
-    "1盎司": "30公克",
-    "1杯(液體)": "240公克(C.C.)"
-  },
-
-  "exchange_units": {
-    "乳品類_全脂": { "protein_g": 8, "fat_g": 8, "carb_g": 12, "kcal": 150 },
-    "乳品類_低脂": { "protein_g": 8, "fat_g": 4, "carb_g": 12, "kcal": 120 },
-    "乳品類_脫脂": { "protein_g": 8, "fat_g": 0, "carb_g": 12, "kcal": 80 },
-    "豆魚蛋肉類_低脂": { "protein_g": 7, "fat_g_max": 3, "kcal": 55 },
-    "豆魚蛋肉類_中脂": { "protein_g": 7, "fat_g": 5, "kcal": 75 },
-    "豆魚蛋肉類_高脂": { "protein_g": 7, "fat_g": 10, "kcal": 120 },
-    "豆魚蛋肉類_超高脂_應少食用": { "protein_g": 7, "fat_g_min": 10, "kcal_min": 135 },
-    "全穀雜糧類": { "protein_g": 2, "carb_g": 15, "kcal": 70 },
-    "蔬菜類": { "protein_g": 1, "carb_g": 5, "kcal": 25, "basis": "100公克可食部分為1份" },
-    "水果類": { "carb_g": 15, "kcal": 60, "basis": "100公克可食部分為1份" },
-    "油脂與堅果類": { "fat_g": 5, "kcal": 45 }
-  },
-
-  "protein_group": {
-    "_note": "附-3-1/3-2/3-3，依脂肪含量分低/中/高/超高脂四級。raw_g=可食部分生重，cooked_g=可食部分熟重。extra_carb_g 是該品項額外含的碳水化合物（原表用 + 符號標示，多半是加工/裹粉品項）。cholesterol 標記：mid=每份50-99毫克，high=每份≧100毫克。",
-    "低脂_每份蛋白質7g_脂肪3g以下_55kcal": [
-      { "name": "蝦米", "raw_g": 15 },
-      { "name": "小魚干", "raw_g": 5 },
-      { "name": "蝦皮", "raw_g": 20 },
-      { "name": "魚脯", "raw_g": 30 },
-      { "name": "鰹魚、鮪魚", "raw_g": 30 },
-      { "name": "一般魚類", "raw_g": 35 },
-      { "name": "白鯧", "raw_g": 40 },
-      { "name": "蝦仁", "raw_g": 50 },
-      { "name": "小卷(鹹)", "raw_g": 35 },
-      { "name": "花枝", "raw_g": 60 },
-      { "name": "章魚", "raw_g": 55 },
-      { "name": "魚丸(不包肉)", "raw_g": 55, "cooked_g": 55, "extra_carb_g": 10 },
-      { "name": "牡蠣", "raw_g": 65, "cooked_g": 35 },
-      { "name": "文蛤", "raw_g": 160 },
-      { "name": "白海參", "raw_g": 100 },
-      { "name": "豬大里肌(瘦豬後腿肉/瘦豬前腿肉)", "raw_g": 35, "cooked_g": 30 },
-      { "name": "牛腱", "raw_g": 35 },
-      { "name": "牛肉干", "raw_g": 20, "extra_carb_g": 5 },
-      { "name": "豬肉干", "raw_g": 15, "extra_carb_g": 5 },
-      { "name": "火腿", "raw_g": 45, "extra_carb_g": 5 },
-      { "name": "雞里肉、雞胸肉", "raw_g": 30 },
-      { "name": "雞腿", "raw_g": 40 },
-      { "name": "牛肚", "raw_g": 50 },
-      { "name": "雞肫", "raw_g": 40, "cholesterol": "mid" },
-      { "name": "豬心", "raw_g": 45 },
-      { "name": "豬肝", "raw_g": 30, "cooked_g": 20, "cholesterol": "mid" },
-      { "name": "雞肝", "raw_g": 40, "cooked_g": 30, "cholesterol": "high" },
-      { "name": "膽肝", "raw_g": 20, "cholesterol": "mid" },
-      { "name": "豬腎", "raw_g": 45, "cholesterol": "high" },
-      { "name": "豬血", "raw_g": 110, "cholesterol": "high" },
-      { "name": "雞蛋白", "raw_g": 60 },
-      { "name": "黃豆", "raw_g": 20, "extra_carb_g": 5 },
-      { "name": "黑豆", "raw_g": 25, "extra_carb_g": 10 },
-      { "name": "毛豆", "raw_g": 50, "extra_carb_g": 5 },
-      { "name": "豆包", "raw_g": 30 },
-      { "name": "干絲", "raw_g": 40 },
-      { "name": "臭豆腐", "raw_g": 50 },
-      { "name": "無糖豆漿", "raw_g": 190, "unit": "毫升" },
-      { "name": "麵腸", "raw_g": 35 },
-      { "name": "麵丸", "raw_g": 40 },
-      { "name": "烤麩", "raw_g": 35 }
-    ],
-    "中脂_每份蛋白質7g_脂肪5g_75kcal": [
-      { "name": "虱目魚、烏魚、肉鯽、鹹馧魚、鮭魚", "raw_g": 35, "cooked_g": 30 },
-      { "name": "魚肉鬆", "raw_g": 25, "extra_carb_g": 10 },
-      { "name": "鱈魚、比目魚", "raw_g": 50 },
-      { "name": "虱目魚丸、花枝丸", "raw_g": 50, "extra_carb_g": 7 },
-      { "name": "旗魚丸、魚丸(包肉)", "raw_g": 60, "extra_carb_g": 7 },
-      { "name": "豬大排、豬小排", "raw_g": 35, "cooked_g": 30 },
-      { "name": "豬後腿肉、豬前腿肉、羊肉、豬腳", "raw_g": 35, "cooked_g": 30 },
-      { "name": "豬肉鬆、肉脯", "raw_g": 20, "extra_carb_g": 5 },
-      { "name": "低脂培根", "raw_g": 40 },
-      { "name": "雞翅、雞排", "raw_g": 40 },
-      { "name": "雞爪", "raw_g": 30 },
-      { "name": "鴨賞", "raw_g": 25 },
-      { "name": "豬舌", "raw_g": 40 },
-      { "name": "豬肚", "raw_g": 50 },
-      { "name": "豬小腸", "raw_g": 55, "cholesterol": "high" },
-      { "name": "豬腦", "raw_g": 60, "cholesterol": "high" },
-      { "name": "雞蛋", "raw_g": 55, "cholesterol": "high" },
-      { "name": "豆枝", "raw_g": 60, "extra_carb_g": 30, "extra_fat_g": 5 },
-      { "name": "百頁結", "raw_g": 50 },
-      { "name": "油豆腐", "raw_g": 55 },
-      { "name": "豆豉", "raw_g": 35 },
-      { "name": "五香豆干", "raw_g": 35 },
-      { "name": "小方豆干", "raw_g": 40 },
-      { "name": "黃豆干", "raw_g": 70 },
-      { "name": "傳統豆腐", "raw_g": 80 },
-      { "name": "嫩豆腐", "raw_g": 140, "note": "約1/2盒" },
-      { "name": "素獅子頭", "raw_g": 50, "extra_carb_g": 5 },
-      { "name": "素火腿", "raw_g": 40, "extra_carb_g": 3 },
-      { "name": "素油雞", "raw_g": 55, "extra_carb_g": 7 },
-      { "name": "素香鬆", "raw_g": 25, "extra_carb_g": 12 }
-    ],
-    "高脂_每份蛋白質7g_脂肪10g_120kcal": [
-      { "name": "麵筋泡", "raw_g": 15 },
-      { "name": "秋刀魚", "raw_g": 35 },
-      { "name": "牛肉條", "raw_g": 40 },
-      { "name": "豬肉酥", "raw_g": 20, "extra_carb_g": 5 },
-      { "name": "雞心", "raw_g": 45, "cholesterol": "mid" },
-      { "name": "素雞", "raw_g": 40 },
-      { "name": "素魚", "raw_g": 35 },
-      { "name": "素雞塊", "raw_g": 50, "extra_carb_g": 7 },
-      { "name": "百頁豆腐", "raw_g": 70 }
-    ],
-    "超高脂_應少食用_每份蛋白質7g_脂肪10g以上_135kcal以上": [
-      { "name": "豬蹄膀", "raw_g": 40 },
-      { "name": "梅花肉", "raw_g": 35 },
-      { "name": "牛腩", "raw_g": 40 },
-      { "name": "豬大腸", "raw_g": 100, "cholesterol": "high" },
-      { "name": "香腸、蒜味香腸、五花臘肉", "raw_g": 40 },
-      { "name": "熱狗、五花肉", "raw_g": 50 },
-      { "name": "素肉燥", "raw_g": 65, "extra_carb_g": 10 }
-    ]
-  },
-
-  "staples_partial_examples": {
-    "_note": "全穀雜糧類每份=蛋白質2g/醣類15g/70kcal，品項極多（約120項），這裡只列跟 Lighten2 現有 staples.json 高度重疊的常見主食做示範，完整清單需要時回頭查 collab/食物代換表.pdf 附-4",
-    "items": [
-      { "name": "飯", "portion": "1/4碗", "edible_g": 40 },
-      { "name": "粥(稠)", "portion": "1/2碗", "edible_g": 125 },
-      { "name": "糙米、什穀米、胚芽米", "portion": "1/8杯(米杯)", "edible_g": 20 },
-      { "name": "馬鈴薯(3個/斤)", "portion": "1/2個(中)", "edible_g": 90 },
-      { "name": "蕃薯(4個/斤)", "portion": "1/2個(小)", "edible_g": 55 },
-      { "name": "山藥", "portion": "1塊", "edible_g": 80 },
-      { "name": "玉米或玉米粒", "portion": "2/3根", "edible_g": 85 },
-      { "name": "南瓜", "edible_g": 85 },
-      { "name": "吐司、全麥吐司", "portion": "1/2~1/3片", "edible_g": 30 },
-      { "name": "饅頭", "portion": "1/3個(中)", "edible_g": 30 },
-      { "name": "麵條(熟)", "portion": "1/2碗", "edible_g": 60 },
-      { "name": "紅豆、綠豆、花豆", "portion": "2湯匙", "edible_g": 25, "note": "◎高蛋白質乾豆類，蛋白質較一般主食高" }
-    ]
-  },
-
-  "vegetables": {
-    "_note": "附-5，每份100公克可食部分=蛋白質1g/醣類5g/25kcal，一律用可食重量100g換算，不需個別品項的克數對照。表格依鉀離子含量由低到高排列（血鉀高的病人要避開高鉀品項），標＊的蛋白質含量較高。完整約80個品項名稱在 collab/食物代換表.pdf 附-5，此處不逐項轉錄（因為換算規則統一是100g=1份，逐項轉錄意義不大）。",
-    "high_protein_marked": ["黃豆芽", "綠豆芽", "油菜花", "皇冠菜", "龍鬚菜", "香菇", "苜蓿芽", "地瓜葉", "紅莧菜", "荷蘭豆菜心", "青江菜", "柳松菇", "洋菇", "黑甜菜", "金針菇", "小芹菜", "草菇"]
-  },
-
-  "fruits": {
-    "_note": "附-6，每份=碳水化合物15g/60kcal。buy_g=購買量（含不可食部分），edible_g=可食量，跟我們現有食材資料庫的『可食部分』概念一致。＊=每份鉀量200-399mg，＊＊=每份鉀量≧400mg。",
-    "items": [
-      { "name": "柳丁(4個/斤)", "buy_g": 170, "edible_g": 130, "portion": "1個" },
-      { "name": "香吉士", "buy_g": 185, "edible_g": 130, "portion": "1個" },
-      { "name": "椪柑(3個/斤)", "buy_g": 190, "edible_g": 150, "portion": "1個" },
-      { "name": "葡萄柚", "buy_g": 245, "edible_g": 165, "portion": "3/4個" },
-      { "name": "青龍蘋果", "buy_g": 130, "edible_g": 115, "portion": "小1個" },
-      { "name": "五爪蘋果", "buy_g": 140, "edible_g": 125, "portion": "小1個" },
-      { "name": "富士蘋果", "buy_g": 145, "edible_g": 130, "portion": "小1個" },
-      { "name": "木瓜(1個/斤)", "buy_g": 165, "edible_g": 150, "portion": "1/3個", "potassium": "mid" },
-      { "name": "紅西瓜", "buy_g": 320, "edible_g": 180, "portion": "1片", "potassium": "mid" },
-      { "name": "黃西瓜", "buy_g": 320, "edible_g": 195, "portion": "1/3個" },
-      { "name": "愛文芒果", "buy_g": 225, "edible_g": 150, "portion": "1又1/2片" },
-      { "name": "金煌芒果", "buy_g": 140, "edible_g": 105, "portion": "1片" },
-      { "name": "葫蘆芭樂", "edible_g": 155, "portion": "1個", "potassium": "mid" },
-      { "name": "土芭樂", "edible_g": 155, "portion": "1個", "potassium": "mid" },
-      { "name": "泰國芭樂(1個/斤)", "edible_g": 160, "portion": "1/3個", "potassium": "mid" },
-      { "name": "西洋梨", "buy_g": 165, "edible_g": 105, "portion": "1個" },
-      { "name": "水梨", "buy_g": 210, "edible_g": 145, "portion": "3/4個" },
-      { "name": "水蜜桃(4個/斤)", "buy_g": 150, "edible_g": 145, "portion": "小1個" },
-      { "name": "桃子", "buy_g": 250, "edible_g": 220, "portion": "1個", "potassium": "high" },
-      { "name": "加州李(4個/斤)", "buy_g": 125, "edible_g": 120, "portion": "小1個" },
-      { "name": "李子(14個/斤)", "buy_g": 155, "edible_g": 145, "portion": "4個" },
-      { "name": "紅棗", "buy_g": 30, "edible_g": 25, "portion": "10個" },
-      { "name": "紅柿(6個/斤)", "buy_g": 105, "edible_g": 100, "portion": "3/4個" },
-      { "name": "香蕉(3根/斤)", "buy_g": 95, "edible_g": 70, "portion": "大1/2根 小1根" },
-      { "name": "櫻桃", "buy_g": 85, "edible_g": 80, "portion": "9個" },
-      { "name": "葡萄", "buy_g": 105, "edible_g": 85, "portion": "13個" },
-      { "name": "荔枝(30個/斤)", "buy_g": 185, "edible_g": 100, "portion": "9個" },
-      { "name": "奇異果(6個/斤)", "buy_g": 125, "edible_g": 105, "portion": "1又1/2個", "potassium": "mid" },
-      { "name": "鳳梨(4斤/個)", "buy_g": 205, "edible_g": 110, "portion": "1/10片" },
-      { "name": "百香果(6個/斤)", "edible_g": 140, "portion": "2個" },
-      { "name": "草莓", "buy_g": 170, "edible_g": 160, "portion": "小16個", "potassium": "mid" },
-      { "name": "蓮霧(6個/斤)", "buy_g": 180, "edible_g": 165, "portion": "2個" },
-      { "name": "楊桃(2個/斤)", "buy_g": 180, "edible_g": 170, "portion": "3/4個" },
-      { "name": "聖女蕃茄", "buy_g": 220, "edible_g": 220, "portion": "23個", "potassium": "mid" }
-    ]
-  },
-
-  "oils_and_nuts": {
-    "_note": "附-7，每份脂肪5g/45kcal。buy_g/edible_g 對油脂類幾乎相同（液態油不分購買/可食）。堅果類另有蛋白質含量欄位。",
-    "oils": [
-      { "name": "大豆油／玉米油／花生油／紅花子油／葵花子油／麻油／椰子油／棕梠油／橄欖油／葵花油", "g": 5, "portion": "1茶匙" },
-      { "name": "牛油", "g": 6, "portion": "1茶匙" },
-      { "name": "豬油／雞油", "g": 5, "portion": "1茶匙" },
-      { "name": "瑪琪琳、酥油", "g": 6, "portion": "1茶匙" },
-      { "name": "蛋黃醬", "g": 8, "portion": "1茶匙" },
-      { "name": "沙拉醬(法式/義式)", "g": 10, "portion": "2茶匙" },
-      { "name": "花生醬", "g": 9, "portion": "1茶匙" },
-      { "name": "鮮奶油", "g": 13, "portion": "1湯匙" },
-      { "name": "加州酪梨(1斤2~3個)", "buy_g": 60, "edible_g": 40, "portion": "2湯匙(1/6個)", "extra_carb_g": 3 }
-    ],
-    "nuts": [
-      { "name": "瓜子", "buy_g": 20, "edible_g": 15, "portion": "1湯匙(約50粒)", "protein_g": 4 },
-      { "name": "南瓜子、葵花子", "buy_g": 12, "edible_g": 10, "portion": "1湯匙(約30粒)", "protein_g": 2 },
-      { "name": "各式花生仁", "g": 13, "portion": "10粒", "protein_g": 4 },
-      { "name": "花生粉", "g": 13, "portion": "1湯匙", "protein_g": 4 },
-      { "name": "黑(白)芝麻", "g": 10, "portion": "2茶匙", "protein_g": 1 },
-      { "name": "杏仁果", "g": 7, "portion": "5粒", "protein_g": 2 },
-      { "name": "腰果", "g": 10, "portion": "5粒", "protein_g": 2 },
-      { "name": "開心果", "buy_g": 15, "edible_g": 10, "portion": "15粒", "protein_g": 2 },
-      { "name": "核桃仁", "g": 7, "portion": "2粒", "protein_g": 1 }
-    ]
-  }
+  "_source": "衛生福利部國民健康署《食物代換表》collab/食物代換表.pdf",
+  "_transcribed_at": "2026-09-30",
+  "unit_conversion": [
+    {
+      "from": "1杯",
+      "to": "16湯匙",
+      "page": 1
+    },
+    {
+      "from": "1湯匙",
+      "to": "3茶匙=15毫升",
+      "page": 1
+    },
+    {
+      "from": "1公斤",
+      "to": "1000公克",
+      "page": 1
+    },
+    {
+      "from": "1台斤(斤)",
+      "to": "600公克",
+      "page": 1
+    },
+    {
+      "from": "1市斤",
+      "to": "500公克",
+      "page": 1
+    },
+    {
+      "from": "1公斤",
+      "to": "2.2磅",
+      "page": 1
+    },
+    {
+      "from": "1磅",
+      "to": "16盎司",
+      "page": 1
+    },
+    {
+      "from": "1磅",
+      "to": "454公克",
+      "page": 1
+    },
+    {
+      "from": "1盎司",
+      "to": "30公克",
+      "page": 1
+    },
+    {
+      "from": "1杯",
+      "to": "240公克(C.C.)",
+      "page": 1
+    }
+  ],
+  "exchange_units": [
+    {
+      "table": "附-1",
+      "group": "乳品類",
+      "tier": "全脂",
+      "protein_g": 8,
+      "fat_g": 8,
+      "fat_note": null,
+      "carb_g": 12,
+      "carb_note": null,
+      "kcal": 150,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "乳品類",
+      "tier": "低脂",
+      "protein_g": 8,
+      "fat_g": 4,
+      "fat_note": null,
+      "carb_g": 12,
+      "carb_note": null,
+      "kcal": 120,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "乳品類",
+      "tier": "脫脂",
+      "protein_g": 8,
+      "fat_g": null,
+      "fat_note": "+(微量)",
+      "carb_g": 12,
+      "carb_note": null,
+      "kcal": 80,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "豆魚蛋肉類",
+      "tier": "低脂",
+      "protein_g": 7,
+      "fat_g": 3,
+      "fat_note": "以下",
+      "carb_g": null,
+      "carb_note": "+(微量)",
+      "kcal": 55,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "豆魚蛋肉類",
+      "tier": "中脂",
+      "protein_g": 7,
+      "fat_g": 5,
+      "fat_note": null,
+      "carb_g": null,
+      "carb_note": "+(微量)",
+      "kcal": 75,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "豆魚蛋肉類",
+      "tier": "高脂",
+      "protein_g": 7,
+      "fat_g": 10,
+      "fat_note": null,
+      "carb_g": null,
+      "carb_note": "+(微量)",
+      "kcal": 120,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "protein_g": 2,
+      "fat_g": null,
+      "fat_note": "+(微量)",
+      "carb_g": 15,
+      "carb_note": null,
+      "kcal": 70,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "蔬菜類",
+      "tier": null,
+      "protein_g": 1,
+      "fat_g": null,
+      "fat_note": null,
+      "carb_g": 5,
+      "carb_note": null,
+      "kcal": 25,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "水果類",
+      "tier": null,
+      "protein_g": null,
+      "protein_note": "+(微量)",
+      "fat_g": null,
+      "fat_note": null,
+      "carb_g": 15,
+      "carb_note": null,
+      "kcal": 60,
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "protein_g": null,
+      "fat_g": 5,
+      "fat_note": null,
+      "carb_g": null,
+      "carb_note": null,
+      "kcal": 45,
+      "page": 1
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "protein_g": 8,
+      "fat_g": 8,
+      "carb_g": 12,
+      "kcal": 150,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "低脂",
+      "protein_g": 8,
+      "fat_g": 4,
+      "carb_g": 12,
+      "kcal": 120,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "脫脂",
+      "protein_g": 8,
+      "fat_g": null,
+      "carb_g": 12,
+      "kcal": 80,
+      "page": 2
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆魚蛋肉類",
+      "tier": "低脂",
+      "protein_g": 7,
+      "fat_g": 3,
+      "fat_note": "以下",
+      "carb_g": null,
+      "kcal": 55,
+      "page": 3
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆魚蛋肉類",
+      "tier": "中脂",
+      "protein_g": 7,
+      "fat_g": 5,
+      "carb_g": null,
+      "kcal": 75,
+      "page": 5
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆魚蛋肉類",
+      "tier": "高脂",
+      "protein_g": 7,
+      "fat_g": 10,
+      "carb_g": null,
+      "kcal": 120,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆魚蛋肉類",
+      "tier": "超高脂",
+      "protein_g": 7,
+      "fat_g": 10,
+      "fat_note": "以上",
+      "carb_g": null,
+      "kcal": 135,
+      "kcal_note": "以上，應少食用",
+      "page": 6
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "protein_g": 2,
+      "fat_g": null,
+      "carb_g": 15,
+      "kcal": 70,
+      "page": 7
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "protein_g": 1,
+      "fat_g": null,
+      "carb_g": 5,
+      "kcal": 25,
+      "kcal_note": "每份100公克(可食部分)",
+      "page": 8
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "protein_g": null,
+      "fat_g": null,
+      "carb_g": 15,
+      "kcal": 60,
+      "page": 9
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "protein_g": null,
+      "fat_g": 5,
+      "carb_g": null,
+      "kcal": 45,
+      "page": 11
+    }
+  ],
+  "items": [
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "subgroup": null,
+      "row_text": "全脂奶",
+      "names": null,
+      "portion_text": "1杯",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 240
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "subgroup": null,
+      "row_text": "全脂奶粉",
+      "names": null,
+      "portion_text": "4湯匙",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "subgroup": null,
+      "row_text": "蒸發奶",
+      "names": null,
+      "portion_text": "1 1/2杯",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 120
+      },
+      "marks": [],
+      "row_note": "2026-09-30 回 PDF 核對（第 2 頁影像）：原文就是「1 1/2 杯」「120 毫升」，照抄；120ml＝1/2 杯（附-1：1 杯＝240），份量欄疑為原表誤植，計量以 120 毫升為準",
+      "order": 3,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "subgroup": null,
+      "row_text": "＊起司片",
+      "names": null,
+      "portion_text": "2片",
+      "buy_g": null,
+      "edible_g": 45,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 2.9
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 4,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "全脂",
+      "subgroup": null,
+      "row_text": "＊乳酪絲",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 35,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 2.1
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 5,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "低脂",
+      "subgroup": null,
+      "row_text": "低脂奶",
+      "names": null,
+      "portion_text": "1杯",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 240
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "低脂",
+      "subgroup": null,
+      "row_text": "低脂奶粉",
+      "names": null,
+      "portion_text": "3湯匙",
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "低脂",
+      "subgroup": null,
+      "row_text": "優格(無糖)",
+      "names": null,
+      "portion_text": "3/4杯",
+      "buy_g": null,
+      "edible_g": 210,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "低脂",
+      "subgroup": null,
+      "row_text": "優酪乳(無糖)",
+      "names": null,
+      "portion_text": "1杯",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 240
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "脫脂",
+      "subgroup": null,
+      "row_text": "脫脂奶",
+      "names": null,
+      "portion_text": "1杯",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 240
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "group": "乳品類",
+      "tier": "脫脂",
+      "subgroup": null,
+      "row_text": "脫脂奶粉",
+      "names": null,
+      "portion_text": "2.5湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 11,
+      "page": 2
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎ 蝦米",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 15,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 1,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎ 小魚干",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 5,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 2,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎ 蝦皮",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 3,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "魚脯",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 4,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "鰹魚、鮪魚",
+      "names": [
+        "鰹魚",
+        "鮪魚"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 5,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "一般魚類",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "白鯧",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "蝦仁",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎◎ 小卷（鹹）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 9,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎ 花枝",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 60,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 10,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "◎◎ 章魚",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 11,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "＊ 魚丸（不包肉）(+10公克碳水化合物)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": 55,
+      "extra": {
+        "carb_g": 10
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 12,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "牡蠣",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 65,
+      "cooked_g": 35,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 13,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "文蛤",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 160,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 14,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "水產(1)",
+      "row_text": "白海參",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 100,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 15,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家畜",
+      "row_text": "豬大里肌（瘦豬後腿肉）（瘦豬前腿肉）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": 30,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 16,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家畜",
+      "row_text": "牛腱",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 17,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家畜",
+      "row_text": "＊ 牛肉干（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 18,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家畜",
+      "row_text": "＊ 豬肉干（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 15,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 19,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家畜",
+      "row_text": "＊ 火腿（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 45,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 20,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家禽",
+      "row_text": "雞里肉、雞胸肉",
+      "names": [
+        "雞里肉",
+        "雞胸肉"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 21,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "家禽",
+      "row_text": "雞腿",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 22,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "牛肚",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 23,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎ 雞胗",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 24,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "豬心",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 45,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 25,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎ 豬肝",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": 20,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 26,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎◎ 雞肝",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": 30,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 27,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎ 膽肝",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 28,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎◎ 豬腎",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 45,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 29,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "內臟",
+      "row_text": "◎◎ 豬血",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 110,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 30,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "蛋",
+      "row_text": "雞蛋白",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 60,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 31,
+      "page": 3
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "黃豆（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 32,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "黑豆（+10公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 25,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 10
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 33,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "毛豆（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 34,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "豆包",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 35,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "干絲",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 36,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "臭豆腐",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 37,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "無糖豆漿",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "volume_ml": 190
+      },
+      "marks": [],
+      "row_note": "原表可食部分生重欄填「190毫升」，屬液體單位而非公克，故raw_g留null，量記於extra.volume_ml",
+      "order": 38,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "麵腸",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 39,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "麵丸",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 40,
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "低脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 烤麩",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 41,
+      "page": 4
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "水產",
+      "row_text": "虱目魚、烏魚、肉鯽、鹹馧魚、鮭魚",
+      "names": [
+        "虱目魚",
+        "烏魚",
+        "肉鯽",
+        "鹹馧魚",
+        "鮭魚"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": 30,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "水產",
+      "row_text": "＊ 魚肉鬆（+10公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 25,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 10
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 2,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "水產",
+      "row_text": "鱈魚、比目魚",
+      "names": [
+        "鱈魚",
+        "比目魚"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "水產",
+      "row_text": "＊ 虱目魚丸、花枝丸(+7公克碳水化合物)",
+      "names": [
+        "＊ 虱目魚丸",
+        "花枝丸(+7公克碳水化合物)"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 7
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 4,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "水產",
+      "row_text": "＊ 旗魚丸、魚丸(包肉)( +7公克碳水化合物)",
+      "names": [
+        "＊ 旗魚丸",
+        "魚丸(包肉)( +7公克碳水化合物)"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 60,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 7
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 5,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家畜",
+      "row_text": "豬大排、豬小排",
+      "names": [
+        "豬大排",
+        "豬小排"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": 30,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家畜",
+      "row_text": "豬後腿肉、豬前腿肉、羊肉、豬腳",
+      "names": [
+        "豬後腿肉",
+        "豬前腿肉",
+        "羊肉",
+        "豬腳"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": 30,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家畜",
+      "row_text": "＊ 豬肉鬆（+5公克碳水化合物）、肉脯",
+      "names": [
+        "＊ 豬肉鬆（+5公克碳水化合物）",
+        "肉脯"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 8,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家畜",
+      "row_text": "低脂培根",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家禽",
+      "row_text": "雞翅、雞排",
+      "names": [
+        "雞翅",
+        "雞排"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家禽",
+      "row_text": "雞爪",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 30,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 11,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "家禽",
+      "row_text": "鴨賞",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 25,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 12,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "內臟",
+      "row_text": "豬舌",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 13,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "內臟",
+      "row_text": "豬肚",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 14,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "內臟",
+      "row_text": "◎◎ 豬小腸",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 15,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "內臟",
+      "row_text": "◎◎ 豬腦",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 60,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 16,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "蛋",
+      "row_text": "◎◎ 雞蛋",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": null,
+      "order": 17,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 豆枝（+5公克油脂 +30公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 60,
+      "cooked_g": null,
+      "extra": {
+        "fat_g": 5,
+        "carb_g": 30
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 18,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "百頁結",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 19,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "油豆腐",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 20,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "豆豉",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 21,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "五香豆干",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 22,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "小方豆干",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 23,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "黃豆干",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 70,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 24,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "傳統豆腐",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 80,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 25,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "嫩豆腐",
+      "names": null,
+      "portion_text": "140(1/2盒)",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 140,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "括號「1/2盒」為容器分量說明，非額外數字",
+      "order": 26,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 素獅子頭",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 27,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 素火腿",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 3
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 28,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 素油雞",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 55,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 7
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 29,
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "中脂",
+      "subgroup": "豆類及其製品",
+      "row_text": "＊ 素香鬆",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 25,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 12
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 30,
+      "page": 5
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "麵筋泡",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 15,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "秋刀魚",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "牛肉條",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "＊ 豬肉酥（+5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 20,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 5
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 4,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "◎ 雞心",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 45,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 5,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "素雞",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "素魚",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "＊ 素雞塊（+7公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 7
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 8,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "高脂",
+      "subgroup": null,
+      "row_text": "百頁豆腐",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 70,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "家畜",
+      "row_text": "豬蹄膀",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 10,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "家畜",
+      "row_text": "梅花肉",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 35,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 11,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "家畜",
+      "row_text": "牛腩",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 12,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "家畜",
+      "row_text": "◎◎ 豬大腸",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 100,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎◎"
+      ],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 13,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "加工製品",
+      "row_text": "香腸、蒜味香腸、五花臘肉",
+      "names": [
+        "香腸",
+        "蒜味香腸",
+        "五花臘肉"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 40,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 14,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "加工製品",
+      "row_text": "熱狗、五花肉",
+      "names": [
+        "熱狗",
+        "五花肉"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 50,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 15,
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "group": "豆、魚、蛋、肉類",
+      "tier": "超高脂",
+      "subgroup": "加工製品",
+      "row_text": "＊ 素肉燥（+10公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": 65,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 10
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "屬「脂肪10公克以上，熱量135大卡以上，應少食用」分區",
+      "order": 16,
+      "page": 6
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "米、黑米、小米、糯米等",
+      "names": [
+        "米",
+        "黑米",
+        "小米",
+        "糯米等"
+      ],
+      "portion_text": "1/8杯(米杯)",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "糙米、什穀米、胚芽米",
+      "names": [
+        "糙米",
+        "什穀米",
+        "胚芽米"
+      ],
+      "portion_text": "1/8杯(米杯)",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "飯",
+      "names": null,
+      "portion_text": "1/4碗",
+      "buy_g": null,
+      "edible_g": 40,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "粥(稠)",
+      "names": null,
+      "portion_text": "1/2碗",
+      "buy_g": null,
+      "edible_g": 125,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 4,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "白年糕",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 5,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "芋頭糕",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 60,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "蘿蔔糕6x8x1.5公分",
+      "names": null,
+      "portion_text": "1塊",
+      "buy_g": null,
+      "edible_g": 50,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "豬血糕",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 35,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "米類",
+      "row_text": "小湯圓(無餡)",
+      "names": null,
+      "portion_text": "約10粒",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "大麥、小麥、蕎麥",
+      "names": [
+        "大麥",
+        "小麥",
+        "蕎麥"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麥粉",
+      "names": null,
+      "portion_text": "4湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 11,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麥片",
+      "names": null,
+      "portion_text": "3湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 12,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麵粉",
+      "names": null,
+      "portion_text": "3湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 13,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麵條(乾)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 14,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麵條(濕)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 15,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麵條(熟)",
+      "names": null,
+      "portion_text": "1/2碗",
+      "buy_g": null,
+      "edible_g": 60,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 16,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "拉麵",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 17,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "油麵",
+      "names": null,
+      "portion_text": "1/2碗",
+      "buy_g": null,
+      "edible_g": 45,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 18,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "鍋燒麵(熟)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 60,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 19,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "◎ 通心粉(乾)",
+      "names": null,
+      "portion_text": "1/3杯",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 20,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "◎ 義大利麵(乾)、全麥",
+      "names": [
+        "◎ 義大利麵(乾)",
+        "全麥"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": "原文「義大利麵(乾)、全麥」以頓號分隔但語意不明確，按規則仍拆分names，未自行補字",
+      "order": 21,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "麵線(乾)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 22,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "餃子皮",
+      "names": null,
+      "portion_text": "3張",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 23,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "餛飩皮",
+      "names": null,
+      "portion_text": "3-7張",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 24,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "春捲皮",
+      "names": null,
+      "portion_text": "1 1/2張",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 25,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "饅頭",
+      "names": null,
+      "portion_text": "1/3個(中)",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 26,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "山東饅頭",
+      "names": null,
+      "portion_text": "1/6個",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 27,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "吐司、全麥吐司",
+      "names": [
+        "吐司",
+        "全麥吐司"
+      ],
+      "portion_text": "1/2~1/3片",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 28,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "餐包",
+      "names": null,
+      "portion_text": "1個(小)",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 29,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "漢堡麵包",
+      "names": null,
+      "portion_text": "1/2個",
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 30,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "△菠蘿麵包（+1茶匙油）",
+      "names": null,
+      "portion_text": "1/3個(小)",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "△"
+      ],
+      "row_note": null,
+      "order": 31,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "△奶酥麵包（+1茶匙油）",
+      "names": null,
+      "portion_text": "1/3個(小)",
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "△"
+      ],
+      "row_note": null,
+      "order": 32,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "蘇打餅乾",
+      "names": null,
+      "portion_text": "3片",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 33,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "△燒餅(+1/2茶匙油)",
+      "names": null,
+      "portion_text": "1/4個",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "△"
+      ],
+      "row_note": null,
+      "order": 34,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "△油條(+3茶匙油)",
+      "names": null,
+      "portion_text": "2/3根",
+      "buy_g": null,
+      "edible_g": 40,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "△"
+      ],
+      "row_note": null,
+      "order": 35,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "麥類",
+      "row_text": "◎ 甜不辣",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 70,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 36,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "馬鈴薯(3個/斤)",
+      "names": null,
+      "portion_text": "1/2個(中)",
+      "buy_g": null,
+      "edible_g": 90,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 37,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "蕃薯(4個/斤)",
+      "names": null,
+      "portion_text": "1/2個(小)",
+      "buy_g": null,
+      "edible_g": 55,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 38,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "山藥",
+      "names": null,
+      "portion_text": "1塊",
+      "buy_g": null,
+      "edible_g": 80,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 39,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "芋頭(滾刀塊3-4塊)",
+      "names": null,
+      "portion_text": "或1/5個(中)",
+      "buy_g": null,
+      "edible_g": 55,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 40,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "荸薺",
+      "names": null,
+      "portion_text": "8粒",
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 41,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "根莖類",
+      "row_text": "蓮藕",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 42,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "玉米或玉米粒",
+      "names": null,
+      "portion_text": "2/3根",
+      "buy_g": null,
+      "edible_g": 85,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 43,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "爆米花(不加奶油)",
+      "names": null,
+      "portion_text": "1杯",
+      "buy_g": null,
+      "edible_g": 15,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 44,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "◎ 薏仁",
+      "names": null,
+      "portion_text": "1 1/2湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 45,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "◎ 蓮子(乾)",
+      "names": null,
+      "portion_text": "40粒",
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 46,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "栗子(乾)",
+      "names": null,
+      "portion_text": "3粒(大)",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 47,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "菱角",
+      "names": null,
+      "portion_text": "8粒",
+      "buy_g": null,
+      "edible_g": 60,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 48,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "南瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 85,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 49,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "雜糧類",
+      "row_text": "◎ 豌豆仁",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 70,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 50,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "高蛋白質乾豆類",
+      "row_text": "◎ 紅豆、綠豆、花豆",
+      "names": [
+        "◎ 紅豆",
+        "綠豆",
+        "花豆"
+      ],
+      "portion_text": "2湯匙",
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 51,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "高蛋白質乾豆類",
+      "row_text": "◎ 蠶豆、刀豆",
+      "names": [
+        "◎ 蠶豆",
+        "刀豆"
+      ],
+      "portion_text": "2湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 52,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "高蛋白質乾豆類",
+      "row_text": "◎ 鷹嘴豆",
+      "names": null,
+      "portion_text": "2湯匙",
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 53,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "◎ 皇帝豆",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 65,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "◎"
+      ],
+      "row_note": null,
+      "order": 54,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 冬粉(乾)",
+      "names": null,
+      "portion_text": "1/2把",
+      "buy_g": null,
+      "edible_g": 15,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 55,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 藕粉",
+      "names": null,
+      "portion_text": "3湯匙",
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 56,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 西谷米(粉圓)",
+      "names": null,
+      "portion_text": "1 1/2湯匙",
+      "buy_g": null,
+      "edible_g": 15,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 57,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 米苔目(濕)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 50,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 58,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 米粉(乾)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 59,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "＊ 米粉(濕)",
+      "names": null,
+      "portion_text": "1/2碗",
+      "buy_g": null,
+      "edible_g": null,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "原表可食重量為「30~50」範圍值，未指定單一數字，edible_g留null",
+      "order": 60,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "芋圓、地瓜圓(冷凍)",
+      "names": [
+        "芋圓",
+        "地瓜圓(冷凍)"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 61,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "河粉(濕)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 62,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "越南春捲皮(乾)",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 63,
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "group": "全穀雜糧類",
+      "tier": null,
+      "subgroup": "其他澱粉製品",
+      "row_text": "蛋餅皮、蔥油餅皮(冷凍)",
+      "names": [
+        "蛋餅皮",
+        "蔥油餅皮(冷凍)"
+      ],
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 35,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 64,
+      "page": 7
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊黃豆芽",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 1,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "胡瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "葫蘆瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "蒲瓜（扁蒲）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 4,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "木耳",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 5,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "茭白筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊綠豆芽",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 7,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "洋蔥",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "甘藍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "高麗菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "山東白菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 11,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "包心白菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 12,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "翠玉白菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 13,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "芥菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 14,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "萵苣",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 15,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "冬瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 16,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "玉米筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 17,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "小黃瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 18,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "苦瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 19,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "甜椒（青椒）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 20,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "澎湖絲瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 21,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "芥蘭菜嬰",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 22,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "胡蘿蔔",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 23,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "鮮雪裡紅",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 24,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "蘿蔔",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 25,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "球莖甘藍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 26,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "麻竹筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 27,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "綠蘆筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 28,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "小白菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 29,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "韭黃",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 30,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "芥蘭",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 31,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "油菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 32,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "空心菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 33,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊油菜花",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 34,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "青江菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 35,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "美國芹菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 36,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "紅鳳菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 37,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊皇冠菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 38,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "紫甘藍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 39,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "萵苣葉",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 40,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊龍鬚菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 41,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "花椰菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 42,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "韭菜花",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 43,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "金針菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 44,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "高麗菜芽",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 45,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "茄子",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 46,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "黃秋葵",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 47,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "番茄（大）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 48,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊香菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 49,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "牛蒡",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 50,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "竹筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 51,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "半天筍",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 52,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊苜蓿芽",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 53,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "鵝菜心",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 54,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "韭菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 55,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊地瓜葉",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 56,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "芹菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 57,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "茼蒿",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 58,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊紅莧菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 59,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "（番薯葉）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 60,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊荷蘭豆菜心",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 61,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "鵝仔白菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 62,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊青江菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 63,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "白鳳菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 64,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊柳松菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 65,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊洋菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 66,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "猴頭菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 67,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊黑甜菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 68,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "芋莖",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 69,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "金針菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 70,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊小芹菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 71,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "莧菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 72,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "野苦瓜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 73,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "紅梗珍珠菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 74,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "川七",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 75,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "番茄罐頭",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 76,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "角菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 77,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "菠菜",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 78,
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "group": "蔬菜類",
+      "tier": null,
+      "subgroup": null,
+      "row_text": "＊草菇",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 79,
+      "page": 8
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "油柑（金棗）(30個/斤)",
+      "names": null,
+      "portion_text": "6個",
+      "buy_g": 120,
+      "edible_g": 120,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "柳丁（4個/斤）",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 170,
+      "edible_g": 130,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "香吉士",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 185,
+      "edible_g": 130,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "椪柑（3個/斤）",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 190,
+      "edible_g": 150,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 4,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "桶柑（海梨)(4個/斤)",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 190,
+      "edible_g": 155,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 5,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "＊ 白柚",
+      "names": null,
+      "portion_text": "2片",
+      "buy_g": 270,
+      "edible_g": 165,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 6,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柑橘類",
+      "row_text": "葡萄柚",
+      "names": null,
+      "portion_text": "3/4個",
+      "buy_g": 245,
+      "edible_g": 165,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "蘋果類",
+      "row_text": "青龍蘋果",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 130,
+      "edible_g": 115,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "蘋果類",
+      "row_text": "五爪蘋果",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 140,
+      "edible_g": 125,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "蘋果類",
+      "row_text": "富士蘋果",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 145,
+      "edible_g": 130,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊＊哈密瓜",
+      "names": null,
+      "portion_text": "1/4個",
+      "buy_g": 300,
+      "edible_g": 150,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊＊"
+      ],
+      "row_note": null,
+      "order": 11,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊木瓜（1個/斤）",
+      "names": null,
+      "portion_text": "1/3個",
+      "buy_g": 165,
+      "edible_g": 150,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 12,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊＊香瓜（美濃）",
+      "names": null,
+      "portion_text": "2/3個",
+      "buy_g": 245,
+      "edible_g": 165,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊＊"
+      ],
+      "row_note": null,
+      "order": 13,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊紅西瓜",
+      "names": null,
+      "portion_text": "1片",
+      "buy_g": 320,
+      "edible_g": 180,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 14,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "黃西瓜",
+      "names": null,
+      "portion_text": "1/3個",
+      "buy_g": 320,
+      "edible_g": 195,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 15,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊＊太陽瓜",
+      "names": null,
+      "portion_text": "2/3個",
+      "buy_g": 240,
+      "edible_g": 215,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊＊"
+      ],
+      "row_note": null,
+      "order": 16,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "瓜類",
+      "row_text": "＊＊新疆哈密瓜",
+      "names": null,
+      "portion_text": "2/5個",
+      "buy_g": 290,
+      "edible_g": 245,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊＊"
+      ],
+      "row_note": null,
+      "order": 17,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "芒果類",
+      "row_text": "金煌芒果",
+      "names": null,
+      "portion_text": "1片",
+      "buy_g": 140,
+      "edible_g": 105,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 18,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "芒果類",
+      "row_text": "愛文芒果",
+      "names": null,
+      "portion_text": "1 1/2片",
+      "buy_g": 225,
+      "edible_g": 150,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 19,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "芭樂類",
+      "row_text": "＊ 葫蘆芭樂",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": null,
+      "edible_g": 155,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "購買量欄原文為「-」",
+      "order": 20,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "芭樂類",
+      "row_text": "＊ 土芭樂",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": null,
+      "edible_g": 155,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "購買量欄原文為「-」",
+      "order": 21,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "芭樂類",
+      "row_text": "＊ 泰國芭樂(1個/斤)",
+      "names": null,
+      "portion_text": "1/3個",
+      "buy_g": null,
+      "edible_g": 160,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "購買量欄原文為「-」",
+      "order": 22,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "梨類",
+      "row_text": "西洋梨",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 165,
+      "edible_g": 105,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 23,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "梨類",
+      "row_text": "粗梨",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 140,
+      "edible_g": 120,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 24,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "梨類",
+      "row_text": "水梨",
+      "names": null,
+      "portion_text": "3/4個",
+      "buy_g": 210,
+      "edible_g": 145,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 25,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "桃類",
+      "row_text": "仙桃",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 75,
+      "edible_g": 50,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 26,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "桃類",
+      "row_text": "水蜜桃(4個/斤)",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 150,
+      "edible_g": 145,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 27,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "桃類",
+      "row_text": "＊ 玫瑰桃",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 150,
+      "edible_g": 145,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 28,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "桃類",
+      "row_text": "＊＊ 桃子",
+      "names": null,
+      "portion_text": "1個",
+      "buy_g": 250,
+      "edible_g": 220,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊＊"
+      ],
+      "row_note": null,
+      "order": 29,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "李類",
+      "row_text": "黑棗梅(12個/斤)",
+      "names": null,
+      "portion_text": "3個",
+      "buy_g": 115,
+      "edible_g": 110,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 30,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "李類",
+      "row_text": "加州李(4個/斤)",
+      "names": null,
+      "portion_text": "小1個",
+      "buy_g": 125,
+      "edible_g": 120,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 31,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "李類",
+      "row_text": "李子(14個/斤)",
+      "names": null,
+      "portion_text": "4個",
+      "buy_g": 155,
+      "edible_g": 145,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 32,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "棗類",
+      "row_text": "紅棗",
+      "names": null,
+      "portion_text": "10個",
+      "buy_g": 30,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 33,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "棗類",
+      "row_text": "黑棗",
+      "names": null,
+      "portion_text": "9個",
+      "buy_g": 30,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 34,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "棗類",
+      "row_text": "＊ 綠棗子",
+      "names": null,
+      "portion_text": "2個",
+      "buy_g": 140,
+      "edible_g": 130,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 35,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柿類",
+      "row_text": "柿餅",
+      "names": null,
+      "portion_text": "3/4個",
+      "buy_g": 35,
+      "edible_g": 33,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 36,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "柿類",
+      "row_text": "紅柿(6個/斤)",
+      "names": null,
+      "portion_text": "3/4個",
+      "buy_g": 105,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 37,
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "椰棗",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "與果乾類表中的「椰棗」為同名重複條目，原PDF兩處皆列20公克",
+      "order": 38,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "榴槤",
+      "names": null,
+      "portion_text": "1/4瓣",
+      "buy_g": 130,
+      "edible_g": 45,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 39,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 釋迦(3個/斤)",
+      "names": null,
+      "portion_text": "1/2個",
+      "buy_g": 105,
+      "edible_g": 60,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 40,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "香蕉(3根/斤)",
+      "names": null,
+      "portion_text": "大1/2根 小一根",
+      "buy_g": 95,
+      "edible_g": 70,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 41,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "櫻桃",
+      "names": null,
+      "portion_text": "9個",
+      "buy_g": 85,
+      "edible_g": 80,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 42,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "紅毛丹",
+      "names": null,
+      "portion_text": null,
+      "buy_g": 150,
+      "edible_g": 80,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 43,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "山竹(7個/斤)",
+      "names": null,
+      "portion_text": "5個",
+      "buy_g": 420,
+      "edible_g": 84,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 44,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "葡萄",
+      "names": null,
+      "portion_text": "13個",
+      "buy_g": 105,
+      "edible_g": 85,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 45,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 龍眼",
+      "names": null,
+      "portion_text": "13個",
+      "buy_g": 130,
+      "edible_g": 90,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 46,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "荔枝(30個/斤)",
+      "names": null,
+      "portion_text": "9個",
+      "buy_g": 185,
+      "edible_g": 100,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 47,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "火龍果",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 110,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 48,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 奇異果(6個/斤)",
+      "names": null,
+      "portion_text": "1 1/2個",
+      "buy_g": 125,
+      "edible_g": 105,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 49,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "鳳梨(4斤/個)",
+      "names": null,
+      "portion_text": "1/10片",
+      "buy_g": 205,
+      "edible_g": 110,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 50,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "百香果(6個/斤)",
+      "names": null,
+      "portion_text": "2個",
+      "buy_g": null,
+      "edible_g": 140,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 51,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "枇杷",
+      "names": null,
+      "portion_text": null,
+      "buy_g": 230,
+      "edible_g": 155,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 52,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 草莓",
+      "names": null,
+      "portion_text": "小16個",
+      "buy_g": 170,
+      "edible_g": 160,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 53,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "蓮霧(6個/斤)",
+      "names": null,
+      "portion_text": "2個",
+      "buy_g": 180,
+      "edible_g": 165,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 54,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "楊桃(2個/斤)",
+      "names": null,
+      "portion_text": "3/4個",
+      "buy_g": 180,
+      "edible_g": 170,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 55,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 聖女蕃茄",
+      "names": null,
+      "portion_text": "23個",
+      "buy_g": 220,
+      "edible_g": 220,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 56,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "椰棗",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": "與「其他」子類的「椰棗」為同名重複條目，原PDF兩處皆列20公克",
+      "order": 57,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "芒果乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 58,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "芭樂乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 59,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "無花果乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 60,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "葡萄乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 61,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "蔓越莓乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 62,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "鳳梨乾",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 20,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 63,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "＊ 龍眼干",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 22,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 64,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "黑棗梅",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 25,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 65,
+      "page": 10
+    },
+    {
+      "table": "附-6",
+      "group": "水果類",
+      "tier": null,
+      "subgroup": "果乾類#",
+      "row_text": "芒果青",
+      "names": null,
+      "portion_text": null,
+      "buy_g": null,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 66,
+      "page": 10
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "大豆油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 1,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "玉米油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 2,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "花生油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 3,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "紅花子油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 4,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "葵花子油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 5,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "麻油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 6,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "椰子油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 7,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "棕梠油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 8,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "橄欖油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 9,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "葵花油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 10,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "椰漿（+1.5公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": 30,
+      "edible_g": 30,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 1.5
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 11,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "植物油",
+      "row_text": "椰奶（+2公克碳水化合物）",
+      "names": null,
+      "portion_text": null,
+      "buy_g": 55,
+      "edible_g": 55,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 2
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 12,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "動物油",
+      "row_text": "牛油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 6,
+      "edible_g": 6,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 13,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "動物油",
+      "row_text": "豬油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 14,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "動物油",
+      "row_text": "雞油",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 5,
+      "edible_g": 5,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 15,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "動物油",
+      "row_text": "＊ 培根",
+      "names": null,
+      "portion_text": "1片(25x3.5x0.1公分)",
+      "buy_g": 15,
+      "edible_g": 15,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 16,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "動物油",
+      "row_text": "＊ 奶油乳酪（cream cheese）",
+      "names": null,
+      "portion_text": "2茶匙",
+      "buy_g": 12,
+      "edible_g": 12,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 17,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "瑪琪琳、酥油",
+      "names": [
+        "瑪琪琳",
+        "酥油"
+      ],
+      "portion_text": "1茶匙",
+      "buy_g": 6,
+      "edible_g": 6,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 18,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "蛋黃醬",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 8,
+      "edible_g": 8,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 19,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "沙拉醬（法國式、義大利式）",
+      "names": [
+        "沙拉醬（法國式",
+        "義大利式）"
+      ],
+      "portion_text": "2茶匙",
+      "buy_g": 10,
+      "edible_g": 10,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 20,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "＊ 花生醬",
+      "names": null,
+      "portion_text": "1茶匙",
+      "buy_g": 9,
+      "edible_g": 9,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 21,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "鮮奶油",
+      "names": null,
+      "portion_text": "1湯匙",
+      "buy_g": 13,
+      "edible_g": 13,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": null,
+        "fat_g": null,
+        "protein_g": null
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 22,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "其他",
+      "row_text": "# 加州酪梨(1斤2~3個)（+3公克碳水化合物）",
+      "names": null,
+      "portion_text": "2湯匙(1/6個)",
+      "buy_g": 60,
+      "edible_g": 40,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "carb_g": 3
+      },
+      "marks": [
+        "#"
+      ],
+      "row_note": null,
+      "order": 23,
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 瓜子",
+      "names": null,
+      "portion_text": "1湯匙",
+      "buy_g": 20,
+      "edible_g": 15,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 4
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "購買量原文為「20(約50粒)」，約50粒為附註",
+      "order": 24,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 南瓜子、葵花子",
+      "names": [
+        "＊ 南瓜子",
+        "葵花子"
+      ],
+      "portion_text": "1湯匙",
+      "buy_g": 12,
+      "edible_g": 10,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 2
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": "購買量原文為「12(約30粒)」，約30粒為附註",
+      "order": 25,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 各式花生仁",
+      "names": null,
+      "portion_text": "10粒",
+      "buy_g": 13,
+      "edible_g": 13,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 4
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 26,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "花生粉",
+      "names": null,
+      "portion_text": "1湯匙",
+      "buy_g": 13,
+      "edible_g": 13,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 4
+      },
+      "marks": [],
+      "row_note": null,
+      "order": 27,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 黑(白)芝麻",
+      "names": null,
+      "portion_text": "2茶匙",
+      "buy_g": 10,
+      "edible_g": 10,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 1
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 28,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 杏仁果",
+      "names": null,
+      "portion_text": "5粒",
+      "buy_g": 7,
+      "edible_g": 7,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 2
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 29,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 腰果",
+      "names": null,
+      "portion_text": "5粒",
+      "buy_g": 10,
+      "edible_g": 10,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 2
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 30,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 開心果",
+      "names": null,
+      "portion_text": "15粒",
+      "buy_g": 15,
+      "edible_g": 10,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 2
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 31,
+      "page": 12
+    },
+    {
+      "table": "附-7",
+      "group": "油脂與堅果類",
+      "tier": null,
+      "subgroup": "堅果類",
+      "row_text": "＊ 核桃仁",
+      "names": null,
+      "portion_text": "2粒",
+      "buy_g": 7,
+      "edible_g": 7,
+      "raw_g": null,
+      "cooked_g": null,
+      "extra": {
+        "protein_g": 1
+      },
+      "marks": [
+        "＊"
+      ],
+      "row_note": null,
+      "order": 32,
+      "page": 12
+    }
+  ],
+  "footnotes": [
+    {
+      "table": "附-1",
+      "text": "+：表微量",
+      "page": 1
+    },
+    {
+      "table": "附-1",
+      "text": "（註）有關主食類部分，若採糖尿病、低蛋白飲食時，米食蛋白質含量以1.5公克，麵食蛋白質以2.5公克計",
+      "page": 1
+    },
+    {
+      "table": "附-2",
+      "text": "＊ 醣類含量較其他乳製品為低",
+      "page": 2
+    },
+    {
+      "table": "附-2",
+      "text": "＊ 每份醣類含量(公克)：起司片2.9、乳酪絲2.1",
+      "page": 2
+    },
+    {
+      "table": "附-3-1",
+      "text": "＊ 含碳水化合物成分，熱量較其他食物為高。",
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "text": "◎ 每份膽固醇含量 50～99 毫公克",
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "text": "◎◎ 每份膽固醇含量 ≧ 100 毫公克",
+      "page": 4
+    },
+    {
+      "table": "附-3-1",
+      "text": "(1) 本欄精算油脂時，水產脂肪量以1公克以下計算",
+      "page": 4
+    },
+    {
+      "table": "附-3-2",
+      "text": "＊ 含碳水化合物成分，熱量較其他食物為高。",
+      "page": 5
+    },
+    {
+      "table": "附-3-2",
+      "text": "◎◎ 每份膽固醇含量 ≧ 100 毫公克",
+      "page": 5,
+      "row_note": "PDF文字抽取在此頁被截斷為「≧100毫」，「公克」二字依page4/page6同一句補回"
+    },
+    {
+      "table": "附-3-3",
+      "text": "＊ 含碳水化合物成分，熱量較其他食物為高。",
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "text": "◎ 每份膽固醇含量 50～99 毫公克",
+      "page": 6
+    },
+    {
+      "table": "附-3-3",
+      "text": "◎◎ 每份膽固醇含量 ≧ 100 毫公克",
+      "page": 6
+    },
+    {
+      "table": "附-4",
+      "text": "＊蛋白質較其它主食為低，飲食需限制蛋白質時可多利用，每份蛋白質含量(公克)：冬粉0.02、藕粉0.02、西谷米0.02、米苔目0.3、米粉0.1、蒟蒻0.1",
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "text": "◎蛋白量較其它主食為高，每份蛋白質含量(公克)：通心粉2.5、義大利麵2.7、甜不辣8.8、薏仁2.8、蓮子4.8、豌豆仁5.4、紅豆5.1、綠豆5.4、花豆5.3、蠶豆2.7、刀豆4.9、鷹嘴豆4.7、皇帝豆5.1、",
+      "page": 7
+    },
+    {
+      "table": "附-4",
+      "text": "△菠蘿麵包、奶酥麵包、燒餅、油條等油脂含量較高。",
+      "page": 7
+    },
+    {
+      "table": "附-5",
+      "text": "# 本表依照蔬菜鉀離子含量排列由左至右，由上而下漸增。下欄之鉀離子含量最高，因此血鉀高的病人應避免食用。",
+      "page": 8
+    },
+    {
+      "table": "附-5",
+      "text": "＊ 表示該蔬菜之蛋白質含量較高。",
+      "page": 8
+    },
+    {
+      "table": "附-6",
+      "text": "＊ 每份水果含鉀量200～399毫公克。",
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "text": "＊＊每份水果含鉀量 ≧ 400毫公克。",
+      "page": 9
+    },
+    {
+      "table": "附-6",
+      "text": "# 果乾類含添加糖。",
+      "page": 10
+    },
+    {
+      "table": "附-7",
+      "text": "＊ 熱量主要來自脂肪但亦含有少許蛋白質 ≧ 1 公克。",
+      "page": 11
+    },
+    {
+      "table": "附-7",
+      "text": "#資料來源：Mahan and Raymond (2016) Food & the Nutrition Care Process 14th ed, p.1025",
+      "page": 11
+    }
+  ]
 }
