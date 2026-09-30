@@ -70,6 +70,7 @@
    - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
+   - **衛福部全表剩餘 1895 筆的過敏原／素食標註已合併（2026-10-01，commit `3cbf1e0`）**：`collab/transcripts/tfda_tags_merged.json`＋審查 `tfda_tags_review.md`（Cline、Sonnet 兩份比對，1562 一致、333 裁決，一致的抽查改正 11 筆、補芒果 14 筆）。**還沒進 App**，給切片 8「我的食材」預帶用；排到切片 8 時先看審查檔「還沒解決」第 2、3、4、7 點（標註說明還是 11 詞、`composite` 與「等」字規則、check-data 芒果同義字會誤判「檸檬果乾」、自製茶葉蛋）。第 1 點（市售飲料標未確認要不要放寬）待使用者決定。
 
 1. **Phase 0 已驗收並推送**（2026-09-29，commit `402ad83`～`0d727b1`；smoke-browser 14 項、mobile-walkthrough 144 項全過）。**已驗收**：使用者 2026-09-29 用手機跑短清單通過。
    - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
