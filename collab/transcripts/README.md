@@ -1,6 +1,6 @@
 # 官方飲食 PDF 轉錄檔說明
 
-本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3 份，其餘 5 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
+本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4 份，其餘 4 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
 
 ## 已完成
 
@@ -9,6 +9,7 @@
 | `food_exchange_table.json` | `collab/食物代換表.pdf` | 全 12 頁 | 附-1～附-7 全部逐列轉錄，339 筆 `items`，另有 `unit_conversion`／`exchange_units`／`footnotes` |
 | `daily_food_guide.json` + `.md` | `collab/pdf/每日飲食指南手冊.pdf` | 全 29 頁 | 表一～表四、六大類代換份量、三大營養素比例轉JSON；內文（序、前言、六大類食物簡介）轉md |
 | `vegetarian_food_guide.json` + `.md` | `collab/pdf/素食飲食指南手冊.pdf` | 全 19 頁 | 純素/蛋素/奶素/奶蛋素四種類型的六大類份數表、豆(蛋)類與乳品類代換份量轉JSON；內文（前言、七大類食物簡介）轉md |
+| `my_plate.json` + `.md` | `collab/pdf/我的餐盤手冊（全穀及未精製雜糧）v2.pdf` | 全 37 頁 | 手測量份量表、六句口訣、中式/西式/素食三種型式各三餐範例、六大類小訣竅轉JSON；內文（前言、設計理念、聰明吃）轉md |
 
 ### `food_exchange_table.json` 結構
 
@@ -49,11 +50,15 @@
 - JSON：`vegetarian_types`（五種素食分類定義）、`macro_nutrient_ratio`、`calorie_needs_table`、`food_classification_table`（食物分類主/次要營養成分）、`exchange_units`（豆(蛋)類單一級距，不像每日飲食指南分低/中/高脂）、`portion_basis`、`serving_recommendations_by_type`（純素/蛋素/奶素/奶蛋素四張表）、`serving_definitions`（七類代換份量，豆類/蛋類/乳品類為素食特有）。
 - md：前言（素食分類定義）、均衡飲食意義、份量說明、如何選擇我的素食、七大類食物簡介全文、版權頁。生活活動強度表與每日飲食指南手冊相同，未重複轉錄。
 
+### `my_plate.json` / `.md` 結構
+
+- JSON：`six_slogans`（六句口訣）、`hand_measure_portions`（手測量份量表）、`daily_cooking_oil`、`design_rationale`（方型餐盤與六格排列的設計理由）、`meal_examples`（中式/西式/素食×早午晚，共9份範例，含菜色描述與涉及的食物分類）、`vegetarian_smart_eating_tips`、`food_group_tips`（六大類各自的簡介與小訣竅）。
+- md：前言、「你的一日三餐都吃些什麼呢」、「從每日飲食指南到我的餐盤」、設計理念、一次看懂我的餐盤、聰明吃、版權頁。
+
 ## 待完成
 
 | # | 來源 | 頁數 | 輸出 |
 |---|---|---|---|
-| 4 | `collab/pdf/我的餐盤手冊（全穀及未精製雜糧）v2.pdf` | 37 | `my_plate.json` + `.md` |
 | 5 | `collab/pdf/22016.pdf` | 16 | `senior_recipes.json` |
 | 6 | `collab/pdf/1600_1800_kcal_healthy_recipes.pdf` | 2 | `recipes_1600_1800.json` |
 | 7 | `collab/pdf/國民飲食指標手冊.pdf` | 20 | `national_dietary_indicators.md` |
