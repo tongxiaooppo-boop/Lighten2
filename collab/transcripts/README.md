@@ -1,6 +1,6 @@
 # 官方飲食 PDF 轉錄檔說明
 
-本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4 份，其餘 4 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
+本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4、5 份，其餘 3 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
 
 ## 已完成
 
@@ -10,6 +10,7 @@
 | `daily_food_guide.json` + `.md` | `collab/pdf/每日飲食指南手冊.pdf` | 全 29 頁 | 表一～表四、六大類代換份量、三大營養素比例轉JSON；內文（序、前言、六大類食物簡介）轉md |
 | `vegetarian_food_guide.json` + `.md` | `collab/pdf/素食飲食指南手冊.pdf` | 全 19 頁 | 純素/蛋素/奶素/奶蛋素四種類型的六大類份數表、豆(蛋)類與乳品類代換份量轉JSON；內文（前言、七大類食物簡介）轉md |
 | `my_plate.json` + `.md` | `collab/pdf/我的餐盤手冊（全穀及未精製雜糧）v2.pdf` | 全 37 頁 | 手測量份量表、六句口訣、中式/西式/素食三種型式各三餐範例、六大類小訣竅轉JSON；內文（前言、設計理念、聰明吃）轉md |
+| `senior_recipes.json` | `collab/pdf/22016.pdf`（高齡營養健康食譜） | 全 16 頁 | 12個月份食譜，各含食材／調味料／作法／推薦理由／每份熱量／我的餐盤六大類份數換算 |
 
 ### `food_exchange_table.json` 結構
 
@@ -55,11 +56,15 @@
 - JSON：`six_slogans`（六句口訣）、`hand_measure_portions`（手測量份量表）、`daily_cooking_oil`、`design_rationale`（方型餐盤與六格排列的設計理由）、`meal_examples`（中式/西式/素食×早午晚，共9份範例，含菜色描述與涉及的食物分類）、`vegetarian_smart_eating_tips`、`food_group_tips`（六大類各自的簡介與小訣竅）。
 - md：前言、「你的一日三餐都吃些什麼呢」、「從每日飲食指南到我的餐盤」、設計理念、一次看懂我的餐盤、聰明吃、版權頁。
 
+### `senior_recipes.json` 結構
+
+- `recipes`：12筆（1~12月各一道），每筆含 `month`、`name`、`servings`、`ingredients`（含 `amount_text` 原文與可解析的 `g` 公克數）、`seasonings`、`steps`、`recommendation_reasons`、`nutrition_per_serving.kcal`、`daily_kcal_reference`（固定1700大卡，高齡者每日飲食建議量基準）、`my_plate_servings_per_serving`（該食譜一人份對應「我的餐盤」六大類的份數，原文以圖示+數字表示，`None`代表原圖示是「—」）、`page`。
+- 封面主題：「吃的下、吃的夠、吃的對、吃的巧」（高齡營養三好一巧）。
+
 ## 待完成
 
 | # | 來源 | 頁數 | 輸出 |
 |---|---|---|---|
-| 5 | `collab/pdf/22016.pdf` | 16 | `senior_recipes.json` |
 | 6 | `collab/pdf/1600_1800_kcal_healthy_recipes.pdf` | 2 | `recipes_1600_1800.json` |
 | 7 | `collab/pdf/國民飲食指標手冊.pdf` | 20 | `national_dietary_indicators.md` |
 | 8 | `collab/pdf/20241024102714_90531.pdf` | 66 | `90531.md` |
