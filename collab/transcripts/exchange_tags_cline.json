@@ -1,7 +1,6 @@
 {
-  "_by": "合併：Claude Sonnet 5.5（exchange_tags_sonnet.json）＋ Cline／DeepSeek（exchange_tags_cline.json），兩份一致的照用，不一致的 33 筆由 Opus 裁決（opus_note）",
+  "_by": "Cline (AI 助手初稿)",
   "_date": "2026-09-30",
-  "_status": "初稿已審，尚未進 App",
   "items": [
     {
       "key": "附-2#1#1",
@@ -13,8 +12,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳品，含乳製品；動物來源，非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "全脂牛奶，乳製品；蛋奶素可、全素不可。"
     },
     {
       "key": "附-2#2#1",
@@ -26,8 +24,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳粉，含乳製品；非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "全脂奶粉，乳製品。"
     },
     {
       "key": "附-2#3#1",
@@ -39,34 +36,31 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳品，含乳製品；動物來源，非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "蒸發奶（淡奶），乳製品。"
     },
     {
       "key": "附-2#4#1",
-      "name": "＊起司片",
+      "name": "起司片",
       "allergen_tags": [
         "乳製品"
       ],
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "起司類，主成分乳製品；傳統凝乳酶可能來自動物，審核者請確認蛋奶素是否接受。加工起司可能另有添加物但不含常見其他過敏原。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "起司片，乳製品（乳酪）。"
     },
     {
       "key": "附-2#5#1",
-      "name": "＊乳酪絲",
+      "name": "乳酪絲",
       "allergen_tags": [
         "乳製品"
       ],
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "起司類，主成分乳製品；傳統凝乳酶可能來自動物，審核者請確認蛋奶素是否接受。加工起司可能另有添加物但不含常見其他過敏原。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "乳酪絲，乳製品。"
     },
     {
       "key": "附-2#6#1",
@@ -78,8 +72,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳品，含乳製品；動物來源，非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "低脂牛奶，乳製品。"
     },
     {
       "key": "附-2#7#1",
@@ -91,8 +84,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳粉，含乳製品；非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "低脂奶粉，乳製品。"
     },
     {
       "key": "附-2#8#1",
@@ -103,9 +95,8 @@
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "無糖發酵乳，乳製品；部分廠牌加明膠（動物），但蛋奶素慣例可接受。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "優格，乳製品。"
     },
     {
       "key": "附-2#9#1",
@@ -116,9 +107,8 @@
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "無糖發酵乳，乳製品；部分廠牌加明膠（動物），但蛋奶素慣例可接受。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "優酪乳，乳製品。"
     },
     {
       "key": "附-2#10#1",
@@ -130,8 +120,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳品，含乳製品；動物來源，非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "脫脂牛奶，乳製品。"
     },
     {
       "key": "附-2#11#1",
@@ -143,12 +132,11 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "乳粉，含乳製品；非全素，蛋奶素可。",
-      "source": "agree"
+      "reason": "脫脂奶粉，乳製品。"
     },
     {
       "key": "附-3-1#1#1",
-      "name": "◎ 蝦米",
+      "name": "蝦米",
       "allergen_tags": [
         "甲殼類"
       ],
@@ -156,12 +144,11 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "蝦類，甲殼類；動物性。",
-      "source": "agree"
+      "reason": "蝦米，甲殼類。"
     },
     {
       "key": "附-3-1#2#1",
-      "name": "◎ 小魚干",
+      "name": "小魚干",
       "allergen_tags": [
         "魚"
       ],
@@ -169,12 +156,11 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "小魚干，魚類。"
     },
     {
       "key": "附-3-1#3#1",
-      "name": "◎ 蝦皮",
+      "name": "蝦皮",
       "allergen_tags": [
         "甲殼類"
       ],
@@ -182,8 +168,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "蝦類，甲殼類；動物性。",
-      "source": "agree"
+      "reason": "蝦皮，甲殼類。"
     },
     {
       "key": "附-3-1#4#1",
@@ -194,13 +179,13 @@
       ],
       "likely": [
         "麩質",
-        "黃豆"
+        "黃豆",
+        "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚乾加工品，調味（糖、醬油）依廠牌而異，所以加未確認。",
-      "source": "agree"
+      "reason": "魚脯為魚鬆類加工品，主成分魚；常加醬油、糖等調味，依廠牌而異，故加未確認。"
     },
     {
       "key": "附-3-1#5#1",
@@ -212,8 +197,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "鰹魚，魚類。"
     },
     {
       "key": "附-3-1#5#2",
@@ -225,8 +209,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "鮪魚，魚類。"
     },
     {
       "key": "附-3-1#6#1",
@@ -238,8 +221,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "一般魚類為泛稱，但可確定含魚。"
     },
     {
       "key": "附-3-1#7#1",
@@ -251,8 +233,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "白鯧，魚類。"
     },
     {
       "key": "附-3-1#8#1",
@@ -264,25 +245,23 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "蝦類，甲殼類；動物性。",
-      "source": "agree"
+      "reason": "蝦仁，甲殼類。"
     },
     {
       "key": "附-3-1#9#1",
-      "name": "◎◎ 小卷（鹹）",
+      "name": "小卷（鹹）",
       "allergen_tags": [
         "軟體動物"
       ],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "小卷（軟體動物）鹽漬；主要為鹽，仍可能有添加物。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "小卷（鹹）為魷魚類，軟體動物；鹽漬處理仍屬軟體動物。"
     },
     {
       "key": "附-3-1#10#1",
-      "name": "◎ 花枝",
+      "name": "花枝",
       "allergen_tags": [
         "軟體動物"
       ],
@@ -290,12 +269,11 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "軟體動物（頭足類／貝類），單一原料。",
-      "source": "agree"
+      "reason": "花枝，軟體動物。"
     },
     {
       "key": "附-3-1#11#1",
-      "name": "◎◎ 章魚",
+      "name": "章魚",
       "allergen_tags": [
         "軟體動物"
       ],
@@ -303,26 +281,24 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "軟體動物（頭足類／貝類），單一原料。",
-      "source": "agree"
+      "reason": "章魚，軟體動物。"
     },
     {
       "key": "附-3-1#12#1",
-      "name": "＊ 魚丸（不包肉）(+10公克碳水化合物)",
+      "name": "魚丸（不包肉）(+10公克碳水化合物)",
       "allergen_tags": [
         "魚",
         "未確認"
       ],
       "likely": [
         "麩質",
-        "蛋",
-        "黃豆"
+        "黃豆",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚漿製品，主成分魚；澱粉、蛋白、黃豆蛋白等依廠牌而異。",
-      "source": "agree"
+      "reason": "魚丸為複合加工品，主成分魚漿；常含澱粉、蛋白、黃豆蛋白，故加未確認。"
     },
     {
       "key": "附-3-1#13#1",
@@ -334,8 +310,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "軟體動物（頭足類／貝類），單一原料。",
-      "source": "agree"
+      "reason": "牡蠣，軟體動物。"
     },
     {
       "key": "附-3-1#14#1",
@@ -347,8 +322,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "軟體動物（頭足類／貝類），單一原料。",
-      "source": "agree"
+      "reason": "文蛤，貝類（軟體動物）。"
     },
     {
       "key": "附-3-1#15#1",
@@ -358,9 +332,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "白海參為海參（棘皮動物），不在11種過敏原內，故空陣列；動物性食材非素。",
-      "source": "cline",
-      "opus_note": "海參是棘皮動物，不在過敏原詞彙內，也跟甲殼類、軟體動物無關；單一原料，照原料標。"
+      "reason": "白海參為海參（棘皮動物），不在11種過敏原內，故空陣列；動物性食材非素。"
     },
     {
       "key": "附-3-1#16#1",
@@ -370,8 +342,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬大里肌，肉類；過敏原詞彙無肉類，非素。"
     },
     {
       "key": "附-3-1#17#1",
@@ -381,60 +352,54 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "牛腱，肉類；非素。"
     },
     {
       "key": "附-3-1#18#1",
-      "name": "＊ 牛肉干（+5公克碳水化合物）",
+      "name": "牛肉干（+5公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
         "麩質",
+        "黃豆",
         "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "肉乾加工品，醃料含醬油、糖等依廠牌而異。",
-      "source": "agree"
+      "reason": "牛肉干為加工肉品，常含醬油、糖等調味，依廠牌而異。"
     },
     {
       "key": "附-3-1#19#1",
-      "name": "＊ 豬肉干（+5公克碳水化合物）",
+      "name": "豬肉干（+5公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
         "麩質",
+        "黃豆",
         "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "肉乾加工品，醃料含醬油、糖等依廠牌而異。",
-      "source": "agree"
+      "reason": "豬肉干為加工肉品。"
     },
     {
       "key": "附-3-1#20#1",
-      "name": "＊ 火腿（+5公克碳水化合物）",
+      "name": "火腿（+5公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
-        "乳製品",
-        "蛋",
-        "麩質"
+        "麩質",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "加工肉品，常添加澱粉、蛋白、乳蛋白（酪蛋白）、大豆蛋白，依廠牌而異。",
-      "source": "agree"
+      "reason": "火腿為複合加工肉品，常含澱粉、黃豆蛋白等。"
     },
     {
       "key": "附-3-1#21#1",
@@ -444,8 +409,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "雞里肉，禽肉；非素。"
     },
     {
       "key": "附-3-1#21#2",
@@ -455,8 +419,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "雞胸肉，禽肉；非素。"
     },
     {
       "key": "附-3-1#22#1",
@@ -466,8 +429,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "雞腿，禽肉；非素。"
     },
     {
       "key": "附-3-1#23#1",
@@ -477,19 +439,17 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "牛肚，內臟類；非素。"
     },
     {
       "key": "附-3-1#24#1",
-      "name": "◎ 雞胗",
+      "name": "雞胗",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "雞胗，內臟類；非素。"
     },
     {
       "key": "附-3-1#25#1",
@@ -499,30 +459,27 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬心，內臟類；非素。"
     },
     {
       "key": "附-3-1#26#1",
-      "name": "◎ 豬肝",
+      "name": "豬肝",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬肝，內臟類；非素。"
     },
     {
       "key": "附-3-1#27#1",
-      "name": "◎◎ 雞肝",
+      "name": "雞肝",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "雞肝，內臟類；非素。"
     },
     {
       "key": "附-3-1#28#1",
@@ -537,31 +494,27 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "low",
-      "reason": "膽肝為宜蘭醃漬肝臘製品（肝腸類），加工調味依店家而異，拿不準故標未確認。",
-      "source": "cline",
-      "opus_note": "膽肝是宜蘭的醃漬肝製品，醃料依店家而異，屬加工品。"
+      "reason": "膽肝為宜蘭醃漬肝臘製品（肝腸類），加工調味依店家而異，拿不準故標未確認。"
     },
     {
       "key": "附-3-1#29#1",
-      "name": "◎◎ 豬腎",
+      "name": "豬腎",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬腎，內臟類；非素。"
     },
     {
       "key": "附-3-1#30#1",
-      "name": "◎◎ 豬血",
+      "name": "豬血",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬血，動物血；不在過敏原詞彙內，但非素。"
     },
     {
       "key": "附-3-1#31#1",
@@ -573,8 +526,7 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "雞蛋，含蛋；蛋奶素可，非全素。",
-      "source": "agree"
+      "reason": "雞蛋白，含蛋；蛋奶素可、全素不可。"
     },
     {
       "key": "附-3-1#32#1",
@@ -586,8 +538,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "黃豆類（黑豆、毛豆同屬大豆）；植物性。",
-      "source": "agree"
+      "reason": "黃豆，含黃豆；全素可。"
     },
     {
       "key": "附-3-1#33#1",
@@ -599,8 +550,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "黃豆類（黑豆、毛豆同屬大豆）；植物性。",
-      "source": "agree"
+      "reason": "黑豆屬黃豆一類，含黃豆；全素可。"
     },
     {
       "key": "附-3-1#34#1",
@@ -612,8 +562,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "黃豆類（黑豆、毛豆同屬大豆）；植物性。",
-      "source": "agree"
+      "reason": "毛豆為未成熟大豆，含黃豆；全素可。"
     },
     {
       "key": "附-3-1#35#1",
@@ -624,9 +573,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "大豆製品（豆腐皮／豆腐／千張），主成分黃豆，凝固劑非過敏原；油豆腐以植物油炸，若廠牌用動物油則不同。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "豆包（豆腐皮），黃豆製品；全素可。"
     },
     {
       "key": "附-3-1#36#1",
@@ -638,28 +586,19 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "干絲，黃豆製品；全素可。",
-      "source": "cline",
-      "opus_note": "干絲是白豆干切絲，原料是黃豆、水、凝固劑，不滷。"
+      "reason": "干絲，黃豆製品；全素可。"
     },
     {
       "key": "附-3-1#37#1",
       "name": "臭豆腐",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "麩質",
-        "魚",
-        "甲殼類"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "發酵豆腐，滷汁配方不一（可能含魚、蝦、乳），油炸沾麵糊含麩質。",
-      "source": "sonnet",
-      "opus_note": "臭豆腐的滷水配方依店家而異（可能含蝦、魚、乳），屬加工品。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "臭豆腐為黃豆製品；全素可。"
     },
     {
       "key": "附-3-1#38#1",
@@ -670,9 +609,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "無糖豆漿，主成分黃豆；部分廠牌加添加物，但不含其他常見過敏原。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "無糖豆漿，黃豆製品；全素可。"
     },
     {
       "key": "附-3-1#39#1",
@@ -680,14 +618,11 @@
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "黃豆"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥麵筋製品（不是黃豆）；烤麩常以醬油調味，故 likely 黃豆。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麵腸為小麥麩質製品，含麩質（非黃豆）；全素可。"
     },
     {
       "key": "附-3-1#40#1",
@@ -699,24 +634,19 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "麵丸為小麥麩質製品，含麩質；全素可。",
-      "source": "cline",
-      "opus_note": "麵丸是麵筋製品，跟兩份一致標成只含麩質的麵腸、烤麩、麵筋泡同一類，照同一標準。"
+      "reason": "麵丸為小麥麩質製品，含麩質；全素可。"
     },
     {
       "key": "附-3-1#41#1",
-      "name": "＊ 烤麩",
+      "name": "烤麩",
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "黃豆"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥麵筋製品（不是黃豆）；烤麩常以醬油調味，故 likely 黃豆。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "烤麩為小麥麩質製品，含麩質；全素可。"
     },
     {
       "key": "附-3-2#1#1",
@@ -728,8 +658,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "虱目魚，魚類。"
     },
     {
       "key": "附-3-2#1#2",
@@ -741,8 +670,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "烏魚，魚類。"
     },
     {
       "key": "附-3-2#1#3",
@@ -754,8 +682,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "肉鯽，魚類。"
     },
     {
       "key": "附-3-2#1#4",
@@ -766,9 +693,8 @@
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "鹹魚，主成分魚；「馧」字為罕見用字，判斷為鹹魚類。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "鹹魚（鹹馧魚），鹽漬魚類，含魚。"
     },
     {
       "key": "附-3-2#1#5",
@@ -780,12 +706,11 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "鮭魚，魚類。"
     },
     {
       "key": "附-3-2#2#1",
-      "name": "＊ 魚肉鬆（+10公克碳水化合物）",
+      "name": "魚肉鬆（+10公克碳水化合物）",
       "allergen_tags": [
         "魚",
         "未確認"
@@ -798,8 +723,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚肉鬆，主成分魚；調味含醬油、糖，可能含麩質、黃豆、芝麻。",
-      "source": "agree"
+      "reason": "魚肉鬆為魚鬆加工品，常加醬油、糖等調味。"
     },
     {
       "key": "附-3-2#3#1",
@@ -811,8 +735,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "鱈魚，魚類。"
     },
     {
       "key": "附-3-2#3#2",
@@ -824,26 +747,24 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "比目魚，魚類。"
     },
     {
       "key": "附-3-2#4#1",
-      "name": "＊ 虱目魚丸",
+      "name": "虱目魚丸",
       "allergen_tags": [
         "魚",
         "未確認"
       ],
       "likely": [
         "麩質",
-        "蛋",
-        "黃豆"
+        "黃豆",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚漿製品，主成分魚；澱粉、蛋白、黃豆蛋白等依廠牌而異。",
-      "source": "agree"
+      "reason": "虱目魚丸為複合加工品，主成分魚漿，常含澱粉、蛋白。"
     },
     {
       "key": "附-3-2#4#2",
@@ -861,26 +782,24 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "複合加工品，主成分花枝（軟體動物）；常摻魚漿、澱粉，可能含蛋白與黃豆蛋白，依廠牌而異。",
-      "source": "agree"
+      "reason": "花枝丸為複合加工品，主成分花枝（軟體動物），常含魚漿、澱粉、蛋白。"
     },
     {
       "key": "附-3-2#5#1",
-      "name": "＊ 旗魚丸",
+      "name": "旗魚丸",
       "allergen_tags": [
         "魚",
         "未確認"
       ],
       "likely": [
         "麩質",
-        "蛋",
-        "黃豆"
+        "黃豆",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚漿製品，主成分魚；澱粉、蛋白、黃豆蛋白等依廠牌而異。",
-      "source": "agree"
+      "reason": "旗魚丸為魚丸加工品。"
     },
     {
       "key": "附-3-2#5#2",
@@ -891,14 +810,13 @@
       ],
       "likely": [
         "麩質",
-        "蛋",
-        "黃豆"
+        "黃豆",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "魚漿製品，主成分魚；澱粉、蛋白、黃豆蛋白等依廠牌而異。",
-      "source": "agree"
+      "reason": "魚丸（包肉）為魚丸加工品。"
     },
     {
       "key": "附-3-2#6#1",
@@ -908,8 +826,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬大排，肉類；非素。"
     },
     {
       "key": "附-3-2#6#2",
@@ -919,8 +836,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬小排，肉類；非素。"
     },
     {
       "key": "附-3-2#7#1",
@@ -930,8 +846,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬後腿肉，肉類；非素。"
     },
     {
       "key": "附-3-2#7#2",
@@ -941,8 +856,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬前腿肉，肉類；非素。"
     },
     {
       "key": "附-3-2#7#3",
@@ -952,8 +866,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "羊肉，肉類；非素。"
     },
     {
       "key": "附-3-2#7#4",
@@ -963,25 +876,23 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬腳，肉類；非素。"
     },
     {
       "key": "附-3-2#8#1",
-      "name": "＊ 豬肉鬆（+5公克碳水化合物）",
+      "name": "豬肉鬆（+5公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
         "麩質",
+        "黃豆",
         "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "肉鬆／肉脯／肉酥類調味加工品，醬油、糖、澱粉、芝麻依廠牌而異。",
-      "source": "agree"
+      "reason": "豬肉鬆為加工肉品。"
     },
     {
       "key": "附-3-2#8#2",
@@ -990,15 +901,14 @@
         "未確認"
       ],
       "likely": [
-        "黃豆",
         "麩質",
+        "黃豆",
         "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "肉鬆／肉脯／肉酥類調味加工品，醬油、糖、澱粉、芝麻依廠牌而異。",
-      "source": "agree"
+      "reason": "肉脯為肉鬆類加工品。"
     },
     {
       "key": "附-3-2#9#1",
@@ -1007,14 +917,13 @@
         "未確認"
       ],
       "likely": [
-        "黃豆",
-        "乳製品"
+        "麩質",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "醃製加工肉品，添加物與配料依廠牌而異。",
-      "source": "agree"
+      "reason": "低脂培根為醃漬加工肉品。"
     },
     {
       "key": "附-3-2#10#1",
@@ -1024,8 +933,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "雞翅，禽肉；非素。"
     },
     {
       "key": "附-3-2#10#2",
@@ -1035,9 +943,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "雞排（生鮮雞肉排），禽肉；非素。",
-      "source": "cline",
-      "opus_note": "代換表這一列是生鮮肉（可食部分生重 40g），指雞排肉，不是炸雞排；畫面名稱要寫清楚「雞排肉（生）」。"
+      "reason": "雞排（生鮮雞肉排），禽肉；非素。"
     },
     {
       "key": "附-3-2#11#1",
@@ -1047,8 +953,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "雞爪，禽肉；非素。"
     },
     {
       "key": "附-3-2#12#1",
@@ -1062,9 +967,8 @@
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "low",
-      "reason": "「鴨賞」為鴨肉的加工品（煙燻／鹽漬滷製），不確定確切做法，保守標未確認。",
-      "source": "agree"
+      "confidence": "medium",
+      "reason": "鴨賞為煙燻鴨肉加工品，調味依店家而異。"
     },
     {
       "key": "附-3-2#13#1",
@@ -1074,8 +978,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬舌，內臟類；非素。"
     },
     {
       "key": "附-3-2#14#1",
@@ -1085,34 +988,31 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬肚，內臟類；非素。"
     },
     {
       "key": "附-3-2#15#1",
-      "name": "◎◎ 豬小腸",
+      "name": "豬小腸",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬小腸，內臟類；非素。"
     },
     {
       "key": "附-3-2#16#1",
-      "name": "◎◎ 豬腦",
+      "name": "豬腦",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬腦，內臟類；非素。"
     },
     {
       "key": "附-3-2#17#1",
-      "name": "◎◎ 雞蛋",
+      "name": "雞蛋",
       "allergen_tags": [
         "蛋"
       ],
@@ -1120,25 +1020,19 @@
       "vegan": false,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "雞蛋，含蛋；蛋奶素可，非全素。",
-      "source": "agree"
+      "reason": "雞蛋，含蛋；蛋奶素可、全素不可。"
     },
     {
       "key": "附-3-2#18#1",
-      "name": "＊ 豆枝（+5公克油脂 +30公克碳水化合物）",
+      "name": "豆枝（+5公克油脂 +30公克碳水化合物）",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "low",
-      "reason": "不確定是何種食品（豆皮條或加澱粉、糖的豆製點心），+30g 碳水暗示有添加澱粉；保守標未確認。",
-      "source": "sonnet",
-      "opus_note": "豆枝每份另加 5g 油脂、30g 碳水，是加了糖與澱粉的豆製點心，配方依廠牌而異。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "medium",
+      "reason": "豆枝為油炸豆製品（豆棗），含黃豆；全素可。"
     },
     {
       "key": "附-3-2#19#1",
@@ -1149,9 +1043,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "大豆製品（豆腐皮／豆腐／千張），主成分黃豆，凝固劑非過敏原；油豆腐以植物油炸，若廠牌用動物油則不同。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "百頁結（千張），黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#20#1",
@@ -1162,60 +1055,44 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "大豆製品（豆腐皮／豆腐／千張），主成分黃豆，凝固劑非過敏原；油豆腐以植物油炸，若廠牌用動物油則不同。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "油豆腐，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#21#1",
       "name": "豆豉",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "發酵黃豆，部分配方加麵粉（麩質）或酒；依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "豆豉部分配方加麵粉或醬油，屬加工品。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "豆豉為發酵黑豆，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#22#1",
       "name": "五香豆干",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "豆干，滷製醬油含麩質、調味依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "五香豆干以醬油（含小麥）滷製，調味依廠牌而異。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "五香豆干，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#23#1",
       "name": "小方豆干",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "豆干，滷製醬油含麩質、調味依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "小方豆干市售多為滷過的，調味依廠牌而異。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "小方豆干，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#24#1",
@@ -1227,9 +1104,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "黃豆干，黃豆製品；全素可。",
-      "source": "cline",
-      "opus_note": "黃豆干是未滷的豆干（黃色來自薑黃等），原料單純。"
+      "reason": "黃豆干，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#25#1",
@@ -1240,9 +1115,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "大豆製品（豆腐皮／豆腐／千張），主成分黃豆，凝固劑非過敏原；油豆腐以植物油炸，若廠牌用動物油則不同。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "傳統豆腐，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#26#1",
@@ -1253,77 +1127,75 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "大豆製品（豆腐皮／豆腐／千張），主成分黃豆，凝固劑非過敏原；油豆腐以植物油炸，若廠牌用動物油則不同。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "嫩豆腐，黃豆製品；全素可。"
     },
     {
       "key": "附-3-2#27#1",
-      "name": "＊ 素獅子頭",
+      "name": "素獅子頭",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／麵筋，配方依廠牌而異，可能含蛋。名稱標示素食但無法保證蛋奶／五辛；lacto_ovo 需審核者依台灣包裝素食標示決定。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素獅子頭為素料加工品，常以黃豆/麵筋為基底，可能含蛋、乳，依廠牌而異。"
     },
     {
       "key": "附-3-2#28#1",
-      "name": "＊ 素火腿",
+      "name": "素火腿",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素火腿為素料加工品，成分依廠牌而異，可能含蛋、乳。"
     },
     {
       "key": "附-3-2#29#1",
-      "name": "＊ 素油雞",
+      "name": "素油雞",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素油雞為素料加工品。"
     },
     {
       "key": "附-3-2#30#1",
-      "name": "＊ 素香鬆",
+      "name": "素香鬆",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "芝麻",
         "黃豆",
-        "麩質"
+        "麩質",
+        "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，常含芝麻、海苔、豆製品與調味，依廠牌而異。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素香鬆為素鬆加工品，常含黃豆/麵筋/芝麻。"
     },
     {
       "key": "附-3-3#1#1",
@@ -1331,14 +1203,11 @@
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "黃豆"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥麵筋製品（不是黃豆）；烤麩常以醬油調味，故 likely 黃豆。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麵筋泡為小麥麩質製品，含麩質；全素可。"
     },
     {
       "key": "附-3-3#2#1",
@@ -1350,8 +1219,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "魚類，單一原料；動物性。",
-      "source": "agree"
+      "reason": "秋刀魚，魚類。"
     },
     {
       "key": "附-3-3#3#1",
@@ -1361,37 +1229,33 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "牛肉條，肉類；非素。",
-      "source": "cline",
-      "opus_note": "代換表這一列是生鮮肉（高脂肉類、可食部分生重），指牛肉切條，不是肉乾零食。"
+      "reason": "牛肉條，肉類；非素。"
     },
     {
       "key": "附-3-3#4#1",
-      "name": "＊ 豬肉酥（+5公克碳水化合物）",
+      "name": "豬肉酥（+5公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
         "麩質",
+        "黃豆",
         "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "肉鬆／肉脯／肉酥類調味加工品，醬油、糖、澱粉、芝麻依廠牌而異。",
-      "source": "agree"
+      "reason": "豬肉酥為加工肉品。"
     },
     {
       "key": "附-3-3#5#1",
-      "name": "◎ 雞心",
+      "name": "雞心",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "雞心，內臟類；非素。"
     },
     {
       "key": "附-3-3#6#1",
@@ -1402,13 +1266,13 @@
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素雞為素料加工品，常以豆皮/麵筋為基底，可能含蛋、乳。"
     },
     {
       "key": "附-3-3#7#1",
@@ -1419,48 +1283,42 @@
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素魚為素料加工品。"
     },
     {
       "key": "附-3-3#8#1",
-      "name": "＊ 素雞塊（+7公克碳水化合物）",
+      "name": "素雞塊（+7公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "蛋",
+        "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素雞塊為素料加工品。"
     },
     {
       "key": "附-3-3#9#1",
       "name": "百頁豆腐",
       "allergen_tags": [
-        "黃豆",
-        "未確認"
+        "黃豆"
       ],
-      "likely": [
-        "蛋",
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "複合加工品：大豆蛋白、澱粉、油脂，有的加蛋；依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "百頁豆腐由大豆分離蛋白、澱粉、油製成，部分廠牌加蛋，屬加工品。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "百頁豆腐為黃豆製品；全素可。"
     },
     {
       "key": "附-3-3#10#1",
@@ -1470,8 +1328,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "豬蹄膀，肉類；非素。"
     },
     {
       "key": "附-3-3#11#1",
@@ -1481,8 +1338,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "梅花肉，肉類；非素。"
     },
     {
       "key": "附-3-3#12#1",
@@ -1492,19 +1348,17 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "牛腩，肉類；非素。"
     },
     {
       "key": "附-3-3#13#1",
-      "name": "◎◎ 豬大腸",
+      "name": "豬大腸",
       "allergen_tags": [],
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料動物內臟／血；詞彙沒有肉類對應，故為空陣列；非素。",
-      "source": "agree"
+      "reason": "豬大腸，內臟類；非素。"
     },
     {
       "key": "附-3-3#14#1",
@@ -1513,14 +1367,13 @@
         "未確認"
       ],
       "likely": [
-        "黃豆",
-        "麩質"
+        "麩質",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "醃製／灌腸肉品，調味與填料依廠牌而異。",
-      "source": "agree"
+      "reason": "香腸為複合加工肉品。"
     },
     {
       "key": "附-3-3#14#2",
@@ -1529,14 +1382,13 @@
         "未確認"
       ],
       "likely": [
-        "黃豆",
-        "麩質"
+        "麩質",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "醃製／灌腸肉品，調味與填料依廠牌而異。",
-      "source": "agree"
+      "reason": "蒜味香腸為複合加工肉品。"
     },
     {
       "key": "附-3-3#14#3",
@@ -1551,8 +1403,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "醃製／灌腸肉品，調味與填料依廠牌而異。",
-      "source": "agree"
+      "reason": "五花臘肉為醃漬臘味加工品。"
     },
     {
       "key": "附-3-3#15#1",
@@ -1562,15 +1413,14 @@
       ],
       "likely": [
         "麩質",
-        "黃豆",
         "乳製品",
-        "蛋"
+        "蛋",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "加工肉品，常含澱粉、大豆蛋白、乳蛋白，依廠牌而異。",
-      "source": "agree"
+      "reason": "熱狗為複合加工肉品，常含澱粉、奶粉、蛋白。"
     },
     {
       "key": "附-3-3#15#2",
@@ -1580,25 +1430,23 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "單一原料畜禽肉；過敏原詞彙沒有肉類，故為空陣列；是肉所以不是素。",
-      "source": "agree"
+      "reason": "五花肉（生鮮豬五花），肉類；非素。"
     },
     {
       "key": "附-3-3#16#1",
-      "name": "＊ 素肉燥（+10公克碳水化合物）",
+      "name": "素肉燥（+10公克碳水化合物）",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
         "黃豆",
         "麩質",
-        "蛋"
+        "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "素食加工品，主料多為黃豆蛋白／豆皮／麵筋，配方依廠牌而異，可能含蛋；台灣包裝需標示素食種類，但此處未指定廠牌，依規則 vegan／lacto_ovo 皆 false。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "素肉燥為素料加工品。"
     },
     {
       "key": "附-4#1#1",
@@ -1608,8 +1456,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "米，穀類，不含過敏原；全素可。"
     },
     {
       "key": "附-4#1#2",
@@ -1619,8 +1466,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "黑米，穀類；全素可。"
     },
     {
       "key": "附-4#1#3",
@@ -1630,8 +1476,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "小米，穀類；全素可。"
     },
     {
       "key": "附-4#1#4",
@@ -1641,8 +1486,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "糯米，穀類；全素可。"
     },
     {
       "key": "附-4#2#1",
@@ -1652,8 +1496,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "糙米，穀類；全素可。"
     },
     {
       "key": "附-4#2#2",
@@ -1662,14 +1505,12 @@
         "未確認"
       ],
       "likely": [
-        "麩質",
-        "黃豆"
+        "麩質"
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "多穀混合米，成分因廠牌而異，常含燕麥、大麥（麩質）與豆類。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "什穀米為多種穀物混合，常含燕麥、大麥等麩質穀物，但成分依廠牌而異。"
     },
     {
       "key": "附-4#2#3",
@@ -1679,8 +1520,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "胚芽米，穀類；全素可。"
     },
     {
       "key": "附-4#3#1",
@@ -1690,8 +1530,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一穀物，不含常見過敏原；植物性。",
-      "source": "agree"
+      "reason": "飯（白飯），米；全素可。"
     },
     {
       "key": "附-4#4#1",
@@ -1700,9 +1539,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "白米粥，一般只有米與水；不同廠牌／店家可能加料。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "粥（稠），米；全素可。"
     },
     {
       "key": "附-4#5#1",
@@ -1712,9 +1550,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "白年糕為糯米製品；全素可。",
-      "source": "cline",
-      "opus_note": "白年糕是糯米加水，原料單純。"
+      "reason": "白年糕為糯米製品；全素可。"
     },
     {
       "key": "附-4#6#1",
@@ -1723,14 +1559,12 @@
         "未確認"
       ],
       "likely": [
-        "甲殼類",
-        "麩質"
+        "甲殼類"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "複合加工：常含蝦米、豬肉、粉類，依廠牌而異。",
-      "source": "agree"
+      "reason": "芋頭糕為複合糕點，常含蝦米、肉末、臘味等，依配方而異。"
     },
     {
       "key": "附-4#7#1",
@@ -1739,32 +1573,22 @@
         "未確認"
       ],
       "likely": [
-        "甲殼類",
-        "麩質"
+        "甲殼類"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "複合加工：常含蝦米、豬油／肉，可含小麥粉，依廠牌而異。",
-      "source": "agree"
+      "reason": "蘿蔔糕為複合糕點，常含蝦米、肉末、臘味等。"
     },
     {
       "key": "附-4#8#1",
       "name": "豬血糕",
-      "allergen_tags": [
-        "未確認"
-      ],
-      "likely": [
-        "花生",
-        "芝麻",
-        "黃豆"
-      ],
+      "allergen_tags": [],
+      "likely": [],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "豬血加糯米，外層常裹花生粉與香菜；配方依店家而異。",
-      "source": "sonnet",
-      "opus_note": "豬血糕由豬血、糯米、調味料製成，配方依店家而異（外層的花生粉是另外沾的，不算在這一項）。"
+      "reason": "豬血糕為豬血+糯米蒸製，動物血非過敏原詞彙，故空陣列；非素（食用常沾花生粉需注意）。"
     },
     {
       "key": "附-4#9#1",
@@ -1774,9 +1598,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "小湯圓（無餡），糯米製品；全素可。",
-      "source": "cline",
-      "opus_note": "無餡小湯圓是糯米粉加水，原料單純。"
+      "reason": "小湯圓（無餡），糯米製品；全素可。"
     },
     {
       "key": "附-4#10#1",
@@ -1788,8 +1610,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "麥類穀物，含麩質；植物性。",
-      "source": "agree"
+      "reason": "大麥，含麩質；全素可。"
     },
     {
       "key": "附-4#10#2",
@@ -1801,8 +1622,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "麥類穀物，含麩質；植物性。",
-      "source": "agree"
+      "reason": "小麥，含麩質；全素可。"
     },
     {
       "key": "附-4#10#3",
@@ -1811,9 +1631,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "蕎麥非麩質穀物（無小麥），詞彙無蕎麥；蕎麥過敏獨立存在，審核者可決定是否要另標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "蕎麥非麩質穀物（無麩質），不含過敏原；全素可。"
     },
     {
       "key": "附-4#11#1",
@@ -1824,9 +1643,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥或麥類磨粉／穀物，含麩質；未指定麥種但台灣規定麥類皆屬麩質。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麥粉為小麥粉，含麩質；全素可。"
     },
     {
       "key": "附-4#12#1",
@@ -1837,9 +1655,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "燕麥片（台灣過敏原標示規定燕麥視為麩質）；調味即食麥片可能加糖、奶粉，該類請另查。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麥片（燕麥片），含麩質；全素可。"
     },
     {
       "key": "附-4#13#1",
@@ -1850,9 +1667,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥或麥類磨粉／穀物，含麩質；未指定麥種但台灣規定麥類皆屬麩質。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麵粉，含麩質；全素可。"
     },
     {
       "key": "附-4#14#1",
@@ -1860,14 +1676,11 @@
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "乾麵類，主原料小麥粉；個別廠牌可能加蛋，這裡以基本配方標。",
-      "source": "agree"
+      "reason": "麵條（乾），小麥製品含麩質；一般無動物成分，但少數蛋麵含蛋。"
     },
     {
       "key": "附-4#15#1",
@@ -1879,9 +1692,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "麵條（濕），小麥製品。",
-      "source": "cline",
-      "opus_note": "一般濕麵條原料是麵粉、水、鹽；跟兩份一致標成只含麩質的麵條(乾)同一標準。"
+      "reason": "麵條（濕），小麥製品。"
     },
     {
       "key": "附-4#16#1",
@@ -1893,9 +1704,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "麵條（熟），小麥製品。",
-      "source": "cline",
-      "opus_note": "同麵條(濕)。"
+      "reason": "麵條（熟），小麥製品。"
     },
     {
       "key": "附-4#17#1",
@@ -1907,9 +1716,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "拉麵，小麥製品。",
-      "source": "cline",
-      "opus_note": "拉麵原料是麵粉、水、鹼水，同麵條的標準。"
+      "reason": "拉麵，小麥製品。"
     },
     {
       "key": "附-4#18#1",
@@ -1921,56 +1728,43 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "油麵，小麥製品（含鹼、油）。",
-      "source": "cline",
-      "opus_note": "油麵原料是麵粉、水、鹼、油，同麵條的標準。"
+      "reason": "油麵，小麥製品（含鹼、油）。"
     },
     {
       "key": "附-4#19#1",
       "name": "鍋燒麵(熟)",
       "allergen_tags": [
-        "麩質",
-        "未確認"
+        "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "鍋燒意麵類通常含蛋。",
-      "source": "sonnet",
-      "opus_note": "鍋燒麵多用意麵，意麵通常加蛋，所以加未確認，蛋列在 likely。"
+      "reason": "鍋燒麵，小麥製品。"
     },
     {
       "key": "附-4#20#1",
-      "name": "◎ 通心粉(乾)",
+      "name": "通心粉(乾)",
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾麵類，主原料小麥粉；個別廠牌可能加蛋，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "通心粉（乾），小麥製品含麩質；一般無蛋。"
     },
     {
       "key": "附-4#21#1",
-      "name": "◎ 義大利麵(乾)",
+      "name": "義大利麵(乾)",
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾麵類，主原料小麥粉；個別廠牌可能加蛋，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "義大利麵（乾），小麥製品；一般無蛋。"
     },
     {
       "key": "附-4#21#2",
@@ -1981,9 +1775,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "小麥或麥類磨粉／穀物，含麩質；未指定麥種但台灣規定麥類皆屬麩質。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "全麥（全麥粉），含麩質；全素可。"
     },
     {
       "key": "附-4#22#1",
@@ -1991,14 +1784,11 @@
       "allergen_tags": [
         "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
+      "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾麵類，主原料小麥粉；個別廠牌可能加蛋，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麵線（乾），小麥製品。"
     },
     {
       "key": "附-4#23#1",
@@ -2010,26 +1800,19 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "餃子皮，小麥製品。",
-      "source": "cline",
-      "opus_note": "餃子皮原料是麵粉、水、鹽。"
+      "reason": "餃子皮，小麥製品。"
     },
     {
       "key": "附-4#24#1",
       "name": "餛飩皮",
       "allergen_tags": [
-        "麩質",
-        "未確認"
+        "麩質"
       ],
-      "likely": [
-        "蛋"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "小麥粉皮，部分廠牌加蛋（餛飩皮常見）。",
-      "source": "sonnet",
-      "opus_note": "餛飩皮市售常加蛋，屬加工品。"
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "餛飩皮，小麥製品。"
     },
     {
       "key": "附-4#25#1",
@@ -2041,9 +1824,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "春捲皮，小麥製品。",
-      "source": "cline",
-      "opus_note": "春捲皮原料是麵粉、水、鹽。"
+      "reason": "春捲皮，小麥製品。"
     },
     {
       "key": "附-4#26#1",
@@ -2055,9 +1836,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "饅頭，小麥製品；一般無動物成分（牛奶饅頭例外）。",
-      "source": "cline",
-      "opus_note": "白饅頭原料是麵粉、水、酵母、糖；牛奶饅頭是另一種產品。"
+      "reason": "饅頭，小麥製品；一般無動物成分（牛奶饅頭例外）。"
     },
     {
       "key": "附-4#27#1",
@@ -2069,9 +1848,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "山東饅頭，小麥製品。",
-      "source": "cline",
-      "opus_note": "山東饅頭同白饅頭。"
+      "reason": "山東饅頭，小麥製品。"
     },
     {
       "key": "附-4#28#1",
@@ -2081,15 +1858,13 @@
         "未確認"
       ],
       "likely": [
-        "蛋",
         "乳製品",
-        "黃豆"
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，含小麥；奶粉、蛋、油脂依配方而異。",
-      "source": "agree"
+      "reason": "吐司為麵包類複合加工品，常含乳、蛋或油脂，依配方而異。"
     },
     {
       "key": "附-4#28#2",
@@ -2099,15 +1874,13 @@
         "未確認"
       ],
       "likely": [
-        "蛋",
         "乳製品",
-        "黃豆"
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，含小麥；奶粉、蛋、油脂依配方而異。",
-      "source": "agree"
+      "reason": "全麥吐司為麵包類複合加工品。"
     },
     {
       "key": "附-4#29#1",
@@ -2117,15 +1890,13 @@
         "未確認"
       ],
       "likely": [
-        "蛋",
         "乳製品",
-        "黃豆"
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，含小麥；奶粉、蛋、油脂依配方而異。",
-      "source": "agree"
+      "reason": "餐包為麵包類複合加工品。"
     },
     {
       "key": "附-4#30#1",
@@ -2135,36 +1906,34 @@
         "未確認"
       ],
       "likely": [
-        "蛋",
         "乳製品",
-        "黃豆"
+        "蛋",
+        "芝麻"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，含小麥；奶粉、蛋、油脂依配方而異。",
-      "source": "agree"
+      "reason": "漢堡麵包為麵包類複合加工品，常撒芝麻、含乳蛋。"
     },
     {
       "key": "附-4#31#1",
-      "name": "△菠蘿麵包（+1茶匙油）",
+      "name": "菠蘿麵包（+1茶匙油）",
       "allergen_tags": [
         "麩質",
         "未確認"
       ],
       "likely": [
-        "蛋",
-        "乳製品"
+        "乳製品",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，酥皮通常含蛋、奶油。",
-      "source": "agree"
+      "reason": "菠蘿麵包為麵包類複合加工品。"
     },
     {
       "key": "附-4#32#1",
-      "name": "△奶酥麵包（+1茶匙油）",
+      "name": "奶酥麵包（+1茶匙油）",
       "allergen_tags": [
         "麩質",
         "乳製品",
@@ -2176,8 +1945,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "麵包，奶酥餡含乳製品；蛋依配方。",
-      "source": "agree"
+      "reason": "奶酥麵包含奶酥（奶油/奶粉，乳製品）與麩質，可能含蛋。"
     },
     {
       "key": "附-4#33#1",
@@ -2188,14 +1956,12 @@
       ],
       "likely": [
         "乳製品",
-        "蛋",
-        "黃豆"
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "餅乾，小麥；乳粉、蛋、油脂依廠牌而異。",
-      "source": "agree"
+      "reason": "蘇打餅乾為餅乾類複合加工品。"
     },
     {
       "key": "附-4#34#1",
@@ -2212,13 +1978,11 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "燒餅常撒芝麻、含麩質，可能加油酥（含豬油/奶油），故未確認。",
-      "source": "cline",
-      "opus_note": "燒餅表面有芝麻，這是看得到的原料，應該列出；油酥可能用豬油或奶油，所以仍有未確認。"
+      "reason": "燒餅常撒芝麻、含麩質，可能加油酥（含豬油/奶油），故未確認。"
     },
     {
       "key": "附-4#35#1",
-      "name": "△油條(+3茶匙油)",
+      "name": "油條(+3茶匙油)",
       "allergen_tags": [
         "麩質",
         "未確認"
@@ -2229,26 +1993,24 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "油炸麵食，小麥；配方依店家。",
-      "source": "agree"
+      "reason": "油條為油炸麵製品，含麩質，部分配方含蛋。"
     },
     {
       "key": "附-4#36#1",
-      "name": "◎ 甜不辣",
+      "name": "甜不辣",
       "allergen_tags": [
         "魚",
         "麩質",
         "未確認"
       ],
       "likely": [
-        "蛋",
-        "黃豆"
+        "黃豆",
+        "蛋"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "台式甜不辣以魚漿為主，並含澱粉；配方依廠牌，故加未確認。",
-      "source": "agree"
+      "reason": "甜不辣為魚漿+澱粉製品，含魚與麩質，可能含黃豆、蛋。"
     },
     {
       "key": "附-4#37#1",
@@ -2258,8 +2020,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "馬鈴薯，根莖類蔬菜；全素可。"
     },
     {
       "key": "附-4#38#1",
@@ -2269,8 +2030,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "蕃薯，根莖類；全素可。"
     },
     {
       "key": "附-4#39#1",
@@ -2280,8 +2040,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "山藥，根莖類；全素可。"
     },
     {
       "key": "附-4#40#1",
@@ -2291,8 +2050,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "芋頭，根莖類；全素可。"
     },
     {
       "key": "附-4#41#1",
@@ -2302,8 +2060,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "荸薺，根莖類；全素可。"
     },
     {
       "key": "附-4#42#1",
@@ -2313,8 +2070,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "蓮藕，根莖類；全素可。"
     },
     {
       "key": "附-4#43#1",
@@ -2324,8 +2080,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "玉米，不含過敏原；全素可。"
     },
     {
       "key": "附-4#44#1",
@@ -2334,31 +2089,28 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "玉米爆製，題名註明不加奶油；市售調味爆米花可能有乳製品。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "爆米花（不加奶油），玉米製品；全素可。"
     },
     {
       "key": "附-4#45#1",
-      "name": "◎ 薏仁",
+      "name": "薏仁",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "薏仁非麩質穀物，不含過敏原；全素可。"
     },
     {
       "key": "附-4#46#1",
-      "name": "◎ 蓮子(乾)",
+      "name": "蓮子(乾)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "蓮子，不含過敏原；全素可。"
     },
     {
       "key": "附-4#47#1",
@@ -2370,8 +2122,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "low",
-      "reason": "栗子植物學上屬殼斗科堅果，台灣法規是否歸「堅果類」不確定；保守標堅果，請審核者確認。",
-      "source": "agree"
+      "reason": "栗子（chestnut）為樹堅果，保守標堅果；台灣代換表將其歸於雜糧，是否屬堅果過敏原有爭議。"
     },
     {
       "key": "附-4#48#1",
@@ -2381,8 +2132,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "菱角，不含過敏原；全素可。"
     },
     {
       "key": "附-4#49#1",
@@ -2392,30 +2142,27 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "南瓜，不含過敏原；全素可。"
     },
     {
       "key": "附-4#50#1",
-      "name": "◎ 豌豆仁",
+      "name": "豌豆仁",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "豌豆仁，豌豆非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#51#1",
-      "name": "◎ 紅豆",
+      "name": "紅豆",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "紅豆，非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#51#2",
@@ -2425,8 +2172,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "綠豆，非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#51#3",
@@ -2436,19 +2182,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "花豆，非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#52#1",
-      "name": "◎ 蠶豆",
+      "name": "蠶豆",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "蠶豆，非黃豆、非花生，不含過敏原；全素可。"
     },
     {
       "key": "附-4#52#2",
@@ -2458,128 +2202,107 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "刀豆，非黃豆、非花生，不含過敏原；全素可。"
     },
     {
       "key": "附-4#53#1",
-      "name": "◎ 鷹嘴豆",
+      "name": "鷹嘴豆",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "鷹嘴豆，非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#54#1",
-      "name": "◎ 皇帝豆",
+      "name": "皇帝豆",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料植物性食材，不含詞彙中的過敏原（紅豆、綠豆、豌豆、鷹嘴豆等豆類不是黃豆）。",
-      "source": "agree"
+      "reason": "皇帝豆，非黃豆、非花生，不含過敏原；全素可。"
     },
     {
       "key": "附-4#55#1",
-      "name": "＊ 冬粉(乾)",
+      "name": "冬粉(乾)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "冬粉（綠豆粉絲），綠豆非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-4#56#1",
-      "name": "＊ 藕粉",
+      "name": "藕粉",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "藕粉，蓮藕澱粉，不含過敏原；全素可。"
     },
     {
       "key": "附-4#57#1",
-      "name": "＊ 西谷米(粉圓)",
+      "name": "西谷米(粉圓)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "西谷米（粉圓）為樹薯澱粉製品，不含過敏原；全素可。"
     },
     {
       "key": "附-4#58#1",
-      "name": "＊ 米苔目(濕)",
+      "name": "米苔目(濕)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "米苔目，米製品；全素可。"
     },
     {
       "key": "附-4#59#1",
-      "name": "＊ 米粉(乾)",
+      "name": "米粉(乾)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "米粉（乾），米製品；全素可。"
     },
     {
       "key": "附-4#60#1",
-      "name": "＊ 米粉(濕)",
+      "name": "米粉(濕)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "米粉（濕），米製品；全素可。"
     },
     {
       "key": "附-4#61#1",
       "name": "芋圓",
-      "allergen_tags": [
-        "未確認"
-      ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "澱粉加工品，可能摻小麥粉或其他澱粉，依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "市售冷凍芋圓混合多種澱粉與糖，配方依廠牌而異。"
+      "allergen_tags": [],
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "芋圓，芋頭+澱粉製品；全素可。"
     },
     {
       "key": "附-4#61#2",
       "name": "地瓜圓(冷凍)",
-      "allergen_tags": [
-        "未確認"
-      ],
-      "likely": [
-        "麩質"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "澱粉加工品，可能摻小麥粉或其他澱粉，依廠牌而異。",
-      "source": "sonnet",
-      "opus_note": "同芋圓。"
+      "allergen_tags": [],
+      "likely": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "地瓜圓，地瓜+澱粉製品；全素可。"
     },
     {
       "key": "附-4#62#1",
@@ -2588,9 +2311,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "河粉，米製品；全素可。"
     },
     {
       "key": "附-4#63#1",
@@ -2599,9 +2321,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "澱粉／米製品，主原料為綠豆、地瓜、樹薯或米；少數廠牌米粉摻小麥澱粉，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "越南春捲皮為米紙，米製品；全素可。"
     },
     {
       "key": "附-4#64#1",
@@ -2617,8 +2338,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "冷凍麵皮，小麥；蛋、乳、油脂依廠牌。",
-      "source": "agree"
+      "reason": "蛋餅皮為麵粉製品，可能含蛋、乳或豬油，依配方而異。"
     },
     {
       "key": "附-4#64#2",
@@ -2628,27 +2348,24 @@
         "未確認"
       ],
       "likely": [
-        "蛋",
         "乳製品"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "冷凍麵皮，小麥；蛋、乳、油脂依廠牌。",
-      "source": "agree"
+      "reason": "蔥油餅皮為冷凍麵製品，可能含豬油或蛋，依廠牌而異。"
     },
     {
       "key": "附-5#1#1",
-      "name": "＊黃豆芽",
+      "name": "黃豆芽",
       "allergen_tags": [
         "黃豆"
       ],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "黃豆芽由黃豆發芽，保守視為含黃豆蛋白。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "黃豆芽為黃豆發芽，屬黃豆過敏原；全素可。"
     },
     {
       "key": "附-5#2#1",
@@ -2658,8 +2375,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#3#1",
@@ -2669,8 +2385,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#4#1",
@@ -2680,8 +2395,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#5#1",
@@ -2691,8 +2405,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#6#1",
@@ -2702,19 +2415,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#7#1",
-      "name": "＊綠豆芽",
+      "name": "綠豆芽",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "綠豆芽，綠豆非黃豆，不含過敏原；全素可。"
     },
     {
       "key": "附-5#8#1",
@@ -2724,8 +2435,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#9#1",
@@ -2735,8 +2445,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#10#1",
@@ -2746,8 +2455,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#11#1",
@@ -2757,8 +2465,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#12#1",
@@ -2768,8 +2475,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#13#1",
@@ -2779,8 +2485,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#14#1",
@@ -2790,8 +2495,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#15#1",
@@ -2801,8 +2505,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#16#1",
@@ -2812,8 +2515,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#17#1",
@@ -2823,8 +2525,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#18#1",
@@ -2834,8 +2535,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#19#1",
@@ -2845,8 +2545,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#20#1",
@@ -2856,8 +2555,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#21#1",
@@ -2867,8 +2565,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#22#1",
@@ -2878,8 +2575,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#23#1",
@@ -2889,8 +2585,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#24#1",
@@ -2900,8 +2595,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "鮮雪裡紅（芥菜醃製），不含過敏原；全素可。"
     },
     {
       "key": "附-5#25#1",
@@ -2911,8 +2605,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#26#1",
@@ -2922,8 +2615,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#27#1",
@@ -2933,8 +2625,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#28#1",
@@ -2944,8 +2635,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#29#1",
@@ -2955,8 +2645,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#30#1",
@@ -2966,8 +2655,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#31#1",
@@ -2977,8 +2665,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#32#1",
@@ -2988,8 +2675,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#33#1",
@@ -2999,19 +2685,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#34#1",
-      "name": "＊油菜花",
+      "name": "油菜花",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#35#1",
@@ -3021,8 +2705,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#36#1",
@@ -3032,8 +2715,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#37#1",
@@ -3043,19 +2725,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#38#1",
-      "name": "＊皇冠菜",
+      "name": "皇冠菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "茼蒿（皇冠菜）；植物性。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#39#1",
@@ -3065,8 +2745,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#40#1",
@@ -3076,19 +2755,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#41#1",
-      "name": "＊龍鬚菜",
+      "name": "龍鬚菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "low",
-      "reason": "「龍鬚菜」可指佛手瓜嫩芽（蔬菜）或海藻龍鬚菜；皆為植物，無對應過敏原。",
-      "source": "agree"
+      "reason": "龍鬚菜名稱有歧義：台灣多指佛手瓜嫩莖葉（蔬菜），亦可能指石花菜等海藻；皆植物性，但需確認實際所指。"
     },
     {
       "key": "附-5#42#1",
@@ -3098,8 +2775,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#43#1",
@@ -3109,8 +2785,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#44#1",
@@ -3119,9 +2794,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "金針乾製品常以亞硫酸鹽處理，但亞硫酸鹽不在詞彙內；本身為植物。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#45#1",
@@ -3131,8 +2805,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#46#1",
@@ -3142,8 +2815,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#47#1",
@@ -3153,8 +2825,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#48#1",
@@ -3164,19 +2835,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#49#1",
-      "name": "＊香菇",
+      "name": "香菇",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#50#1",
@@ -3186,8 +2855,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#51#1",
@@ -3197,8 +2865,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#52#1",
@@ -3208,19 +2875,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#53#1",
-      "name": "＊苜蓿芽",
+      "name": "苜蓿芽",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#54#1",
@@ -3230,8 +2895,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#55#1",
@@ -3241,19 +2905,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#56#1",
-      "name": "＊地瓜葉",
+      "name": "地瓜葉",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#57#1",
@@ -3263,8 +2925,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#58#1",
@@ -3274,19 +2935,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#59#1",
-      "name": "＊紅莧菜",
+      "name": "紅莧菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#60#1",
@@ -3296,19 +2955,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#61#1",
-      "name": "＊荷蘭豆菜心",
+      "name": "荷蘭豆菜心",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#62#1",
@@ -3318,19 +2975,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#63#1",
-      "name": "＊青江菜",
+      "name": "青江菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#64#1",
@@ -3340,30 +2995,27 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#65#1",
-      "name": "＊柳松菇",
+      "name": "柳松菇",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#66#1",
-      "name": "＊洋菇",
+      "name": "洋菇",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#67#1",
@@ -3373,19 +3025,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#68#1",
-      "name": "＊黑甜菜",
+      "name": "黑甜菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#69#1",
@@ -3395,8 +3045,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#70#1",
@@ -3406,19 +3055,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#71#1",
-      "name": "＊小芹菜",
+      "name": "小芹菜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#72#1",
@@ -3428,8 +3075,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#73#1",
@@ -3439,8 +3085,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#74#1",
@@ -3450,8 +3095,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#75#1",
@@ -3461,8 +3105,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#76#1",
@@ -3471,9 +3114,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "罐頭番茄，成分基本為番茄與檸檬酸；若為調味番茄罐頭則可能含其他成分。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "番茄罐頭，單一原料番茄（罐頭）；全素可。"
     },
     {
       "key": "附-5#77#1",
@@ -3483,8 +3125,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "low",
-      "reason": "「角菜」不同地區指不同蔬菜（可能為海藻類鹿角菜或芥菜類）；不論何者皆為植物，無對應過敏原。",
-      "source": "agree"
+      "reason": "角菜名稱有歧義（可能指莧菜科或藜科植物），不同地區指不同蔬菜；皆為蔬菜，但需確認實際所指。"
     },
     {
       "key": "附-5#78#1",
@@ -3494,19 +3135,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-5#79#1",
-      "name": "＊草菇",
+      "name": "草菇",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一原料天然蔬菜／菇類，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "蔬菜／菌菇，不含過敏原；全素可。"
     },
     {
       "key": "附-6#1#1",
@@ -3516,8 +3155,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#2#1",
@@ -3527,8 +3165,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#3#1",
@@ -3538,8 +3175,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#4#1",
@@ -3549,8 +3185,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#5#1",
@@ -3560,19 +3195,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#6#1",
-      "name": "＊ 白柚",
+      "name": "白柚",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#7#1",
@@ -3582,8 +3215,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#8#1",
@@ -3593,8 +3225,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#9#1",
@@ -3604,8 +3235,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#10#1",
@@ -3615,52 +3245,47 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#11#1",
-      "name": "＊＊哈密瓜",
+      "name": "哈密瓜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#12#1",
-      "name": "＊木瓜（1個/斤）",
+      "name": "木瓜（1個/斤）",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#13#1",
-      "name": "＊＊香瓜（美濃）",
+      "name": "香瓜（美濃）",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#14#1",
-      "name": "＊紅西瓜",
+      "name": "紅西瓜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#15#1",
@@ -3670,30 +3295,27 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#16#1",
-      "name": "＊＊太陽瓜",
+      "name": "太陽瓜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#17#1",
-      "name": "＊＊新疆哈密瓜",
+      "name": "新疆哈密瓜",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#18#1",
@@ -3702,9 +3324,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "芒果在台灣法規是須標示的過敏原，但不在本次 11 個詞彙內；單一水果，故為空陣列，請審核者決定是否新增。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#19#1",
@@ -3713,42 +3334,38 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "芒果在台灣法規是須標示的過敏原，但不在本次 11 個詞彙內；單一水果，故為空陣列，請審核者決定是否新增。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#20#1",
-      "name": "＊ 葫蘆芭樂",
+      "name": "葫蘆芭樂",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#21#1",
-      "name": "＊ 土芭樂",
+      "name": "土芭樂",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#22#1",
-      "name": "＊ 泰國芭樂(1個/斤)",
+      "name": "泰國芭樂(1個/斤)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#23#1",
@@ -3758,8 +3375,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#24#1",
@@ -3769,8 +3385,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#25#1",
@@ -3780,8 +3395,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#26#1",
@@ -3791,8 +3405,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#27#1",
@@ -3802,30 +3415,27 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#28#1",
-      "name": "＊ 玫瑰桃",
+      "name": "玫瑰桃",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#29#1",
-      "name": "＊＊ 桃子",
+      "name": "桃子",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#30#1",
@@ -3835,8 +3445,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#31#1",
@@ -3846,8 +3455,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#32#1",
@@ -3857,8 +3465,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#33#1",
@@ -3867,9 +3474,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#34#1",
@@ -3878,20 +3484,18 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#35#1",
-      "name": "＊ 綠棗子",
+      "name": "綠棗子",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#36#1",
@@ -3900,9 +3504,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#37#1",
@@ -3912,8 +3515,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#38#1",
@@ -3922,9 +3524,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#39#1",
@@ -3934,19 +3535,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#40#1",
-      "name": "＊ 釋迦(3個/斤)",
+      "name": "釋迦(3個/斤)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#41#1",
@@ -3956,8 +3555,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#42#1",
@@ -3967,8 +3565,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#43#1",
@@ -3978,8 +3575,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#44#1",
@@ -3989,8 +3585,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#45#1",
@@ -4000,19 +3595,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#46#1",
-      "name": "＊ 龍眼",
+      "name": "龍眼",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#47#1",
@@ -4022,8 +3615,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#48#1",
@@ -4033,19 +3625,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#49#1",
-      "name": "＊ 奇異果(6個/斤)",
+      "name": "奇異果(6個/斤)",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#50#1",
@@ -4055,8 +3645,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#51#1",
@@ -4066,8 +3655,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#52#1",
@@ -4077,19 +3665,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#53#1",
-      "name": "＊ 草莓",
+      "name": "草莓",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#54#1",
@@ -4099,8 +3685,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#55#1",
@@ -4110,19 +3695,17 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#56#1",
-      "name": "＊ 聖女蕃茄",
+      "name": "聖女蕃茄",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，不含詞彙中的過敏原；植物性。",
-      "source": "agree"
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#57#1",
@@ -4131,9 +3714,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#58#1",
@@ -4142,9 +3724,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "果乾，多添加糖或亞硫酸鹽（不在詞彙內）；芒果乾另見芒果過敏原註記；依廠牌可能加油。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#59#1",
@@ -4153,9 +3734,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "果乾，多添加糖或亞硫酸鹽（不在詞彙內）；芒果乾另見芒果過敏原註記；依廠牌可能加油。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#60#1",
@@ -4164,9 +3744,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#61#1",
@@ -4175,9 +3754,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#62#1",
@@ -4186,9 +3764,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "果乾，多添加糖或亞硫酸鹽（不在詞彙內）；芒果乾另見芒果過敏原註記；依廠牌可能加油。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#63#1",
@@ -4197,20 +3774,18 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "果乾，多添加糖或亞硫酸鹽（不在詞彙內）；芒果乾另見芒果過敏原註記；依廠牌可能加油。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#64#1",
-      "name": "＊ 龍眼干",
+      "name": "龍眼干",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#65#1",
@@ -4219,23 +3794,18 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "乾燥水果，基本為單一原料；亞硫酸鹽等添加物不在詞彙內。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-6#66#1",
       "name": "芒果青",
-      "allergen_tags": [
-        "未確認"
-      ],
+      "allergen_tags": [],
       "likely": [],
-      "vegan": false,
-      "lacto_ovo": false,
-      "confidence": "low",
-      "reason": "芒果青通常是醃漬蜜餞，添加糖、鹽、梅粉、甘草等，配方依店家而異，且為芒果。",
-      "source": "sonnet",
-      "opus_note": "芒果青是醃漬的青芒果，加糖、鹽、甘草或梅粉，屬加工品。"
+      "vegan": true,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "水果／果乾，不含過敏原；全素可。"
     },
     {
       "key": "附-7#1#1",
@@ -4247,8 +3817,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "medium",
-      "reason": "大豆製油；精製油過敏蛋白極少，但保守標黃豆。",
-      "source": "agree"
+      "reason": "大豆油為黃豆製品；精煉後蛋白質極少，但保守標黃豆。"
     },
     {
       "key": "附-7#2#1",
@@ -4258,8 +3827,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "玉米油，不含過敏原；全素可。"
     },
     {
       "key": "附-7#3#1",
@@ -4270,9 +3838,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "花生製油；精製油過敏蛋白極少，但保守標花生。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "花生油含花生；全素可。"
     },
     {
       "key": "附-7#4#1",
@@ -4282,8 +3849,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "紅花子油（紅花籽），不含過敏原；全素可。"
     },
     {
       "key": "附-7#5#1",
@@ -4293,8 +3859,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "葵花子油，葵花籽屬種子非堅果，不含過敏原；全素可。"
     },
     {
       "key": "附-7#6#1",
@@ -4305,9 +3870,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "芝麻油，含芝麻。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "麻油為芝麻油，含芝麻；全素可。"
     },
     {
       "key": "附-7#7#1",
@@ -4317,8 +3881,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "椰子油，椰子非堅果，不含過敏原；全素可。"
     },
     {
       "key": "附-7#8#1",
@@ -4328,8 +3891,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "棕梠油，不含過敏原；全素可。"
     },
     {
       "key": "附-7#9#1",
@@ -4339,8 +3901,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "橄欖油，不含過敏原；全素可。"
     },
     {
       "key": "附-7#10#1",
@@ -4350,8 +3911,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一植物油，不含詞彙中的過敏原。",
-      "source": "agree"
+      "reason": "葵花油，不含過敏原；全素可。"
     },
     {
       "key": "附-7#11#1",
@@ -4360,9 +3920,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "椰子製品，植物性（名稱有奶字但不是乳製品）；罐裝可能添加乳化劑，依廠牌。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "椰漿（椰奶），椰子製品，不含過敏原；全素可。"
     },
     {
       "key": "附-7#12#1",
@@ -4371,9 +3930,8 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "椰子製品，植物性（名稱有奶字但不是乳製品）；罐裝可能添加乳化劑，依廠牌。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "椰奶，椰子製品，不含過敏原；全素可。"
     },
     {
       "key": "附-7#13#1",
@@ -4382,9 +3940,8 @@
       "likely": [],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "應為牛脂（動物油脂類）；但香港用語「牛油」指奶油（乳製品），若為奶油則需標乳製品，請審核者確認。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "牛油為牛脂（動物油），非乳製品，非素。"
     },
     {
       "key": "附-7#14#1",
@@ -4394,8 +3951,7 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "動物油脂，無對應過敏原；非素。",
-      "source": "agree"
+      "reason": "豬油為動物油，非素。"
     },
     {
       "key": "附-7#15#1",
@@ -4405,37 +3961,34 @@
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "high",
-      "reason": "動物油脂，無對應過敏原；非素。",
-      "source": "agree"
+      "reason": "雞油為動物油，非素。"
     },
     {
       "key": "附-7#16#1",
-      "name": "＊ 培根",
+      "name": "培根",
       "allergen_tags": [
         "未確認"
       ],
       "likely": [
-        "黃豆",
-        "乳製品"
+        "麩質",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "medium",
-      "reason": "醃製加工肉品，添加物與配料依廠牌而異。",
-      "source": "agree"
+      "reason": "培根為醃漬加工肉品。"
     },
     {
       "key": "附-7#17#1",
-      "name": "＊ 奶油乳酪（cream cheese）",
+      "name": "奶油乳酪（cream cheese）",
       "allergen_tags": [
         "乳製品"
       ],
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "起司類，主成分乳製品；傳統凝乳酶可能來自動物，審核者請確認蛋奶素是否接受。加工起司可能另有添加物但不含常見其他過敏原。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "奶油乳酪（cream cheese），乳製品；蛋奶素可、全素不可。"
     },
     {
       "key": "附-7#18#1",
@@ -4449,9 +4002,8 @@
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "人造奶油，可能含乳固形物、黃豆卵磷脂，依廠牌而異。",
-      "source": "agree"
+      "confidence": "low",
+      "reason": "瑪琪琳為人造奶油，常含乳清/奶粉（乳製品）與大豆卵磷脂（黃豆），亦可能為純植物油配方，依廠牌而異。"
     },
     {
       "key": "附-7#18#2",
@@ -4460,17 +4012,31 @@
         "未確認"
       ],
       "likely": [
-        "乳製品"
+        "乳製品",
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "low",
-      "reason": "酥油可指烘焙用酥油（植物性）或乳酥油（動物性乳製品）；不確定，保守標未確認。",
-      "source": "agree"
+      "reason": "酥油可能為植物性酥油，亦可能為含乳人造奶油，成分依廠牌而異。"
     },
     {
       "key": "附-7#19#1",
       "name": "蛋黃醬",
+      "allergen_tags": [
+        "蛋"
+      ],
+      "likely": [
+        "黃豆"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "confidence": "high",
+      "reason": "蛋黃醬（美乃滋）含蛋，主要油常為大豆油（黃豆）；蛋奶素可、全素不可。"
+    },
+    {
+      "key": "附-7#20#1",
+      "name": "沙拉醬（法國式）",
       "allergen_tags": [
         "蛋",
         "未確認"
@@ -4480,61 +4046,35 @@
       ],
       "vegan": false,
       "lacto_ovo": false,
-      "confidence": "medium",
-      "reason": "蛋黃醬以蛋黃與油為主，配方依廠牌；素食歸類依規則保守標 false。",
-      "source": "sonnet",
-      "opus_note": "蛋黃醬（美乃滋）是廠牌配方的複合調味品，依章程 B6.3 加未確認；含蛋；蛋奶素沒有依據，照規則填 false。"
-    },
-    {
-      "key": "附-7#20#1",
-      "name": "沙拉醬（法國式",
-      "allergen_tags": [
-        "未確認"
-      ],
-      "likely": [
-        "蛋",
-        "黃豆",
-        "乳製品",
-        "芝麻"
-      ],
-      "vegan": false,
-      "lacto_ovo": false,
       "confidence": "low",
-      "reason": "原表把「沙拉醬（法國式、義大利式）」拆成兩列；沙拉醬配方依廠牌而異（蛋、黃豆、乳製品、芝麻）。",
-      "source": "sonnet",
-      "opus_note": "沙拉醬配方依廠牌而異（油醋醬不含蛋，美乃滋類含蛋），標未確認即可，蛋放在 likely。另外：這一列跟下一列其實是同一個品項「沙拉醬（法國式、義大利式）」，轉錄時被頓號拆成兩個，進 App 前要合併。"
+      "reason": "沙拉醬在台灣多為美乃滋（含蛋），但法式可能為油醋醬不含蛋，拿不準故標未確認。"
     },
     {
       "key": "附-7#20#2",
-      "name": "義大利式）",
+      "name": "沙拉醬（義大利式）",
       "allergen_tags": [
+        "蛋",
         "未確認"
       ],
       "likely": [
-        "蛋",
-        "黃豆",
-        "乳製品",
-        "芝麻"
+        "黃豆"
       ],
       "vegan": false,
       "lacto_ovo": false,
       "confidence": "low",
-      "reason": "原表把「沙拉醬（法國式、義大利式）」拆成兩列；沙拉醬配方依廠牌而異（蛋、黃豆、乳製品、芝麻）。",
-      "source": "sonnet",
-      "opus_note": "同上一列。"
+      "reason": "義式沙拉醬可能為油醋醬或美乃滋，含蛋與否依配方而異。"
     },
     {
       "key": "附-7#21#1",
-      "name": "＊ 花生醬",
+      "name": "花生醬",
       "allergen_tags": [
         "花生"
       ],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "花生磨製；市售常添加糖、氫化油，個別廠牌可能有乳或芝麻，這裡以基本配方標。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "花生醬含花生；全素可。"
     },
     {
       "key": "附-7#22#1",
@@ -4545,42 +4085,38 @@
       "likely": [],
       "vegan": false,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "動物性鮮奶油；市售植物性「鮮奶油」另有，題名視為乳製品。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "鮮奶油，乳製品；蛋奶素可、全素不可。"
     },
     {
       "key": "附-7#23#1",
-      "name": "# 加州酪梨(1斤2~3個)（+3公克碳水化合物）",
+      "name": "加州酪梨(1斤2~3個)（+3公克碳水化合物）",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "單一水果，植物性。",
-      "source": "agree"
+      "reason": "酪梨，水果；全素可。"
     },
     {
       "key": "附-7#24#1",
-      "name": "＊ 瓜子",
+      "name": "瓜子",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "種子類（非樹生堅果），詞彙沒有種子；若使用者有堅果過敏是否加註請審核者決定；調味瓜子可能另含成分。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "瓜子屬種子（葵花/西瓜籽），非堅果，不含過敏原；全素可。"
     },
     {
       "key": "附-7#25#1",
-      "name": "＊ 南瓜子",
+      "name": "南瓜子",
       "allergen_tags": [],
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "種子類（非樹生堅果），詞彙沒有種子；若使用者有堅果過敏是否加註請審核者決定；調味瓜子可能另含成分。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "南瓜子屬種子，非堅果，不含過敏原；全素可。"
     },
     {
       "key": "附-7#25#2",
@@ -4589,13 +4125,12 @@
       "likely": [],
       "vegan": true,
       "lacto_ovo": true,
-      "confidence": "medium",
-      "reason": "種子類（非樹生堅果），詞彙沒有種子；若使用者有堅果過敏是否加註請審核者決定；調味瓜子可能另含成分。",
-      "source": "agree"
+      "confidence": "high",
+      "reason": "葵花子屬種子，非堅果，不含過敏原；全素可。"
     },
     {
       "key": "附-7#26#1",
-      "name": "＊ 各式花生仁",
+      "name": "各式花生仁",
       "allergen_tags": [
         "花生"
       ],
@@ -4603,8 +4138,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "花生（豆科）；植物性。",
-      "source": "agree"
+      "reason": "花生仁含花生；全素可。"
     },
     {
       "key": "附-7#27#1",
@@ -4616,12 +4150,11 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "花生（豆科）；植物性。",
-      "source": "agree"
+      "reason": "花生粉含花生；全素可。"
     },
     {
       "key": "附-7#28#1",
-      "name": "＊ 黑(白)芝麻",
+      "name": "黑(白)芝麻",
       "allergen_tags": [
         "芝麻"
       ],
@@ -4629,12 +4162,11 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "芝麻；植物性。",
-      "source": "agree"
+      "reason": "芝麻含芝麻；全素可。"
     },
     {
       "key": "附-7#29#1",
-      "name": "＊ 杏仁果",
+      "name": "杏仁果",
       "allergen_tags": [
         "堅果"
       ],
@@ -4642,12 +4174,11 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "樹生堅果；植物性。",
-      "source": "agree"
+      "reason": "杏仁果（almond）為樹堅果；全素可。"
     },
     {
       "key": "附-7#30#1",
-      "name": "＊ 腰果",
+      "name": "腰果",
       "allergen_tags": [
         "堅果"
       ],
@@ -4655,12 +4186,11 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "樹生堅果；植物性。",
-      "source": "agree"
+      "reason": "腰果為樹堅果；全素可。"
     },
     {
       "key": "附-7#31#1",
-      "name": "＊ 開心果",
+      "name": "開心果",
       "allergen_tags": [
         "堅果"
       ],
@@ -4668,12 +4198,11 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "樹生堅果；植物性。",
-      "source": "agree"
+      "reason": "開心果為樹堅果；全素可。"
     },
     {
       "key": "附-7#32#1",
-      "name": "＊ 核桃仁",
+      "name": "核桃仁",
       "allergen_tags": [
         "堅果"
       ],
@@ -4681,8 +4210,7 @@
       "vegan": true,
       "lacto_ovo": true,
       "confidence": "high",
-      "reason": "樹生堅果；植物性。",
-      "source": "agree"
+      "reason": "核桃為樹堅果；全素可。"
     }
   ]
 }
