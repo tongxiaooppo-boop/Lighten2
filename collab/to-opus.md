@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 3 實作完成、未推送；下一步：切片 3 抽查審核，再做切片 4）
+# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 3 實作＋抽查審核完成、未推送；下一步：切片 4 實作計畫）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -55,8 +55,9 @@
      - `58af925` **分層資料**：`data/reference/food_tree_map.json`（374 品名人工對應＋理由；318 收、2 筆 split、6 併入、50 不收；10 筆只列內建）、`food_tree_ids_frozen.json`（293 個 fx_）、`tools/build-food-tree.js`（`--dry`、`--report`）、`tools/lib/food-tree-values.js`、`data/food_tree.json`（330 筆，297KB／gzip 32KB）、check-data 分層規則＋自我檢查 31 條。對應時再修標註 3 筆（通心粉加蛋、牛油＝奶油標乳製品、南瓜子改未確認）。
      - `80afeeb` `catalog.foodTree`（`normalizeFoodTree`）＋check-engine 25 項；快照逐字不變；smoke 29 全過。
      - **改對應**：直接改 `data/reference/food_tree_map.json`（或標註檔）→ `node tools/build-food-tree.js` → check-data。撰寫稿只在舊 session 的 scratchpad，已不需要。
-   - **下一步 1：切片 3 抽查審核**（計畫第 4 節最後一項）：另開 Opus 抽查對應表（每大類 10 筆以上＋全部 equivalent、exclude、merge、split、zero_fill、nominal_reason、蔬菜歸類、果乾、共用內建 id 27 筆），逐字存 `collab/opus-review-log/`，有修正就一個 commit。報告用 `node tools/build-food-tree.js --report`。值得請審核者特別看的判斷：鱈魚＝扁鱈（用鰈魚切片）、比目魚＝大口鰜、白鯧用含皮樣品、烏魚取 4 月、金棗（油柑）、葫蘆芭樂用白肉平均、水梨用新興梨、百香果不收（140g 疑連殼）、魚丸（不包肉）當泛稱不收、麥粉不收、蔬菜 1 份 100g 的名目熱量理由。
-   - **下一步 2：切片 4**（自煮子分頁、飲品・水果的家裡的飲品〔看 `home_drink`〕與水果組；組內名稱排序用 `Intl.Collator`、同名以 id 為次要鍵〔decisions #111〕；同樣本提示延伸到共用 `tfda_id` 的內建食材〔#108〕；不吃全部清單查分層名稱；搜尋比對 `aliases`）。要先寫實作計畫送審。做完切片 4 再一起推送、請使用者手機測。
+   - **切片 3 抽查審核已完成（2026-09-30，commit `6040ceb`、`c9b04f3`，未推送）**：逐字 `collab/opus-review-log/2026-09-30-d3-spotcheck-review.md`，結論「小修後通過」；decisions #112–#113。魚脯下架（retired）、烏魚改鯔平均值、改收芭樂乾／鳳梨乾（含糖）／餃子皮／芋頭糕（333 筆）、14 筆補過敏原、酪梨改名「酪梨（台灣品種）」。check-data 新規則：分層品項描述明寫的過敏原一律要標（未確認不能代替）、主要營養素比名目、果乾無糖要正面證據；`--report` 加不收品名搜衛福部、有平均值沒用的清單。**以後改對應表或換樣品，先看 `--report` 這兩段**。smoke 29 全過、快照不變。
+   - **審核留給切片 4 的事**：共用內建 id 的品項一定寫「1 份（代換表）＝30g」，不能只寫「1 份」（今日建議一餐是內建克數，例雞胸 130g）；分層的 `note` 要在明細顯示（牛蒡、桃子、文蛤、酪梨、梅花肉、黑木耳〔鮮〕靠它說明）；nominal_reason 使用者看不到，要不要統一提示在明細設計時決定（日後討論 T6）；素料對素食使用者被擋是刻意的（#113）。
+   - **下一步：切片 4**（自煮子分頁、飲品・水果的家裡的飲品〔看 `home_drink`〕與水果組；組內名稱排序用 `Intl.Collator`、同名以 id 為次要鍵〔decisions #111〕；同樣本提示延伸到共用 `tfda_id` 的內建食材〔#108〕；不吃全部清單查分層名稱；搜尋比對 `aliases`）。要先寫實作計畫送審。做完切片 4 再一起推送、請使用者手機測。
    - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
@@ -78,7 +79,7 @@
 
 ## 5. 工作方式
 
-- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #100）。先改 PRD、記 decisions，再改程式（A1）。
+- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #113）。先改 PRD、記 decisions，再改程式（A1）。
 - 重大設計、偏離 PRD 的格式、改推薦演算法、改骨架：新開 Opus agent 獨立審核，**問答逐字存 `collab/opus-review-log/`**。
 - 使用者習慣：問題附建議，常回「照建議」；只把產品決定交給使用者。可以直接 commit 到 master，訊息結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`。
 - 資料改動：每個 commit 附差異報告；能證明「只是重構」的，用腳本比對舊快照（例：id 改名後把舊快照套同一份改名對照再逐字比）。
