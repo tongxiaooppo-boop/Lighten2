@@ -444,3 +444,30 @@
 - 第 8 節漏列的章程與 decisions 條目，包括常吃加分屬於 C3。
 
 分層範圍（U2）請使用者先決定，因為它決定第 3 節要改多少。
+
+---
+
+## 使用者對第一輪的回覆（2026-09-30）
+
+- 芒果加進過敏原詞彙。
+- U2：代換表全上。
+- U3：不吃移到最下方（要有分隔線＋變灰）。
+- U1、U4–U7 沒有回覆，照第一輪建議當預設（草案第二版第 0 節）。
+- 過敏原與素食標註另外交給 Sonnet 與 Cline 各標一份，Opus 裁決差異（`collab/transcripts/exchange_tags_review.md`）。
+
+## 第二輪：送審問題（逐字）
+
+你是 Lighten2（個人減脂飲食 App，純前端 vanilla JS＋IndexedDB，repo 在 `D:\ok\lighten`，分支 master）一份設計草案的獨立審核者，不是設計者。**只讀不改**任何 repo 檔案（需要實驗的話用 `git archive HEAD` 複製到暫存目錄再跑）。用中文回答。請同時用資深營養師與軟體架構師的角度審。
+
+要審的是 `docs/review/2026-09-30-我的食物分頁-設計草案.md` 的**第二版**。第一版與第一輪審核在 `collab/opus-review-log/2026-09-30-my-foods-tab-review.md`（第一版全文可用 `git show 3c900fb:docs/review/2026-09-30-我的食物分頁-設計草案.md` 取得）。第二版第 0 節列了使用者的決定（D1–D7），那些是產品決定，不要推翻；認為會造成問題的，寫出問題與替代方案，由使用者再決定。
+
+依據：同第一輪（PRD、CHARTER、decisions、日後討論、程式、tools、data），另加：`collab/transcripts/exchange_tags.json` 與 `collab/transcripts/exchange_tags_review.md`（過敏原與素食標註及裁決）、`collab/transcripts/food_exchange_table.json`、`collab/transcripts/README.md`。
+
+請審：
+1. 草案第 13 節的問題 1–8，逐題回答。
+2. 第一輪的每一個【一定要改】是否真的處理到了（對照第 12 節，但請自己核對，不要只看對照表）。
+3. 第 4 節新增的 `food` 元件：跟 PRD 第 3 節 MealContent、6.3、11.1、11.3、12.3、12.5，章程 C1.5、C2、C4.5、C4.8、C4.11、C4.17，`data/db.js` 的驗證與備份，`engine/meal-content.js`、`engine/filters.js`、`engine/picker.js` 的現有結構，有沒有衝突或漏掉的地方。
+4. 營養面：3.2–3.4 的規則；`exchange_tags.json` 的裁決（抽查，特別是 `source` 為 `cline` 的 18 筆與 `opus_note`）；芒果以外還有沒有該處理的過敏原問題。
+5. 範圍與切片是否合理，每片能不能各自驗收。
+
+格式：每個發現標【一定要改】或【建議】，附依據（檔案與行號或章節）。屬於產品決定的，寫出建議選項與理由，標【交給使用者】。最後一行寫總結論（可以進入改 PRD／要先修改草案）。
