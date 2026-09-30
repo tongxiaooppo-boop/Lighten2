@@ -98,6 +98,22 @@ function sampleAllergenGaps(tags, text, code) {
     .filter(([tag, re]) => skip.indexOf(tag) === -1 && re.test(text) && !hasTagOrUnverified(tags, tag))
     .map(([tag]) => tag);
 }
+// 分層品項（樣品已選定、人工標，章程 B6、B6.9）：描述明寫的過敏原一律要標，「未確認」不能代替（切片 3 抽查 T1、M4）。
+// 比 sampleAllergenGaps 多：醬油、麵衣算麩質（醬油一般用小麥釀造）；「蛋餅」是餅名、「黃豆蛋白」不是蛋、「人造奶油」不是乳製品。
+// 例外另加 M9900101 烤酥油（純大豆提煉，同 decisions #89 高度提煉大豆油的排除）。
+const SAMPLE_ALLERGEN_WORDS_STRICT = SAMPLE_ALLERGEN_WORDS.map(([tag, re]) => {
+  if (tag === "麩質") return [tag, /燕麥|麥片|小麥|大麥|麵粉|麵筋|麩|麵衣|醬油/];
+  if (tag === "蛋") return [tag, /(?<!分離|大豆|黃豆|植物|乳清)蛋(?!白質|黃果|餅)/];
+  if (tag === "乳製品") return [tag, /乳(?!化)|(?<!人造)奶|起司/];
+  return [tag, re];
+});
+const STRICT_WORD_EXCEPTIONS = Object.assign({ M9900101: ["黃豆"] }, SAMPLE_WORD_EXCEPTIONS);
+function sampleAllergenMissing(tags, text, code) {
+  const skip = STRICT_WORD_EXCEPTIONS[code] || [];
+  return SAMPLE_ALLERGEN_WORDS_STRICT
+    .filter(([tag, re]) => skip.indexOf(tag) === -1 && re.test(text) && (tags || []).indexOf(tag) === -1)
+    .map(([tag]) => tag);
+}
 
 // 代換表轉錄與標註（章程 B1、B10）。decisions #35 與食物資料 review 引用的份量要在轉錄檔裡仍成立
 const EXCHANGE_CITED = [
@@ -234,6 +250,15 @@ function checkFoodTree(ctx, fileText, frozen, catalogUids) {
       if (FT.nominalOutOfRange(it.per_serving.kcal, nom).out && !p.nominal_reason) {
         err(w + "：1 份 " + it.per_serving.kcal + " kcal 超出代換表名目 " + nom.kcal + " 的 0.6–1.6 倍，對應表要寫 nominal_reason（decisions #110）");
       }
+      const mac = FT.nominalMacro(n.row);
+      const mv = mac ? it.per_serving[mac.field] : null;
+      if (mv != null && FT.nominalOutOfRange(mv, { kcal: mac.value }).out && !p.nominal_reason) {
+        err(w + "：1 份 " + mac.field + " " + mv + "g 超出代換表名目 " + mac.value + "g 的 0.6–1.6 倍，對應表要寫 nominal_reason（切片 3 抽查 T2）");
+      }
+    }
+    // 果乾標無糖要有正面證據（衛福部寫「無加糖」「無糖」），沒寫的用 null（decisions #109、切片 3 抽查 T5）
+    if (p.sugar === "none" && p.subgroup === "dried" && !/無加糖|無糖/.test((r["樣品名稱"] || "") + (r["內容物描述"] || ""))) {
+      err(w + "：果乾標「無糖」，衛福部樣品 " + p.tfda_id + " 沒寫無加糖；沒有正面證據的用 null（decisions #109）");
     }
   });
 
@@ -282,8 +307,8 @@ function checkFoodTree(ctx, fileText, frozen, catalogUids) {
       const r = ctx.refs.tfda[it.tfda_id];
       if (!listsCompleteIngredients((r && r["內容物描述"]) || "")) err(w + "：複合品沒標「未確認」，衛福部樣品的內容物描述要列完整成分（章程 B6.3）");
     }
-    const gaps = sampleAllergenGaps(it.allergen_tags, text, it.tfda_id);
-    if (gaps.length) warn(w + "：衛福部樣品 " + it.tfda_id + " 的名稱或描述提到「" + gaps.join("、") + "」，標註沒有也沒有未確認（章程 B6.2，請確認）");
+    const missing = sampleAllergenMissing(it.allergen_tags, text, it.tfda_id);
+    if (missing.length) err(w + "：衛福部樣品 " + it.tfda_id + " 的名稱或描述提到「" + missing.join("、") + "」，要標出來（「未確認」不能代替；章程 B6.2、切片 3 抽查 T1）");
     if (it.tfda_id) (bySample[it.tfda_id] = bySample[it.tfda_id] || []).push({ who: "分層 " + it.id, t: it });
     else if (!(it.builtin && ingById[it.id].source.type === "usda")) err(w + "：tfda_id 只有出處是 usda 的內建食材可以是 null");
   });
@@ -347,6 +372,9 @@ function selfTestFoodTree(refs, reports) {
     [/芒果/, "別名有芒果沒標", (c) => { entry(c, "附-6#2#1").aliases = ["芒果柳丁"]; }],
     [/nominal_reason/, "名目熱量超出沒寫理由", (c) => { entry(c, "附-3-1#5#2").nominal_reason = null; }],
     [/usda/, "tfda_id 是 null 卻不是 USDA 內建", (c) => { entry(c, "附-2#1#1").tfda_id = null; }],
+    [/不能代替/, "蘿蔔糕（含蝦米）只標未確認", (c) => { c.tags.items.find((t) => t.key === "附-4#7#1").allergen_tags = ["未確認"]; }],
+    [/protein_g .*nominal_reason/, "文蛤蛋白質超出沒寫理由", (c) => { entry(c, "附-3-1#14#1").nominal_reason = null; }],
+    [/沒寫無加糖/, "龍眼乾（樣品沒寫無加糖）標無糖", (c) => { entry(c, "附-6#64#1").sugar = "none"; }],
     [/不共用分層 id|樣品要跟內建相同/, "烹調用油共用 id", (c) => { entry(c, "附-7#1#1").id = "cooking_oil"; }],
   ];
   cases.forEach(([re, what, mutate, expect, opts]) => {
@@ -720,6 +748,11 @@ function checkToolRules(refs) {
   if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "M1100101").length) err("工具自我檢查：大豆油（decisions #89 例外）卻被警告");
   if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "X0000000").join() !== "黃豆") err("工具自我檢查：不在例外清單的大豆樣品沒被警告");
   if (sampleAllergenGaps([], "豆漿 樣品狀態:大豆分離蛋白質", "X").indexOf("蛋") !== -1) err("工具自我檢查：「分離蛋白質」被當成蛋");
+  // 切片 3 抽查 T1：分層品項的嚴格版，未確認不能代替；誤報的字眼不算
+  if (sampleAllergenMissing(["未確認"], "廣式蘿蔔糕 樣品狀態:冷藏(米,蘿蔔,豬肉,蝦米等)", "X").join() !== "甲殼類") err("工具自我檢查：蘿蔔糕含蝦米只標未確認卻沒報");
+  if (sampleAllergenMissing(["未確認"], "牛肉乾 (牛肉,砂糖,醬油等)", "X").join() !== "麩質,黃豆") err("工具自我檢查：醬油沒算成麩質、黃豆");
+  if (sampleAllergenMissing(["未確認"], "熱狗 (豬肉,黃豆蛋白等) 人造奶油 蛋餅皮", "X").join() !== "黃豆") err("工具自我檢查：黃豆蛋白、人造奶油、蛋餅皮誤報成蛋或乳製品");
+  if (sampleAllergenMissing([], "烤酥油 (純大豆提煉)", "M9900101").length) err("工具自我檢查：烤酥油（高度提煉大豆，同 decisions #89）卻被報");
   // 代換表參考資料：#35 引用的數字、標註跟品名一一對應
   {
     const ex = loadExchange();

@@ -126,6 +126,15 @@ function nominalKcal(row) {
   if (oil) base += (oil[1].indexOf("/") !== -1 ? Number(oil[1].split("/")[0]) / Number(oil[1].split("/")[1]) : Number(oil[1])) * 45;
   return { kcal: base, lowerOnly: lowerOnly };
 }
+// 主要營養素的名目（切片 3 抽查 T2：熱量比在範圍內、主要營養素卻差 2 倍的會漏，例：魚脯蛋白質 2.2 倍）。
+// 豆魚蛋肉看蛋白質 7g；全穀雜糧、水果看碳水 15g（加代換表附註多的碳水）；油脂看脂肪 5g。乳品、蔬菜不適用（回 null）
+function nominalMacro(row) {
+  const t = row.table, x = row.extra || {};
+  if (/^附-3/.test(t)) return { field: "protein_g", value: 7 };
+  if (t === "附-4" || t === "附-6") return { field: "carb_g", value: 15 + (x.carb_g != null ? x.carb_g : 0) };
+  if (t === "附-7") return { field: "fat_g", value: 5 };
+  return null;
+}
 function nominalOutOfRange(kcal, nominal) {
   const ratio = kcal / nominal.kcal;
   return { ratio: ratio, out: ratio < 0.6 || (!nominal.lowerOnly && ratio > 1.6) };
@@ -275,6 +284,6 @@ function loadFoodTreeContext(refs, readJson) {
 
 module.exports = {
   exchangeNames, loadExchange, cleanExchangeName, sampleState, sugarProblem, zeroFillProblem, autoZeroFill, ZERO_FILL,
-  nominalKcal, nominalOutOfRange, buildFoodTree, stringifyFoodTree, loadFoodTreeContext, tfdaCodeOf,
+  nominalKcal, nominalMacro, nominalOutOfRange, buildFoodTree, stringifyFoodTree, loadFoodTreeContext, tfdaCodeOf,
   GROUP_OF_TABLE, EXCLUDED_AXES, STATES, readRef,
 };
