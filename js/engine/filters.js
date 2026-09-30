@@ -94,6 +94,7 @@ export function passesHardFilters(item, profile) {
 // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
 //   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用食材 id（章程 C2：改名後仍然命中；比對只看 key）
 //   - 現成品項：type='item'，key 用成分 uid（item.components）
+//   - 我的食物的分層品項：type='food_tree'，key 用分層 id（decisions #115）；比對一律只看 key
 function findDislikedHit(item, disliked) {
   const keys = [];
   if (item.is_composed) {
