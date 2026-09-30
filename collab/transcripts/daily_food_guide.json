@@ -1,0 +1,921 @@
+{
+  "_source": "衛生福利部國民健康署《每日飲食指南手冊》collab/pdf/每日飲食指南手冊.pdf",
+  "_transcribed_at": "2026-09-30",
+  "macro_nutrient_ratio": {
+    "protein_pct": [
+      10,
+      20
+    ],
+    "fat_pct": [
+      20,
+      30
+    ],
+    "carb_pct": [
+      50,
+      60
+    ],
+    "note": "營養素攝取須達70% DRIs以上。食物份數分配以近似的大卡數食物分配比例向上或向下調整。",
+    "page": 5
+  },
+  "portion_basis": {
+    "note": "份量大小(Portion Size)基準",
+    "items": [
+      {
+        "group": "全穀雜糧類",
+        "basis": "以15公克醣類為準來計算",
+        "kcal_per_unit": 70,
+        "page": 6
+      },
+      {
+        "group": "豆魚蛋肉類",
+        "basis": "以7公克蛋白質為準來計算",
+        "kcal_per_unit": 75,
+        "note": "建議選擇豆製品、魚類、蛋類、家禽及低中脂家畜肉類為主",
+        "page": 6
+      },
+      {
+        "group": "乳品類",
+        "basis": "以8公克蛋白質為準來計算",
+        "kcal_per_unit": 150,
+        "page": 6
+      },
+      {
+        "group": "蔬菜類",
+        "basis": "以100公克生重為1份",
+        "kcal_per_unit": null,
+        "page": 6
+      },
+      {
+        "group": "水果類",
+        "basis": "以100公克可食部分為1份",
+        "kcal_per_unit": null,
+        "page": 6
+      },
+      {
+        "group": "油脂與堅果種子類",
+        "basis": "以5公克脂肪為準來計算",
+        "kcal_per_unit": 45,
+        "page": 6
+      }
+    ]
+  },
+  "healthy_weight_table": [
+    {
+      "height_cm": 145,
+      "healthy_weight_kg": 46.3,
+      "normal_range_min_kg": 38.9,
+      "normal_range_max_kg": 50.4,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 146,
+      "healthy_weight_kg": 46.9,
+      "normal_range_min_kg": 39.4,
+      "normal_range_max_kg": 51.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 147,
+      "healthy_weight_kg": 47.5,
+      "normal_range_min_kg": 40.4,
+      "normal_range_max_kg": 51.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 148,
+      "healthy_weight_kg": 48.2,
+      "normal_range_min_kg": 40.5,
+      "normal_range_max_kg": 52.5,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 149,
+      "healthy_weight_kg": 48.8,
+      "normal_range_min_kg": 41.1,
+      "normal_range_max_kg": 53.2,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 150,
+      "healthy_weight_kg": 49.5,
+      "normal_range_min_kg": 41.6,
+      "normal_range_max_kg": 53.9,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 151,
+      "healthy_weight_kg": 50.2,
+      "normal_range_min_kg": 42.2,
+      "normal_range_max_kg": 54.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 152,
+      "healthy_weight_kg": 50.8,
+      "normal_range_min_kg": 42.7,
+      "normal_range_max_kg": 55.3,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 153,
+      "healthy_weight_kg": 51.5,
+      "normal_range_min_kg": 43.3,
+      "normal_range_max_kg": 56.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 154,
+      "healthy_weight_kg": 52.2,
+      "normal_range_min_kg": 43.9,
+      "normal_range_max_kg": 56.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 155,
+      "healthy_weight_kg": 52.9,
+      "normal_range_min_kg": 44.4,
+      "normal_range_max_kg": 57.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 156,
+      "healthy_weight_kg": 53.5,
+      "normal_range_min_kg": 45.0,
+      "normal_range_max_kg": 58.3,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 157,
+      "healthy_weight_kg": 54.2,
+      "normal_range_min_kg": 45.6,
+      "normal_range_max_kg": 59.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 158,
+      "healthy_weight_kg": 54.9,
+      "normal_range_min_kg": 46.2,
+      "normal_range_max_kg": 59.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 159,
+      "healthy_weight_kg": 55.6,
+      "normal_range_min_kg": 46.8,
+      "normal_range_max_kg": 60.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 160,
+      "healthy_weight_kg": 56.3,
+      "normal_range_min_kg": 47.4,
+      "normal_range_max_kg": 61.3,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 161,
+      "healthy_weight_kg": 57.0,
+      "normal_range_min_kg": 48.0,
+      "normal_range_max_kg": 62.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 162,
+      "healthy_weight_kg": 57.7,
+      "normal_range_min_kg": 48.6,
+      "normal_range_max_kg": 62.9,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 163,
+      "healthy_weight_kg": 58.5,
+      "normal_range_min_kg": 49.2,
+      "normal_range_max_kg": 63.7,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 164,
+      "healthy_weight_kg": 59.2,
+      "normal_range_min_kg": 49.8,
+      "normal_range_max_kg": 64.5,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 165,
+      "healthy_weight_kg": 59.9,
+      "normal_range_min_kg": 50.4,
+      "normal_range_max_kg": 65.2,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 166,
+      "healthy_weight_kg": 60.6,
+      "normal_range_min_kg": 51.0,
+      "normal_range_max_kg": 66.0,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 167,
+      "healthy_weight_kg": 61.4,
+      "normal_range_min_kg": 51.6,
+      "normal_range_max_kg": 66.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 168,
+      "healthy_weight_kg": 62.1,
+      "normal_range_min_kg": 52.2,
+      "normal_range_max_kg": 67.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 169,
+      "healthy_weight_kg": 62.8,
+      "normal_range_min_kg": 52.8,
+      "normal_range_max_kg": 68.4,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 170,
+      "healthy_weight_kg": 63.6,
+      "normal_range_min_kg": 53.5,
+      "normal_range_max_kg": 69.3,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 171,
+      "healthy_weight_kg": 64.3,
+      "normal_range_min_kg": 54.1,
+      "normal_range_max_kg": 70.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 172,
+      "healthy_weight_kg": 65.1,
+      "normal_range_min_kg": 54.7,
+      "normal_range_max_kg": 70.9,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 173,
+      "healthy_weight_kg": 65.8,
+      "normal_range_min_kg": 55.4,
+      "normal_range_max_kg": 71.7,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 174,
+      "healthy_weight_kg": 66.6,
+      "normal_range_min_kg": 56.0,
+      "normal_range_max_kg": 72.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 175,
+      "healthy_weight_kg": 67.4,
+      "normal_range_min_kg": 56.7,
+      "normal_range_max_kg": 73.4,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 176,
+      "healthy_weight_kg": 68.1,
+      "normal_range_min_kg": 57.4,
+      "normal_range_max_kg": 74.2,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 177,
+      "healthy_weight_kg": 68.9,
+      "normal_range_min_kg": 58.0,
+      "normal_range_max_kg": 75.1,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 178,
+      "healthy_weight_kg": 69.7,
+      "normal_range_min_kg": 58.6,
+      "normal_range_max_kg": 75.9,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 179,
+      "healthy_weight_kg": 70.5,
+      "normal_range_min_kg": 59.3,
+      "normal_range_max_kg": 76.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 180,
+      "healthy_weight_kg": 71.3,
+      "normal_range_min_kg": 59.9,
+      "normal_range_max_kg": 77.7,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 181,
+      "healthy_weight_kg": 72.1,
+      "normal_range_min_kg": 60.6,
+      "normal_range_max_kg": 78.5,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 182,
+      "healthy_weight_kg": 72.9,
+      "normal_range_min_kg": 61.3,
+      "normal_range_max_kg": 79.4,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 183,
+      "healthy_weight_kg": 73.7,
+      "normal_range_min_kg": 62.0,
+      "normal_range_max_kg": 80.3,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 184,
+      "healthy_weight_kg": 74.5,
+      "normal_range_min_kg": 62.6,
+      "normal_range_max_kg": 81.2,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 185,
+      "healthy_weight_kg": 75.3,
+      "normal_range_min_kg": 63.3,
+      "normal_range_max_kg": 82.0,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 186,
+      "healthy_weight_kg": 76.1,
+      "normal_range_min_kg": 64.0,
+      "normal_range_max_kg": 82.9,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 187,
+      "healthy_weight_kg": 76.9,
+      "normal_range_min_kg": 64.7,
+      "normal_range_max_kg": 83.8,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 188,
+      "healthy_weight_kg": 77.8,
+      "normal_range_min_kg": 65.4,
+      "normal_range_max_kg": 84.7,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 189,
+      "healthy_weight_kg": 78.6,
+      "normal_range_min_kg": 66.1,
+      "normal_range_max_kg": 85.6,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    },
+    {
+      "height_cm": 190,
+      "healthy_weight_kg": 79.4,
+      "normal_range_min_kg": 66.8,
+      "normal_range_max_kg": 86.5,
+      "bmi_range_note": "18.5 ≦ BMI < 24",
+      "page": 6
+    }
+  ],
+  "activity_strength_table": {
+    "table_name": "表二 生活活動強度",
+    "page": 7,
+    "levels": [
+      {
+        "level": "低",
+        "description": "靜態活動，睡覺、靜臥或悠閒的坐著（例如：坐著看書、看電視…等）",
+        "hours": {
+          "安靜": 12,
+          "站立": 11,
+          "步行": 1,
+          "快走": 0,
+          "肌肉運動": 0
+        }
+      },
+      {
+        "level": "稍低",
+        "description": "站立活動，身體活動程度較低、熱量較少，例如：站著說話、烹飪、開車、打電腦。",
+        "hours": {
+          "安靜": 10,
+          "站立": 9,
+          "步行": 5,
+          "快走": 0,
+          "肌肉運動": 0
+        }
+      },
+      {
+        "level": "適度",
+        "description": "身體活動程度為正常速度、熱量消耗較少，例如：在公車或捷運上站著、用洗衣機洗衣服、用吸塵器打掃、散步、購物…等強度。",
+        "hours": {
+          "安靜": 9,
+          "站立": 8,
+          "步行": 6,
+          "快走": 1,
+          "肌肉運動": 0
+        }
+      },
+      {
+        "level": "高",
+        "description": "身體活動程度較正常速度快或激烈、熱量消耗較多，例如：上下樓梯、打球、騎腳踏車、有氧運動、游泳、登山、打網球、運動訓練…等運動。",
+        "hours": {
+          "安靜": 9,
+          "站立": 8,
+          "步行": 5,
+          "快走": 1,
+          "肌肉運動": 1
+        }
+      }
+    ]
+  },
+  "calorie_needs_table": {
+    "table_name": "表三 各性別、年齡與生活活動強度之每日熱量需求",
+    "page": 8,
+    "note": "以94~97年國民營養健康狀況變遷調查之體位資料，利用50th百分位身高分別計算身體質量指數(BMI)=22時的體重，再依照不同活動強度計算熱量需求。",
+    "rows": [
+      {
+        "sex": "男",
+        "age_range": "19-30",
+        "kcal_低": 1850,
+        "kcal_稍低": 2150,
+        "kcal_適度": 2400,
+        "kcal_高": 2700,
+        "height_cm": 171,
+        "weight_kg": 64
+      },
+      {
+        "sex": "男",
+        "age_range": "31-50",
+        "kcal_低": 1800,
+        "kcal_稍低": 2100,
+        "kcal_適度": 2400,
+        "kcal_高": 2650,
+        "height_cm": 170,
+        "weight_kg": 64
+      },
+      {
+        "sex": "男",
+        "age_range": "51-70",
+        "kcal_低": 1700,
+        "kcal_稍低": 1950,
+        "kcal_適度": 2250,
+        "kcal_高": 2500,
+        "height_cm": 165,
+        "weight_kg": 60
+      },
+      {
+        "sex": "男",
+        "age_range": "71+",
+        "kcal_低": 1650,
+        "kcal_稍低": 1900,
+        "kcal_適度": 2150,
+        "kcal_高": null,
+        "height_cm": 163,
+        "weight_kg": 58
+      },
+      {
+        "sex": "女",
+        "age_range": "19-30",
+        "kcal_低": 1500,
+        "kcal_稍低": 1700,
+        "kcal_適度": 1950,
+        "kcal_高": 2150,
+        "height_cm": 159,
+        "weight_kg": 55
+      },
+      {
+        "sex": "女",
+        "age_range": "31-50",
+        "kcal_低": 1450,
+        "kcal_稍低": 1650,
+        "kcal_適度": 1900,
+        "kcal_高": 2100,
+        "height_cm": 157,
+        "weight_kg": 54
+      },
+      {
+        "sex": "女",
+        "age_range": "51-70",
+        "kcal_低": 1400,
+        "kcal_稍低": 1600,
+        "kcal_適度": 1800,
+        "kcal_高": 2000,
+        "height_cm": 153,
+        "weight_kg": 52
+      },
+      {
+        "sex": "女",
+        "age_range": "71+",
+        "kcal_低": 1300,
+        "kcal_稍低": 1500,
+        "kcal_適度": 1700,
+        "kcal_高": null,
+        "height_cm": 150,
+        "weight_kg": 50
+      }
+    ]
+  },
+  "serving_recommendations": {
+    "table_name": "表四 依熱量需求的六大類飲食建議份數",
+    "page": 9,
+    "kcal_levels": [
+      1200,
+      1500,
+      1800,
+      2000,
+      2200,
+      2500,
+      2700
+    ],
+    "rows": [
+      {
+        "group": "全穀雜糧類(碗)",
+        "values": [
+          1.5,
+          2.5,
+          3,
+          3,
+          3.5,
+          4,
+          4
+        ]
+      },
+      {
+        "group": "全穀雜糧類(未精製*)(碗)",
+        "values": [
+          1,
+          1,
+          1,
+          1,
+          1.5,
+          1.5,
+          1.5
+        ]
+      },
+      {
+        "group": "全穀雜糧類(其他*)(碗)",
+        "values": [
+          0.5,
+          1.5,
+          2,
+          2,
+          2,
+          2.5,
+          2.5
+        ]
+      },
+      {
+        "group": "豆魚蛋肉類(份)",
+        "values": [
+          3,
+          4,
+          5,
+          6,
+          6,
+          7,
+          8
+        ],
+        "notes": {
+          "1200": "註1",
+          "1500": "註2"
+        }
+      },
+      {
+        "group": "乳品類(杯)",
+        "values": [
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          2
+        ]
+      },
+      {
+        "group": "蔬菜類(份)",
+        "values": [
+          3,
+          3,
+          3,
+          4,
+          4,
+          5,
+          5
+        ],
+        "notes": {
+          "1200": "註3"
+        }
+      },
+      {
+        "group": "水果類(份)",
+        "values": [
+          2,
+          2,
+          2,
+          3,
+          3.5,
+          4,
+          4
+        ]
+      },
+      {
+        "group": "油脂與堅果種子類(份)",
+        "values": [
+          4,
+          4,
+          5,
+          6,
+          6,
+          7,
+          8
+        ]
+      },
+      {
+        "group": "　油脂類(茶匙)",
+        "values": [
+          3,
+          3,
+          4,
+          5,
+          5,
+          6,
+          7
+        ]
+      },
+      {
+        "group": "　堅果種子(份)",
+        "values": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "notes": {
+          "1200": "註4"
+        }
+      }
+    ],
+    "footnotes": [
+      "「未精製」主食品，如糙米飯、全麥食品、燕麥、玉米、甘薯等，請依據「六大類食物簡介」。「其他」指白米飯、白麵條、白麵包、饅頭等。以「未精製」取代「其他」，更佳。",
+      "（註1）高鈣豆製品至少占1/3以確保鈣質充裕；（註2）攝取1500大卡的青少年，高鈣豆製品至少占1/3以確保鈣質充裕；（註3）深色蔬菜比例至少占1/2以確保鈣質充裕（註4）選擇高維生素E堅果種子的種類，包括花生仁、杏仁片、杏仁果、葵瓜子、松子仁。"
+    ]
+  },
+  "serving_definitions": {
+    "page": [
+      10,
+      11
+    ],
+    "groups": [
+      {
+        "group": "全穀雜糧類",
+        "unit": "1碗（碗為一般家用飯碗、重量為可食重量）",
+        "equivalences": [
+          "糙米飯1碗 或 雜糧飯1碗 或 米飯1碗",
+          "熟麵條2碗 或 小米稀飯2碗 或 燕麥粥2碗",
+          "米、大麥、小麥、蕎麥、燕麥、麥粉、麥片80公克",
+          "中型芋頭4/5個(220公克) 或 小蕃薯2個(220公克)",
+          "玉米2又2/3根(340公克) 或 馬鈴薯2個(360公克)",
+          "全麥饅頭1又1/3個(120公克) 或 全麥土司2片(120公克)"
+        ]
+      },
+      {
+        "group": "豆魚蛋肉類",
+        "unit": "1份（重量為可食部分生重）",
+        "equivalences": [
+          "黃豆(20公克) 或 毛豆(50公克) 或 黑豆(25公克)",
+          "無糖豆漿1杯 = 雞蛋1個",
+          "傳統豆腐3格(80公克) 或 嫩豆腐半盒(140公克) 或 小方豆干1又1/4片(40公克)",
+          "魚(35公克) 或 蝦仁(50公克)",
+          "牡蠣(65公克) 或 文蛤(160公克) 或 白海蔘(100公克)",
+          "去皮雞胸肉(30公克) 或 鴨肉、豬小里肌肉、羊肉、牛腱(35公克)"
+        ]
+      },
+      {
+        "group": "乳品類",
+        "unit": "1杯（1杯=240毫升全脂、脫脂或低脂奶＝1份）",
+        "equivalences": [
+          "鮮奶、保久乳、優酪乳1杯（240毫升）",
+          "全脂奶粉4湯匙（30公克）",
+          "低脂奶粉3湯匙（25公克）",
+          "脫脂奶粉2.5湯匙（20公克）",
+          "乳酪（起司）2片（45公克）",
+          "優格210公克"
+        ]
+      },
+      {
+        "group": "蔬菜類",
+        "unit": "1份（1份為可食部分生重約100公克）",
+        "equivalences": [
+          "生菜沙拉(不含醬料)100公克",
+          "煮熟後相當於直徑15公分盤1碟，或 約大半碗",
+          "收縮率較高的蔬菜如莧菜、地瓜葉等，煮熟後約占半碗",
+          "收縮率較低的蔬菜如芥蘭菜、青花菜等，煮熟後約占2/3碗"
+        ]
+      },
+      {
+        "group": "水果類",
+        "unit": "1份（1份為切塊水果約大半碗~1碗）",
+        "equivalences": [
+          "可食重量估計約等於100公克(80~120公克)",
+          "香蕉(大)半根70公克",
+          "榴槤45公克"
+        ]
+      },
+      {
+        "group": "油脂與堅果種子類",
+        "unit": "1份（重量為可食重量）",
+        "equivalences": [
+          "芥花油、沙拉油等各種烹調用油1茶匙(5公克)",
+          "杏仁果、核桃仁(7公克) 或 開心果、南瓜子、葵花子、黑(白)芝麻、腰果(10公克) 或 各式花生仁(13公克) 或 瓜子(15公克)",
+          "沙拉醬2茶匙(10公克) 或 蛋黃醬1茶匙(8公克)"
+        ]
+      }
+    ]
+  },
+  "group_serving_by_kcal_detail": {
+    "note": "各食物類別章節內附的每日建議食用份量表，部分文字比表四更詳細（例如豆魚蛋肉類的高鈣豆製品備註）",
+    "全穀雜糧類": {
+      "page": 13,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values": [
+        1.5,
+        2.5,
+        3,
+        3,
+        3.5,
+        4,
+        4
+      ],
+      "unit": "碗"
+    },
+    "豆魚蛋肉類": {
+      "page": 17,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values_text": [
+        "3份(高鈣豆製品至少占1份)",
+        "4份(青少年高鈣豆製品至少占1.3份)",
+        "5份",
+        "6份",
+        "6份",
+        "7份",
+        "8份"
+      ]
+    },
+    "乳品類": {
+      "page": 20,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values_text": [
+        "1.5杯(360ml)",
+        "1.5杯(360ml)",
+        "1.5杯(360ml)",
+        "1.5杯(360ml)",
+        "1.5杯(360ml)",
+        "1.5杯(360ml)",
+        "2杯(480ml)"
+      ]
+    },
+    "蔬菜類": {
+      "page": 22,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values_text": [
+        "3份，至少1.5份為深色蔬菜",
+        "3份",
+        "3份",
+        "4份",
+        "4份",
+        "5份",
+        "5份"
+      ]
+    },
+    "水果類": {
+      "page": 24,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values": [
+        2,
+        2,
+        2,
+        3,
+        3.5,
+        4,
+        4
+      ],
+      "unit": "份"
+    },
+    "油脂與堅果種子類": {
+      "page": 26,
+      "kcal_levels": [
+        1200,
+        1500,
+        1800,
+        2000,
+        2200,
+        2500,
+        2700
+      ],
+      "values_text": [
+        "3茶匙油(約15公克)+1份堅果種子",
+        "3茶匙油(約15公克)+1份堅果種子",
+        "4茶匙油(約20公克)+1份堅果種子",
+        "5茶匙油(約25公克)+1份堅果種子",
+        "5茶匙油(約25公克)+1份堅果種子",
+        "6茶匙油(約30公克)+1份堅果種子",
+        "7茶匙油(約35公克)+1份堅果種子"
+      ]
+    }
+  }
+}
