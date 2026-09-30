@@ -185,6 +185,8 @@ function checkIngredients(list, refs) {
 
     // 燕麥屬含麩質穀物（章程 B6.2）
     if (/燕麥/.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "麩質" || t === UNVERIFIED)) err(w + "：燕麥要標麩質（章程 B6.2）");
+    // 芒果是過敏原標示項目（章程 B6.1、decisions #88）
+    if (/芒果|檬果/.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
 
     // 複合料理（章程 B6.3）：醬料要標 composite；不含未確認時要有列出成分的 TFDA 樣品
     if (ing.axis === "seasoning") {
@@ -253,6 +255,8 @@ function checkProducts(products, frozen, refs) {
     }
     // 燕麥屬含麩質穀物（章程 B6.2）
     if (/燕麥/.test(p.name) && !(p.allergen_tags || []).some((t) => t === "麩質" || t === UNVERIFIED)) err(w + "：燕麥要標麩質（章程 B6.2）");
+    // 芒果是過敏原標示項目（章程 B6.1、decisions #88）
+    if (/芒果|檬果/.test(p.name) && !(p.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
     if (!p.source || PRODUCT_SOURCES.indexOf(p.source.type) === -1) err(w + "：source.type 不合法（" + (p.source && p.source.type) + "）");
     Object.keys(p.field_sources || {}).forEach((k) => {
       const f = p.field_sources[k];
@@ -374,6 +378,9 @@ function checkToolRules(refs) {
   ["Google Ai 估算：鈉380mg", "ChatGPT 估算", "Claude依網路資料整理", "Gemini 回覆"].forEach((note) => {
     if (!reports(/B2\.6/, product({ note: note }))) err("工具自我檢查：note 寫「" + note + "」卻沒報錯");
   });
+  // B6.1：名稱含芒果要標芒果或未確認
+  if (!reports(/芒果要標芒果/, product({ name: "芒果優格", allergen_tags: ["乳製品"], vegan: false, lacto_ovo: true }))) err("工具自我檢查：芒果優格沒標芒果卻沒報錯");
+  if (reports(/芒果要標芒果/, product({ name: "芒果優格", allergen_tags: ["乳製品", "芒果"], vegan: false, lacto_ovo: true }))) err("工具自我檢查：芒果優格標了芒果不該報錯");
   // B6.8：過敏原詞彙沒有畜禽肉，名稱含肉類字眼又標素要有「素食依據：」
   if (!reports(/素食依據/, product({ name: "排骨便當", allergen_tags: [], vegan: false, lacto_ovo: true }))) err("工具自我檢查：排骨便當標蛋奶素卻沒報錯");
   if (reports(/素食依據/, product({ name: "植物肉便當", allergen_tags: [], vegan: false, lacto_ovo: true, note: "素食依據：素食系列" }))) err("工具自我檢查：寫了素食依據的品項不該報錯");
