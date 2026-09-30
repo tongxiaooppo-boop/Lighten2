@@ -763,6 +763,42 @@ async function main() {
   console.log("[我的食物與不吃]");
   await checkMyFoods(catalog, convenienceData);
 
+  // ---------- 9. 代換表分層資料（工作線 D 切片 3，decisions #92、#103） ----------
+  console.log("[代換表分層資料]");
+  {
+    const raw = { ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData, archetypes: readJson("dish_archetypes.json") };
+    const tree = readJson("food_tree.json");
+    const withTree = M.catalog.buildCatalog(Object.assign({}, raw, { foodTree: tree }));
+    const without = M.catalog.buildCatalog(raw);
+    check(without.foodTree.items.length === 0 && without.foodTree.groups.length === 0, "沒傳分層資料時 foodTree 要是空的");
+    ["ingredients", "proteins", "staples", "vegetables", "sauces", "implicit", "products", "productsByUid", "archetypes"].forEach((k) => {
+      check(JSON.stringify(withTree[k]) === JSON.stringify(without[k]), "載入分層資料後 catalog." + k + " 變了（分層資料不能影響既有欄位）");
+    });
+    const ft = withTree.foodTree;
+    check(ft.items.length === tree.items.length && ft.items.length > 300, "分層品項筆數不對：" + ft.items.length);
+    check(ft.items.every((it) => it.uid === it.id && ft.byId[it.id] === it), "每一筆 uid 要等於 id、byId 要涵蓋全部");
+    check(ft.items.every((it) => Array.isArray(it.allergen_tags)), "分層品項的 allergen_tags 要是陣列");
+    check(ft.items.every((it) => JSON.stringify(it.diet_tags) === JSON.stringify(it.vegan ? ["全素"] : it.lacto_ovo ? ["蛋奶素"] : [])), "diet_tags 要由 vegan／lacto_ovo 推導（全素 ⊃ 蛋奶素）");
+    const noTags = M.catalog.buildCatalog(Object.assign({}, raw, { foodTree: { groups: [], items: [{ id: "fx_x", vegan: true, lacto_ovo: true }] } }));
+    check(noTags.foodTree.items[0].allergen_tags.join() === "未確認", "分層品項缺 allergen_tags 要當未確認（decisions #77）");
+    // 共用內建 id：per_100g 等於內建；1 份 30g＝round1(內建 × 0.3)（decisions #103，跟 engine 同一條路徑）
+    const cb = ft.byId.chicken_breast, ing = withTree.ingredients.find((x) => x.id === "chicken_breast");
+    check(cb && cb.builtin && JSON.stringify(cb.per_100g) === JSON.stringify(ing.per_100g), "分層雞胸肉的 per_100g 要等於內建");
+    check(cb && ["kcal", "protein_g", "fat_g", "sodium_mg"].every((k) => cb.per_serving[k] === Math.round(ing.per_100g[k] * 0.3 * 10) / 10), "分層雞胸肉 1 份 30g 要等於內建 × 0.3");
+    // fx_ 跟現成品項同一段換算：代換表全脂奶 240ml ＝ 外帶鮮奶一杯 tw_dr08（decisions #85、#103）
+    const milk = ft.byId.fx_whole_milk, dr08 = withTree.productsByUid.tw_dr08;
+    check(milk && ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"].every((k) => milk.per_serving[k] === dr08[k]), "代換表全脂奶 240ml 跟 tw_dr08 的數值要完全相同");
+    check(milk && milk.same_sample_products.indexOf("tw_dr08") !== -1, "全脂奶的 same_sample_products 要有 tw_dr08");
+    // id 不相交（decisions #78）；硬性過濾吃得下分層品項（切片 4 會用）
+    check(ft.items.every((it) => !withTree.productsByUid[it.id]), "分層 id 不能等於任何 catalog uid");
+    check(ft.items.filter((it) => /^fx_/.test(it.id)).every((it) => !withTree.ingredients.some((x) => x.id === it.id)), "fx_ id 不能等於內建食材 id");
+    const oil = ft.byId.fx_soybean_oil;
+    check(oil && !ft.byId.cooking_oil && oil.allergen_tags.length === 0, "大豆油用 fx_ id、不共用 cooking_oil、標註跟內建一樣是 []（decisions #102、#89）");
+    check(!M.filters.passesHardFilters(ft.byId.fx_irwin_mango, { allergens: ["芒果"] }).ok, "愛文芒果對芒果過敏要被擋");
+    check(!M.filters.passesHardFilters(ft.byId.fx_whole_milk, { disliked_ingredients: [{ type: "item", key: "fx_whole_milk", label: "全脂奶" }] }).ok, "分層品項標不吃要被擋（只比 key）");
+    check(M.filters.passesHardFilters(ft.byId.fx_cooked_rice, { diet_restriction: "全素" }).ok, "白飯（全素）全素使用者可以選");
+  }
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
