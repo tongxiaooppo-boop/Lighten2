@@ -105,8 +105,8 @@ async function run() {
   await until(`["公式目標", "校正", "目前每日目標"].every((w) => ${text("#calibration-body")}.indexOf(w) !== -1)`, "1-1 校正卡片沒有「公式目標／校正值／目前每日目標」");
   await shot("基本資料-計算結果", "#targets-result");
   const allergenValues = await js(`[...document.querySelectorAll('input[name=allergens]')].map((c) => c.value)`);
-  check(allergenValues.length === 10 && allergenValues.indexOf("軟體動物") !== -1 && allergenValues.indexOf("花生") !== -1,
-    "1-4 過敏原勾選框不是 10 個或缺軟體動物／花生：" + allergenValues.join(","));
+  check(allergenValues.length === 11 && ["軟體動物", "花生", "芒果"].every((a) => allergenValues.indexOf(a) !== -1),
+    "1-4 過敏原勾選框不是 11 個或缺軟體動物／花生／芒果：" + allergenValues.join(","));
   check((await js(`[...document.querySelector('select[name=diet_restriction]').options].every((o) => o.value !== '低碳')`)), "1-4 飲食型態下拉不該有低碳");
   check((await js(`!!document.querySelector('input[name=low_carb]') && !!document.querySelector('select[name=oil_habit]')`)), "1-4 缺低碳勾選框或用油習慣下拉");
   // 1-4 設定按「計算」後重新整理還在
