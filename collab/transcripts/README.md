@@ -1,6 +1,6 @@
 # 官方飲食 PDF 轉錄檔說明
 
-本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4、5、6 份，其餘 2 份尚未進行**，會在後續 commit 補上，屆時會更新這份 README。
+本目錄存放 `collab/to-sonnet.md` 交辦的官方飲食 PDF 全文轉錄結果。**目前完成第 1、2、3、4、5、6、7 份，只剩第 8 份**，會在後續 commit 補上，屆時會更新這份 README。
 
 ## 已完成
 
@@ -12,6 +12,7 @@
 | `my_plate.json` + `.md` | `collab/pdf/我的餐盤手冊（全穀及未精製雜糧）v2.pdf` | 全 37 頁 | 手測量份量表、六句口訣、中式/西式/素食三種型式各三餐範例、六大類小訣竅轉JSON；內文（前言、設計理念、聰明吃）轉md |
 | `senior_recipes.json` | `collab/pdf/22016.pdf`（高齡營養健康食譜） | 全 16 頁 | 12個月份食譜，各含食材／調味料／作法／推薦理由／每份熱量／我的餐盤六大類份數換算 |
 | `recipes_1600_1800.json` | `collab/pdf/1600_1800_kcal_healthy_recipes.pdf` | 全 2 頁 | ⚠️來源PDF本身數字全缺（見下方說明），只轉錄了存在的文字骨架 |
+| `national_dietary_indicators.md` | `collab/pdf/國民飲食指標手冊.pdf` | 全 20 頁 | 12條指標原文＋說明全文，另含附表三（身體活動熱量消耗）、附表四（酒精含量表） |
 
 ### `food_exchange_table.json` 結構
 
@@ -70,5 +71,4 @@
 
 | # | 來源 | 頁數 | 輸出 |
 |---|---|---|---|
-| 7 | `collab/pdf/國民飲食指標手冊.pdf` | 20 | `national_dietary_indicators.md` |
 | 8 | `collab/pdf/20241024102714_90531.pdf` | 66 | `90531.md` |
