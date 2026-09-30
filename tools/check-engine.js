@@ -799,6 +799,11 @@ async function main() {
     check(M.filters.passesHardFilters(ft.byId.fx_cooked_rice, { diet_restriction: "全素" }).ok, "白飯（全素）全素使用者可以選");
   }
 
+  // ---------- 10. 我的食物：分層（工作線 D 切片 4，計畫 docs/review/2026-09-30-D4-實作計畫.md 第 4 節） ----------
+  console.log("[我的食物：分層]");
+  checkFoodTreeViews(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), readJson("food_tree.json"));
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -984,6 +989,10 @@ async function checkBackupFormat() {
   const v2hidden = fixtureV2.sections.system.settings.find((x) => x.id === "hidden_catalog_uids");
   check(!!v2hidden && fixtureV2.sections.custom_foods.some((x) => x.copied_from) &&
     fixtureV2.sections.logs.daily_log.some((l) => l.content.components.some((c) => c.qty === 2)), "backup-v2.json 缺隱藏清單、複製品或份量 ×2 的紀錄");
+  // 工作線 D 切片 4（審核 S13）：不吃清單有分層 type 與已下架的 fx_ key，備份照樣能還原（驗證只看 key）
+  const treeDisliked = clone(fixtureV2);
+  treeDisliked.sections.system.user_profile.disliked_ingredients = [{ type: "food_tree", key: "fx_whole_milk", label: "全脂奶（自己倒）" }, { type: "food_tree", key: "fx_dried_fish", label: "魚脯" }];
+  check(problemsOf(treeDisliked).length === 0, "不吃清單有 food_tree type 與已下架 fx_ key 的備份不能還原");
   const dupHidden = clone(fixtureV2);
   dupHidden.sections.system.settings.find((x) => x.id === "hidden_catalog_uids").value.push(v2hidden.value[0]);
   check(problemsOf(dupHidden).some((x) => /hidden_catalog_uids/.test(x)), "備份裡的隱藏清單重複沒有擋下");
@@ -1226,6 +1235,94 @@ async function checkMyItems(catalog, candidatePool) {
   const egg = catalog.products.find((p) => p.role === "side") || main;
   const nm = mc.draftLogName({ kind: "products", items: [main, egg], estimates: [{ name: "喜宴", size: "L" }], drink: catalog.productsByUid[drinkUid], qtyByUid: { conv_bx04: 0.5, [egg.uid]: 2 } });
   check(nm === main.name + "（半份）＋" + egg.name + " ×2＋喜宴＋" + catalog.productsByUid[drinkUid].name, "draftLogName 的份量文字不對：" + nm);
+}
+
+// 工作線 D 切片 4：我的食物的分層（計畫 docs/review/2026-09-30-D4-實作計畫.md 第 4 節；decisions #114–#117）
+function checkFoodTreeViews(catalog, rawTree) {
+  const fd = M.foods;
+  const ft = catalog.foodTree, b = ft.byId;
+  // 1. 位置與分組
+  check(ft.items.every((it) => fd.isFoodTreeItem(it)) && catalog.products.every((p) => !fd.isFoodTreeItem(p)), "isFoodTreeItem 要只認分層品項");
+  const oldWhere = (item) => (item.role === "drink" ? "drinks" : item.is_taiwan || item.channel === "delivery" ? "delivery" : "convenience");
+  check(catalog.products.every((p) => fd.foodsWhereOf(p) === oldWhere(p)), "foodsWhereOf 對現成品項要跟切片 2 的 foodsSubtabOf 相同");
+  check(["soy_milk", "fx_whole_milk", "fx_irwin_mango"].every((id) => fd.foodsWhereOf(b[id]) === "drinks"), "無糖豆漿、全脂奶、水果要在飲品・水果");
+  check(["fx_cheese_slice", "fx_evaporated_milk", "chicken_breast"].every((id) => fd.foodsWhereOf(b[id]) === "cook"), "起司片、蒸發奶、雞胸要在自煮");
+  const cook = fd.foodTreeSections(ft, "cook"), drinks = fd.foodTreeSections(ft, "drinks");
+  const listed = [];
+  cook.forEach((g) => g.subgroups.forEach((s) => s.items.forEach((it) => listed.push(it.id))));
+  const cookCount = listed.length;
+  drinks.homeDrinks.forEach((it) => listed.push(it.id));
+  drinks.fruit.subgroups.forEach((s) => s.items.forEach((it) => listed.push(it.id)));
+  check(listed.length === ft.items.length && new Set(listed).size === ft.items.length, "自煮＋飲品・水果要恰好涵蓋全部分層品項一次（" + listed.length + "／" + ft.items.length + "）");
+  check(cookCount === ft.items.filter((it) => it.group !== "fruit" && !it.home_drink).length, "自煮的筆數不對");
+  check(drinks.homeDrinks.every((it) => it.home_drink) && drinks.homeDrinks.length === ft.items.filter((it) => it.home_drink).length, "家裡的飲品只看 home_drink");
+  check(drinks.fruit.subgroups.every((s) => s.items.every((it) => it.group === "fruit")) && cook.every((g) => g.code !== "fruit"), "水果只在飲品・水果");
+  const order = rawTree.groups.map((g) => g.code).filter((c) => c !== "fruit");
+  check(cook.map((g) => g.code).join() === order.filter((c) => cook.some((g) => g.code === c)).join(), "自煮大類順序要照 groups");
+  cook.concat([drinks.fruit]).forEach((g) => {
+    const def = rawTree.groups.find((x) => x.code === g.code);
+    const subOrder = (def.subgroups.length ? def.subgroups.map((s) => s.code) : [null]);
+    check(g.subgroups.map((s) => s.code).join() === subOrder.filter((c) => g.subgroups.some((s) => s.code === c)).join(), g.code + " 子類順序要照 groups");
+    g.subgroups.forEach((s) => {
+      check(s.items.length > 0, g.code + "/" + s.code + " 空子類不該回");
+      check(s.items.slice().sort(fd.compareFoodTreeItems).map((x) => x.id).join() === s.items.map((x) => x.id).join(), g.code + "/" + s.code + " 組內要依名稱（collator）、同名依 id 排");
+    });
+  });
+  check(cook.find((g) => g.code === "dairy").subgroups.length === 1 && cook.find((g) => g.code === "dairy").subgroups[0].code === null, "乳品類沒有子類（一個 code null）");
+  const same = [{ id: "z_b", name: "同名" }, { id: "z_a", name: "同名" }];
+  check(same.sort(fd.compareFoodTreeItems).map((x) => x.id).join() === "z_a,z_b", "同名依 id 排");
+  // 2. 份量、今日建議的一餐、出處、含糖、過敏原摘要
+  const sv = (id) => fd.foodTreeServingText(b[id]);
+  check(sv("chicken_breast") === "1 份（代換表）＝生重 30g", "雞胸份量要寫生重：" + sv("chicken_breast"));
+  check(sv("quinoa") === "內建一餐：乾重 45g（今日建議會依你的熱量調整）", "藜麥（內建一餐）份量：" + sv("quinoa"));
+  check(sv("fx_cooked_rice").indexOf("熟重 40g") !== -1, "白飯要寫熟重 40g：" + sv("fx_cooked_rice"));
+  const banana = ft.items.find((it) => it.name === "香蕉");
+  check(!!banana && fd.foodTreeServingText(banana).indexOf("可食部分 70g") !== -1 && fd.foodTreeServingText(banana).indexOf("購買量約 95g") !== -1, "香蕉要寫可食部分與購買量");
+  check(sv("fx_whole_milk") === "1 份（代換表）＝240ml（1杯）", "全脂奶份量：" + sv("fx_whole_milk"));
+  check(sv("fx_pork_loin").indexOf("生重 35g，煮熟約 30g") !== -1, "豬大里肌要有生重與煮熟約：" + sv("fx_pork_loin"));
+  check(sv("brown_rice_cooked") === "內建一餐：熟重 150g（今日建議會依你的熱量調整）", "糙米飯份量：" + sv("brown_rice_cooked"));
+  check(fd.foodTreeServingShort(b.chicken_breast) === "代換表 1 份 · 生重 30g" && fd.foodTreeServingShort(b.brown_rice_cooked) === "內建一餐 · 熟重 150g", "列上的簡寫份量");
+  check(fd.builtinMealLine(b.chicken_breast, catalog) === "今日建議的一餐：生重 130g（約 4.5 份代換表）", "雞胸今日建議的一餐：" + fd.builtinMealLine(b.chicken_breast, catalog));
+  check(fd.builtinMealLine(b.fx_rice, catalog) === null && fd.builtinMealLine(b.brown_rice_cooked, catalog) === null, "fx_ 與內建一餐不寫今日建議的一餐");
+  ft.items.forEach((it) => {
+    const t = fd.foodTreeSourceText(it).join("\n");
+    if (/TFDA|decisions|×|#\d|填 0/.test(t)) check(false, it.id + " 的出處文字有開發註記：" + t);
+  });
+  const src = (id) => fd.foodTreeSourceText(b[id]).join("\n");
+  check(src("fx_whole_milk").indexOf("L01021") !== -1 && src("fx_whole_milk").indexOf("等值") === -1, "全脂奶出處要有編號、不是等值推算");
+  check(src("fx_congee").indexOf("生熟等值推算") !== -1, "白粥要寫生熟等值推算");
+  check(src("brown_rice_cooked").indexOf("由生米樣品") !== -1 && src("brown_rice_cooked").indexOf("1 份的量照食物代換表") === -1, "糙米飯要寫由生米推算、不寫代換表份量");
+  check(src("greek_yogurt").indexOf("美國農業部") !== -1, "希臘優格出處要寫美國農業部");
+  check(src("chicken_breast").indexOf("纖維：衛福部沒有這一欄；動物性食材不含纖維，以 0 計") !== -1, "雞胸要說明纖維以 0 計");
+  check(ft.items.filter((it) => it.source.derivation).map((it) => it.id).sort().join() === "brown_rice_cooked,fx_congee,fx_cooked_noodles,fx_fresh_noodles,mixed_grain_rice_cooked", "source.derivation 非 null 的要恰好 5 筆（decisions #116）");
+  check(fd.sugarLine(b.fx_dried_guava) === "衛福部樣品：有加糖" && fd.sugarLine(b.fx_raisin) === "衛福部樣品：無加糖" && fd.sugarLine(b.fx_cooked_rice) === null, "sugarLine");
+  check(fd.allergenSummary(b.fx_dinner_roll.allergen_tags) === "過敏原：麩質、乳製品、蛋；其他成分未確認", "餐包的過敏原摘要：" + fd.allergenSummary(b.fx_dinner_roll.allergen_tags));
+  check(fd.allergenSummary(["未確認"]) === "過敏原：未確認" && fd.allergenSummary([]) === "過敏原：確認不含" && fd.allergenSummary(null) === "過敏原：未確認", "allergenSummary 只有未確認、確認不含、缺欄");
+  // 3. 灰字（decisions #117）
+  const egg = { allergens: ["蛋"] }, lo = { diet_restriction: "蛋奶素" };
+  check(fd.foodsBlockLabel(b.fx_mayonnaise, egg) === "含過敏原" && fd.foodsBlockLabel(b.fx_turnip_cake, egg) === "成分未確認", "過敏原灰字要分含過敏原與成分未確認");
+  check(fd.foodsBlockLabel(b.chicken_breast, lo) === "不符合你的飲食設定" && fd.foodsBlockLabel(b.fx_vegetarian_nugget, lo) === "飲食限制未確認", "飲食灰字要分不符合與未確認");
+  check(fd.foodsBlockLabel(b.fx_rice, { disliked_ingredients: [{ type: "food_tree", key: "fx_rice", label: "白米" }] }) === "你標了不吃" && fd.foodsBlockLabel(b.fx_rice, {}) === null, "不吃灰字、沒被擋回 null");
+  // 4. 同樣本（decisions #85、#108）
+  const ss = (uid, dis) => fd.sameSampleEntries(uid, catalog, dis || []);
+  check(ss("fx_whole_milk").some((e) => e.uid === "tw_dr08" && e.kind === "sample") && ss("tw_dr08").some((e) => e.uid === "fx_whole_milk" && e.kind === "sample"), "全脂奶與外帶鮮奶要互相配對");
+  check(ss("soy_milk").some((e) => e.uid === "tw_dr06") && ss("tw_dr06").some((e) => e.uid === "soy_milk"), "無糖豆漿與外帶豆漿要互相配對");
+  check(ss("fx_rice").map((e) => e.uid + ":" + e.kind).join() === "fx_congee:form", "白米的其他形式要只有白粥");
+  check(ss("fx_brown_rice").some((e) => e.uid === "brown_rice_cooked"), "糙米要配到糙米飯");
+  check(["fx_dried_noodles", "fx_fresh_noodles", "fx_cooked_noodles"].every((id) => ss(id).length === 2), "乾、濕、熟麵條要互相配對");
+  check(ss("greek_yogurt").length === 0 && ss("fx_soybean_oil").every((e) => e.uid !== "cooking_oil"), "tfda_id null 不配對；大豆油不配烹調用油");
+  check(ss("fx_rice", [{ type: "food_tree", key: "fx_congee", label: "白粥" }])[0].disliked === true, "sameSampleEntries 要標出已標不吃");
+  check(ss("conv_bx04").length === 0 && ss("no_such").length === 0, "沒有同樣本回 []");
+  // 5. 不吃清單查分層、訊息、搜尋
+  const ents = fd.dislikedListEntries([{ type: "food_tree", key: "fx_whole_milk", label: "舊名" }, { type: "food_tree", key: "fx_dried_fish", label: "魚脯" }], catalog);
+  check(ents[0].name === b.fx_whole_milk.name && !ents[0].gone && ents[1].gone, "dislikedListEntries 要查得到分層、已下架的 fx_ 是 gone");
+  check(fd.dislikedMessage(b.chicken_breast, true).indexOf("推薦與「自己選」都不會再選它") !== -1 && fd.dislikedMessage(b.fx_rice, true).indexOf("不影響推薦裡的其他食物") !== -1, "標不吃訊息要依共用 id／fx_ 分兩種");
+  check(fd.dislikedMessage(catalog.productsByUid.tw_dr08, true).indexOf("推薦與「自己選」都不會再選它") !== -1 && fd.dislikedMessage(b.fx_rice, false) === "已取消不吃「白米」。", "現成品項與取消的訊息");
+  const hits = fd.searchFoods(ft.items, "水餃皮");
+  check(hits.length === 1 && hits[0].id === "fx_dumpling_wrapper" && hits[0].matchedAlias === "水餃皮", "搜尋水餃皮要找到餃子皮並標別名");
+  check(fd.searchFoods(ft.items, "餃子皮")[0].matchedAlias === undefined, "名稱命中不標別名");
+  const milk = fd.searchFoods(ft.items.concat(catalog.products), "鮮奶").map((e) => e.uid);
+  check(milk.indexOf("fx_whole_milk") !== -1 && milk.indexOf("tw_dr08") !== -1, "搜尋鮮奶要有全脂奶與外帶鮮奶");
 }
 
 // 工作線 D 切片 2：我的食物與不吃（計畫 docs/review/2026-09-30-D2-實作計畫.md 第 4 節）
