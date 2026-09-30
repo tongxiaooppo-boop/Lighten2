@@ -261,6 +261,16 @@ async function main() {
     const others = renamedPool.filter((c) => c.is_composed && c.protein_id !== target.id).slice(0, 50);
     check(others.every((c) => M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok), "不吃清單誤擋了其他蛋白質的組合");
   }
+  // decisions #101：雜糧飯（樣品五穀米含麥片）對麩質過敏、全素、蛋奶素都要擋
+  {
+    const grain = catalog.ingredients.find((it) => it.id === "mixed_grain_rice_cooked");
+    check(grain && grain.allergen_tags.indexOf("麩質") !== -1 && grain.diet_tags.length === 0, "雜糧飯要標麩質、不能宣告素食（decisions #101）");
+    const withGrain = M.pool.buildCandidatePool(catalog).filter((c) => c.is_composed && c.staple_id === "mixed_grain_rice_cooked");
+    check(withGrain.length > 0, "測試前提：候選池裡要有用到雜糧飯的組合");
+    [{ allergens: ["麩質"] }, { diet_restriction: "全素" }, { diet_restriction: "蛋奶素" }].forEach((p) => {
+      check(withGrain.every((c) => !M.filters.passesHardFilters(c, p).ok), "雜糧飯的組合沒被擋：" + JSON.stringify(p));
+    });
+  }
 
   // ---------- 4e. null 傳染（章程 C4.5）：缺資料不當 0 ----------
   console.log("[null 傳染]");

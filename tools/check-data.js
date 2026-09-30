@@ -64,6 +64,39 @@ function listsCompleteIngredients(desc) {
   return /[（(][^）)]*[,，][^）)]*[）)]/.test(desc) && !/等\s*([）)]|$)/.test(desc);
 }
 
+// 衛福部樣品的整合編號：tfda 出處取 ref，derived「編號 × 倍數」取編號；其他（usda、估算）回 null
+function tfdaSampleCode(src) {
+  if (!src) return null;
+  if (src.type === "tfda") return src.ref || null;
+  const m = src.type === "derived" ? DERIVED_REF.exec(src.ref || "") : null;
+  return m ? m[1] : null;
+}
+// 樣品名稱＋內容物描述（不含俗名：俗名是別稱，不是成分）
+function tfdaSampleText(refs, code) {
+  const r = code ? refs.tfda[code] : null;
+  return r ? (r["樣品名稱"] || "") + " " + (r["內容物描述"] || "") : "";
+}
+const hasTagOrUnverified = (tags, tag) => (tags || []).some((t) => t === tag || t === UNVERIFIED);
+
+// 章程 B6.2 延伸到樣品描述（decisions #101）：衛福部樣品含燕麥、麥片的，要標麩質或未確認
+function oatsInSampleProblem(tags, text) {
+  return /燕麥|麥片/.test(text) && !hasTagOrUnverified(tags, "麩質");
+}
+// 樣品名稱與描述的過敏原關鍵字跟標註對不上（章程 B6.2，只當警告）。
+// 例外依衛福部編號列出處：M1100101 大豆油——高度提煉大豆油不必標黃豆（decisions #89）
+const SAMPLE_ALLERGEN_WORDS = [
+  ["麩質", /燕麥|麥片|小麥|大麥|麵粉|麵筋|麩/], ["黃豆", /黃豆|大豆|醬油|豆腐|豆漿/],
+  ["蛋", /(?<!分離|大豆|植物|乳清)蛋(?!白質)/], ["乳製品", /乳(?!化)|奶|起司/],
+  ["魚", /魚/], ["甲殼類", /蝦|蟹/], ["芝麻", /芝麻/], ["花生", /花生/],
+];
+const SAMPLE_WORD_EXCEPTIONS = { M1100101: ["黃豆"] };
+function sampleAllergenGaps(tags, text, code) {
+  const skip = SAMPLE_WORD_EXCEPTIONS[code] || [];
+  return SAMPLE_ALLERGEN_WORDS
+    .filter(([tag, re]) => skip.indexOf(tag) === -1 && re.test(text) && !hasTagOrUnverified(tags, tag))
+    .map(([tag]) => tag);
+}
+
 // 二手官方數字凍結（章程 B2.2）：frozen＝{ "檔名.id": { 欄位: 值 } }，productByKey＝同樣 key 的品項
 function checkOfficialFrozen(frozen, productByKey) {
   Object.keys(frozen).forEach((key) => {
@@ -185,6 +218,11 @@ function checkIngredients(list, refs) {
 
     // 燕麥屬含麩質穀物（章程 B6.2）
     if (/燕麥/.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "麩質" || t === UNVERIFIED)) err(w + "：燕麥要標麩質（章程 B6.2）");
+    const code = tfdaSampleCode(src);
+    const sampleText = tfdaSampleText(refs, code);
+    if (oatsInSampleProblem(ing.allergen_tags, sampleText)) err(w + "：衛福部樣品 " + code + " 含燕麥或麥片，要標麩質或未確認（章程 B6.2、decisions #101）");
+    const gaps = sampleAllergenGaps(ing.allergen_tags, sampleText, code);
+    if (gaps.length) warn(w + "：衛福部樣品 " + code + " 的名稱或描述提到「" + gaps.join("、") + "」，標註沒有也沒有未確認（章程 B6.2，請確認）");
     // 芒果是過敏原標示項目（章程 B6.1、decisions #88）
     if (/芒果|檬果/.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
 
@@ -412,6 +450,14 @@ function checkToolRules(refs) {
   if (!reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({ protein_g: 10 })))) err("工具自我檢查：凍結的官方蛋白質被改掉卻沒報錯");
   if (!reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({ field_sources: { carb_g: { type: "estimate", ref: "x" } } })))) err("工具自我檢查：凍結品項的反推碳水改標 estimate 卻沒報錯");
   if (reports(/凍結/, () => checkOfficialFrozen(frozenKey, frozenItem({})))) err("工具自我檢查：凍結品項沒被改卻報錯");
+  // decisions #101：樣品描述含麥片要標麩質或未確認；關鍵字警告與大豆油例外
+  const fiveGrain = "五穀米 樣品狀態:生(糙米,薏仁,蕎麥,小米,黑糯米,麥片,紅扁豆,紅薏仁等)";
+  if (!oatsInSampleProblem([], fiveGrain)) err("工具自我檢查：樣品含麥片、標註是 [] 卻沒報錯");
+  if (oatsInSampleProblem(["麩質", "未確認"], fiveGrain)) err("工具自我檢查：樣品含麥片、已標麩質卻報錯");
+  if (oatsInSampleProblem([], "糙稉米平均值 樣品狀態:生")) err("工具自我檢查：沒有麥片的樣品卻報錯");
+  if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "M1100101").length) err("工具自我檢查：大豆油（decisions #89 例外）卻被警告");
+  if (sampleAllergenGaps([], "大豆油 前處理描述:混合均勻(100%大豆沙拉油)", "X0000000").join() !== "黃豆") err("工具自我檢查：不在例外清單的大豆樣品沒被警告");
+  if (sampleAllergenGaps([], "豆漿 樣品狀態:大豆分離蛋白質", "X").indexOf("蛋") !== -1) err("工具自我檢查：「分離蛋白質」被當成蛋");
   // T13：id 全資料庫唯一
   if (!reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["超商", "egg"]]))) err("工具自我檢查：食材與超商 id 重複卻沒報錯");
   if (reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["台式", "tw_egg"]]))) err("工具自我檢查：不同 id 卻報重複");
