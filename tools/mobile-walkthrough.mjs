@@ -88,6 +88,21 @@ const openFood = (name) => inFoodRow(name, ".food-row-main");
 const foodsSub = (t) => click(`[data-foods-subtab=${t}]`);
 const foodsSearch = (q) => js(`(() => { const el = document.getElementById('foods-search'); el.value = ${JSON.stringify(q)}; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
 const openFolded = () => js(`document.querySelectorAll('#foods-body details').forEach((d) => { d.open = true; })`);
+// 代換表分層（工作線 D 切片 4）：點 summary 展開大類、子類（不直接設 open，審核 M3），等內容畫出來
+const sectionSel = (key) => `#foods-body details[data-foods-section="${key}"]`;
+async function openSection(key) {
+  if (await js(`!!document.querySelector('${sectionSel(key)}[open]')`)) return;
+  await click(`${sectionSel(key)} > summary`);
+  await until(`!!document.querySelector('${sectionSel(key)}[open] .food-row, ${sectionSel(key)}[open] details')`, "展開 " + key + " 沒有內容");
+}
+// 展開分層品項所在的大類、子類，回傳畫面名稱。prefix：cook 或 drinks
+async function showTreeItem(prefix, id) {
+  const t = await js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); const it = c.foodTree.byId[${JSON.stringify(id)}]; return { name: it.name, group: it.group, subgroup: it.subgroup }; })()`);
+  await openSection(prefix + ":" + t.group);
+  if (t.subgroup) await openSection(prefix + ":" + t.group + ":" + t.subgroup);
+  return t.name;
+}
+const inViewport = (sel) => js(`(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return false; const r = el.getBoundingClientRect(); return r.top >= -1 && r.bottom <= window.innerHeight + 1; })()`);
 const dbDislikedKeys = `import('./js/data/db.js').then((m) => m.getProfile()).then((p) => JSON.stringify(((p || {}).disliked_ingredients || []).map((d) => d.key)))`;
 const navFits = () => js(`(() => { const n = document.querySelector('.tab-nav'); return n.scrollWidth <= n.clientWidth + 1; })()`);
 
@@ -119,6 +134,14 @@ async function run() {
   check(await js(`document.querySelector('#foods-body [data-foods-dislike]').disabled`), "0-2 沒有基本資料時「不吃」沒有停用");
   check((await js(text("#foods-body .food-detail"))).indexOf("先在基本資料填好身體數據並按計算") !== -1, "0-2 停用的「不吃」旁邊沒有說明");
   await shot("我的食物-沒有基本資料", "#foods-body .food-detail");
+  // 自煮的分層品項也一樣停用（切片 4）
+  await foodsSub("cook");
+  await openSection("cook:dairy");
+  await click(`${sectionSel("cook:dairy")} .food-row-main`);
+  await until(`!!document.querySelector('${sectionSel("cook:dairy")} [data-foods-dislike]')`, "0-2 自煮明細沒有「不吃」按鈕");
+  check(await js(`document.querySelector('${sectionSel("cook:dairy")} [data-foods-dislike]').disabled`), "0-2 沒有基本資料時自煮的「不吃」沒有停用");
+  await click(`${sectionSel("cook:dairy")} > summary`); // 收回去，8-7 要看預設收合
+  await foodsSub("convenience");
 
   // ---------- 1. 基本資料 ----------
   console.log("[1. 基本資料]");
@@ -204,6 +227,13 @@ async function run() {
     check(!(await js(`!!document.getElementById('disliked-ingredients-list')`)), "2-5 基本資料還有「不吃的食材」區塊（已搬到我的食物）");
     await tab("foods");
     await until(`!!document.querySelector('.foods-disliked-all [data-foods-undislike="${chip.key}"]')`, "2-5 我的食物的全部清單沒有 " + chip.label);
+    // 切片 4：共用內建 id 的食材也在自煮的「你標了不吃」（審核第 6 節第 1 點）
+    const chipTree = await js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); const it = c.foodTree.byId[${JSON.stringify(chip.key)}]; return it ? it.name : null; })()`);
+    if (chipTree) {
+      await foodsSub("cook");
+      await until(`!!document.querySelector('#foods-body details[data-foods-section="cook:disliked"]') && document.querySelector('#foods-body details[data-foods-section="cook:disliked"]').textContent.indexOf(${JSON.stringify(chipTree)}) !== -1`,
+        "2-5 自煮的「你標了不吃」沒有 " + chipTree);
+    }
     await js(`document.querySelector('.foods-disliked-all').open = true`);
     await shot("我的食物-不吃的全部", ".foods-disliked-all");
     await click(`.foods-disliked-all [data-foods-undislike="${chip.key}"]`); // 還原，後面的步驟才有完整候選
@@ -858,6 +888,118 @@ async function run() {
   await shot("我的食物-已不提供", ".foods-disliked-all");
   await click(`.foods-disliked-all [data-foods-undislike="gone_walkthrough"]`);
   await until(`(${dbDislikedKeys}).then((s) => JSON.parse(s).length === 0)`, "8-6 移除後不吃清單不是空的");
+
+  // ---------- 8-7～8-11 自煮、家裡的飲品、水果（工作線 D 切片 4，計畫 docs/review/2026-09-30-D4-實作計畫.md 第 4 節） ----------
+  // 8-7 自煮：大類預設收合、標題有筆數；點 summary 展開；雞胸明細的量詞與今日建議的一餐；收起明細後已展開的大類仍展開；360 寬
+  await foodsSub("cook");
+  await until(`!!document.querySelector('#foods-body details.foods-major')`, "8-7 自煮沒有大類");
+  check(await js(`[...document.querySelectorAll('#foods-body details.foods-major')].every((d) => !d.open)`), "8-7 自煮的大類預設要收合");
+  check(/^豆魚蛋肉類（\d+）$/.test(await js(`document.querySelector('${sectionSel("cook:protein")} > summary').innerText`)), "8-7 大類標題沒有筆數");
+  await shot("我的食物-自煮收合");
+  const breastName = await showTreeItem("cook", "chicken_breast");
+  await openSection("cook:vegetable");
+  await openFood(breastName);
+  const breast = await foodRowText(breastName);
+  check(breast.indexOf("1 份（代換表）＝生重 30g") !== -1 && breast.indexOf("今日建議的一餐：生重 130g") !== -1, "8-7 雞胸明細沒有生重份量或今日建議的一餐");
+  check(!/TFDA|×|decisions/.test(breast), "8-7 雞胸明細有開發註記");
+  await shot("我的食物-自煮雞胸", "#foods-body .food-detail");
+  await openFood(breastName); // 收起明細
+  check(await js(`document.querySelector('${sectionSel("cook:protein")}').open && document.querySelector('${sectionSel("cook:vegetable")}').open`), "8-7 收起明細後已展開的大類被收合（審核 M3）");
+  check((await js(text(sectionSel("cook:vegetable")))).indexOf("筍與莖菜（本 App 自己的分組）") !== -1, "8-7 蔬菜類沒有標「本 App 自己的分組」");
+  const avocado = await showTreeItem("cook", "fx_avocado");
+  await openFood(avocado);
+  check((await foodRowText(avocado)).indexOf("加州（Hass）酪梨") !== -1, "8-7 酪梨明細沒有台灣品種的說明");
+  await openFood(avocado);
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await new Promise((r) => setTimeout(r, 300));
+  check(await js(`(() => { const t = document.getElementById('foods-subtabs'); return t.scrollWidth <= t.clientWidth + 1 && [...t.querySelectorAll('button')].every((b) => b.scrollWidth <= b.clientWidth + 1 && getComputedStyle(b).whiteSpace === 'nowrap'); })()`), "8-7 360 寬的子分頁列溢出或折行");
+  await shot("我的食物-自煮360寬", sectionSel("cook:protein"));
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await new Promise((r) => setTimeout(r, 300));
+
+  // 8-8 標「白米」不吃：fx_ 的訊息；那一列在「你標了不吃」展開並在畫面內；「也標不吃」白粥在畫面內 → 按；全部清單兩筆；取消與「也取消」
+  const rice = await showTreeItem("cook", "fx_rice");
+  const congee = await js(`(async () => (await (await import('./js/data/catalog.js')).loadCatalog()).foodTree.byId.fx_congee.name)()`);
+  await openFood(rice);
+  await inFoodRow(rice, "[data-foods-dislike]");
+  await until(`!!document.querySelector('[data-foods-also-dislike="fx_congee"]')`, "8-8 標白米不吃後沒有「也標不吃」白粥");
+  check((await js(text("#foods-status"))).indexOf("不影響推薦裡的其他食物") !== -1, "8-8 fx_ 品項標不吃的訊息不對（審核 M7）");
+  check(await js(`!!document.querySelector('${sectionSel("cook:disliked")}[open] [data-foods-open="fx_rice"]')`), "8-8 白米沒有移到展開的「你標了不吃」");
+  check(await inViewport('[data-foods-also-dislike="fx_congee"]'), "8-8 「也標不吃」不在畫面內（decisions #115）");
+  await shot("我的食物-標白米之後");
+  await click('[data-foods-also-dislike="fx_congee"]');
+  await until(`document.querySelector('${sectionSel("cook:disliked")} > summary').innerText === "你標了不吃（2）"`, "8-8 也標白粥後「你標了不吃」不是 2 筆");
+  const all88 = await js(`document.querySelector('.foods-disliked-all').textContent`);
+  check(all88.indexOf(rice) !== -1 && all88.indexOf(congee) !== -1 && all88.indexOf("已不提供") === -1, "8-8 全部清單沒有白米、白粥的名稱");
+  await inFoodRow(rice, "[data-foods-undislike]");
+  await until(`!!document.querySelector('[data-foods-also-undislike="fx_congee"]')`, "8-8 取消白米後沒有「也取消」白粥");
+  await click('[data-foods-also-undislike="fx_congee"]');
+  await until(`(${dbDislikedKeys}).then((s) => JSON.parse(s).length === 0)`, "8-8 取消兩筆後不吃清單不是空的");
+
+  // 8-9 飲品・水果：現成飲料 → 家裡的飲品 → 水果；全脂奶標不吃 → 同一個衛福部樣品的外帶鮮奶「也標不吃」→ 兩筆都在「你標了不吃」；取消
+  await foodsSub("drinks");
+  const order = await js(`(() => { const t = document.getElementById('foods-body').innerText; return [t.indexOf('現成飲料'), t.indexOf('家裡的飲品'), t.indexOf('水果類')]; })()`);
+  check(order[0] !== -1 && order[0] < order[1] && order[1] < order[2], "8-9 飲品・水果的組順序不是 現成飲料 → 家裡的飲品 → 水果（decisions #114）：" + order.join(","));
+  check(await js(`!document.querySelector('${sectionSel("drinks:fruit")}').open`), "8-9 水果要預設收合");
+  await shot("我的食物-飲品水果", "#foods-body");
+  const takeout = await js(`(async () => (await (await import('./js/data/catalog.js')).loadCatalog()).productsByUid.tw_dr08.name)()`);
+  const wholeMilk = await js(`(async () => (await (await import('./js/data/catalog.js')).loadCatalog()).foodTree.byId.fx_whole_milk.name)()`);
+  await openFood(wholeMilk);
+  check((await foodRowText(wholeMilk)).indexOf("同一個衛福部樣品：" + takeout) !== -1, "8-9 全脂奶明細沒有提到外帶鮮奶");
+  await inFoodRow(wholeMilk, "[data-foods-dislike]");
+  await until(`!!document.querySelector('[data-foods-also-dislike="tw_dr08"]')`, "8-9 標全脂奶不吃後沒有「也標不吃」外帶鮮奶");
+  check(await inViewport('[data-foods-also-dislike="tw_dr08"]'), "8-9 「也標不吃」不在畫面內");
+  await click('[data-foods-also-dislike="tw_dr08"]');
+  await until(`document.querySelector('${sectionSel("drinks:disliked")} > summary').innerText === "你標了不吃（2）"`, "8-9 也標外帶鮮奶後「你標了不吃」不是 2 筆");
+  await shot("我的食物-鮮奶兩筆不吃", sectionSel("drinks:disliked"));
+  await inFoodRow(wholeMilk, "[data-foods-undislike]");
+  await until(`!!document.querySelector('[data-foods-also-undislike="tw_dr08"]')`, "8-9 取消全脂奶後沒有「也取消」外帶鮮奶");
+  await click('[data-foods-also-undislike="tw_dr08"]');
+  await until(`(${dbDislikedKeys}).then((s) => JSON.parse(s).length === 0)`, "8-9 取消兩筆後不吃清單不是空的");
+
+  // 8-10 搜尋：鮮奶兩筆都有、標位置；水餃皮寫出別名；芭樂乾明細有「有加糖」
+  await foodsSearch("鮮奶");
+  await until(`!!document.querySelector('#foods-body [data-foods-open="fx_whole_milk"]') && !!document.querySelector('#foods-body [data-foods-open="tw_dr08"]')`, "8-10 搜尋鮮奶沒有兩筆");
+  check((await js(text("#foods-body"))).indexOf("飲品・水果 · 家裡的飲品") !== -1, "8-10 搜尋結果沒有標家裡的飲品");
+  await foodsSearch("水餃皮");
+  await until(`!!document.querySelector('#foods-body [data-foods-open="fx_dumpling_wrapper"]')`, "8-10 搜尋水餃皮沒有餃子皮");
+  check((await js(text("#foods-body"))).indexOf("別名：水餃皮") !== -1, "8-10 別名命中沒有寫出別名");
+  await shot("我的食物-搜尋別名");
+  await foodsSearch("芭樂乾");
+  await until(`!!document.querySelector('#foods-body [data-foods-open="fx_dried_guava"]')`, "8-10 搜尋芭樂乾沒有結果");
+  await click('#foods-body [data-foods-open="fx_dried_guava"]');
+  check((await js(text("#foods-body .food-detail"))).indexOf("衛福部樣品：有加糖") !== -1, "8-10 芭樂乾明細沒有「有加糖」");
+  await foodsSearch("");
+
+  // 8-11 設過敏原「蛋」：美乃滋「含過敏原」、明細「蛋；其他成分未確認」；蛋奶素：雞胸「不符合你的飲食設定」、素雞塊「飲食限制未確認」；還原
+  await tab("profile");
+  await setAllergens(["蛋"]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "8-11 設過敏原後按計算沒有完成");
+  await tab("foods");
+  await foodsSub("cook");
+  const mayo = await showTreeItem("cook", "fx_mayonnaise");
+  await until(`(${foodRow(mayo)}) && (${foodRow(mayo)}).innerText.indexOf("含過敏原") !== -1`, "8-11 美乃滋列上沒有「含過敏原」");
+  await openFood(mayo);
+  check((await foodRowText(mayo)).indexOf("過敏原：蛋；其他成分未確認") !== -1, "8-11 美乃滋明細的過敏原把蛋蓋掉了（decisions #117）");
+  await shot("我的食物-設蛋之後", "#foods-body .food-detail");
+  await openFood(mayo);
+  await tab("profile");
+  await setAllergens([]);
+  await js(`(() => { const s = document.querySelector('select[name=diet_restriction]'); s.value = '蛋奶素'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "8-11 設蛋奶素後按計算沒有完成");
+  await tab("foods");
+  await foodsSub("cook");
+  const nugget = await showTreeItem("cook", "fx_vegetarian_nugget");
+  await showTreeItem("cook", "chicken_breast");
+  await until(`(${foodRow(breastName)}) && (${foodRow(breastName)}).innerText.indexOf("不符合你的飲食設定") !== -1`, "8-11 蛋奶素時雞胸的灰字不是「不符合你的飲食設定」");
+  check((await foodRowText(nugget)).indexOf("飲食限制未確認") !== -1, "8-11 蛋奶素時素雞塊的灰字不是「飲食限制未確認」");
+  await shot("我的食物-蛋奶素", sectionSel("cook:protein"));
+  await tab("profile");
+  await js(`(() => { const s = document.querySelector('select[name=diet_restriction]'); s.value = '一般'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "8-11 還原飲食設定後按計算沒有完成");
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();

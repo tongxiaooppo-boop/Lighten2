@@ -39,11 +39,21 @@ export function searchFoods(entries, query) {
 
 // 明細「以你目前的設定」那一行（中性文字，章程 C4.1、C4.13）；沒被擋回 null。
 // 過敏原、飲食沿用選擇器快速新增的同一套句型；不吃寫「只擋這一項」（PRD 13.5）。
+// 已知過敏原命中的（例：美乃滋標「蛋、未確認」、使用者設蛋）寫「含有它」，不寫「未確認」；
+// 有宣告、只是不符合飲食設定的（雞胸對蛋奶素）寫「這一項不符合」（decisions #117）。其餘沿用 quickAddProblem 的句子
 export function foodBlockText(item, profile) {
-  const res = passesHardFilters(item, profile || {});
+  const p = profile || {};
+  const res = passesHardFilters(item, p);
   if (res.ok) return null;
   if (res.code === "disliked") return "你標了不吃（只擋這一項）";
-  return quickAddProblem(item, profile || {}).blocked;
+  const label = foodsBlockLabel(item, p);
+  if (res.code === "allergen" && label === "含過敏原") {
+    const tags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [];
+    const hit = normalizeAllergens(p.allergens).list.filter(function (a) { return tags.indexOf(a) !== -1; });
+    return "你設了過敏原「" + hit.join("、") + "」，含有它的品項不能選。";
+  }
+  if (res.code === "diet" && label === "不符合你的飲食設定") return "你設了飲食限制「" + p.diet_restriction + "」，這一項不符合。";
+  return quickAddProblem(item, p).blocked;
 }
 
 // 我的品項「新到舊」（PRD 10.6）：依 created_at，相同時依 id 倒序。records 是 custom_foods 的原始紀錄。
@@ -213,7 +223,8 @@ export function foodsBlockLabel(item, profile) {
     const mine = normalizeAllergens((profile || {}).allergens).list;
     return tags.some(function (t) { return mine.indexOf(t) !== -1; }) ? "含過敏原" : "成分未確認";
   }
-  if (res.code === "diet") return tags.indexOf("未確認") !== -1 ? "飲食限制未確認" : "不符合你的飲食設定";
+  // 只有分層品項的素食欄位是人工確認過的（審核 S4）；現成品項、我的品項沒宣告不等於不符合
+  if (res.code === "diet") return isFoodTreeItem(item) && tags.indexOf("未確認") === -1 ? "不符合你的飲食設定" : "飲食限制未確認";
   return "你標了不吃";
 }
 

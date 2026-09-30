@@ -147,6 +147,25 @@ async function run() {
       await js(`document.querySelector('.foods-disliked-all [data-foods-undislike=' + JSON.stringify(${U}) + ']').click()`);
       await until(`(async () => { const m = await import('./js/data/db.js'); const p = await m.getProfile(); return !p.disliked_ingredients.some((d) => d.key === ${U}); })()`, "在全部清單取消不吃後資料庫還有它");
     }
+    // 工作線 D 切片 4：自煮子分頁打得開、有乳品類；分層品項標不吃 → 同樣本有「也標不吃」→ 全部清單有名稱（不是「已不提供」）→ 取消
+    await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+    await until(`!!document.querySelector('[data-foods-subtab=cook]')`, "我的食物沒有自煮子分頁");
+    await js(`document.querySelector('[data-foods-subtab=cook]').click()`);
+    await until(`[...document.querySelectorAll('#foods-body details.foods-major > summary')].some((s) => s.innerText.indexOf('乳品類') === 0)`, "自煮子分頁沒有乳品類");
+    await js(`(() => { const i = document.getElementById('foods-search'); i.value = '白米'; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await until(`!!document.querySelector('[data-foods-open="fx_rice"]')`, "搜尋白米沒有分層品項");
+    await js(`document.querySelector('[data-foods-open="fx_rice"]').click()`);
+    await until(`!!document.querySelector('[data-foods-dislike="fx_rice"]')`, "白米明細沒有「不吃」");
+    await js(`document.querySelector('[data-foods-dislike="fx_rice"]').click()`);
+    await until(`!!document.querySelector('[data-foods-also-dislike="fx_congee"]')`, "白米標不吃後明細沒有「也標不吃」白粥");
+    const riceType = await js(`(async () => { const m = ${DBM}; const p = await m.getProfile(); const d = p.disliked_ingredients.find((x) => x.key === 'fx_rice'); return d ? d.type : null; })()`);
+    check(riceType === "food_tree", "分層品項寫進不吃清單的 type 不是 food_tree：" + riceType);
+    await js(`(() => { const i = document.getElementById('foods-search'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await until(`!!document.querySelector('.foods-disliked-all [data-foods-undislike="fx_rice"]')`, "全部清單沒有白米");
+    const riceAll = await js(`document.querySelector('.foods-disliked-all [data-foods-undislike="fx_rice"]').closest('.food-row').textContent`);
+    check(riceAll.indexOf("白米") !== -1 && riceAll.indexOf("已不提供") === -1, "全部清單的分層品項名稱不對：" + riceAll);
+    await js(`document.querySelector('.foods-disliked-all [data-foods-undislike="fx_rice"]').click()`);
+    await until(`(async () => { const m = await import('./js/data/db.js'); const p = await m.getProfile(); return !p.disliked_ingredients.some((d) => d.key === 'fx_rice'); })()`, "取消白米不吃後資料庫還有它");
     // 併發（計畫 S11）：兩個不同 key 同時標不吃、saveProfileForm 與標不吃同時送，最後清單都在
     const conc = await js(`(async () => { const m = ${DBM}; const p0 = await m.getProfile();
       await Promise.all([m.addDislikedIngredient({ type: 'item', key: 'conv_sl01', label: 'a' }), m.addDislikedIngredient({ type: 'protein', key: 'chicken_breast', label: '雞胸肉' })]);
