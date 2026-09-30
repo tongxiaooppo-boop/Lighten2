@@ -57,7 +57,7 @@
      - **改對應**：直接改 `data/reference/food_tree_map.json`（或標註檔）→ `node tools/build-food-tree.js` → check-data。撰寫稿只在舊 session 的 scratchpad，已不需要。
    - **下一步 1：切片 3 抽查審核**（計畫第 4 節最後一項）：另開 Opus 抽查對應表（每大類 10 筆以上＋全部 equivalent、exclude、merge、split、zero_fill、nominal_reason、蔬菜歸類、果乾、共用內建 id 27 筆），逐字存 `collab/opus-review-log/`，有修正就一個 commit。報告用 `node tools/build-food-tree.js --report`。值得請審核者特別看的判斷：鱈魚＝扁鱈（用鰈魚切片）、比目魚＝大口鰜、白鯧用含皮樣品、烏魚取 4 月、金棗（油柑）、葫蘆芭樂用白肉平均、水梨用新興梨、百香果不收（140g 疑連殼）、魚丸（不包肉）當泛稱不收、麥粉不收、蔬菜 1 份 100g 的名目熱量理由。
    - **下一步 2：切片 4**（自煮子分頁、飲品・水果的家裡的飲品〔看 `home_drink`〕與水果組；組內名稱排序用 `Intl.Collator`、同名以 id 為次要鍵〔decisions #111〕；同樣本提示延伸到共用 `tfda_id` 的內建食材〔#108〕；不吃全部清單查分層名稱；搜尋比對 `aliases`）。要先寫實作計畫送審。做完切片 4 再一起推送、請使用者手機測。
-   - **待使用者確認的預設**：decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）。
+   - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
 
