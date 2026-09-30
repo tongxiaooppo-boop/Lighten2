@@ -1,4 +1,4 @@
-// 輕盈計畫 — 架構規則檢查（章程 C1、C2、C4.11–C4.16）
+// 輕盈計畫 — 架構規則檢查（章程 C1、C2、C4.11–C4.17）
 //
 // 用法：
 //   node tools/check-arch.js                 檢查目前工作目錄
@@ -106,6 +106,17 @@ function stripCommentsAndStrings(src) {
 }
 
 function lineOf(src, idx) { return src.slice(0, idx).split("\n").length; }
+
+// C4.17 ③（啟發式）：推薦候選池相關檔案不得出現字面量 "dish"、"food"（單雙引號與反引號）與識別字 foodTree。
+// 掃原始碼本身、不去掉字串與註解（字面量就是要抓的東西）。回傳 [{ what, line }]。
+const RECOMMEND_FILES = ["js/engine/pool.js", "js/engine/recommend.js", "js/engine/today.js", "js/engine/matcher.js"];
+function recommendLeaks(src) {
+  const out = [];
+  const scan = (re, what) => { let m; while ((m = re.exec(src))) out.push({ what: what(m), line: lineOf(src, m.index) }); };
+  scan(/(["'`])(dish|food)\1/g, (m) => "字面量 " + m[0]);
+  scan(/(?<![\w$])foodTree(?![\w$])/g, () => "識別字 foodTree");
+  return out;
+}
 
 // ---------- 檢查 ----------
 
@@ -310,6 +321,21 @@ for (const f of files) {
 
 console.log("[我的組合只供手動引用 C4.16]");
 restrictNames(SAVED_MEAL_READERS, SAVED_MEAL_READER_FILES, "我的組合只供選擇器、管理區、日曆、備份讀取");
+
+console.log("[推薦不讀單品、料理與分層資料 C4.17 ③]");
+for (const r of RECOMMEND_FILES) {
+  const f = files.find((x) => x.rel === r);
+  check(!!f, r + " 不存在（C4.17 ③ 的檔案清單要跟著改）");
+  if (f) recommendLeaks(f.src).forEach((h) => fail(r + ":" + h.line + " 出現 " + h.what + "（推薦不產生單品與料理、候選池不讀分層資料，章程 C4.17 ③）"));
+}
+
+console.log("[工具自我檢查]");
+// 規則本身要擋得住刻意寫壞的原始碼，也不能誤報相近的寫法
+[["if (c.kind === \"food\") {}", 1], ["const k = 'dish';", 1], ["const k = `food`;", 1], ["const t = catalog.foodTree;", 1],
+  ["const { foodTree } = catalog;", 1], ["x = \"foods\" + 'dishes';", 0], ["const foodTreeX = 1; myfoodTree();", 0],
+  ["// 註解裡的 \"food\" 也算（不去掉字串與註解）", 1]].forEach(([src, n]) => {
+  check(recommendLeaks(src).length === n, "C4.17 ③ 規則對「" + src + "」應找到 " + n + " 處，實際 " + recommendLeaks(src).length);
+});
 
 console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
 process.exit(failures === 0 ? 0 : 1);
