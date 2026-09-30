@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 −1、0、1 已推送；切片 2 計畫第一版已審，待改第二版＋問使用者 Q1、Q2）
+# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 2 已實作並提交、未推送；下一個切片 3）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -41,16 +41,12 @@
 
 0. **工作線 D「我的食物」（2026-09-30 起，目前主線）**：PRD 第 13 節、decisions #74–#95、章程已改（芒果、C4.3、C4.6、C4.8 單品、C4.17 改寫、B4 分層品項欄位、B6.9、B10、B12）。設計草案 [docs/review/2026-09-30-我的食物分頁-設計草案.md](../docs/review/2026-09-30-我的食物分頁-設計草案.md)；審核逐字 `collab/opus-review-log/2026-09-30-my-foods-tab-review.md`（兩輪）、`2026-09-30-workline-d-c3-review.md`（C3 專項）。
    - 已完成（2026-09-30 已推送，待使用者手機看芒果選項與「點心棒」組名）：切片 −1 文件（`3ad28af`、`26d2c4c`）、切片 0 拆「蛋白飲/點心棒」（`aafe6c3`，快照不變）、切片 1a 芒果詞彙（`5d3a082`）、1b `tw_tc08` 加未確認（`68e540a`，差異報告在 commit）、手機腳本期望更新（`6a7a350`，219 項全過）。
-   - **切片 2 進行中（2026-09-30）**：實作計畫第一版 [docs/review/2026-09-30-D2-實作計畫.md](../docs/review/2026-09-30-D2-實作計畫.md) 已寫；獨立審核第一輪逐字 `collab/opus-review-log/2026-09-30-d2-plan-review.md`，結論「改完可以開工，不需要第二輪全面審核」。**下一步**：
-     1. 依審核改計畫成第二版（M1–M4 一定要改、S1–S14 建議改；照慣例全部採納，理由不同意的寫出來）。重點：
-        - M1：check-engine 沒有 IndexedDB → db.js 匯出純函式 `addDislikedTo`／`removeDislikedFrom`／`mergeProfileForm`，專用寫入函式與 fake-db 共用它們；真的要碰 DB 的斷言放 smoke-browser。
-        - M2：明細出處改照 PRD 12.1 的中性標示（衛福部／國外資料庫／包裝或官網標示／估算／你填的／從內建複製），出處類別由 `data/catalog.js` 推導（章程 B3），**不顯示 ref**（ref 裡有「Google AI 回覆估算」等開發註記），只有 tfda 附整合編號；依類別分組顯示；明細補 `valid_slots`。已查的事實：內建品項各欄位出處 estimate 642、label_unsourced 44、derived 42（其中 ref 以衛福部整合編號開頭的 26 → 歸「衛福部」；其餘 16 是「熱量−蛋白質×4−脂肪×9」反推 → 歸「包裝或官網標示」）；**`label_unsourced` 歸哪類 PRD 沒寫，要在計畫裡定**（建議「包裝或官網標示」，因 B3 定義是「看起來來自單一商品包裝」——或保守歸「估算」，二選一寫理由）。
-        - M3：開工前先改 PRD 13.2（分頁數、基本資料清單補體重回填與校正卡片）、13.9 切片 2 驗收（recs 只允許 `flow/chip-dinner-protein/write0` 的操作名稱不同，行內 `op` 出現兩次都要換；picker、ui 逐字不變），記 decisions；拿掉頂層分頁屬 A1 概念變更 → 這份審核當 C3 審核。
-        - M4：walkthrough 3-2b（L299 正規式）、2-5 保留「順便不要 → 按計算 → 不會被蓋掉」回歸；`docs/手機實機腳本.md` L16、L22、L52 一起改；節次用腳本自己的編號。
-        - 也要處理：S1 刪 `saveProfile`（check-engine L839、L846 改測 saveProfileForm）、S3 commit 中間狀態、S4 `tab-foods.js` 唯一 state 擁有者並避開 check-arch 重名、S7 選擇器關閉時不吃變過要重算今日建議、S9 自煮軸排序延到切片 4／5、S10 adapter 多錄 `.../disliked` 一行。
-     2. **問使用者兩個決定**（還沒問）：Q1 分頁列——建議拿掉空的「採買清單」（Phase 4 才有內容）、5 個等寬不橫捲；審核補充：Phase 3 日曆、Phase 4 採買清單之後會回到 6–7 個，可以現在就定「兩者都放在本週總覽裡的子頁」讓分頁固定 5 個，或選撐得住 6–7 個的 3×2 格線。Q2——自煮子分頁延到切片 4（審核同意）。
-     3. 改 PRD／decisions → 實作（commit 拆法見計畫第 5 節，依 S3 調整）→ smoke、walkthrough（390＋360 截圖逐張看）→ 手機短清單給使用者。
-     - 審核附帶的資料缺陷：`tw_dr05`、`tw_dr09` 有欄位的 `derived` ref 只寫「咖啡飲品」不是公式，check-data 沒擋（記進日後討論或另開 `data(fix)`）。
+   - **切片 2 已實作（2026-09-30，commit `b157ac2`～`5743d89`，未推送——推送前要問使用者）**：計畫第二版 [docs/review/2026-09-30-D2-實作計畫.md](../docs/review/2026-09-30-D2-實作計畫.md)（第 8 節是第一輪審核意見的處理對照）；審核逐字 `collab/opus-review-log/2026-09-30-d2-plan-review.md`（兼 C3 審核）。使用者決定：分頁固定 5 個、日曆與採買清單將來放本週總覽子頁（#96）；自煮子分頁切片 4（#97）；衛福部全表瀏覽／「代換表 400／全部」切換留日後討論。
+     - 做了什麼：`b157ac2` 文件（PRD 7、12.1、13.2、13.3、13.9，decisions #96–#100）；`84478e1` check-data 限定現成品項 derived 三種寫法（審核 Q3 說的 `tw_dr05/09` 纖維是章程 B5.1 缺值填 0 的既有寫法，資料沒改）；`33b11da` engine（原因代碼、`splitDisliked`、`partitionAllChannels`、`engine/foods.js`、catalog `source_class`、db 不吃純函式＋專用函式）；`5743d89` 畫面（我的食物分頁、選擇器不吃組、刪 `saveProfile`／`hideCatalogItem`）。
+     - 快照：recs 只有 `write0` 操作名稱（已證明）；picker 新增 15 行 `.../disliked`。smoke 29、walkthrough 280 全過，截圖看過。
+     - 事實：內建 104 筆的營養欄位出處＝估算 693、衛福部 35、沒有包裝或官網標示——明細幾乎都寫「估算」（記進日後討論）。
+     - **待使用者**：推送；手機短清單第 6 項（分頁列、我的食物、標不吃與取消、搜尋）＋第 5 項（已改成「不吃」）。辨認新版：上方有「我的食物」。
+   - **下一個：切片 3**（代換表分層資料：參考檔、對應、標註、tools、check-data、`data/food_tree.json`、catalog 載入、id 唯一；驗收 check-data 逐筆、推薦／候選池／picker 快照逐字不變）。要先寫實作計畫送獨立審核。原始資料在 `collab/transcripts/`；第二輪審核指出的標註修正（牛油、饅頭、瓜子、芒果類）在這時一起做。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
 
@@ -71,7 +67,7 @@
 
 ## 5. 工作方式
 
-- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #73）。先改 PRD、記 decisions，再改程式（A1）。
+- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #100）。先改 PRD、記 decisions，再改程式（A1）。
 - 重大設計、偏離 PRD 的格式、改推薦演算法、改骨架：新開 Opus agent 獨立審核，**問答逐字存 `collab/opus-review-log/`**。
 - 使用者習慣：問題附建議，常回「照建議」；只把產品決定交給使用者。可以直接 commit 到 master，訊息結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`。
 - 資料改動：每個 commit 附差異報告；能證明「只是重構」的，用腳本比對舊快照（例：id 改名後把舊快照套同一份改名對照再逐字比）。
