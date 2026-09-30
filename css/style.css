@@ -1204,8 +1204,14 @@ body {
 }
 .foods-subtabs {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.3rem;
   margin-bottom: 0.4rem;
+}
+/* 四個子分頁（工作線 D 切片 4）：360 寬也要一行放得下「飲品・水果」 */
+.foods-subtabs .meal-picker-tab {
+  white-space: nowrap;
+  padding: 0 2px;
+  font-size: 0.88rem;
 }
 #tab-foods .secondary-btn {
   min-height: 44px;
@@ -1229,6 +1235,17 @@ body {
   align-items: center;
   cursor: pointer;
   color: #3A2E22;
+}
+/* 代換表分層：大類 → 子類兩層收合（工作線 D 切片 4） */
+.foods-major > summary {
+  font-weight: 600;
+}
+.foods-minor {
+  margin-top: 0.2rem;
+  padding-left: 0.8rem;
+}
+.foods-same-sample {
+  margin-top: 0.3rem;
 }
 .foods-disliked-all {
   margin-top: 1.2rem;

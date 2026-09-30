@@ -1303,6 +1303,9 @@ function checkFoodTreeViews(catalog, rawTree) {
   check(fd.foodsBlockLabel(b.fx_mayonnaise, egg) === "含過敏原" && fd.foodsBlockLabel(b.fx_turnip_cake, egg) === "成分未確認", "過敏原灰字要分含過敏原與成分未確認");
   check(fd.foodsBlockLabel(b.chicken_breast, lo) === "不符合你的飲食設定" && fd.foodsBlockLabel(b.fx_vegetarian_nugget, lo) === "飲食限制未確認", "飲食灰字要分不符合與未確認");
   check(fd.foodsBlockLabel(b.fx_rice, { disliked_ingredients: [{ type: "food_tree", key: "fx_rice", label: "白米" }] }) === "你標了不吃" && fd.foodsBlockLabel(b.fx_rice, {}) === null, "不吃灰字、沒被擋回 null");
+  check(fd.foodBlockText(b.fx_mayonnaise, egg) === "你設了過敏原「蛋」，含有它的品項不能選。", "美乃滋（蛋＋未確認）設蛋時明細要寫含有它：" + fd.foodBlockText(b.fx_mayonnaise, egg));
+  check(fd.foodBlockText(b.fx_turnip_cake, egg) === "你設了過敏原「蛋」，過敏原未確認的品項不能選。", "蘿蔔糕設蛋時明細要寫未確認");
+  check(fd.foodBlockText(b.chicken_breast, lo) === "你設了飲食限制「蛋奶素」，這一項不符合。" && fd.foodBlockText(b.fx_vegetarian_nugget, lo) === "你設了飲食限制「蛋奶素」，沒有宣告符合的品項不能選。", "飲食的明細句子要分不符合與沒有宣告");
   // 4. 同樣本（decisions #85、#108）
   const ss = (uid, dis) => fd.sameSampleEntries(uid, catalog, dis || []);
   check(ss("fx_whole_milk").some((e) => e.uid === "tw_dr08" && e.kind === "sample") && ss("tw_dr08").some((e) => e.uid === "fx_whole_milk" && e.kind === "sample"), "全脂奶與外帶鮮奶要互相配對");
