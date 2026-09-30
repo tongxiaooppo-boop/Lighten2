@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 3、4 完成；等使用者同意推送並跑手機短清單；之後切片 5 常吃）
+# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D 切片 3、4 已推送、CI 通過；等使用者跑手機短清單；下一步切片 5 常吃）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -46,8 +46,8 @@
      - 快照：recs 只有 `write0` 操作名稱（已證明）；picker 新增 15 行 `.../disliked`。smoke 29、walkthrough 280 全過，截圖看過。
      - 事實：內建 104 筆的營養欄位出處＝估算 693、衛福部 35、沒有包裝或官網標示——明細幾乎都寫「估算」（記進日後討論）。
      - **待使用者**：手機短清單第 6 項（分頁列、我的食物、標不吃與取消、搜尋）＋第 5 項（已改成「不吃」）。辨認新版：上方有「我的食物」。
-   - **使用者決定（2026-09-30）：切片 3 做完先不推送，接著做切片 4，兩個一起推送**（切片 3 只有資料、畫面看不到；切片 4 代換表才出現在我的食物的自煮子分頁與飲品・水果），使用者只在手機測一次。
-   - **切片 3 已實作（2026-09-30，commit `9b4a918`～`80afeeb`，未推送，使用者要求暫停）**：計畫第二版 [docs/review/2026-09-30-D3-實作計畫.md](../docs/review/2026-09-30-D3-實作計畫.md)（第 8 節是審核意見對照）；審核逐字 `collab/opus-review-log/2026-09-30-d3-plan-review.md`（一輪，「改完就能開工」）；decisions #101–#111。
+   - 切片 3、4 照使用者決定一起推送（2026-09-30），使用者只在手機測一次。
+   - **切片 3 已實作（2026-09-30，commit `9b4a918`～`80afeeb`，已跟切片 4 一起推送）**：計畫第二版 [docs/review/2026-09-30-D3-實作計畫.md](../docs/review/2026-09-30-D3-實作計畫.md)（第 8 節是審核意見對照）；審核逐字 `collab/opus-review-log/2026-09-30-d3-plan-review.md`（一輪，「改完就能開工」）；decisions #101–#111。
      - `9b4a918` 文件（PRD 13.3、13.9；章程 B2、B4、B5.1、B6.2、B10、B12）。
      - `d6dd570` **data(fix) 安全修正**：內建 `mixed_grain_rice_cooked`（雜糧飯）改 `["麩質","未確認"]`、拿掉素食（樣品五穀米含麥片）。快照刻意差異：pool 360、matrix 256、recs 8、ui 4 行；比對腳本 `collab/proofs/2026-09-30-verify-grain-fix.js`。**素食與任何過敏原設定的推薦會變（雜糧飯→糙米飯／藜麥），手機測時要知道**。
      - `ac501cc` check-arch C4.17 ③（`"dish"`、`"food"`、`foodTree`）＋自我檢查。
@@ -55,14 +55,14 @@
      - `58af925` **分層資料**：`data/reference/food_tree_map.json`（374 品名人工對應＋理由；318 收、2 筆 split、6 併入、50 不收；10 筆只列內建）、`food_tree_ids_frozen.json`（293 個 fx_）、`tools/build-food-tree.js`（`--dry`、`--report`）、`tools/lib/food-tree-values.js`、`data/food_tree.json`（330 筆，297KB／gzip 32KB）、check-data 分層規則＋自我檢查 31 條。對應時再修標註 3 筆（通心粉加蛋、牛油＝奶油標乳製品、南瓜子改未確認）。
      - `80afeeb` `catalog.foodTree`（`normalizeFoodTree`）＋check-engine 25 項；快照逐字不變；smoke 29 全過。
      - **改對應**：直接改 `data/reference/food_tree_map.json`（或標註檔）→ `node tools/build-food-tree.js` → check-data。撰寫稿只在舊 session 的 scratchpad，已不需要。
-   - **切片 3 抽查審核已完成（2026-09-30，commit `6040ceb`、`c9b04f3`，未推送）**：逐字 `collab/opus-review-log/2026-09-30-d3-spotcheck-review.md`，結論「小修後通過」；decisions #112–#113。魚脯下架（retired）、烏魚改鯔平均值、改收芭樂乾／鳳梨乾（含糖）／餃子皮／芋頭糕（333 筆）、14 筆補過敏原、酪梨改名「酪梨（台灣品種）」。check-data 新規則：分層品項描述明寫的過敏原一律要標（未確認不能代替）、主要營養素比名目、果乾無糖要正面證據；`--report` 加不收品名搜衛福部、有平均值沒用的清單。**以後改對應表或換樣品，先看 `--report` 這兩段**。smoke 29 全過、快照不變。
+   - **切片 3 抽查審核已完成（2026-09-30，commit `6040ceb`、`c9b04f3`，已推送）**：逐字 `collab/opus-review-log/2026-09-30-d3-spotcheck-review.md`，結論「小修後通過」；decisions #112–#113。魚脯下架（retired）、烏魚改鯔平均值、改收芭樂乾／鳳梨乾（含糖）／餃子皮／芋頭糕（333 筆）、14 筆補過敏原、酪梨改名「酪梨（台灣品種）」。check-data 新規則：分層品項描述明寫的過敏原一律要標（未確認不能代替）、主要營養素比名目、果乾無糖要正面證據；`--report` 加不收品名搜衛福部、有平均值沒用的清單。**以後改對應表或換樣品，先看 `--report` 這兩段**。smoke 29 全過、快照不變。
    - **審核留給切片 4 的事**：共用內建 id 的品項一定寫「1 份（代換表）＝30g」，不能只寫「1 份」（今日建議一餐是內建克數，例雞胸 130g）；分層的 `note` 要在明細顯示（牛蒡、桃子、文蛤、酪梨、梅花肉、黑木耳〔鮮〕靠它說明）；nominal_reason 使用者看不到，要不要統一提示在明細設計時決定（日後討論 T6）；素料對素食使用者被擋是刻意的（#113）。
-   - **切片 4 已實作（2026-09-30，commit `2ddab7f`～`dc0bd00`，未推送）**：計畫第二版 [docs/review/2026-09-30-D4-實作計畫.md](../docs/review/2026-09-30-D4-實作計畫.md)（第 8 節審核對照、第 9 節實作時的偏離）；審核逐字 `collab/opus-review-log/2026-09-30-d4-plan-review.md`（一輪，「改完可以開工」）；decisions #114–#117。
+   - **切片 4 已實作（2026-09-30，commit `2ddab7f`～`dc0bd00`；切片 3＋4 於 2026-09-30 推送到 `bfd7abd`，CI 通過）**：計畫第二版 [docs/review/2026-09-30-D4-實作計畫.md](../docs/review/2026-09-30-D4-實作計畫.md)（第 8 節審核對照、第 9 節實作時的偏離）；審核逐字 `collab/opus-review-log/2026-09-30-d4-plan-review.md`（一輪，「改完可以開工」）；decisions #114–#117。
      - `2ddab7f` 文件（PRD 13.3、章程 B4 `source.derivation`）；`e48d7ff` data(format) `source.derivation`（等值推算 3 筆、由生米推算 2 筆）；`79a27e9` engine（`js/engine/foods.js`：`foodsWhereOf`、`foodTreeSections`、份量量詞、出處文字、`allergenSummary`、`foodsBlockLabel`、`sameSampleEntries`、`dislikedMessage`；不吃清單查分層）；`dc0bd00` 畫面（新檔 `js/ui/foods/rows.js`、`tree.js`；子分頁四個；兩層收合＋`openSections`；標不吃捲到該列、明細裡「也標不吃」「也取消」；搜尋含分層與別名）。
      - 使用者決定：鮮奶兩筆不改名、「家裡的飲品」緊接「現成飲料」（#114）；標不吃後自動捲到那一列（#115）。
      - 驗證：check-engine 43095、check-arch、smoke 31、mobile-walkthrough 329（新增 0-2 自煮、2-5、8-7～8-11）全過，截圖看過；快照逐字不變。walkthrough 8-5 開發時偶發失敗一次（記在日後討論）。
-     - **下一步 1：問使用者推送**（切片 3＋4 一起，本機共約 20 個 commit），推送後請使用者跑手機實機腳本的「使用者短清單」第 6 項（已改寫，含雜糧飯修正的推薦影響）。辨認新版：「我的食物」下面有「自煮」。
-     - **下一步 2：切片 5 常吃（選擇器）**（PRD 13.6、13.9）：新 settings key `favorite_refs`、專用函式、備份升版與 fixture；選擇器各分頁最上面「常吃」組；推薦快照逐字不變。要先寫實作計畫送審。
+     - **待使用者**：手機實機腳本「使用者短清單」第 6 項（已改寫成切片 3＋4 的版本，含雜糧飯修正的推薦影響：設了全素、蛋奶素或麩質過敏時推薦不再出現雜糧飯）。辨認新版：「我的食物」下面有「自煮」。使用者回報問題先修，再開切片 5。
+     - **下一步：切片 5 常吃（選擇器）**（PRD 13.6、13.9）：新 settings key `favorite_refs`、專用函式、備份升版與 fixture；選擇器各分頁最上面「常吃」組；推薦快照逐字不變。要先寫實作計畫送審。
    - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
