@@ -22,12 +22,12 @@ const args = process.argv.slice(2);
 const DUP_NAME_ALLOW = new Set(["render", "init", "ready", "$", "onActivate", "mount"]);
 
 // 「我的組合」讀取函式只允許這些檔案 import（C4.16）。
-// 只能加入負責「選擇器、組合管理區、餐點日曆、備份匯出匯入」這四類職責的檔案。
+// 只能加入負責「選擇器、組合管理區、今日建議日期切換的預選編輯、食物資料頁、備份匯出匯入」這五類職責的檔案（章程 C4.16）。
 const SAVED_MEAL_READERS = ["listSavedMeals", "getSavedMeal", "exportAllData"];
 const SAVED_MEAL_READER_FILES = [
   /^js\/ui\/meal-picker\//,        // 選擇器（Phase 0）
   /^js\/ui\/foods\/saved-meals\.js$/, // 組合管理區（平行工作線 C；放在「我的食物」，PRD 13.2）
-  /^js\/ui\/week\/calendar\.js$/,  // 餐點日曆（Phase 3；本週總覽的子頁，decisions #96）
+  // 今日建議日期切換的預選編輯（decisions #118、#119；取代餐點日曆週格子）：檔案做的時候再加，tab-today.js 本身不可以
   /^js\/ui\/backup\.js$/,          // 備份匯出匯入（平行工作線 B-3）
   /^js\/data\/db\.js$/,
 ];
