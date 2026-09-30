@@ -26,8 +26,8 @@ const DUP_NAME_ALLOW = new Set(["render", "init", "ready", "$", "onActivate", "m
 const SAVED_MEAL_READERS = ["listSavedMeals", "getSavedMeal", "exportAllData"];
 const SAVED_MEAL_READER_FILES = [
   /^js\/ui\/meal-picker\//,        // 選擇器（Phase 0）
-  /^js\/ui\/profile\/saved-meals\.js$/, // 組合管理區（平行工作線 C）
-  /^js\/ui\/tab-calendar\.js$/,    // 餐點日曆（Phase 3）
+  /^js\/ui\/foods\/saved-meals\.js$/, // 組合管理區（平行工作線 C；放在「我的食物」，PRD 13.2）
+  /^js\/ui\/week\/calendar\.js$/,  // 餐點日曆（Phase 3；本週總覽的子頁，decisions #96）
   /^js\/ui\/backup\.js$/,          // 備份匯出匯入（平行工作線 B-3）
   /^js\/data\/db\.js$/,
 ];

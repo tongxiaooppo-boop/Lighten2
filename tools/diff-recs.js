@@ -429,6 +429,8 @@ async function snapPicker() {
       ["convenience", "delivery", "drinks"].forEach((t) => {
         emit("picker", k + "/" + t + "/pass", r[t].pass.join(","));
         emit("picker", k + "/" + t + "/blocked", r[t].blocked.join(","));
+        // 不吃置底（PRD 13.9 切片 2 的刻意新增行，只錄有不吃清單的 profile）
+        if (pk === "DISLIKE") emit("picker", k + "/" + t + "/disliked", r[t].disliked.join(","));
       });
       A.takeDom();
     }

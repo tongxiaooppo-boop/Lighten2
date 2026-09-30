@@ -605,20 +605,6 @@ body {
 .dislike-chip:hover {
   background-color: #FBF0E6;
 }
-.disliked-ingredients-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-}
-.dislike-chip-x {
-  margin-left: 0.3rem;
-  border: none;
-  background: transparent;
-  color: #a33;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0 0.2rem;
-}
 
 /* 手動組餐 modal */
 .modal-overlay {
@@ -1042,21 +1028,22 @@ body {
 
 /* ===== 響應式：小螢幕（手機） ===== */
 @media (max-width: 600px) {
-  /* 分頁按鈕列：單列可橫向捲動，避免換行錯位／文字截斷 */
+  /* 分頁按鈕列：固定 5 個、等寬不橫捲（decisions #96）；字放不下時兩行置中 */
   .tab-nav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0.5rem 0.75rem;
-    gap: 0.4rem;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 0.5rem;
+    gap: 0.3rem;
   }
 
   .tab-btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    min-width: 0;
     min-height: 44px;
-    padding: 0.55rem 0.85rem;
-    font-size: 0.95rem;
+    padding: 0.4rem 0.25rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    text-align: center;
+    border-radius: 10px;
   }
 
   /* 表單：欄位改直排單欄，避免橫向擠壓 */
@@ -1183,24 +1170,31 @@ body {
   min-height: 44px;
   font-size: 0.85rem;
 }
-.hide-notice {
+.dislike-notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
-.hide-notice p {
+.dislike-notice p {
   margin: 0;
   flex: 1 1 12rem;
 }
-.hide-notice .secondary-btn {
+.dislike-notice .secondary-btn {
   min-height: 44px;
 }
+.meal-picker-disliked {
+  margin-top: 1rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed #EFE3D2;
+}
 
-/* B-1a：基本資料的「我的品項」區塊（狀態只用中性文字，不上色） */
-.custom-foods-search {
-  flex: 1 1 10rem;
+/* 工作線 D：「我的食物」分頁（狀態只用中性文字，不上色、不警告，章程 C4.13） */
+.foods-search {
+  display: block;
+  width: 100%;
   min-height: 44px;
+  margin: 0.4rem 0 0.6rem;
   padding: 0 0.6rem;
   border: 1px solid #EFE3D2;
   border-radius: 8px;
@@ -1208,34 +1202,78 @@ body {
   font-size: 0.95rem;
   box-sizing: border-box;
 }
-.custom-foods-widget .secondary-btn {
+.foods-subtabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+#tab-foods .secondary-btn {
   min-height: 44px;
 }
-.custom-food-row {
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #EFE3D2;
+#tab-foods .secondary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
-.custom-food-name {
-  font-weight: 600;
-  color: #3A2E22;
+#foods-status:empty {
+  display: none;
 }
-.custom-food-meta,
-.custom-food-status {
-  color: #8A7A63;
-  font-size: 0.85rem;
-  margin-top: 0.15rem;
+.foods-group {
+  margin-top: 0.6rem;
 }
-.custom-foods-archived,
-.custom-foods-hidden {
+.foods-folded {
   margin-top: 0.8rem;
 }
-.custom-foods-archived > summary,
-.custom-foods-hidden > summary {
+.foods-folded > summary {
   min-height: 44px;
   display: flex;
   align-items: center;
   cursor: pointer;
   color: #3A2E22;
+}
+.foods-disliked-all {
+  margin-top: 1.2rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #EFE3D2;
+}
+.food-row {
+  border-bottom: 1px solid #EFE3D2;
+}
+.food-row-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+div.food-row-main {
+  cursor: default;
+}
+.food-name {
+  font-weight: 600;
+  color: #3A2E22;
+}
+.food-row.is-blocked .food-name {
+  color: #8A7A63;
+}
+.food-meta,
+.food-status {
+  color: #8A7A63;
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+.food-detail {
+  padding: 0 0 0.8rem;
+}
+.food-detail-line {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #5A4C3A;
 }
 .builtin-compare {
   margin: 0.6rem 0;

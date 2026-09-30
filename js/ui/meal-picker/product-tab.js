@@ -40,10 +40,10 @@ function qtyChipsHtml(uid, q) {
   }).join("") + "</div>";
 }
 
-// 已選的一行：名稱、份量；內建品項再加「隱藏」「複製成我的版本」（B-1a，PRD 10.2）
+// 已選的一行：名稱、份量；內建品項再加「不吃」「複製成我的版本」（PRD 10.2、13.5；「隱藏」由「不吃」取代，decisions #99）
 export function selectedRowHtml(item, q) {
   const actions = item.is_custom ? "" :
-    '<div class="selected-actions"><button type="button" class="link-btn" data-hide-uid="' + escapeHtml(item.uid) + '">隱藏</button>' +
+    '<div class="selected-actions"><button type="button" class="link-btn" data-dislike-uid="' + escapeHtml(item.uid) + '">不吃</button>' +
     '<button type="button" class="link-btn" data-copy-uid="' + escapeHtml(item.uid) + '">複製成我的版本</button></div>';
   return '<div class="selected-row"><div class="selected-name">' + escapeHtml(item.name) + "</div>" + qtyChipsHtml(item.uid, q) + actions + "</div>";
 }
@@ -55,14 +55,25 @@ export function selectedSectionHtml(items, qtyByUid) {
     items.map(function (it) { return selectedRowHtml(it, qtyByUid[it.uid] || 1); }).join("") + "</div>";
 }
 
-// 隱藏後的提示列＋復原
-export function hideNoticeHtml(notice) {
+// 標不吃後的提示列＋復原（取消不吃）
+export function dislikeNoticeHtml(notice) {
   if (!notice) return "";
-  return '<div class="meal-picker-note hide-notice"><p>已隱藏「' + escapeHtml(notice.name) + '」。可以到基本資料的「我的品項」取消隱藏。</p>' +
-    '<button type="button" class="secondary-btn" data-unhide-uid="' + escapeHtml(notice.uid) + '">復原</button></div>';
+  return '<div class="meal-picker-note dislike-notice"><p>已標不吃「' + escapeHtml(notice.name) + '」，可以在「我的食物」取消。</p>' +
+    '<button type="button" class="secondary-btn" data-undislike-uid="' + escapeHtml(notice.uid) + '">復原</button></div>';
 }
 
-// groups：engine groupForTab 的結果；selected：這個分頁已選的 uid；tabLabel：「超商」「外食」；fillable：原因可不可以補填
+// 「你標了不吃（N）」：放在分頁（或飲料步驟）最下方、預設收合；卡片灰階不能點，旁邊「取消不吃」（PRD 6.3 第 4 點）
+export function dislikedGroupHtml(items, drink) {
+  if (!items || items.length === 0) return "";
+  return '<details class="meal-picker-group meal-picker-disliked"><summary>你標了不吃（' + items.length + "）</summary>" +
+    '<div class="item-grid">' + items.map(function (it) {
+      return '<div class="item-card-wrap">' + cardHtml(it, { drink: drink, blockedReason: "你標了不吃" }) +
+        '<button type="button" class="secondary-btn item-fill-btn" data-undislike-uid="' + escapeHtml(it.uid) + '">取消不吃</button></div>';
+    }).join("") + "</div></details>";
+}
+
+// groups：engine groupForTab 的結果（不含標了不吃的，那些在 dislikedGroupHtml）；selected：這個分頁已選的 uid；
+// tabLabel：「超商」「外食」；fillable：原因可不可以補填
 export function productTabHtml(groups, selected, tabLabel, fillable) {
   const total = groups.reduce(function (n, g) { return n + g.entries.length; }, 0);
   const blocked = groups.reduce(function (n, g) { return n + g.blocked; }, 0);
@@ -70,7 +81,7 @@ export function productTabHtml(groups, selected, tabLabel, fillable) {
   if (total - blocked === 0) {
     html += '<p class="meal-picker-note">這個時段的' + escapeHtml(tabLabel) + "分頁沒有可以選的品項，可以看看其他分頁，或只記飲料。</p>";
   }
-  if (blocked > 0) html += '<p class="meal-picker-note">灰色的 ' + blocked + " 項因你的過敏原／飲食／不吃設定不能選。</p>";
+  if (blocked > 0) html += '<p class="meal-picker-note">灰色的 ' + blocked + " 項因你的過敏原／飲食設定不能選。</p>";
   let role = null;
   groups.forEach(function (g) {
     if (g.is_custom) {
@@ -95,13 +106,13 @@ export function productTabHtml(groups, selected, tabLabel, fillable) {
   return html;
 }
 
-// 飲料步驟（三分頁共用）：「不加」＋可選的飲料，被擋的排最後、灰階寫原因。entries：[{ item, reason }]
-// extraHtml：選中那杯的份量與動作、提示、表單（B-1a）；fillable：被擋的我的品項飲料可不可以補填
-export function drinkStepHtml(entries, drinkUid, stepNo, extraHtml, fillable) {
+// 飲料步驟（三分頁共用）：「不加」＋可選的飲料，被擋的排最後、灰階寫原因。entries：[{ item, reason }]（不含標了不吃的）
+// extraHtml：選中那杯的份量與動作、提示、表單（B-1a）；fillable：被擋的我的品項飲料可不可以補填；dislikedItems：標了不吃的飲料
+export function drinkStepHtml(entries, drinkUid, stepNo, extraHtml, fillable, dislikedItems) {
   let html = '<div class="meal-picker-step-label">' + stepNo + ". 加飲料（選填）</div><div class=\"item-grid\">";
   html += '<button type="button" class="item-card' + (drinkUid ? "" : " selected") + '" data-drink=""><span class="item-card-name">不加</span></button>';
   entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; })).forEach(function (e) {
     html += withFill(cardHtml(e.item, { drink: true, selected: !e.reason && e.item.uid === drinkUid, blockedReason: e.reason }), e.item, e.reason, fillable);
   });
-  return html + "</div>" + (extraHtml || "");
+  return html + "</div>" + dislikedGroupHtml(dislikedItems, true) + (extraHtml || "");
 }

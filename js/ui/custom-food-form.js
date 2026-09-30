@@ -46,9 +46,11 @@ export function valuesFromRecord(rec) {
   };
 }
 
-// 新增用的空白表單值：valid_slots 用角色推的時段（基本資料裡沒有「目前時段」，PRD 10.6）
-export function emptyCustomFoodValues(channel) {
-  return valuesFromRecord({ channel: channel || "convenience", role: "main", valid_slots: quickAddSlots("main", null), allergen_tags: null });
+// 新增用的空白表單值：valid_slots 用角色推的時段（「我的食物」裡沒有「目前時段」，PRD 10.6）；
+// role：「飲品・水果」子分頁預帶 drink（計畫 S14）
+export function emptyCustomFoodValues(channel, role) {
+  const r = role || "main";
+  return valuesFromRecord({ channel: channel || "convenience", role: r, valid_slots: quickAddSlots(r, null), allergen_tags: null });
 }
 
 // 表單值 → 記錄的可編輯欄位（不含 id、created_at、copied_from、archived）；errors：表單層的問題，寫入驗證另由 db.js 做

@@ -7,7 +7,7 @@ import { escapeHtml } from "../../core/html.js";
 import { $, sodiumText, notIncludedText } from "../dom.js";
 import {
   getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting,
-  getHiddenCatalogUids, hideCatalogItem, unhideCatalogItem, copyBuiltinToCustom, updateCustomFood,
+  getHiddenCatalogUids, copyBuiltinToCustom, updateCustomFood, addDislikedIngredient, removeDislikedIngredient,
 } from "../../data/db.js";
 import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
@@ -16,8 +16,8 @@ import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, composeImplicit, oilOptions, draftLogName, copyFromBuiltin,
 } from "../../engine/meal-content.js";
-import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab, placeNewCustom, fillableReason } from "../../engine/picker.js";
-import { productTabHtml, drinkStepHtml, selectedSectionHtml, selectedRowHtml, hideNoticeHtml } from "./product-tab.js";
+import { resolveDefaultMealType, tabOfMealType, partitionByMealType, groupForTab, placeNewCustom, fillableReason, splitDisliked } from "../../engine/picker.js";
+import { productTabHtml, drinkStepHtml, selectedSectionHtml, selectedRowHtml, dislikeNoticeHtml, dislikedGroupHtml } from "./product-tab.js";
 import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml, readCustomFoodInputs, onCustomFoodFormClick } from "../custom-food-form.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
 import { estimateCardHtml } from "./estimate-card.js";
@@ -51,6 +51,7 @@ function emptyCookDraft() {
   return { archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1, implicitOverride: {} };
 }
 
+// 被擋的原因（uid → 文字，picker 快照錄這個）與原因代碼（uid → code，ui 依代碼決定位置，decisions #80）
 function reasonsFor(items, profile) {
   const out = {};
   items.forEach(function (it) {
@@ -58,6 +59,20 @@ function reasonsFor(items, profile) {
     if (!r.ok) out[it.uid] = r.reason;
   });
   return out;
+}
+
+function codesFor(items, profile) {
+  const out = {};
+  items.forEach(function (it) {
+    const r = passesHardFilters(it, profile);
+    if (!r.ok) out[it.uid] = r.code;
+  });
+  return out;
+}
+
+// 選擇器 state 的 items、reasons 不動，只在組 HTML 時把標了不吃的分出來（picker 快照不變的前提）
+function splitOf(list) {
+  return splitDisliked(list.items, function (it) { return list.codes ? list.codes[it.uid] : null; });
 }
 
 async function readLastPicked() {
@@ -95,11 +110,12 @@ export async function openMealPicker(slot, onLogged) {
   rawCustoms.forEach(function (r) { m.customRecords[r.id] = r; });
   m.customs = customs; m.hiddenUids = hiddenUids.slice();
   m.editForm = null; m.notice = null; m.drinkNotice = null;
+  m.dislikedChanged = false; // 不吃清單在選擇器裡改過：關閉時今日建議要重算（計畫 S7）
   ["convenience", "delivery"].forEach(function (t) {
-    m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), selected: [] };
+    m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), codes: codesFor(parts[t], profile), selected: [] };
   });
   m.tabs.delivery.estimates = [];
-  m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile) };
+  m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile), codes: codesFor(parts.drinks, profile) };
   m.drinkUid = null;
   m.qtyByUid = {}; // 份量倍數（PRD 12.3）：uid → 0.5／1.5／2，缺＝1；商品分頁的品項與飲料共用
   m.quickAdd = null;
@@ -206,12 +222,14 @@ function renderPanel() {
   }
   syncQuickAdd();
   const t = m.tabs[m.tab];
-  const groups = groupForTab(t.items, function (it) { return t.reasons[it.uid]; });
+  const split = splitOf(t);
+  const groups = groupForTab(split.rest, function (it) { return t.reasons[it.uid]; });
   syncEditForm();
   let html = m.tab === "delivery" ? estimateCardHtml(t.estimates) : "";
-  html += m.notice && !m.notice.drink ? hideNoticeHtml(m.notice) : "";
+  html += m.notice && !m.notice.drink ? dislikeNoticeHtml(m.notice) : "";
   html += selectedSectionHtml(selectedItems(m.tab), m.qtyByUid);
-  html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab], fillableReason);
+  html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' + productTabHtml(groups, t.selected, TAB_LABELS[m.tab], fillableReason) +
+    dislikedGroupHtml(split.disliked, false);
   if (m.quickAddMessage) html += '<p class="meal-picker-note">' + escapeHtml(m.quickAddMessage) + "</p>";
   html += m.editForm && !m.editForm.drink ? editFormHtml() : m.quickAdd && m.quickAdd.tab === m.tab
     ? quickAddFormHtml(m.quickAdd.values, TAB_LABELS[m.tab], m.profile, quickAddNotes(m.quickAdd.values, m.slot, m.tab, m.profile))
@@ -238,17 +256,18 @@ function renderDrinks() {
   if (!el) return;
   const m = mealPicker;
   syncEditForm();
-  const entries = m.drinks.items.map(function (it) { return { item: it, reason: m.drinks.reasons[it.uid] || null }; });
+  const split = splitOf(m.drinks);
+  const entries = split.rest.map(function (it) { return { item: it, reason: m.drinks.reasons[it.uid] || null }; });
   // 選中那杯的份量與動作放在飲料步驟（三分頁都看得到，B-1a 計畫 2.1 第 17 項）
   const drink = selectedDrink();
   let extra = drink ? '<div class="meal-picker-selected">' + selectedRowHtml(drink, m.qtyByUid[drink.uid] || 1) + "</div>" : "";
-  if (m.notice && m.notice.drink) extra += hideNoticeHtml(m.notice);
+  if (m.notice && m.notice.drink) extra += dislikeNoticeHtml(m.notice);
   if (m.drinkNotice) extra += '<p class="meal-picker-note">' + escapeHtml(m.drinkNotice) + "</p>";
   if (m.editForm && m.editForm.drink) extra += editFormHtml();
-  el.innerHTML = drinkStepHtml(entries, m.drinkUid, m.tab === "cook" ? (m.cookSteps || 2) + 1 : 2, extra, fillableReason);
+  el.innerHTML = drinkStepHtml(entries, m.drinkUid, m.tab === "cook" ? (m.cookSteps || 2) + 1 : 2, extra, fillableReason, split.disliked);
 }
 
-// ---------- B-1a：份量、隱藏、複製成我的版本、補填 ----------
+// ---------- B-1a：份量、不吃、複製成我的版本、補填 ----------
 
 const EDIT_FORM_ID = "picker-custom-food-form";
 
@@ -265,17 +284,17 @@ function syncEditForm() {
   if (f) readCustomFoodInputs(document.getElementById(EDIT_FORM_ID), f.values);
 }
 
-// 依目前的我的品項與隱藏清單重新分頁；還在、還能選的選取與份量保留（隱藏、復原、複製之後用）
+// 依目前的我的品項、隱藏清單與不吃清單重新分頁；還在、還能選的選取與份量保留（不吃、復原、複製之後用）
 function rebuildLists() {
   const m = mealPicker;
   const parts = partitionByMealType(m.catalog.products, m.customs, m.slot, m.hiddenUids);
   ["convenience", "delivery"].forEach(function (t) {
     const old = m.tabs[t];
     const reasons = reasonsFor(parts[t], m.profile);
-    m.tabs[t] = Object.assign({}, old, { items: parts[t], reasons: reasons,
+    m.tabs[t] = Object.assign({}, old, { items: parts[t], reasons: reasons, codes: codesFor(parts[t], m.profile),
       selected: old.selected.filter(function (u) { return parts[t].some(function (it) { return it.uid === u; }) && !reasons[u]; }) });
   });
-  m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, m.profile) };
+  m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, m.profile), codes: codesFor(parts.drinks, m.profile) };
   if (m.drinkUid && !selectedDrink()) m.drinkUid = null;
   const keep = {};
   ["convenience", "delivery"].forEach(function (t) { m.tabs[t].selected.forEach(function (u) { keep[u] = true; }); });
@@ -293,22 +312,28 @@ function unselect(uid) {
   delete m.qtyByUid[uid];
 }
 
-async function hideItem(uid) {
+// 已選段的「不吃」（取代原本的「隱藏」，decisions #99）：寫進不吃清單，這一項移到最下方的不吃組
+async function dislikeItem(uid) {
   const m = mealPicker;
   const p = m.catalog.productsByUid[uid];
   if (!p) return;
-  try { await hideCatalogItem(uid); } catch (err) { console.error(err); alert("隱藏失敗，請重試。"); return; }
+  let list;
+  try { list = await addDislikedIngredient({ type: "item", key: uid, label: p.name }); } catch (err) { console.error(err); alert("存檔失敗，請重試。"); return; }
+  m.profile = Object.assign({}, m.profile, { disliked_ingredients: list });
+  m.dislikedChanged = true;
   unselect(uid);
-  if (m.hiddenUids.indexOf(uid) === -1) m.hiddenUids.push(uid);
   rebuildLists();
   m.notice = { uid: uid, name: p.name, drink: p.role === "drink" };
 }
 
-async function unhideItem(uid) {
+// 取消不吃（提示列的「復原」、不吃組的「取消不吃」）：放回原本的位置並可以選（PRD 6.3）
+async function undislikeItem(uid) {
   const m = mealPicker;
-  try { await unhideCatalogItem(uid); } catch (err) { console.error(err); alert("復原失敗，請重試。"); return; }
-  m.hiddenUids = m.hiddenUids.filter(function (u) { return u !== uid; });
-  rebuildLists(); // 放回原本的位置，不接在最後（PRD 6.3）
+  let list;
+  try { list = await removeDislikedIngredient(uid); } catch (err) { console.error(err); alert("存檔失敗，請重試。"); return; }
+  m.profile = Object.assign({}, m.profile, { disliked_ingredients: list });
+  m.dislikedChanged = true;
+  rebuildLists();
   m.notice = null;
 }
 
@@ -380,7 +405,7 @@ function removeFromLists(uid) {
   return where;
 }
 
-// 份量、隱藏、復原、複製、補填、表單的點擊（商品分頁與飲料步驟共用）。有處理回傳 true。
+// 份量、不吃、取消不吃、複製、補填、表單的點擊（商品分頁與飲料步驟共用）。有處理回傳 true。
 function onB1aClick(e) {
   const m = mealPicker;
   const at = function (sel) { return e.target.closest(sel); };
@@ -392,8 +417,8 @@ function onB1aClick(e) {
     rerender();
     return true;
   }
-  if ((el = at("[data-hide-uid]"))) { hideItem(el.getAttribute("data-hide-uid")).then(rerender); return true; }
-  if ((el = at("[data-unhide-uid]"))) { unhideItem(el.getAttribute("data-unhide-uid")).then(rerender); return true; }
+  if ((el = at("[data-dislike-uid]"))) { dislikeItem(el.getAttribute("data-dislike-uid")).then(rerender); return true; }
+  if ((el = at("[data-undislike-uid]"))) { undislikeItem(el.getAttribute("data-undislike-uid")).then(rerender); return true; }
   if ((el = at("[data-copy-uid]"))) {
     const p = m.catalog.productsByUid[el.getAttribute("data-copy-uid")];
     if (!p) return true;
@@ -732,9 +757,15 @@ export async function onMealSubmit() {
   if (m.onLogged) await m.onLogged();
 }
 
-function closePicker() {
+// 關閉（取消）：選擇器裡改過不吃清單的話，今日建議馬上重算，不用切分頁（計畫 S7）
+export async function closePicker() {
+  const m = mealPicker;
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = true;
+  if (m.dislikedChanged) {
+    m.dislikedChanged = false;
+    if (m.onLogged) await m.onLogged();
+  }
 }
 
 export function initMealPicker() {
