@@ -211,7 +211,8 @@ function buildFoodTree(ctx) {
       per100 = Object.assign({}, ing.per_100g);
       perServing = perServingFromPer100(per100, amount.value);
       source = { type: "derived", ref: (code || ing.source.ref) + " × " + factorStr(amount.value / 100),
-        note: "內建食材 " + ing.id + " 的每 100g × " + amount.value + (amount.unit === "ml" ? "ml（附-1 換算 1ml＝1g）" : "g") + "（跟今日建議同一算法，decisions #103）" };
+        note: "內建食材 " + ing.id + " 的每 100g × " + amount.value + (amount.unit === "ml" ? "ml（附-1 換算 1ml＝1g）" : "g") + "（跟今日建議同一算法，decisions #103）",
+        derivation: ing.cooked_to_raw != null ? "cooked_from_raw" : null }; // 內建熟食由生樣品推算（decisions #116）
       fieldSources = {};
       Object.keys(ing.field_sources || {}).forEach((k) => { if (FIELDS.indexOf(k) !== -1) fieldSources[k] = ing.field_sources[k]; });
     } else {
@@ -222,7 +223,7 @@ function buildFoodTree(ctx) {
       perServing = computePer100g({ source: { type: "derived", ref: part.tfda_id + " × " + factorStr(serveFactor) }, field_sources: fieldSources }, ctx.refs);
       per100 = computePer100g({ source: { type: "derived", ref: part.tfda_id + " × " + factorStr(per100Factor) }, field_sources: fieldSources }, ctx.refs);
       const how = eq ? eq.row : row.table + " " + row.row_text + " " + amount.value + (amount.unit === "ml" ? "ml，附-1「1 杯＝240 公克」換算" : "g");
-      source = { type: "derived", ref: part.tfda_id + " × " + factorStr(serveFactor), note: how };
+      source = { type: "derived", ref: part.tfda_id + " × " + factorStr(serveFactor), note: how, derivation: eq ? "equivalent" : null }; // decisions #116
     }
     const allergen = builtin && !n ? ing.allergen_tags : tag.allergen_tags;
     const vegan = builtin && !n ? ing.vegan : tag.vegan;

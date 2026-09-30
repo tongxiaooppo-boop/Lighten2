@@ -214,6 +214,14 @@ function checkFoodTree(ctx, fileText, frozen, catalogUids) {
   const itemById = {};
   const idCount = {};
   tree.items.forEach((it) => { itemById[it.id] = it; idCount[it.id] = (idCount[it.id] || 0) + 1; });
+  // 推算方式（decisions #116）：equivalent＝對應表有生熟等值列；cooked_from_raw＝內建熟食由生樣品推算；其餘 null
+  const eqIds = {};
+  parts.forEach(({ e, p }) => { if (p.equivalent || e.equivalent) eqIds[p.id] = true; });
+  tree.items.forEach((it) => {
+    const ing = ingById[it.id];
+    const want = eqIds[it.id] ? "equivalent" : ing && ing.cooked_to_raw != null ? "cooked_from_raw" : null;
+    if (it.source.derivation !== want) err("分層 " + it.id + "：source.derivation 應為 " + want + "，實際 " + it.source.derivation + "（decisions #116）");
+  });
 
   // 3. 每一筆的對應：樣品存在、狀態、含糖、缺值填 0、名目熱量、內建一致
   parts.forEach(({ e, p, n }) => {
