@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-09-29 深夜，B-1a、B-3 已推送，待使用者手機測；Phase 0 已驗收）
+# 給接手的 Opus：Lighten2 交接（2026-09-30，工作線 D「我的食物」切片 −1、0、1 完成未推送；下一個是切片 2）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -38,6 +38,12 @@
 - Windows 上寫多行 Python/JS 時 heredoc 常被引號打斷：先用 Write 寫到 scratchpad 再執行。
 
 ## 4. 下一步
+
+0. **工作線 D「我的食物」（2026-09-30 起，目前主線）**：PRD 第 13 節、decisions #74–#95、章程已改（芒果、C4.3、C4.6、C4.8 單品、C4.17 改寫、B4 分層品項欄位、B6.9、B10、B12）。設計草案 [docs/review/2026-09-30-我的食物分頁-設計草案.md](../docs/review/2026-09-30-我的食物分頁-設計草案.md)；審核逐字 `collab/opus-review-log/2026-09-30-my-foods-tab-review.md`（兩輪）、`2026-09-30-workline-d-c3-review.md`（C3 專項）。
+   - 已完成（未推送）：切片 −1 文件（`3ad28af`、`26d2c4c`）、切片 0 拆「蛋白飲/點心棒」（`aafe6c3`，快照不變）、切片 1a 芒果詞彙（`5d3a082`）、1b `tw_tc08` 加未確認（`68e540a`，差異報告在 commit）、手機腳本期望更新（`6a7a350`，219 項全過）。
+   - **下一個：切片 2**（分頁殼、搜尋、超商／外食／現成飲料清單與明細、不吃置底、我的品項搬家、已隱藏組、被擋可複製）。照慣例先寫實作計畫（從要動的程式往外查依賴）→ 獨立審核 → 實作。**分頁列在手機上 5 個就已超寬**（日後討論），切片 2 要先定版面。
+   - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
+   - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
 
 1. **Phase 0 已驗收並推送**（2026-09-29，commit `402ad83`～`0d727b1`；smoke-browser 14 項、mobile-walkthrough 144 項全過）。**已驗收**：使用者 2026-09-29 用手機跑短清單通過。
    - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
