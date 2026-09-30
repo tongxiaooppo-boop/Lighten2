@@ -7,7 +7,8 @@
 const fs = require("fs");
 const path = require("path");
 const { loadReferences, computePer100g, FIELDS, DERIVED_REF } = require("./lib/ingredient-values");
-const { exchangeNames, loadExchange } = require("./lib/food-tree-values");
+const FT = require("./lib/food-tree-values");
+const { exchangeNames, loadExchange } = FT;
 
 const ROOT = path.join(__dirname, "..");
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(ROOT, "data", f), "utf8"));
@@ -87,8 +88,8 @@ function oatsInSampleProblem(tags, text) {
 // 例外依衛福部編號列出處：M1100101 大豆油——高度提煉大豆油不必標黃豆（decisions #89）
 const SAMPLE_ALLERGEN_WORDS = [
   ["麩質", /燕麥|麥片|小麥|大麥|麵粉|麵筋|麩/], ["黃豆", /黃豆|大豆|醬油|豆腐|豆漿/],
-  ["蛋", /(?<!分離|大豆|植物|乳清)蛋(?!白質)/], ["乳製品", /乳(?!化)|奶|起司/],
-  ["魚", /魚/], ["甲殼類", /蝦|蟹/], ["芝麻", /芝麻/], ["花生", /花生/],
+  ["蛋", /(?<!分離|大豆|植物|乳清)蛋(?!白質|黃果)/], ["乳製品", /乳(?!化)|奶|起司/],
+  ["魚", /(?<!章|魷|墨|鮑)魚/], ["甲殼類", /蝦|蟹/], ["芝麻", /芝麻/], ["花生", /花生/],
 ];
 const SAMPLE_WORD_EXCEPTIONS = { M1100101: ["黃豆"] };
 function sampleAllergenGaps(tags, text, code) {
@@ -130,6 +131,228 @@ function checkExchangeReference(table, tags) {
     else if (x.name !== n.name) err("代換表標註 " + n.key + " 的品名「" + x.name + "」跟轉錄「" + n.name + "」不同");
   });
   if (tags.items.length !== names.length) err("代換表標註 " + tags.items.length + " 筆，品名 " + names.length + " 個");
+}
+
+// ---------- 代換表分層品項（章程 B4「分層品項」、B12，decisions #78、#79、#101–#111） ----------
+const USER_PREFIXES = /^(custom_|cdish_|cing_|saved_)/;
+const FX_ID = /^fx_[a-z0-9_]+$/;
+// ctx＝loadFoodTreeContext 的結果；fileText＝data/food_tree.json 原文；frozen＝凍結清單；catalogUids＝現成品項 uid
+function checkFoodTree(ctx, fileText, frozen, catalogUids) {
+  const names = FT.exchangeNames(ctx.table);
+  const nameByKey = {};
+  names.forEach((n) => { nameByKey[n.key] = n; });
+  const tagByKey = {};
+  ctx.tags.items.forEach((t) => { tagByKey[t.key] = t; });
+  const ingById = {};
+  ctx.ingredients.forEach((it) => { ingById[it.id] = it; });
+  const groupOk = (g, sub) => {
+    const G = ctx.map.groups.find((x) => x.code === g);
+    return !!G && (sub == null ? G.subgroups.length === 0 : G.subgroups.some((s) => s.code === sub));
+  };
+  const sameTags = (a, b) => JSON.stringify((a.allergen_tags || []).slice().sort()) === JSON.stringify((b.allergen_tags || []).slice().sort()) &&
+    a.vegan === b.vegan && a.lacto_ovo === b.lacto_ovo;
+
+  // 1. 對應表：374 個品名齊全、動作合法、merge 目標是 item、被併入者標註相同
+  const entryByKey = {};
+  const parts = []; // { e, p, n }
+  ctx.map.entries.forEach((e, i) => {
+    const w = "food_tree_map[" + i + "] " + (e.key || e.builtin_only);
+    if (typeof e.reason !== "string" || e.reason.trim() === "") err(w + "：要寫理由（reason）");
+    if (e.builtin_only) {
+      const ing = ingById[e.builtin_only];
+      if (!ing) err(w + "：builtin_only 找不到內建食材");
+      else if (FT.EXCLUDED_AXES.indexOf(ing.axis) !== -1) err(w + "：烹調法、隱含成分、醬料不列在分層（decisions #102）");
+      if (!groupOk(e.group, e.subgroup)) err(w + "：大類／子類不合法（" + e.group + "／" + e.subgroup + "）");
+      return;
+    }
+    const n = nameByKey[e.key];
+    if (!n) { err(w + "：代換表沒有這個 key"); return; }
+    if (entryByKey[e.key]) err(w + "：key 重複");
+    entryByKey[e.key] = e;
+    if (["item", "merge", "exclude"].indexOf(e.action) === -1) err(w + "：action 只能是 item、merge、exclude");
+    if (e.action === "item") {
+      if (e.group !== FT.GROUP_OF_TABLE[n.row.table]) err(w + "：大類應為 " + FT.GROUP_OF_TABLE[n.row.table] + "（照代換表表號）");
+      if (!groupOk(e.group, e.subgroup)) err(w + "：子類不合法（" + e.subgroup + "）");
+      [e].concat(e.split || []).forEach((p) => parts.push({ e: e, p: p, n: n }));
+    }
+  });
+  parts.forEach(({ e, p }) => { if (!p.tfda_id) err("分層 " + p.id + "（" + e.key + "）：tfda_id 只有出處是 usda 的內建食材可以是 null（代換表對應一定要有衛福部樣品）"); });
+  names.forEach((n) => { if (!entryByKey[n.key]) err("對應表缺 " + n.key + "「" + n.name + "」（374 個品名每個都要有一筆）"); });
+  ctx.map.entries.filter((e) => e.action === "merge").forEach((e) => {
+    const t = entryByKey[e.into];
+    if (!t || t.action !== "item") err("food_tree_map " + e.key + "：merge 的目標 " + e.into + " 不是 item");
+    else if (tagByKey[e.key] && tagByKey[e.into] && !sameTags(tagByKey[e.key], tagByKey[e.into])) err("food_tree_map " + e.key + "：併入 " + e.into + " 但過敏原或素食標註不同（對應錯了？）");
+  });
+
+  // 2. data/food_tree.json 等於重算結果（不手改）
+  let tree;
+  try { tree = FT.buildFoodTree(ctx); } catch (e) { err("代換表分層產生失敗：" + e.message); return; }
+  if (fileText !== null && FT.stringifyFoodTree(tree) !== fileText) {
+    let fileItems = [];
+    try { fileItems = JSON.parse(fileText).items; } catch (e) { /* 原文壞掉就只報一句 */ }
+    const byId = {};
+    fileItems.forEach((it) => { byId[it.id] = JSON.stringify(it); });
+    const diff = tree.items.filter((it) => byId[it.id] !== JSON.stringify(it)).map((it) => it.id);
+    err("data/food_tree.json 跟重算結果不同（不手改，跑 node tools/build-food-tree.js）" + (diff.length ? "：" + diff.slice(0, 10).join("、") : ""));
+  }
+  const itemById = {};
+  const idCount = {};
+  tree.items.forEach((it) => { itemById[it.id] = it; idCount[it.id] = (idCount[it.id] || 0) + 1; });
+
+  // 3. 每一筆的對應：樣品存在、狀態、含糖、缺值填 0、名目熱量、內建一致
+  parts.forEach(({ e, p, n }) => {
+    const w = "分層 " + p.id + "（" + e.key + "）";
+    const ing = ingById[p.id];
+    const r = ctx.refs.tfda[p.tfda_id];
+    if (!p.reason && p !== e) err(w + "：split 要寫理由");
+    if (!r) { err(w + "：衛福部樣品 " + p.tfda_id + " 不存在"); return; }
+    if (FT.STATES.indexOf(p.state) === -1) err(w + "：state 不合法（" + p.state + "）");
+    const eq = p.equivalent || e.equivalent;
+    if (eq) {
+      if (!(eq.grams > 0) || !eq.row) err(w + "：生熟等值推算要有 grams 與 row（代換表的等值列）");
+    } else {
+      const derived = FT.sampleState(r);
+      if (derived && derived !== p.state) err(w + "：樣品狀態是 " + derived + "（" + p.tfda_id + "），對應表記 " + p.state + "（章程 B12）");
+      if (!derived && !p.state_reason) err(w + "：衛福部樣品推不出狀態，對應表要寫 state_reason（章程 B12）");
+    }
+    const sp = FT.sugarProblem(p.sugar, r);
+    if (sp) err(w + "：" + sp + "（decisions #109）");
+    Object.keys(p.zero_fill || {}).forEach((f) => {
+      const zp = FT.zeroFillProblem(p.zero_fill[f], f, r);
+      if (zp) err(w + "：缺值填 0 " + f + "：" + zp + "（章程 B5.1、decisions #107）");
+    });
+    if (ing) {
+      if (FT.EXCLUDED_AXES.indexOf(ing.axis) !== -1) err(w + "：" + ing.axis + " 軸的內建食材不共用分層 id（decisions #102）");
+      if (FT.tfdaCodeOf(ing) !== p.tfda_id) err(w + "：共用內建 id，衛福部樣品要跟內建相同（內建 " + FT.tfdaCodeOf(ing) + "）");
+      if (ing.basis !== p.state) err(w + "：共用內建 id，狀態要等於內建 basis（" + ing.basis + "）");
+    } else if (!FX_ID.test(p.id)) {
+      err(w + "：不是內建食材的分層 id 要是 fx_ 開頭、小寫英文數字底線（格式 ^fx_[a-z0-9_]+$）");
+    }
+    const it = itemById[p.id];
+    if (it) {
+      const nom = FT.nominalKcal(n.row);
+      if (FT.nominalOutOfRange(it.per_serving.kcal, nom).out && !p.nominal_reason) {
+        err(w + "：1 份 " + it.per_serving.kcal + " kcal 超出代換表名目 " + nom.kcal + " 的 0.6–1.6 倍，對應表要寫 nominal_reason（decisions #110）");
+      }
+    }
+  });
+
+  // 4. id 唯一、凍結、使用者前綴、catalog uid（decisions #78、#104）
+  const catalogSet = {};
+  catalogUids.forEach((u) => { catalogSet[u] = true; });
+  tree.items.forEach((it) => {
+    const w = "分層 " + it.id;
+    if (idCount[it.id] > 1) err(w + "：id 出現 " + idCount[it.id] + " 次（共用內建 id 也只能出現一次）");
+    if (catalogSet[it.id]) err(w + "：跟現成品項的 catalog uid 重複（decisions #78）");
+    if (USER_PREFIXES.test(it.id)) err(w + "：不能用使用者資料的前綴 custom_／cdish_／cing_／saved_（decisions #40）");
+    if (/^fx_/.test(it.id) && ingById[it.id]) err(w + "：fx_ id 撞到內建食材 id");
+    if (!!ingById[it.id] !== it.builtin) err(w + "：builtin 要等於「id 是內建食材」");
+    if (/^fx_/.test(it.id) && frozen.ids.indexOf(it.id) === -1) err(w + "：新的 fx_ id 要加進 data/reference/food_tree_ids_frozen.json");
+  });
+  frozen.ids.forEach((id) => { if (!itemById[id]) err("分層 id「" + id + "」已凍結，不得改名；下架要移到 retired（章程 B10、decisions #104）"); });
+  (frozen.retired || []).forEach((x) => {
+    if (itemById[x.id]) err("分層 id「" + x.id + "」已下架（retired），不得重用（decisions #104）");
+    if (frozen.ids.indexOf(x.id) !== -1) err("分層 id「" + x.id + "」同時在 ids 與 retired");
+  });
+
+  // 5. 沒有重複品項
+  const seenSample = {}, seenName = {};
+  tree.items.forEach((it) => {
+    const k1 = it.tfda_id + "|" + it.serving.amount;
+    if (it.tfda_id && seenSample[k1]) err("分層 " + it.id + " 跟 " + seenSample[k1] + " 重複（同一個衛福部樣品、同一個 1 份克數，要合併）");
+    else seenSample[k1] = it.id;
+    const k2 = it.group + "|" + it.name;
+    if (seenName[k2]) err("分層 " + it.id + " 跟 " + seenName[k2] + " 在同一大類同名「" + it.name + "」");
+    else seenName[k2] = it.id;
+  });
+
+  // 6. 過敏原與素食（章程 B6）
+  const bySample = {};
+  tree.items.forEach((it) => {
+    const w = "分層 " + it.id + " " + it.name;
+    checkAllergenTags(w, it.allergen_tags, false);
+    if (typeof it.vegan !== "boolean" || typeof it.lacto_ovo !== "boolean") err(w + "：vegan、lacto_ovo 要是 true/false");
+    if (it.vegan && !it.lacto_ovo) err(w + "：全素一定也是蛋奶素");
+    checkDietTags(w, it);
+    const words = [it.name].concat(it.aliases).join(" ");
+    if (/芒果|檬果/.test(words) && !hasTagOrUnverified(it.allergen_tags, "芒果")) err(w + "：名稱或別名有芒果，芒果要標芒果或未確認（章程 B6.1）");
+    const text = tfdaSampleText(ctx.refs, it.tfda_id);
+    if ((/燕麥/.test(it.name) || oatsInSampleProblem([], text)) && !hasTagOrUnverified(it.allergen_tags, "麩質")) err(w + "：燕麥、麥片要標麩質或未確認（章程 B6.2）");
+    if (it.composite && it.allergen_tags.indexOf(UNVERIFIED) === -1) {
+      const r = ctx.refs.tfda[it.tfda_id];
+      if (!listsCompleteIngredients((r && r["內容物描述"]) || "")) err(w + "：複合品沒標「未確認」，衛福部樣品的內容物描述要列完整成分（章程 B6.3）");
+    }
+    const gaps = sampleAllergenGaps(it.allergen_tags, text, it.tfda_id);
+    if (gaps.length) warn(w + "：衛福部樣品 " + it.tfda_id + " 的名稱或描述提到「" + gaps.join("、") + "」，標註沒有也沒有未確認（章程 B6.2，請確認）");
+    if (it.tfda_id) (bySample[it.tfda_id] = bySample[it.tfda_id] || []).push({ who: "分層 " + it.id, t: it });
+    else if (!(it.builtin && ingById[it.id].source.type === "usda")) err(w + "：tfda_id 只有出處是 usda 的內建食材可以是 null");
+  });
+  ctx.ingredients.forEach((ing) => {
+    const code = FT.tfdaCodeOf(ing);
+    if (code && bySample[code] && !bySample[code].some((x) => x.t.id === ing.id)) bySample[code].push({ who: "內建 " + ing.id, t: ing });
+  });
+  Object.keys(bySample).forEach((code) => {
+    const list = bySample[code];
+    list.slice(1).forEach((x) => {
+      if (!sameTags(list[0].t, x.t)) err("同一個衛福部樣品 " + code + " 的標註不同：" + list[0].who + " 跟 " + x.who + "（章程 B6.9）");
+    });
+  });
+}
+
+// 分層規則的工具自我檢查：每條規則一個刻意改壞的例子要被擋、原資料不被擋
+function selfTestFoodTree(refs, reports) {
+  const T = refs.tfda;
+  const bad = (what) => err("工具自我檢查（分層）：" + what);
+  // 純函式
+  if (FT.sampleState({ "內容物描述": "樣品狀態:濕麵條(麵粉,食油); 前處理描述:x" }) !== "wet") bad("「濕麵條」沒判成 wet");
+  if (FT.sampleState({ "內容物描述": "樣品狀態:生,冷凍包裝; 前處理描述:x" }) !== "raw") bad("「生,冷凍包裝」沒判成 raw");
+  if (FT.sampleState({ "內容物描述": "樣品狀態:冷凍包裝(麵粉,生鮮蝦)" }) !== "as_is") bad("括號裡的「生」被當成生的");
+  if (FT.sampleState({ "內容物描述": "樣品狀態:普遍系", "食品分類": "水果類" }) !== "raw") bad("有品系、沒關鍵字的水果沒判成 raw");
+  if (FT.sampleState({ "內容物描述": "前處理描述:混合均勻", "食品分類": "水果類" }) !== null) bad("沒有樣品狀態的卻推得出狀態");
+  if (!FT.sugarProblem("none", T.Q8100201)) bad("芒果青（糖漬）標無糖卻沒擋");
+  if (FT.sugarProblem("none", T.D1710101)) bad("葡萄乾（果乾(無加糖)）標無糖卻被擋");
+  if (!FT.sugarProblem("added", T.D1710101)) bad("無加糖的樣品標含糖卻沒擋");
+  if (!FT.zeroFillProblem("動物性食材", "fiber_g", T.R6100501)) bad("鱈魚丸（加工品）纖維填 0 卻沒擋");
+  if (!FT.zeroFillProblem("動物性食材", "fiber_g", T.R5600201)) bad("豬肉酥（加工品）纖維填 0 卻沒擋");
+  if (!FT.zeroFillProblem("水果", "sat_fat_g", T.D4410101)) bad("無花果乾（脂肪 > 0.5）飽和脂肪填 0 卻沒擋");
+  if (!FT.zeroFillProblem("動物性食材", "sat_fat_g", T.I04024)) bad("動物性食材填飽和脂肪卻沒擋");
+  if (!FT.zeroFillProblem("看起來差不多", "fiber_g", T.I04024)) bad("白名單以外的理由卻沒擋");
+  if (FT.zeroFillProblem("動物性食材", "fiber_g", T.I04024)) bad("雞胸肉纖維填 0 卻被擋");
+  // 整份檢查：拿真的對應表改一處
+  const ctx0 = FT.loadFoodTreeContext(refs, readJson);
+  const frozen0 = readJson("reference/food_tree_ids_frozen.json");
+  const uids0 = readJson("convenience_items.json").map((p) => p.id).concat(readJson("taiwan_items.json").map((p) => "tw_" + p.id));
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const run = (mutate, opts) => () => {
+    const ctx = Object.assign({}, ctx0, { map: clone(ctx0.map), tags: clone(ctx0.tags) });
+    const frozen = clone(frozen0);
+    mutate(ctx, frozen);
+    checkFoodTree(ctx, null, frozen, (opts && opts.uids) || uids0);
+  };
+  const entry = (ctx, key) => ctx.map.entries.find((e) => e.key === key);
+  const cases = [
+    [/decisions #78|./, "原資料", () => {}, false],
+    [/對應表缺/, "少一個品名", (c) => { c.map.entries = c.map.entries.filter((e) => e.key !== "附-2#1#1"); }],
+    [/merge 的目標/, "merge 指向不收的列", (c) => { entry(c, "附-5#3#1").into = "附-5#34#1"; }],
+    [/fx_ id 撞到內建|只能出現一次|builtin 要等於/, "fx_ 撞內建 id", (c) => { entry(c, "附-2#1#1").id = "quinoa"; }],
+    [/catalog uid/, "撞現成品項 uid", () => {}, true, { uids: uids0.concat(["fx_whole_milk"]) }],
+    [/前綴|格式/, "使用者資料前綴", (c) => { entry(c, "附-2#1#1").id = "cing_milk"; }],
+    [/格式/, "fx_ 格式", (c) => { entry(c, "附-2#1#1").id = "fx_Milk"; }],
+    [/retired/, "重用已下架的 id", (c, f) => { f.retired = [{ id: "fx_whole_milk", date: "2026-09-30", reason: "x" }]; }],
+    [/B6\.9/, "同一樣品不同標註", (c) => { c.tags.items.find((t) => t.key === "附-4#2#2").allergen_tags = ["麩質", "黃豆", "未確認"]; }],
+    [/重複/, "重複品項（葵花油）", (c) => { const e = entry(c, "附-7#10#1"); Object.assign(e, clone(entry(c, "附-7#5#1")), { key: "附-7#10#1", id: "fx_sunflower_oil_2", name: "葵花油" }); }],
+    [/樣品狀態/, "狀態不符（油麵記乾）", (c) => { entry(c, "附-4#18#1").state = "dry"; }],
+    [/無糖/, "芒果青標無糖", (c) => { entry(c, "附-6#66#1").sugar = "none"; }],
+    [/只適用/, "熱狗纖維填 0", (c) => { entry(c, "附-3-3#15#1").zero_fill = { fiber_g: "動物性食材" }; }],
+    [/芒果/, "別名有芒果沒標", (c) => { entry(c, "附-6#2#1").aliases = ["芒果柳丁"]; }],
+    [/nominal_reason/, "名目熱量超出沒寫理由", (c) => { entry(c, "附-3-1#5#2").nominal_reason = null; }],
+    [/usda/, "tfda_id 是 null 卻不是 USDA 內建", (c) => { entry(c, "附-2#1#1").tfda_id = null; }],
+    [/不共用分層 id|樣品要跟內建相同/, "烹調用油共用 id", (c) => { entry(c, "附-7#1#1").id = "cooking_oil"; }],
+  ];
+  cases.forEach(([re, what, mutate, expect, opts]) => {
+    const hit = reports(re, run(mutate, opts));
+    if (expect === false ? reports(/./, run(mutate, opts)) : !hit) bad(expect === false ? "原資料卻報錯" : what + "卻沒報錯");
+  });
 }
 
 // 二手官方數字凍結（章程 B2.2）：frozen＝{ "檔名.id": { 欄位: 值 } }，productByKey＝同樣 key 的品項
@@ -237,6 +460,10 @@ function checkIngredients(list, refs) {
       if (FIELDS.indexOf(k) === -1 && k !== "cooked_to_raw") err(w + "：field_sources 有不認得的欄位 " + k);
       if (!fsrc || typeof fsrc.type !== "string" || !fsrc.ref) err(w + "：field_sources." + k + " 要有 type 與 ref");
       if (fsrc && "value" in fsrc && !(fsrc.note && fsrc.note.length > 0)) err(w + "：field_sources." + k + " 填了數值，note 要寫理由");
+      if (fsrc && "value" in fsrc) {
+        const zp = FT.zeroFillProblem(fsrc.ref, k, refs.tfda[tfdaSampleCode(src)]);
+        if (zp) err(w + "：缺值填 0 " + k + "：" + zp + "（章程 B5.1、decisions #107）");
+      }
     });
 
     // 生熟（章程 B5.3）：熟重要有 cooked_to_raw 與公式，公式倍數要跟 cooked_to_raw 一致
@@ -504,6 +731,7 @@ function checkToolRules(refs) {
     if (reports(/./, () => checkExchangeReference(ex.table, ex.tags))) err("工具自我檢查：代換表參考資料沒被改卻報錯");
   }
   if (reports(/素食依據/, product({ name: "牛蒡絲", allergen_tags: [], vegan: true, lacto_ovo: true }))) err("工具自我檢查：牛蒡標全素卻被當成肉類");
+  selfTestFoodTree(refs, reports);
   // T13：id 全資料庫唯一
   if (!reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["超商", "egg"]]))) err("工具自我檢查：食材與超商 id 重複卻沒報錯");
   if (reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["台式", "tw_egg"]]))) err("工具自我檢查：不同 id 卻報重複");
@@ -538,6 +766,11 @@ function main() {
   console.log("[代換表參考資料]");
   const exchange = loadExchange();
   checkExchangeReference(exchange.table, exchange.tags);
+  console.log("[代換表分層品項]");
+  const treeCtx = FT.loadFoodTreeContext(refs, readJson);
+  const treeText = fs.existsSync(path.join(ROOT, "data", "food_tree.json")) ? fs.readFileSync(path.join(ROOT, "data", "food_tree.json"), "utf8") : "";
+  const catalogUids = readJson("convenience_items.json").map((p) => p.id).concat(readJson("taiwan_items.json").map((p) => "tw_" + p.id));
+  checkFoodTree(treeCtx, treeText, readJson("reference/food_tree_ids_frozen.json"), catalogUids);
 
   // 食材 id 跟現成品項 uid（台式加 tw_）不得重複
   checkUniqueIds(ingredients.map((it) => ["食材", it.id])
