@@ -30,6 +30,41 @@ function dietTags(it) {
   return it.vegan ? ["全素"] : it.lacto_ovo ? ["蛋奶素"] : [];
 }
 
+// ---------- 出處類別（章程 B3「由 catalog 推導」、PRD 12.1、decisions #98） ----------
+// 每個營養欄位歸成 "tfda"（衛福部）、"label"（包裝或官網標示）、"estimate"（估算），只給「我的食物」明細顯示；
+// 推薦、候選池、紀錄快照都不讀。derived 的三種寫法由 check-data 保證（整筆衛福部換算、缺值填 0、熱量反推碳水）。
+const SOURCE_FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+const TFDA_ROW_REF = /^([A-Z0-9]+) × ([0-9.]+)$/;
+const CLASS_RANK = { estimate: 0, label: 1, tfda: 2 };
+const CLASS_OF_TYPE = { tfda: "tfda", label: "label", official_web: "label", estimate: "estimate", label_unsourced: "estimate" };
+
+function productSourceClass(it) {
+  const src = it.source || {};
+  const tfdaRow = src.type === "derived" && TFDA_ROW_REF.test(src.ref || "");
+  const of = function (k) { return (it.field_sources && it.field_sources[k]) || src; };
+  const base = function (k) {
+    const f = of(k);
+    if (f.type === "derived") return tfdaRow ? "tfda" : null; // 反推碳水另外算；其他寫法 check-data 擋
+    return CLASS_OF_TYPE[f.type] || "estimate";
+  };
+  const out = {};
+  SOURCE_FIELDS.forEach(function (k) { out[k] = base(k); });
+  if (out.carb_g === null) {
+    // 由熱量、蛋白質、脂肪反推的碳水：承襲三欄裡最弱的類別
+    out.carb_g = ["kcal", "protein_g", "fat_g"].map(function (k) { return out[k] || "estimate"; })
+      .reduce(function (a, b) { return CLASS_RANK[a] <= CLASS_RANK[b] ? a : b; });
+  }
+  SOURCE_FIELDS.forEach(function (k) { if (out[k] === null) out[k] = "estimate"; });
+  if (it.kcal_basis === "midpoint") out.kcal = "estimate"; // 區間中點
+  return out;
+}
+
+// 這一筆用到的衛福部整合編號（明細附編號，PRD 12.2）
+function productTfdaIds(it) {
+  const m = TFDA_ROW_REF.exec((it.source || {}).ref || "");
+  return (it.source || {}).type === "derived" && m ? [m[1]] : [];
+}
+
 // 現成品項（章程 B4）。isTaiwan：台式外食（taiwan_items.json），uid 加 "tw_" 前綴避免跟超商 id 撞到。
 // kcal_rep：熱量是明確的代表值才有（kcal_basis=stated）；由區間取中點的是 null，區間太寬時不進推薦池（pool.js）。
 function fromProduct(it, isTaiwan) {
@@ -48,6 +83,8 @@ function fromProduct(it, isTaiwan) {
     diet_tags: dietTags(it),
     allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED],
     note: isTaiwan ? null : orNull(it.note), is_taiwan: isTaiwan,
+    kcal_basis: it.kcal_basis === "midpoint" ? "midpoint" : "stated",
+    source_class: productSourceClass(it), tfda_ids: productTfdaIds(it),
   };
 }
 
@@ -66,6 +103,7 @@ export function fromCustomFood(f) {
     tier: "🟢", diet_tags: dietTags({ vegan: f.vegan === true, lacto_ovo: f.lacto_ovo === true }),
     allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
     note: orNull(f.note), is_taiwan: false, is_custom: true, archived: f.archived === true,
+    source_class: null, tfda_ids: [],
   };
 }
 

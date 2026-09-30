@@ -521,6 +521,70 @@ export async function saveProfile(profile) {
   return profile;
 }
 
+// 不吃清單的語意（PRD 13.5、decisions #99）：純函式，專用寫入函式與 tools/lib/fake-db.mjs 共用，check-engine 直接測。
+// 只比 key（decisions #40）；都回新陣列，不改傳入的。
+function dislikedEntryProblem(entry) {
+  if (!isPlainObject(entry)) return "不吃的項目要是 { type, key, label }";
+  if (typeof entry.type !== "string" || entry.type === "") return "不吃的項目缺 type";
+  if (typeof entry.key !== "string" || entry.key === "") return "不吃的項目缺 key";
+  if (typeof entry.label !== "string") return "不吃的項目的 label 要是字串";
+  return null;
+}
+
+export function addDislikedTo(list, entry) {
+  const problem = dislikedEntryProblem(entry);
+  if (problem) throw new Error("[db.js] " + problem);
+  const cur = Array.isArray(list) ? list.slice() : [];
+  if (cur.some(function (d) { return d && d.key === entry.key; })) return cur;
+  return cur.concat([{ type: entry.type, key: entry.key, label: entry.label }]);
+}
+
+// 同 key 的全部移除（舊版以 type＋key 去重，可能留下同 key 兩筆）
+export function removeDislikedFrom(list, key) {
+  return (Array.isArray(list) ? list : []).filter(function (d) { return !(d && d.key === key); });
+}
+
+// 基本資料「計算」：表單送什麼都不影響不吃清單，一律用資料庫裡的
+export function mergeProfileForm(saved, form) {
+  return Object.assign({}, form, { disliked_ingredients: saved && Array.isArray(saved.disliked_ingredients) ? saved.disliked_ingredients.slice() : [] });
+}
+
+function changeDisliked(fn, change) {
+  return withStores([STORE.userProfile], "readwrite", function (s) {
+    const store = s[STORE.userProfile];
+    return reqPromise(store.get(PROFILE_KEY)).then(function (p) {
+      if (!p) throw new Error("[db.js] " + fn + "：還沒有基本資料");
+      const list = change(p.disliked_ingredients);
+      return reqPromise(store.put(Object.assign({}, p, { disliked_ingredients: list }), PROFILE_KEY)).then(function () { return list; });
+    });
+  });
+}
+
+// 標不吃（推薦卡片「順便不要」、選擇器、我的食物）。回傳新清單。
+export async function addDislikedIngredient(entry) {
+  const problem = dislikedEntryProblem(entry);
+  if (problem) throw new Error("[db.js] addDislikedIngredient：" + problem);
+  return changeDisliked("addDislikedIngredient", function (list) { return addDislikedTo(list, entry); });
+}
+
+// 取消不吃。清單裡沒有也不丟錯。回傳新清單。
+export async function removeDislikedIngredient(key) {
+  if (typeof key !== "string" || key === "") throw new Error("[db.js] removeDislikedIngredient 需要 key" + (Array.isArray(key) ? "，不能傳陣列" : ""));
+  return changeDisliked("removeDislikedIngredient", function (list) { return removeDislikedFrom(list, key); });
+}
+
+// 基本資料「計算」專用：一個 transaction 讀舊的 profile，不吃清單保留資料庫裡的。回傳存進去的 profile。
+export async function saveProfileForm(form) {
+  assertRecord(form, "user_profile");
+  return withStores([STORE.userProfile], "readwrite", function (s) {
+    const store = s[STORE.userProfile];
+    return reqPromise(store.get(PROFILE_KEY)).then(function (saved) {
+      const next = mergeProfileForm(saved, form);
+      return reqPromise(store.put(next, PROFILE_KEY)).then(function () { return next; });
+    });
+  });
+}
+
 // ---------- 2. weight_log ----------
 
 // 同一天覆寫

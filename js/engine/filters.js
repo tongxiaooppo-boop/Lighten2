@@ -62,7 +62,8 @@ function passesDiet(dietTagSets, dietRestriction) {
   });
 }
 
-// 回傳 { ok, reason }。item 有兩種形狀：推薦的候選組合（有 diet_tag_sets/components/protein_id 等），
+// 回傳 { ok, reason, code }。code："allergen"｜"diet"｜"disliked"｜null——ui 依代碼決定位置（decisions #80），
+// 原因文字給人看、也是 picker 快照的內容，不要拿來分支。item 有兩種形狀：推薦的候選組合（有 diet_tag_sets/components/protein_id 等），
 // 以及挑選器裡的單一品項（有 allergen_tags/diet_tags/uid），兩種都要能吃。
 export function passesHardFilters(item, profile) {
   const p = profile || {};
@@ -71,23 +72,23 @@ export function passesHardFilters(item, profile) {
   const userAllergens = normalizeAllergens(p.allergens);
   const allergenTags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [UNVERIFIED_ALLERGEN];
   if (!passesAllergens(allergenTags, userAllergens)) {
-    return { ok: false, reason: allergenTags.indexOf(UNVERIFIED_ALLERGEN) !== -1 ? "成分未確認" : "含過敏原" };
+    return { ok: false, reason: allergenTags.indexOf(UNVERIFIED_ALLERGEN) !== -1 ? "成分未確認" : "含過敏原", code: "allergen" };
   }
 
   // 2. 飲食限制：單一品項沒有多成分概念時包成 [diet_tags || []]。
   const dietTagSets = Array.isArray(item.diet_tag_sets) ? item.diet_tag_sets : [item.diet_tags || []];
   if (!passesDiet(dietTagSets, p.diet_restriction)) {
-    return { ok: false, reason: "飲食限制未確認" };
+    return { ok: false, reason: "飲食限制未確認", code: "diet" };
   }
 
   // 3. 不吃食材：命中 profile.disliked_ingredients 就排除。
   const disliked = Array.isArray(p.disliked_ingredients) ? p.disliked_ingredients : [];
   if (disliked.length > 0) {
     const hit = findDislikedHit(item, disliked);
-    if (hit) return { ok: false, reason: "你已設定不吃：" + hit };
+    if (hit) return { ok: false, reason: "你已設定不吃：" + hit, code: "disliked" };
   }
 
-  return { ok: true, reason: null };
+  return { ok: true, reason: null, code: null };
 }
 
 // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
