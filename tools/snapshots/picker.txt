@@ -51,7 +51,7 @@ open/VEG/afternoon_tea/tab	convenience
 open/VEG/afternoon_tea/convenience/pass	
 open/VEG/afternoon_tea/convenience/blocked	conv_pk03:成分未確認
 open/VEG/afternoon_tea/delivery/pass	
-open/VEG/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,tw_tc07:含過敏原,tw_tc08:飲食限制未確認,custom_a:飲食限制未確認,custom_b:成分未確認
+open/VEG/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,tw_tc07:含過敏原,tw_tc08:成分未確認,custom_a:飲食限制未確認,custom_b:成分未確認
 open/VEG/afternoon_tea/drinks/pass	tw_bf02,tw_dr03,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_pk04,custom_c
 open/VEG/afternoon_tea/drinks/blocked	tw_dr01:成分未確認,tw_dr02:成分未確認,tw_dr04:成分未確認,conv_dr05:含過敏原,conv_dr06:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認
 open/VEG/dinner/tab	cook
@@ -120,8 +120,8 @@ open/ALLERGY/lunch/drinks/blocked	tw_bf02:含過敏原,tw_dr01:成分未確認,t
 open/ALLERGY/afternoon_tea/tab	convenience
 open/ALLERGY/afternoon_tea/convenience/pass	
 open/ALLERGY/afternoon_tea/convenience/blocked	conv_pk03:成分未確認
-open/ALLERGY/afternoon_tea/delivery/pass	tw_tc07,tw_tc08,custom_a
-open/ALLERGY/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,custom_b:成分未確認
+open/ALLERGY/afternoon_tea/delivery/pass	tw_tc07,custom_a
+open/ALLERGY/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,tw_tc08:成分未確認,custom_b:成分未確認
 open/ALLERGY/afternoon_tea/drinks/pass	tw_dr03,tw_dr05,tw_dr08,tw_dr09,tw_dr10
 open/ALLERGY/afternoon_tea/drinks/blocked	tw_bf02:含過敏原,tw_dr01:成分未確認,tw_dr02:成分未確認,tw_dr04:成分未確認,tw_dr06:含過敏原,tw_dr07:含過敏原,conv_dr01:含過敏原,conv_dr02:含過敏原,conv_dr03:含過敏原,conv_dr04:含過敏原,conv_dr05:含過敏原,conv_dr06:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認,conv_pk04:含過敏原,custom_c:含過敏原
 open/ALLERGY/dinner/tab	cook
@@ -156,7 +156,7 @@ open/LEGACY_ALLERGY/afternoon_tea/tab	convenience
 open/LEGACY_ALLERGY/afternoon_tea/convenience/pass	
 open/LEGACY_ALLERGY/afternoon_tea/convenience/blocked	conv_pk03:成分未確認
 open/LEGACY_ALLERGY/afternoon_tea/delivery/pass	tw_tc07,custom_a
-open/LEGACY_ALLERGY/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,tw_tc08:含過敏原,custom_b:成分未確認
+open/LEGACY_ALLERGY/afternoon_tea/delivery/blocked	tw_tc01:成分未確認,tw_tc02:成分未確認,tw_tc03:成分未確認,tw_tc04:成分未確認,tw_tc05:成分未確認,tw_tc06:成分未確認,tw_tc08:成分未確認,custom_b:成分未確認
 open/LEGACY_ALLERGY/afternoon_tea/drinks/pass	tw_dr03,tw_dr06,tw_dr07,tw_dr09,conv_dr01,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_pk04,custom_c
 open/LEGACY_ALLERGY/afternoon_tea/drinks/blocked	tw_bf02:含過敏原,tw_dr01:成分未確認,tw_dr02:成分未確認,tw_dr04:成分未確認,tw_dr05:含過敏原,tw_dr08:含過敏原,tw_dr10:含過敏原,conv_dr06:成分未確認,conv_pk01:成分未確認,conv_pk02:成分未確認
 open/LEGACY_ALLERGY/dinner/tab	cook
