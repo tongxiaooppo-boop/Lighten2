@@ -122,6 +122,23 @@ function fromIngredient(it) {
   });
 }
 
+// 代換表分層品項（data/food_tree.json，章程 B4「分層品項」、PRD 13.3、decisions #92）：1 份與每 100g 的營養由 tools 預先算好（章程 C2），
+// 這裡只補 uid（＝id，不吃清單與硬性過濾用）、allergen_tags（缺欄＝未確認，decisions #77）、diet_tags（全素 ⊃ 蛋奶素）。
+// 推薦候選池不讀（章程 C4.17 ③）；沒傳（測試合成的 catalog）就是空的。
+function normalizeFoodTree(tree) {
+  const t = tree || { groups: [], items: [] };
+  const items = (t.items || []).map(function (it) {
+    return Object.assign({}, it, {
+      uid: it.id,
+      allergen_tags: Array.isArray(it.allergen_tags) ? it.allergen_tags : [UNVERIFIED],
+      diet_tags: dietTags(it),
+    });
+  });
+  const byId = {};
+  items.forEach(function (it) { byId[it.id] = it; });
+  return { groups: t.groups || [], items: items, byId: byId };
+}
+
 export function buildCatalog(raw) {
   const products = raw.convenienceItems.map(function (it) { return fromProduct(it, false); })
     .concat(raw.taiwanItems.map(function (it) { return fromProduct(it, true); }));
@@ -141,6 +158,7 @@ export function buildCatalog(raw) {
     archetypes: raw.archetypes,
     products: products,
     productsByUid: productsByUid,
+    foodTree: normalizeFoodTree(raw.foodTree),
   };
 }
 
@@ -154,8 +172,9 @@ export function loadCatalog() {
       fetchJson("data/convenience_items.json"),
       fetchJson("data/taiwan_items.json"),
       fetchJson("data/dish_archetypes.json"),
+      fetchJson("data/food_tree.json"),
     ]).then(function (r) {
-      return buildCatalog({ ingredients: r[0], convenienceItems: r[1], taiwanItems: r[2], archetypes: r[3] });
+      return buildCatalog({ ingredients: r[0], convenienceItems: r[1], taiwanItems: r[2], archetypes: r[3], foodTree: r[4] });
     }).catch(function (err) {
       _catalog = null;
       throw err;
