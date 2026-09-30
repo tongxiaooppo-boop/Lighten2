@@ -2,7 +2,8 @@
 // 讀取順序照 IndexedDB：依日期範圍讀的依 log_date、再依 id 排序；custom_foods 依 id 排序。
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
-import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch } from "../../js/data/db.js";
+import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
+  addDislikedTo, removeDislikedFrom, mergeProfileForm } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -30,6 +31,28 @@ export async function saveProfile(p) {
   S().profile = clone(p);
   S().writes.push({ op: "saveProfile", disliked: clone(p.disliked_ingredients) });
   return p;
+}
+
+// 不吃清單的專用寫入（語意用 db.js 同一份純函式；寫入紀錄跟 saveProfile 同形狀）
+function writeDisliked(op, list) {
+  if (!S().profile) throw new Error("[db.js] " + op + "：還沒有基本資料");
+  S().profile = Object.assign({}, S().profile, { disliked_ingredients: clone(list) });
+  S().writes.push({ op: op, disliked: clone(list) });
+  return clone(list);
+}
+export async function addDislikedIngredient(entry) {
+  const list = addDislikedTo(S().profile ? S().profile.disliked_ingredients : [], entry);
+  return writeDisliked("addDislikedIngredient", list);
+}
+export async function removeDislikedIngredient(key) {
+  if (typeof key !== "string" || key === "") throw new Error("[db.js] removeDislikedIngredient 需要 key");
+  return writeDisliked("removeDislikedIngredient", removeDislikedFrom(S().profile ? S().profile.disliked_ingredients : [], key));
+}
+export async function saveProfileForm(form) {
+  const next = mergeProfileForm(S().profile, form);
+  S().profile = clone(next);
+  S().writes.push({ op: "saveProfileForm", disliked: clone(next.disliked_ingredients) });
+  return clone(next);
 }
 
 export async function addWeightLog(entry) {

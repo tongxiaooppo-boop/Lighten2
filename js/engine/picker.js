@@ -33,7 +33,15 @@ export function fitsSlot(item, slot) {
 // products：catalog.products；customs：已經過 fromCustomFood 的我的品項（archived 的不列出）。
 // hiddenUids：使用者隱藏的內建品項（PRD 10.2；可省略＝不過濾），只影響內建，不影響我的品項。
 export function partitionByMealType(products, customs, slot, hiddenUids) {
-  const fits = function (it) { return fitsSlot(it, slot); };
+  return partition(products, customs, function (it) { return fitsSlot(it, slot); }, hiddenUids);
+}
+
+// 「我的食物」分頁用：同樣的分法，但不套時段（每個品項都列出來）
+export function partitionAllChannels(products, customs, hiddenUids) {
+  return partition(products, customs, function () { return true; }, hiddenUids);
+}
+
+function partition(products, customs, fits, hiddenUids) {
   const own = (customs || []).filter(function (it) { return !it.archived && fits(it); });
   const hidden = {};
   (hiddenUids || []).forEach(function (u) { hidden[u] = true; });
@@ -49,6 +57,16 @@ export function partitionByMealType(products, customs, slot, hiddenUids) {
       .concat(builtin.filter(function (p) { return !p.is_taiwan && !nonDrink(p); }))
       .concat(own.filter(function (p) { return !nonDrink(p); })),
   };
+}
+
+// 把「你標了不吃」的品項移到另一組（PRD 6.3 第 4 點：不吃的放最下方收合）。codeOf(item)：passesHardFilters 的 code。
+// 只在 ui 組 HTML 時用；選擇器 state 裡的 items、reasons 的內容與順序不動（picker 快照不變的前提）。
+// 又不吃又被過敏原或飲食擋的，code 是 allergen／diet，留在 rest 裡原位灰掉（decisions #80）。
+export function splitDisliked(items, codeOf) {
+  const rest = [];
+  const disliked = [];
+  items.forEach(function (it) { (codeOf(it) === "disliked" ? disliked : rest).push(it); });
+  return { rest: rest, disliked: disliked };
 }
 
 const ROLE_ORDER = ["main", "side", "snack"];
@@ -120,11 +138,11 @@ export function quickAddProblem(item, profile) {
     const mine = normalizeAllergens(p.allergens);
     const names = mine.list.concat(mine.unknown).join("、");
     const tags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [UNVERIFIED_ALLERGEN];
-    if (res.reason === "成分未確認") blocked = "你設了過敏原「" + names + "」，過敏原未確認的品項不能選。";
-    else if (res.reason === "含過敏原") {
+    if (res.code === "allergen" && res.reason === "成分未確認") blocked = "你設了過敏原「" + names + "」，過敏原未確認的品項不能選。";
+    else if (res.code === "allergen") {
       const hit = mine.list.filter(function (a) { return tags.indexOf(a) !== -1; });
       blocked = "你設了過敏原「" + hit.join("、") + "」，含有它的品項不能選。";
-    } else if (res.reason === "飲食限制未確認") blocked = "你設了飲食限制「" + p.diet_restriction + "」，沒有宣告符合的品項不能選。";
+    } else if (res.code === "diet") blocked = "你設了飲食限制「" + p.diet_restriction + "」，沒有宣告符合的品項不能選。";
     else blocked = res.reason;
   }
   const tags = Array.isArray(item.allergen_tags) ? item.allergen_tags : [];

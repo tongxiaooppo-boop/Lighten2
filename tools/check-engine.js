@@ -74,6 +74,7 @@ async function main() {
     today: await imp("js/engine/today.js"),
     nutrition: await imp("js/engine/nutrition.js"),
     picker: await imp("js/engine/picker.js"),
+    foods: await imp("js/engine/foods.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -749,6 +750,9 @@ async function main() {
   console.log("[我的品項管理與份量]");
   await checkMyItems(catalog, candidatePool);
 
+  console.log("[我的食物與不吃]");
+  await checkMyFoods(catalog, convenienceData);
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -1176,6 +1180,141 @@ async function checkMyItems(catalog, candidatePool) {
   const egg = catalog.products.find((p) => p.role === "side") || main;
   const nm = mc.draftLogName({ kind: "products", items: [main, egg], estimates: [{ name: "喜宴", size: "L" }], drink: catalog.productsByUid[drinkUid], qtyByUid: { conv_bx04: 0.5, [egg.uid]: 2 } });
   check(nm === main.name + "（半份）＋" + egg.name + " ×2＋喜宴＋" + catalog.productsByUid[drinkUid].name, "draftLogName 的份量文字不對：" + nm);
+}
+
+// 工作線 D 切片 2：我的食物與不吃（計畫 docs/review/2026-09-30-D2-實作計畫.md 第 4 節）
+async function checkMyFoods(catalog, convenienceData) {
+  const db = M.db, pk = M.picker, fd = M.foods, flt = M.filters;
+  async function errorOf(fn) { try { await fn(); } catch (e) { return String(e && e.message); } return null; }
+  const throwsOf = (fn) => { try { fn(); return null; } catch (e) { return String(e && e.message); } };
+  const P = catalog.products;
+  const soy = P.find((p) => (p.allergen_tags || []).indexOf("黃豆") !== -1 && (p.allergen_tags || []).indexOf("未確認") === -1);
+  const unver = P.find((p) => (p.allergen_tags || []).indexOf("未確認") !== -1);
+  const nonVeg = P.find((p) => (p.allergen_tags || []).indexOf("未確認") === -1 && (p.diet_tags || []).join() === "蛋奶素"); // 設全素時被飲食擋
+  const dis = (uid) => ({ type: "item", key: uid, label: catalog.productsByUid[uid].name });
+
+  // 1. 原因代碼（decisions #80）：原因文字不變，code 跟文字一一對應
+  const profiles = [{}, { allergens: ["蛋"] }, { allergens: ["黃豆"] }, { diet_restriction: "全素" }, { diet_restriction: "蛋奶素" },
+    { disliked_ingredients: P.slice(0, 30).map((p) => dis(p.uid)) }, { allergens: ["乳製品"], diet_restriction: "全素", disliked_ingredients: P.map((p) => dis(p.uid)) }];
+  const CODE_OF = { "成分未確認": "allergen", "含過敏原": "allergen", "飲食限制未確認": "diet" };
+  profiles.forEach((prof, pi) => P.forEach((p) => {
+    const r = flt.passesHardFilters(p, prof);
+    const want = r.ok ? null : (CODE_OF[r.reason] || (/^你已設定不吃：/.test(r.reason) ? "disliked" : "?"));
+    check(r.code === want, "passesHardFilters 的 code 跟原因對不上：profile " + pi + " " + p.uid + " " + r.reason + " / " + r.code);
+  }));
+  if (soy && unver && nonVeg) {
+    check(flt.passesHardFilters(soy, { allergens: ["黃豆"], disliked_ingredients: [dis(soy.uid)] }).code === "allergen", "又不吃又含過敏原應該回 allergen（留在原位）");
+    check(flt.passesHardFilters(nonVeg, { diet_restriction: "全素", disliked_ingredients: [dis(nonVeg.uid)] }).code === "diet", "又不吃又飲食未確認應該回 diet");
+    // quickAddProblem 改用 code 後輸出不變（句型逐字）
+    check(pk.quickAddProblem(unver, { allergens: ["蛋"] }).blocked === "你設了過敏原「蛋」，過敏原未確認的品項不能選。", "quickAddProblem 未確認的句子變了");
+    check(pk.quickAddProblem(soy, { allergens: ["黃豆"] }).blocked === "你設了過敏原「黃豆」，含有它的品項不能選。", "quickAddProblem 含過敏原的句子變了");
+    check(pk.quickAddProblem(nonVeg, { diet_restriction: "全素" }).blocked === "你設了飲食限制「全素」，沒有宣告符合的品項不能選。", "quickAddProblem 飲食的句子變了");
+    check(pk.quickAddProblem(soy, { disliked_ingredients: [dis(soy.uid)] }).blocked === "你已設定不吃：" + soy.name, "quickAddProblem 不吃的句子變了");
+  } else check(false, "找不到測試用品項（黃豆、未確認、無飲食宣告）");
+
+  // 2. splitDisliked：保持順序、只移 disliked
+  const items = P.slice(0, 12);
+  const dset = {}; [1, 4, 9].forEach((i) => { dset[items[i].uid] = true; });
+  const sp = pk.splitDisliked(items, (it) => (dset[it.uid] ? "disliked" : it.uid === items[2].uid ? "allergen" : null));
+  check(sp.disliked.map((x) => x.uid).join() === [1, 4, 9].map((i) => items[i].uid).join(), "splitDisliked 不吃組的順序不對");
+  check(sp.rest.map((x) => x.uid).join() === items.filter((it) => !dset[it.uid]).map((x) => x.uid).join(), "splitDisliked 其餘的順序不對或 allergen 被移走");
+  const empty = pk.splitDisliked([], () => "disliked");
+  check(empty.rest.length === 0 && empty.disliked.length === 0, "splitDisliked 空清單");
+
+  // 3. partitionAllChannels：不套時段、隱藏與封存的不列；每個時段的結果 ⊆ 全部
+  const breakfastOnly = P.find((p) => p.role !== "drink" && p.valid_slots.length === 1 && p.valid_slots[0] === "breakfast");
+  const hiddenUid = P.find((p) => p.role === "main").uid;
+  const customs = [
+    { uid: "custom_a", name: "我的A", channel: "convenience", role: "main", valid_slots: ["lunch"], is_custom: true, archived: false },
+    { uid: "custom_b", name: "我的B", channel: "delivery", role: "main", valid_slots: ["dinner"], is_custom: true, archived: true },
+    { uid: "custom_c", name: "我的C", channel: "delivery", role: "drink", valid_slots: ["breakfast"], is_custom: true, archived: false },
+  ];
+  const all = pk.partitionAllChannels(P, customs, [hiddenUid]);
+  const allUids = {};
+  ["convenience", "delivery", "drinks"].forEach((t) => all[t].forEach((x) => { allUids[x.uid] = t; }));
+  check(!breakfastOnly || !!allUids[breakfastOnly.uid], "partitionAllChannels 漏了只有早餐的品項");
+  check(!allUids[hiddenUid], "partitionAllChannels 列出了隱藏的品項");
+  check(!allUids.custom_b && allUids.custom_a === "convenience" && allUids.custom_c === "drinks", "partitionAllChannels 的我的品項分錯或列出了封存的");
+  check(Object.keys(allUids).length === P.length - 1 + 2, "partitionAllChannels 的總數不對：" + Object.keys(allUids).length);
+  SLOTS.forEach((slot) => {
+    const part = pk.partitionByMealType(P, customs, slot, [hiddenUid]);
+    ["convenience", "delivery", "drinks"].forEach((t) => part[t].forEach((x) => check(allUids[x.uid] === t, "partitionByMealType(" + slot + ") 的 " + x.uid + " 不在 partitionAllChannels 的同一分頁")));
+  });
+
+  // 4. 不吃的純函式（decisions #99）
+  const e1 = { type: "item", key: "conv_bx04", label: "舊名" };
+  const l0 = [e1];
+  const l1 = db.addDislikedTo(l0, { type: "protein", key: "conv_bx04", label: "x" });
+  check(l1.length === 1 && l1 !== l0, "addDislikedTo 同 key 不同 type 不該新增，而且要回新陣列");
+  const l2 = db.addDislikedTo(l0, { type: "protein", key: "chicken_breast", label: "雞胸肉" });
+  check(l2.length === 2 && l0.length === 1 && l2[1].key === "chicken_breast", "addDislikedTo 新增不對或改到了輸入");
+  check(db.addDislikedTo(null, e1).length === 1, "addDislikedTo 沒有清單時要從空的開始");
+  [["缺 key", { type: "item", label: "a" }], ["key 空字串", { type: "item", key: "", label: "a" }], ["缺 type", { key: "a", label: "a" }],
+   ["label 不是字串", { type: "item", key: "a", label: 3 }], ["不是物件", "a"], ["陣列", [e1]]].forEach((b) => {
+    check(throwsOf(() => db.addDislikedTo([], b[1])) !== null, "addDislikedTo " + b[0] + " 沒有擋下");
+  });
+  const dup = [e1, { type: "protein", key: "chicken_breast", label: "雞胸肉" }, { type: "protein", key: "conv_bx04", label: "舊" }];
+  check(db.removeDislikedFrom(dup, "conv_bx04").map((d) => d.key).join() === "chicken_breast" && dup.length === 3, "removeDislikedFrom 沒有移除全部同 key，或改到了輸入");
+  check(db.removeDislikedFrom(dup, "nope").length === 3 && db.removeDislikedFrom(null, "a").length === 0, "removeDislikedFrom 不存在的 key 或沒有清單");
+  const merged = db.mergeProfileForm({ age: 40, disliked_ingredients: [e1] }, { age: 30, disliked_ingredients: [] });
+  check(merged.age === 30 && merged.disliked_ingredients.length === 1 && merged.disliked_ingredients[0].key === "conv_bx04", "mergeProfileForm 沒有保留資料庫的不吃清單");
+  check(db.mergeProfileForm(null, { age: 30, disliked_ingredients: [e1] }).disliked_ingredients.length === 0, "mergeProfileForm 沒有舊資料時要存 []");
+  // 專用函式：參數錯在碰資料庫前就丟（Node 沒有 IndexedDB，真正讀寫在 smoke-browser）
+  check(/缺 key/.test(await errorOf(() => db.addDislikedIngredient({ type: "item", label: "a" })) || ""), "addDislikedIngredient 缺 key 沒有在碰資料庫前報錯");
+  check(/陣列/.test(await errorOf(() => db.removeDislikedIngredient(["a"])) || ""), "removeDislikedIngredient 傳陣列沒有報錯");
+  check(/key/.test(await errorOf(() => db.removeDislikedIngredient("")) || ""), "removeDislikedIngredient(\"\") 沒有報錯");
+  check(/陣列/.test(await errorOf(() => db.saveProfileForm([{}])) || ""), "saveProfileForm 傳陣列沒有報錯");
+  const msg = await errorOf(() => db.saveProfileForm({ age: 30 }));
+  check(msg === null || !/\[db\.js\]/.test(msg), "合法的 profile 被 saveProfileForm 的驗證擋下（實際：" + msg + "）");
+
+  // 5. engine/foods.js
+  const ing = catalog.ingredients.find((x) => x.axis === "protein");
+  const fakeCat = { productsByUid: Object.assign({}, catalog.productsByUid, { conv_bx04: Object.assign({}, catalog.productsByUid.conv_bx04, { name: "改名後" }) }), ingredients: catalog.ingredients };
+  const ents = fd.dislikedListEntries([e1, { type: "protein", key: ing.id, label: "舊食材名" }, { type: "item", key: "gone_x", label: "下架品" }, { type: "protein", key: "conv_bx04", label: "重複" }], fakeCat);
+  check(ents.length === 3, "dislikedListEntries 沒有依 key 去重");
+  check(ents[0].name === "改名後" && !ents[0].gone, "dislikedListEntries 品項要用 catalog 現在的名稱");
+  check(ents[1].name === ing.name && !ents[1].gone, "dislikedListEntries 食材 id 查不到");
+  check(ents[2].gone && ents[2].name === null && ents[2].label === "下架品", "dislikedListEntries 查不到的 key 要 gone");
+  const sEnts = [{ uid: "a", name: "無糖豆漿" }, { uid: "b", name: "Soyjoy 點心棒" }, { uid: "c", name: "雞胸", aliases: ["雞胸肉"] }];
+  check(fd.searchFoods(sEnts, "").length === 0 && fd.searchFoods(sEnts, "   ").length === 0, "searchFoods 空字串要回 []");
+  check(fd.searchFoods(sEnts, " 豆漿 ").map((x) => x.uid).join() === "a", "searchFoods 前後空白");
+  check(fd.searchFoods(sEnts, "SOYJOY").map((x) => x.uid).join() === "b", "searchFoods 不分大小寫");
+  check(fd.searchFoods(sEnts, "雞胸肉").map((x) => x.uid).join() === "c", "searchFoods 別名");
+  check(fd.searchFoods(sEnts, "牛排").length === 0, "searchFoods 無結果");
+  if (soy && unver && nonVeg) {
+    check(fd.foodBlockText(soy, {}) === null, "foodBlockText 沒被擋要回 null");
+    check(fd.foodBlockText(unver, { allergens: ["蛋"] }) === pk.quickAddProblem(unver, { allergens: ["蛋"] }).blocked, "foodBlockText 過敏原要沿用 quickAddProblem 的句子");
+    check(fd.foodBlockText(nonVeg, { diet_restriction: "全素" }) === pk.quickAddProblem(nonVeg, { diet_restriction: "全素" }).blocked, "foodBlockText 飲食要沿用 quickAddProblem 的句子");
+    check(fd.foodBlockText(soy, { disliked_ingredients: [dis(soy.uid)] }) === "你標了不吃（只擋這一項）", "foodBlockText 不吃的句子");
+  }
+  const recs = [{ id: "custom_b", created_at: "2026-09-29T01:00:00.000Z" }, { id: "custom_a", created_at: "2026-09-30T01:00:00.000Z" }, { id: "custom_c", created_at: "2026-09-29T01:00:00.000Z" }];
+  check(fd.customFoodsNewestFirst(recs).map((r) => r.id).join() === "custom_a,custom_c,custom_b" && recs[0].id === "custom_b", "customFoodsNewestFirst 新到舊（同時間依 id 倒序），不改輸入");
+
+  // 6. 出處類別（decisions #98）
+  const FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+  P.forEach((p) => check(p.source_class && FIELDS.every((k) => ["tfda", "label", "estimate"].indexOf(p.source_class[k]) !== -1), p.uid + " 的 source_class 不完整"));
+  const sc = (u) => catalog.productsByUid[u].source_class;
+  check(FIELDS.every((k) => sc("tw_dr05")[k] === "tfda") && catalog.productsByUid.tw_dr05.tfda_ids.join() === "O0700301", "tw_dr05 整筆衛福部換算（含缺值填 0 的纖維）要是 tfda 並附編號");
+  check(sc("tw_bf11").carb_g === "estimate", "tw_bf11 反推的碳水要承襲熱量的估算");
+  const srcOf = (p, k) => ((p.field_sources || {})[k] || p.source).type;
+  const luItem = convenienceData.find((p) => FIELDS.some((k) => srcOf(p, k) === "label_unsourced"));
+  const luField = FIELDS.find((k) => srcOf(luItem, k) === "label_unsourced");
+  check(sc(luItem.id)[luField] === "estimate", "label_unsourced 要歸估算：" + luItem.id + "." + luField);
+  const mid = P.find((p) => p.kcal_basis === "midpoint");
+  check(mid && sc(mid.uid).kcal === "estimate", "區間中點的熱量要歸估算");
+  // 人造品項：包裝標示、反推碳水承襲最弱
+  const synth = (patch) => M.catalog.buildCatalog({ ingredients: [], archetypes: [], taiwanItems: [],
+    convenienceItems: [Object.assign({ id: "zz1", name: "測試", channel: "convenience", role: "main", valid_slots: ["lunch"], kcal: 300, kcal_basis: "stated",
+      protein_g: 10, carb_g: 40, fat_g: 10, fiber_g: 1, sat_fat_g: 2, sodium_mg: 300, allergen_tags: [], source: { type: "label", ref: "x.jpg" } }, patch)] }).products[0].source_class;
+  check(FIELDS.every((k) => synth({})[k] === "label"), "包裝標示的品項要是 label");
+  check(synth({ source: { type: "official_web", ref: "u" } }).kcal === "label", "official_web 要是 label");
+  const inh = synth({ field_sources: { protein_g: { type: "estimate", ref: "e" }, carb_g: { type: "derived", ref: "（熱量 − 蛋白質×4 − 脂肪×9）÷ 4" } } });
+  check(inh.carb_g === "estimate" && inh.kcal === "label", "反推的碳水要承襲三欄最弱的類別");
+  check(synth({ field_sources: { carb_g: { type: "derived", ref: "（熱量 − 蛋白質×4 − 脂肪×9）÷ 4" } } }).carb_g === "label", "三欄都是包裝時反推碳水是 label");
+  check(M.catalog.fromCustomFood({ id: "custom_x", name: "a", channel: "convenience", role: "main", kcal: 1 }).source_class === null, "我的品項 source_class 要是 null");
+  const g = fd.sourceClassGroups({ source_class: { kcal: "label", protein_g: "label", carb_g: "estimate", fat_g: "estimate", fiber_g: "tfda", sat_fat_g: "estimate", sodium_mg: "label" } });
+  check(JSON.stringify(g) === JSON.stringify([{ cls: "tfda", fields: ["fiber_g"] }, { cls: "label", fields: ["kcal", "protein_g", "sodium_mg"] }, { cls: "estimate", fields: ["carb_g", "fat_g", "sat_fat_g"] }]), "sourceClassGroups 分組或順序不對：" + JSON.stringify(g));
+  check(fd.sourceClassGroups({ source_class: null }).length === 0, "sourceClassGroups 我的品項要回 []");
 }
 
 main().catch((err) => {
