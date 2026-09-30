@@ -268,6 +268,17 @@ function checkProducts(products, frozen, refs) {
       if (p[k] !== null && t === "label_unsourced") labelUnsourced.push(p.id + "." + k);
       if ((t === "label" || t === "official_web") && !fieldSource(p, k).ref) err(w + "：" + k + " 的出處是 " + t + "，ref 要寫照片檔名或網址");
     });
+    // derived 只有三種寫法（PRD 12.1 出處類別靠它機械歸類，decisions #98）：整筆由 TFDA 換算（source.ref「編號 × 倍數」）、
+    // 這種品項 TFDA 缺值的欄位用 value 填 0（章程 B5.1）、碳水由熱量反推（章程 B2.2）
+    const tfdaRow = (p.source || {}).type === "derived" && DERIVED_REF.test(p.source.ref || "");
+    PRODUCT_FIELDS.forEach((k) => {
+      const f = fieldSource(p, k);
+      if (f.type !== "derived") return;
+      const ok = (f === p.source && tfdaRow) ||
+        (tfdaRow && p.field_sources && p.field_sources[k] === f && f.value === 0) ||
+        (k === "carb_g" && /熱量 − 蛋白質×4 − 脂肪×9/.test(f.ref || ""));
+      if (!ok) err(w + "：" + k + " 標 derived，但不是「TFDA 編號 × 倍數」、TFDA 缺值填 0 或熱量反推碳水（decisions #98）");
+    });
     // 由 TFDA 換算的（derived「TFDA編號 × 倍數」）：derived 的欄位要跟參考資料完全相等
     if ((p.source || {}).type === "derived" && DERIVED_REF.test(p.source.ref || "")) {
       let expected = null;
@@ -374,6 +385,13 @@ function checkToolRules(refs) {
     field_sources: { carb_g: { type: "derived", ref: "（熱量 − 蛋白質×4 − 脂肪×9）÷ 4" } } };
   if (!reports(/反推公式/, product(Object.assign({}, derivedCarb, { carb_g: 80 })))) err("工具自我檢查：反推的碳水跟公式不符卻沒報錯");
   if (reports(/反推公式/, product(Object.assign({}, derivedCarb, { carb_g: 31.8 })))) err("工具自我檢查：反推碳水四捨五入到 0.05 以內不該報錯");
+  // decisions #98：derived 只有三種寫法
+  const tfdaDrink = { source: { type: "derived", ref: "O0700101 × 4.5" }, kcal: 10.7, protein_g: 0.9, carb_g: 1.1, fat_g: 0.3, fiber_g: 0, sat_fat_g: 0.1, sodium_mg: 7.6, allergen_tags: [] };
+  if (!reports(/decisions #98/, product({ field_sources: { fiber_g: { type: "derived", ref: "咖啡飲品" } } }))) err("工具自我檢查：包裝標示品項的纖維標 derived 但沒有公式卻沒報錯");
+  if (!reports(/decisions #98/, product({ source: { type: "derived", ref: "看起來差不多" } }))) err("工具自我檢查：整筆 derived 但 ref 不是公式卻沒報錯");
+  if (!reports(/decisions #98/, product(Object.assign({}, tfdaDrink, { field_sources: { fiber_g: { type: "derived", value: 1, ref: "x" } } })))) err("工具自我檢查：TFDA 換算品項用 value 填了非 0 卻沒被 #98 擋下");
+  if (reports(/decisions #98/, product(Object.assign({}, tfdaDrink, { field_sources: { fiber_g: { type: "derived", value: 0, ref: "咖啡飲品" } } })))) err("工具自我檢查：TFDA 換算品項缺值填 0 不該被 #98 擋下");
+  if (reports(/decisions #98/, product(Object.assign({}, derivedCarb, { carb_g: 31.8 })))) err("工具自我檢查：熱量反推碳水不該被 #98 擋下");
   // B2.6：note 不得出現 AI 回答（不分大小寫、各家名稱）
   ["Google Ai 估算：鈉380mg", "ChatGPT 估算", "Claude依網路資料整理", "Gemini 回覆"].forEach((note) => {
     if (!reports(/B2\.6/, product({ note: note }))) err("工具自我檢查：note 寫「" + note + "」卻沒報錯");
