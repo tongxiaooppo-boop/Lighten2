@@ -27,13 +27,7 @@ export function __resetSeq() { seq = 0; }
 export { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood };
 
 export async function getProfile() { return clone(S().profile); }
-export async function saveProfile(p) {
-  S().profile = clone(p);
-  S().writes.push({ op: "saveProfile", disliked: clone(p.disliked_ingredients) });
-  return p;
-}
-
-// 不吃清單的專用寫入（語意用 db.js 同一份純函式；寫入紀錄跟 saveProfile 同形狀）
+// 不吃清單的專用寫入（語意用 db.js 同一份純函式；寫入紀錄 { op, disliked }）
 function writeDisliked(op, list) {
   if (!S().profile) throw new Error("[db.js] " + op + "：還沒有基本資料");
   S().profile = Object.assign({}, S().profile, { disliked_ingredients: clone(list) });
@@ -100,7 +94,7 @@ export async function addCustomFood(food) {
   return clone(record);
 }
 
-// B-1a：修改、隱藏清單、複製成我的版本（照 db.js 的語意）
+// B-1a：修改、取消隱藏、複製成我的版本（照 db.js 的語意）
 export async function updateCustomFood(id, patch) {
   const i = S().customFoods.findIndex((f) => f.id === id);
   if (i === -1) throw new Error("[fake-db] 找不到我的品項：" + id);
@@ -112,12 +106,6 @@ export async function updateCustomFood(id, patch) {
 export async function getHiddenCatalogUids() {
   const v = S().settings.hidden_catalog_uids;
   return Array.isArray(v) ? v.slice() : [];
-}
-export async function hideCatalogItem(uid) {
-  const list = (await getHiddenCatalogUids()).filter((u) => u !== uid).concat([uid]);
-  S().settings.hidden_catalog_uids = list;
-  S().writes.push({ op: "hideCatalogItem", uid: uid });
-  return list.slice();
 }
 export async function unhideCatalogItem(uid) {
   const list = (await getHiddenCatalogUids()).filter((u) => u !== uid);

@@ -176,38 +176,53 @@ open/LEGACY_ALLERGY/snack/drinks/blocked	tw_bf02:含過敏原,tw_dr01:成分未�
 open/DISLIKE/breakfast/tab	convenience
 open/DISLIKE/breakfast/convenience/pass	conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx04,conv_bx05,conv_pk03
 open/DISLIKE/breakfast/convenience/blocked	
+open/DISLIKE/breakfast/convenience/disliked	
 open/DISLIKE/breakfast/delivery/pass	tw_bf01,tw_bf03,tw_bf04,tw_bf06,tw_bf07,tw_bf08,tw_bf09,tw_bf10,tw_bf11,tw_bf12,tw_bf13,tw_bf14,custom_a,custom_b
 open/DISLIKE/breakfast/delivery/blocked	
+open/DISLIKE/breakfast/delivery/disliked	
 open/DISLIKE/breakfast/drinks/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04,custom_c
 open/DISLIKE/breakfast/drinks/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/breakfast/drinks/disliked	conv_dr01
 open/DISLIKE/lunch/tab	convenience
 open/DISLIKE/lunch/convenience/pass	conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx01,conv_bx02,conv_bx03,conv_bx06,conv_bx07,conv_bx08,conv_bx09,conv_bx10,conv_bx11,conv_bx12,conv_bx13,conv_bx04,conv_pk03
 open/DISLIKE/lunch/convenience/blocked	
+open/DISLIKE/lunch/convenience/disliked	
 open/DISLIKE/lunch/delivery/pass	tw_ln01,tw_ln02,tw_ln03,tw_ln04,tw_ln05,tw_ln06,tw_ln07,tw_ln08,tw_ln09,tw_ln10,tw_fw01,tw_fw02,tw_fw03,tw_fw04,tw_fw05,tw_fw06,tw_fw07,tw_fw08,conv_ch01,conv_ch02,conv_ch03,conv_ch04,conv_ch05,conv_dv01,conv_dv02,conv_dv03,custom_a,custom_b
 open/DISLIKE/lunch/delivery/blocked	
+open/DISLIKE/lunch/delivery/disliked	
 open/DISLIKE/lunch/drinks/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04,custom_c
 open/DISLIKE/lunch/drinks/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/lunch/drinks/disliked	conv_dr01
 open/DISLIKE/afternoon_tea/tab	convenience
 open/DISLIKE/afternoon_tea/convenience/pass	conv_pk03
 open/DISLIKE/afternoon_tea/convenience/blocked	
+open/DISLIKE/afternoon_tea/convenience/disliked	
 open/DISLIKE/afternoon_tea/delivery/pass	tw_tc01,tw_tc02,tw_tc03,tw_tc04,tw_tc05,tw_tc06,tw_tc07,tw_tc08,custom_a,custom_b
 open/DISLIKE/afternoon_tea/delivery/blocked	
+open/DISLIKE/afternoon_tea/delivery/disliked	
 open/DISLIKE/afternoon_tea/drinks/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04,custom_c
 open/DISLIKE/afternoon_tea/drinks/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/afternoon_tea/drinks/disliked	conv_dr01
 open/DISLIKE/dinner/tab	cook
 open/DISLIKE/dinner/convenience/pass	conv_sl01,conv_sl02,conv_sl03,conv_sl04,conv_bx01,conv_bx02,conv_bx03,conv_bx06,conv_bx07,conv_bx08,conv_bx09,conv_bx10,conv_bx11,conv_bx12,conv_bx13,conv_bx04,conv_pk03
 open/DISLIKE/dinner/convenience/blocked	
+open/DISLIKE/dinner/convenience/disliked	
 open/DISLIKE/dinner/delivery/pass	tw_dn01,tw_dn02,tw_dn03,tw_dn04,tw_dn05,tw_dn06,tw_dn07,tw_dn08,tw_dn09,tw_dn10,tw_fw01,tw_fw02,tw_fw03,tw_fw04,tw_fw05,tw_fw06,tw_fw07,tw_fw08,conv_ch01,conv_ch02,conv_ch03,conv_ch04,conv_ch05,conv_dv01,conv_dv02,conv_dv03,custom_a,custom_b
 open/DISLIKE/dinner/delivery/blocked	
+open/DISLIKE/dinner/delivery/disliked	
 open/DISLIKE/dinner/drinks/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04,custom_c
 open/DISLIKE/dinner/drinks/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/dinner/drinks/disliked	conv_dr01
 open/DISLIKE/snack/tab	convenience
 open/DISLIKE/snack/convenience/pass	conv_bx04,conv_bx05,conv_pk03
 open/DISLIKE/snack/convenience/blocked	
+open/DISLIKE/snack/convenience/disliked	
 open/DISLIKE/snack/delivery/pass	tw_sn01,tw_sn02,tw_sn03,tw_sn04,tw_sn05,tw_sn06,tw_sn07,tw_sn08,tw_sn09,tw_sn10,custom_a,custom_b
 open/DISLIKE/snack/delivery/blocked	
+open/DISLIKE/snack/delivery/disliked	
 open/DISLIKE/snack/drinks/pass	tw_bf02,tw_dr01,tw_dr02,tw_dr03,tw_dr04,tw_dr05,tw_dr06,tw_dr07,tw_dr08,tw_dr09,tw_dr10,conv_dr02,conv_dr03,conv_dr04,conv_dr05,conv_dr06,conv_pk01,conv_pk02,conv_pk04,custom_c
 open/DISLIKE/snack/drinks/blocked	conv_dr01:你已設定不吃：統一陽光 高纖無糖豆漿
+open/DISLIKE/snack/drinks/disliked	conv_dr01
 items/convenience/breakfast/main	conv_bx04 kcal=120 P=23 C=0 F=2.8 Fb=0 SF=null Na=null
 items/convenience/breakfast/main+side	conv_bx04+conv_sl01 kcal=230 P=35.5 C=6.9 F=5.4 Fb=3.8 SF=null Na=null
 items/convenience/breakfast/main+side+drink	conv_bx04+conv_sl01+tw_bf02 kcal=365 P=41.5 C=26.1 F=9.2 Fb=4.8 SF=null Na=null

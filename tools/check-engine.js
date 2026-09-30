@@ -840,14 +840,14 @@ async function checkDbValidation() {
   });
   await notValidationError(() => db.addWeightLog({ log_date: "2026-09-23", weight_kg: 70 }), "合法的 weight_log 被驗證擋下");
   await notValidationError(() => db.addExerciseLog({ log_date: "2026-09-23", activity_type: "快走" }), "合法的 exercise_log 被驗證擋下");
-  await notValidationError(() => db.saveProfile({ age: 30 }), "合法的 profile 被驗證擋下");
+  await notValidationError(() => db.saveProfileForm({ age: 30 }), "合法的 profile 被驗證擋下");
 
   // C1.5：一筆一個 key，傳入陣列要報錯
   const ARRAY = /不能傳陣列/;
   await rejectsWith(() => db.addDailyLog([good]), ARRAY, "addDailyLog 傳入陣列沒有報「不能傳陣列」");
   await rejectsWith(() => db.addWeightLog([{ log_date: "2026-09-23", weight_kg: 70 }]), ARRAY, "addWeightLog 傳入陣列沒有報「不能傳陣列」");
   await rejectsWith(() => db.addExerciseLog([{ log_date: "2026-09-23", activity_type: "快走" }]), ARRAY, "addExerciseLog 傳入陣列沒有報「不能傳陣列」");
-  await rejectsWith(() => db.saveProfile([{}]), ARRAY, "saveProfile 傳入陣列沒有報「不能傳陣列」");
+  await rejectsWith(() => db.saveProfileForm([{}]), ARRAY, "saveProfileForm 傳入陣列沒有報「不能傳陣列」");
   await rejectsWith(() => db.markRecipesShown(["a"]), /日期/, "markRecipesShown 沒傳今天日期沒有報錯");
 
   const withContent = (patch) => Object.assign({}, good, { content: Object.assign({}, content, patch) });
@@ -1059,9 +1059,9 @@ async function checkMyItems(catalog, candidatePool) {
   const ARR = /陣列/;
   check(ARR.test(await errorOf(() => db.updateCustomFood("custom_x1", [{}])) || ""), "updateCustomFood 傳陣列沒有報錯");
   check(ARR.test(await errorOf(() => db.copyBuiltinToCustom([base])) || ""), "copyBuiltinToCustom 傳陣列沒有報錯");
-  check(ARR.test(await errorOf(() => db.hideCatalogItem(["a"])) || ""), "hideCatalogItem 傳陣列沒有報錯");
   check(ARR.test(await errorOf(() => db.unhideCatalogItem(["a"])) || ""), "unhideCatalogItem 傳陣列沒有報錯");
-  check(/uid/.test(await errorOf(() => db.hideCatalogItem("")) || ""), "hideCatalogItem(\"\") 沒有報錯");
+  check(/uid/.test(await errorOf(() => db.unhideCatalogItem("")) || ""), "unhideCatalogItem(\"\") 沒有報錯");
+  check(db.hideCatalogItem === undefined && db.saveProfile === undefined, "hideCatalogItem、saveProfile 應該已移除（decisions #99）");
   check(/copied_from/.test(await errorOf(() => db.copyBuiltinToCustom(Object.assign({}, base, { copied_from: null }))) || ""), "copyBuiltinToCustom 缺 copied_from 沒有報錯");
   check(/格式不對/.test(await errorOf(() => db.copyBuiltinToCustom(Object.assign({}, base, { copied_from: "conv_bx04", kcal: -1 }))) || ""), "copyBuiltinToCustom 格式不對沒有報錯");
   check(/copyBuiltinToCustom/.test(await errorOf(() => db.addCustomFood(Object.assign({}, base, { copied_from: "conv_bx04" }))) || ""), "addCustomFood 帶 copied_from 沒有擋下（複製只能走 copyBuiltinToCustom）");

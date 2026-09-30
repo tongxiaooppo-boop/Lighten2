@@ -45,6 +45,7 @@ module.exports = async function createV2Adapter(ROOT) {
   const cal = await imp("js/ui/calibration.js");
   const today = await imp("js/ui/tab-today.js");
   const picker = await imp("js/ui/meal-picker/index.js");
+  const engPicker = await imp("js/engine/picker.js");
   const quickAdd = await imp("js/ui/meal-picker/quick-add.js");
   const week = await imp("js/ui/tab-week.js");
   const profileTab = await imp("js/ui/tab-profile.js");
@@ -167,6 +168,8 @@ module.exports = async function createV2Adapter(ROOT) {
       const split = (t) => ({
         pass: t.items.filter((it) => !t.reasons[it.uid]).map((it) => it.uid),
         blocked: t.items.filter((it) => t.reasons[it.uid]).map((it) => it.uid + ":" + t.reasons[it.uid]),
+        // 畫面放到最下方「你標了不吃」組的（engine splitDisliked，依原因代碼；工作線 D 切片 2 計畫 S10）
+        disliked: engPicker.splitDisliked(t.items, (it) => (t.codes || {})[it.uid]).disliked.map((it) => it.uid),
       });
       return { tab: mp.tab, convenience: split(mp.tabs.convenience), delivery: split(mp.tabs.delivery), drinks: split(mp.drinks), catalog: mp.catalog };
     },

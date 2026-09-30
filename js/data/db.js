@@ -321,7 +321,8 @@ const SETTING_KEYS = {
       });
     },
   },
-  // 隱藏的內建品項（PRD 10.2）：只能用 hideCatalogItem／unhideCatalogItem 寫（同一個 transaction 讀改寫，兩個分頁同時隱藏不互蓋）
+  // 隱藏的內建品項（PRD 10.2、13.5）：只有 copyBuiltinToCustom 會加、unhideCatalogItem 會拿掉（各自一個 transaction 讀改寫）；
+  // 選擇器的「隱藏」已由「不吃」取代（decisions #99）
   hidden_catalog_uids: {
     dedicatedOnly: true,
     validate: function (v) {
@@ -511,14 +512,6 @@ export async function getProfile() {
     return reqPromise(s[STORE.userProfile].get(PROFILE_KEY));
   });
   return v === undefined ? null : v;
-}
-
-export async function saveProfile(profile) {
-  assertRecord(profile, "user_profile");
-  await withStores([STORE.userProfile], "readwrite", function (s) {
-    return reqPromise(s[STORE.userProfile].put(profile, PROFILE_KEY));
-  });
-  return profile;
 }
 
 // 不吃清單的語意（PRD 13.5、decisions #99）：純函式，專用寫入函式與 tools/lib/fake-db.mjs 共用，check-engine 直接測。
@@ -714,25 +707,20 @@ function checkUid(uid, fn) {
   if (typeof uid !== "string" || uid === "") throw new Error("[db.js] " + fn + " 需要品項 uid" + (Array.isArray(uid) ? "，不能傳陣列" : ""));
 }
 
-function changeHidden(uid, add) {
+function removeHiddenUid(uid) {
   return withStores([STORE.settings], "readwrite", function (s) {
     const store = s[STORE.settings];
     return reqPromise(store.get(HIDDEN_KEY)).then(function (v) {
       const list = hiddenFrom(v).filter(function (u) { return u !== uid; });
-      if (add) list.push(uid);
       return reqPromise(store.put(list, HIDDEN_KEY)).then(function () { return list; });
     });
   });
 }
 
-export async function hideCatalogItem(uid) {
-  checkUid(uid, "hideCatalogItem");
-  return changeHidden(uid, true);
-}
-
+// 取消隱藏（「我的食物」的「已隱藏」組）。回傳新清單。
 export async function unhideCatalogItem(uid) {
   checkUid(uid, "unhideCatalogItem");
-  return changeHidden(uid, false);
+  return removeHiddenUid(uid);
 }
 
 // 複製成我的版本（PRD 10.2）：一個 transaction 新增我的品項並隱藏原品項（全有全無）。回傳寫入的紀錄。

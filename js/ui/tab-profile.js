@@ -5,10 +5,9 @@ import { dateAddDays } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
 import { ALLERGEN_OPTIONS } from "../core/config.js";
 import { $ } from "./dom.js";
-import { getProfile, saveProfile, addWeightLog } from "../data/db.js";
+import { getProfile, saveProfileForm, addWeightLog } from "../data/db.js";
 import { calculateTargets } from "../engine/nutrition.js";
 import { initBackup } from "./backup.js";
-import { initCustomFoods, refreshCustomFoods } from "./profile/custom-foods.js";
 import { normalizeAllergens } from "../engine/filters.js";
 import {
 loadTdeeState, getCalibratedTargets, runCalibrationNow,
@@ -26,36 +25,6 @@ function toFloatOrNull(v) {
   if (v === "" || v === null || v === undefined) return null;
   const n = parseFloat(v);
   return isFinite(n) ? n : null;
-}
-
-// 「不吃的食材」清單：只在本分頁顯示＋移除；新增入口在 tab-today.js 的「順便不要」chip。
-// 兩邊都是改了就直接存進資料庫，所以資料庫才是準的：切回本分頁時重讀、移除時對資料庫的最新清單操作、
-// 按「計算」時沿用資料庫的清單（不然會把在今日建議剛加的項目蓋掉）。
-var dislikedIngredients = [];
-
-function renderDislikedList() {
-  var el = document.getElementById("disliked-ingredients-list");
-  if (!el) return;
-  if (dislikedIngredients.length === 0) {
-    el.innerHTML = '<p class="taiwan-ref-note">尚未設定。</p>';
-    return;
-  }
-  el.innerHTML = dislikedIngredients.map(function (d) {
-    return '<span class="dislike-chip">' + escapeHtml(d.label || d.key) +
-      '<button type="button" class="dislike-chip-x" data-key="' + escapeHtml(d.key) +
-      '" aria-label="移除">×</button></span>';
-  }).join("");
-}
-
-// 只比 key（decisions #40：換軸後舊的 type 也要能移除）
-async function removeDisliked(key) {
-  var profile = await getProfile();
-  if (!profile) return;
-  var list = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
-  profile.disliked_ingredients = list.filter(function (d) { return d.key !== key; });
-  await saveProfile(profile);
-  dislikedIngredients = profile.disliked_ingredients;
-  renderDislikedList();
 }
 
 function readProfileForm() {
@@ -85,7 +54,7 @@ function readProfileForm() {
       snack: fd.get("meal_pref_snack"),
     },
     goal_mode: fd.get("goal_mode"),
-    disliked_ingredients: dislikedIngredients,
+    // 不吃清單不是表單欄位：saveProfileForm 一律保留資料庫裡的（「我的食物」「順便不要」隨時會改，decisions #99）
     enabled_slots: {
       breakfast: fd.get("meal_pref_breakfast") !== "off",
       lunch: fd.get("meal_pref_lunch") !== "off",
@@ -99,8 +68,6 @@ function readProfileForm() {
 function fillProfileForm(profile) {
   if (!profile) return;
   const form = document.getElementById("profile-form");
-  dislikedIngredients = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
-  renderDislikedList();
   const set = function (name, value) {
     const el = form.elements[name];
     if (el && value !== null && value !== undefined) el.value = value;
@@ -273,8 +240,8 @@ export async function renderCalibrationCard(profile) {
 
 async function onCalculate(e) {
   e.preventDefault();
-  const profile = readProfileForm();
-  if (profile.age === null || profile.height_cm === null || profile.weight_kg === null) {
+  const form = readProfileForm();
+  if (form.age === null || form.height_cm === null || form.weight_kg === null) {
     alert("請填寫年齡、身高、體重後再計算。");
     return;
   }
@@ -282,21 +249,19 @@ async function onCalculate(e) {
   // 先用原始 profile 驗證公式可以算（不帶 offset），再存檔、跑校正、顯示校正後目標。
   let baseResult;
   try {
-    baseResult = calculateTargets(profile);
+    baseResult = calculateTargets(form);
   } catch (err) {
     alert(err && err.message ? err.message : "計算失敗。");
     return;
   }
 
+  let profile = form;
   try {
-    // 不吃清單以資料庫為準（今日建議的「順便不要」會在本分頁不知道的時候加項目）
-    const saved = await getProfile();
-    if (saved && Array.isArray(saved.disliked_ingredients)) profile.disliked_ingredients = saved.disliked_ingredients;
-    await saveProfile(profile);
+    // 一個 transaction 讀改寫，不吃清單以資料庫為準（別的分頁會在本分頁不知道的時候改）
+    profile = await saveProfileForm(form);
   } catch (err) {
-    console.error("saveProfile 失敗", err);
+    console.error("saveProfileForm 失敗", err);
   }
-  refreshCustomFoods(); // 過敏原、飲食限制改了，我的品項的「能不能選」跟著變
 
   try {
     await runCalibrationNow(profile);
@@ -356,7 +321,6 @@ function renderAllergenOptions() {
 export async function initProfileTab() {
   renderAllergenOptions();
   initBackup();
-  initCustomFoods();
   const dateInput = document.querySelector("#weight-form input[name='log_date']");
   if (dateInput) dateInput.value = todayStr();
 
@@ -378,23 +342,12 @@ export async function initProfileTab() {
   const weightForm = document.getElementById("weight-form");
   if (weightForm) weightForm.addEventListener("submit", onWeightSubmit);
 
-  const dislikedList = document.getElementById("disliked-ingredients-list");
-  if (dislikedList) {
-    dislikedList.addEventListener("click", function (e) {
-      const x = e.target.closest(".dislike-chip-x");
-      if (!x) return;
-      removeDisliked(x.getAttribute("data-key"));
-    });
-  }
-
-  // 切回這個分頁時更新目標、校正卡片與不吃清單（不重填表單，避免蓋掉還沒按「計算」的修改；不吃清單不是表單欄位，改了就存）。
+  // 切回這個分頁時更新目標與校正卡片（不重填表單，避免蓋掉還沒按「計算」的修改）。
   document.addEventListener("tab:activated", async function (e) {
     if (e.detail !== "profile") return;
     try {
       const profile = await getProfile();
       if (!profile) return;
-      dislikedIngredients = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
-      renderDislikedList();
       showTargets(await getCalibratedTargets(profile));
       await renderCalibrationCard(profile);
     } catch (err) {

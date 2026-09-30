@@ -6,9 +6,11 @@ import { initProfileTab } from "./tab-profile.js";
 import { initTodayTab } from "./tab-today.js";
 import { initExerciseTab } from "./tab-exercise.js";
 import { initWeekTab } from "./tab-week.js";
+import { initFoodsTab } from "./tab-foods.js";
 
 initProfileTab();
 initTodayTab();
+initFoodsTab();
 initExerciseTab();
 initWeekTab();
 initTabs();

@@ -80,6 +80,17 @@ const checkStepNumbers = async (label) => {
   const nums = await js(`[...document.querySelectorAll('#meal-picker-overlay .meal-picker-step-label')].filter((el) => el.offsetParent !== null).map((el) => parseInt(el.textContent, 10))`);
   check(nums.length > 0 && nums.every((n, i) => n === i + 1), label + " 步驟編號不連續：" + nums.join(","));
 };
+// 「我的食物」分頁（工作線 D 切片 2）：依名稱找一列、點開、在列裡按按鈕；切子分頁；搜尋
+const foodRow = (name) => `[...document.querySelectorAll('#foods-body .food-row')].find((r) => { const n = r.querySelector('.food-name'); return n && n.textContent === ${JSON.stringify(name)}; })`;
+const foodRowText = (name) => js(`(() => { const r = ${foodRow(name)}; return r ? r.innerText : null; })()`);
+const inFoodRow = (name, sel) => js(`(() => { const r = ${foodRow(name)}; const b = r && r.querySelector(${JSON.stringify(sel)}); if (!b) throw new Error("「" + ${JSON.stringify(name)} + "」找不到 " + ${JSON.stringify(sel)}); b.scrollIntoView({ block: "center" }); b.click(); })()`);
+const openFood = (name) => inFoodRow(name, ".food-row-main");
+const foodsSub = (t) => click(`[data-foods-subtab=${t}]`);
+const foodsSearch = (q) => js(`(() => { const el = document.getElementById('foods-search'); el.value = ${JSON.stringify(q)}; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+const openFolded = () => js(`document.querySelectorAll('#foods-body details').forEach((d) => { d.open = true; })`);
+const dbDislikedKeys = `import('./js/data/db.js').then((m) => m.getProfile()).then((p) => JSON.stringify(((p || {}).disliked_ingredients || []).map((d) => d.key)))`;
+const navFits = () => js(`(() => { const n = document.querySelector('.tab-nav'); return n.scrollWidth <= n.clientWidth + 1; })()`);
+
 // 推薦卡片是整塊重畫的：切分頁前放一個標記，標記消失＝重算完成，才不會讀到舊卡片
 const markStale = () => js(`document.querySelectorAll('[id^=rec-]').forEach((el) => el.insertAdjacentHTML('beforeend', '<i class="walkthrough-stale"></i>'))`);
 const waitFresh = (label) => until(`!document.querySelector('.walkthrough-stale') && !!document.querySelector('#rec-dinner .rec-log-btn')`, label);
@@ -89,9 +100,25 @@ async function run() {
   console.log("[0. 開啟]");
   await send("Page.navigate", { url: H.url });
   await until(`${text("#today-status")}.indexOf("基本資料") !== -1`, "0-1 沒有基本資料時，今日建議沒有提示先填基本資料");
-  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.innerText.trim()).join('/')`)) === "基本資料/今日建議/本週總覽/運動紀錄/採買清單",
-    "0-1 上方分頁不是 基本資料／今日建議／本週總覽／運動紀錄／採買清單");
+  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.innerText.trim().replace(/\s+/g, '')).join('/')`)) === "基本資料/今日建議/我的食物/本週總覽/運動紀錄",
+    "0-1 上方分頁不是 基本資料／今日建議／我的食物／本週總覽／運動紀錄（decisions #96）");
+  check(await navFits(), "0-1 分頁列在 390 寬要橫向捲動");
   await shot("開啟");
+  // 0-1 360 寬（較小的手機）：分頁列仍然不橫捲，截圖定案（計畫 S12）
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await new Promise((r) => setTimeout(r, 300));
+  check(await navFits(), "0-1 分頁列在 360 寬要橫向捲動");
+  await shot("開啟-360寬");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await new Promise((r) => setTimeout(r, 300));
+  // 0-2 還沒填基本資料：「我的食物」可以看、明細打得開，「不吃」停用並說明（PRD 13.5）
+  await tab("foods");
+  await until(`!!document.querySelector('#foods-body .food-row-main')`, "0-2 我的食物沒有品項");
+  await click("#foods-body .food-row-main");
+  await until(`!!document.querySelector('#foods-body [data-foods-dislike]')`, "0-2 明細沒有「不吃」按鈕");
+  check(await js(`document.querySelector('#foods-body [data-foods-dislike]').disabled`), "0-2 沒有基本資料時「不吃」沒有停用");
+  check((await js(text("#foods-body .food-detail"))).indexOf("先在基本資料填好身體數據並按計算") !== -1, "0-2 停用的「不吃」旁邊沒有說明");
+  await shot("我的食物-沒有基本資料", "#foods-body .food-detail");
 
   // ---------- 1. 基本資料 ----------
   console.log("[1. 基本資料]");
@@ -161,26 +188,27 @@ async function run() {
   const lunchName = await js(`document.querySelector('#rec-lunch .rec-name').innerText`);
   await click("#rec-lunch .dislike-btn");
   await until(`document.querySelector('#rec-lunch .rec-name') && document.querySelector('#rec-lunch .rec-name').innerText !== ${JSON.stringify(lunchName)}`, "2-4 倒讚後午餐沒有換推薦");
-  // 2-5 「順便不要」晶片：從推薦消失、出現在基本資料的不吃清單
+  // 2-5 「順便不要」晶片：從推薦消失、提示去「我的食物」取消；基本資料按計算不會蓋掉（decisions #99）；在全部清單取消
   const chip = await js(`(() => { const c = document.querySelector('#rec-dinner .dislike-chip'); return c ? { key: c.dataset.key, label: c.dataset.label } : null; })()`);
   check(!!chip, "2-5 晚餐卡片沒有「順便不要」晶片");
   if (chip) {
     await click(`#rec-dinner .dislike-chip[data-key="${chip.key}"]`);
     await until(`!document.querySelector('#rec-dinner .dislike-chip[data-key="${chip.key}"]')`, "2-5 按「順便不要」後 " + chip.label + " 還在晚餐推薦裡");
+    check((await js(text("#today-status"))).indexOf("可以在「我的食物」取消") !== -1, "2-5 按「順便不要」後沒有提示去「我的食物」取消");
     await shot("今日建議-順便不要之後", "#rec-dinner");
-    await tab("profile");
-    await until(`${text("#disliked-ingredients-list")}.indexOf(${JSON.stringify(chip.label)}) !== -1`, "2-5 基本資料的不吃清單沒有 " + chip.label);
-    await shot("基本資料-不吃清單", "#disliked-ingredients-list");
     // 接著在基本資料按「計算」：不能把剛加的不吃項目蓋掉
-    const dbDisliked = `import('./js/data/db.js').then((m) => m.getProfile()).then((p) => JSON.stringify(((p || {}).disliked_ingredients || []).map((d) => d.key)))`;
+    await tab("profile");
     await submitProfile();
     await until(`${text("#target-kcal")} === "1896.1"`, "2-5 按計算沒有完成");
-    check(JSON.parse(await js(dbDisliked)).indexOf(chip.key) !== -1, "2-5 在基本資料按「計算」把剛加的不吃項目 " + chip.label + " 蓋掉了");
-    await click("#disliked-ingredients-list .dislike-chip-x"); // 還原，後面的步驟才有完整候選
+    check(JSON.parse(await js(dbDislikedKeys)).indexOf(chip.key) !== -1, "2-5 在基本資料按「計算」把剛加的不吃項目 " + chip.label + " 蓋掉了");
+    check(!(await js(`!!document.getElementById('disliked-ingredients-list')`)), "2-5 基本資料還有「不吃的食材」區塊（已搬到我的食物）");
+    await tab("foods");
+    await until(`!!document.querySelector('.foods-disliked-all [data-foods-undislike="${chip.key}"]')`, "2-5 我的食物的全部清單沒有 " + chip.label);
+    await js(`document.querySelector('.foods-disliked-all').open = true`);
+    await shot("我的食物-不吃的全部", ".foods-disliked-all");
+    await click(`.foods-disliked-all [data-foods-undislike="${chip.key}"]`); // 還原，後面的步驟才有完整候選
+    await until(`(${dbDislikedKeys}).then((s) => JSON.parse(s).indexOf(${JSON.stringify(chip.key)}) === -1)`, "2-5 在全部清單取消後資料庫還有 " + chip.label);
     await markStale();
-    await until(`(${dbDisliked}).then((s) => JSON.parse(s).indexOf(${JSON.stringify(chip.key)}) === -1)`, "2-5 按 × 移除後資料庫還有 " + chip.label);
-    await submitProfile();
-    await until(`${text("#target-kcal")} === "1896.1"`, "2-5 移除不吃項目後按計算沒有完成");
     await tab("today");
   }
   // 2-8 少油：用油克數減半
@@ -296,7 +324,7 @@ async function run() {
     const b = blocked.find((x) => x.indexOf(uid + ":") === 0);
     check(b && b.indexOf("成分未確認") !== -1, "3-2b 設了過敏原，" + uid + " 沒有灰掉並顯示「成分未確認」");
   });
-  check(/灰色的 \d+ 項因你的過敏原／飲食／不吃設定不能選/.test(await js(text("#meal-picker-panel"))), "3-2b 分頁頂端沒有「灰色的 N 項…不能選」");
+  check(/灰色的 \d+ 項因你的過敏原／飲食設定不能選/.test(await js(text("#meal-picker-panel"))), "3-2b 分頁頂端沒有「灰色的 N 項…不能選」");
   check(await js(`[...document.querySelectorAll('#meal-picker-panel .meal-picker-group')].every((g) => { const cards = [...g.querySelectorAll('.item-card')];
     const first = cards.findIndex((c) => c.classList.contains('is-blocked')); return first === -1 || cards.slice(first).every((c) => c.classList.contains('is-blocked')); })`), "3-2b 被擋的品項沒有排在組內最後");
   check(/沙拉（\d+ 項因設定不能選）/.test(await js(text("#meal-picker-panel"))), "3-2b 整組被擋的沙拉沒有收成一行「沙拉（N 項因設定不能選）」");
@@ -535,7 +563,7 @@ async function run() {
   await until(`!!document.querySelector('#rec-breakfast .rec-log-btn') && ${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "5-7 還原後早餐不是回到推薦、或午餐紀錄不見了");
   await shot("資料備份-還原後今日建議");
 
-  // ---------- 6. 我的品項（B-1a）：份量、隱藏、複製、補填 ----------
+  // ---------- 6. 我的品項（B-1a）：份量、不吃、複製、補填 ----------
   console.log("[6. 我的品項]");
   const kcalOf = async () => { const m = /約 (\d+(?:\.\d+)?) kcal/.exec(await js(text("#meal-picker-summary"))); return m ? Number(m[1]) : null; };
   const firstBuiltinMain = () => js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog();
@@ -571,20 +599,59 @@ async function run() {
   await click("#rec-dinner .rec-undo-btn");
   await until(`!!document.querySelector('#rec-dinner .rec-pick-btn')`, "6-1 撤銷晚餐沒有完成");
 
-  // 6-2 隱藏：已選段按「隱藏」→ 消失＋提示＋復原 → 按復原回到原本的位置
+  // 6-2 不吃（取代原本的隱藏，decisions #99）：已選段按「不吃」→ 移到最下方收合的「你標了不吃」＋提示＋復原 → 按復原回到原本的位置
   await openPicker("dinner");
   await click(`#meal-picker-tabs [data-tab=convenience]`);
   const mainB = await firstBuiltinMain();
   const idxB = await cardIndex(mainB);
   await click(`#meal-picker-panel .item-card[data-uid="${mainB}"]`);
-  await click(`#meal-picker-panel [data-hide-uid="${mainB}"]`);
-  await until(`!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]') && !!document.querySelector('#meal-picker-panel .hide-notice')`, "6-2 隱藏後品項沒有消失或沒有提示");
-  await shot("我的品項-隱藏提示", "#meal-picker-panel .hide-notice");
-  await click(`#meal-picker-panel [data-unhide-uid="${mainB}"]`);
-  await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]')`, "6-2 按復原後品項沒有回來");
+  await click(`#meal-picker-panel [data-dislike-uid="${mainB}"]`);
+  await until(`!!document.querySelector('#meal-picker-panel .dislike-notice') && !!document.querySelector('#meal-picker-panel .meal-picker-disliked .item-card[data-uid="${mainB}"]')`, "6-2 按不吃後沒有提示或沒有移到「你標了不吃」組");
+  check(await js(`!document.querySelector('#meal-picker-panel .meal-picker-disliked').open && document.querySelector('#meal-picker-panel .meal-picker-disliked .item-card[data-uid="${mainB}"]').disabled`), "6-2 「你標了不吃」組沒有預設收合或卡片還能點");
+  check(await js(`(() => { const d = document.querySelector('#meal-picker-panel .meal-picker-disliked'); const gs = [...document.querySelectorAll('#meal-picker-panel .meal-picker-group:not(.meal-picker-disliked)')];
+    return gs.every((g) => (g.compareDocumentPosition(d) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0); })()`), "6-2 「你標了不吃」組不在分頁最下方");
+  check((await js(text("#meal-picker-panel .dislike-notice"))).indexOf("可以在「我的食物」取消") !== -1, "6-2 提示沒有寫去哪裡取消");
+  await js(`document.querySelector('#meal-picker-panel .meal-picker-disliked').open = true`);
+  await shot("我的品項-不吃提示", "#meal-picker-panel .dislike-notice");
+  await shot("我的品項-不吃組", "#meal-picker-panel .meal-picker-disliked");
+  await click(`#meal-picker-panel .dislike-notice [data-undislike-uid="${mainB}"]`);
+  await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]:not([disabled])')`, "6-2 按復原後品項沒有回來");
   check((await cardIndex(mainB)) === idxB, "6-2 復原後品項沒有回到原本的位置（" + idxB + " → " + (await cardIndex(mainB)) + "）");
+  // 6-2a 選擇器裡標不吃後直接按取消關閉 → 今日建議馬上重算（計畫 S7）：用晚餐推薦裡的現成品項
+  await closePicker();
+  const recItem = await js(`(() => { const c = document.querySelector('[id^=rec-] .dislike-chip[data-type=item]'); return c ? c.dataset.key : null; })()`);
+  if (recItem) {
+    const recSlot = await js(`document.querySelector('[id^=rec-] .dislike-chip[data-key="${recItem}"]').closest('[id^=rec-]').id.replace('rec-', '')`);
+    await openPicker(recSlot);
+    const recTab = await js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); const p = c.productsByUid[${JSON.stringify(recItem)}]; return p.role === 'drink' ? null : (p.is_taiwan || p.channel === 'delivery' ? 'delivery' : 'convenience'); })()`);
+    if (recTab) {
+      await new Promise((r) => setTimeout(r, 300)); // 選擇器打開是非同步的，面板可能還是上一次的內容
+      await click(`#meal-picker-tabs [data-tab=${recTab}]`);
+      await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${recItem}"]')`, "6-2a 選擇器裡找不到推薦的品項 " + recItem);
+      await js(`document.querySelectorAll('#meal-picker-panel details').forEach((d) => { d.open = true; })`);
+      await click(`#meal-picker-panel .item-card[data-uid="${recItem}"]`);
+      await click(`#meal-picker-panel [data-dislike-uid="${recItem}"]`);
+    } else {
+      await click(`#meal-picker-drinks [data-drink="${recItem}"]`);
+      await click(`#meal-picker-drinks [data-dislike-uid="${recItem}"]`);
+    }
+    await until(`!!document.querySelector('.dislike-notice')`, "6-2a 選擇器裡標不吃沒有提示");
+    await markStale();
+    await closePicker();
+    await until(`!document.querySelector('.walkthrough-stale')`, "6-2a 選擇器裡標不吃後按取消，今日建議沒有重算");
+    check(!(await js(`!!document.querySelector('[id^=rec-] .dislike-chip[data-key="${recItem}"]')`)), "6-2a 選擇器裡標不吃 " + recItem + " 後，今日建議還推薦它");
+    await js(`import('./js/data/db.js').then((m) => m.removeDislikedIngredient(${JSON.stringify(recItem)}))`); // 還原，後面步驟要完整候選
+    await markStale();
+    await tab("week");
+    await tab("today");
+    await waitFresh("6-2a 還原後今日建議沒有重算");
+  } else check(false, "6-2a 推薦卡片裡找不到現成品項（測試前提不成立）");
 
   // 6-3 複製成我的版本：表單預帶內建的值 → 改熱量存檔 → 原品項消失、新的一筆選中、份量沿用
+  await openPicker("dinner");
+  await new Promise((r) => setTimeout(r, 300));
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${mainB}"]:not([disabled])')`, "6-3 選擇器裡沒有 " + mainB);
   await click(`#meal-picker-panel .item-card[data-uid="${mainB}"]`);
   await click(`#meal-picker-panel [data-qty-uid="${mainB}"][data-qty="2"]`);
   await click(`#meal-picker-panel [data-copy-uid="${mainB}"]`);
@@ -638,59 +705,159 @@ async function run() {
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "6-4 取消過敏原後按計算沒有完成");
 
-  // ---------- 7. 基本資料的「我的品項」區塊（B-1a） ----------
+  // ---------- 7. 我的食物的「我的品項」（B-1a 搬過來，工作線 D 切片 2） ----------
   console.log("[7. 我的品項管理]");
-  const rowOf = (name) => `[...document.querySelectorAll('#custom-foods-section .custom-food-row')].find((r) => r.querySelector('.custom-food-name') && r.querySelector('.custom-food-name').innerText === ${JSON.stringify(name)})`;
-  const rowText = (name) => js(`(() => { const r = ${rowOf(name)}; return r ? r.innerText : null; })()`);
-  const clickInRow = (name, sel) => js(`(() => { const r = ${rowOf(name)}; const b = r && r.querySelector(${JSON.stringify(sel)}); if (!b) throw new Error("找不到 ${sel}"); b.scrollIntoView({ block: "center" }); b.click(); })()`);
-  await tab("profile");
-  await until(`!!(${rowOf(builtinName)})`, "7-1 我的品項清單沒有剛才的複製品");
-  check((await rowText(builtinName)).indexOf("從內建複製") !== -1, "7-1 複製品的狀態沒有「從內建複製」");
-  await clickInRow(builtinName, "[data-cf-edit]");
-  await until(`!!document.querySelector('#profile-custom-food-form .builtin-compare')`, "7-1 編輯複製品時沒有「內建目前的數值」");
-  check((await js(text("#profile-custom-food-form .builtin-compare"))).indexOf("內建目前的數值") !== -1, "7-1 並列區塊沒有「內建目前的數值」字樣");
-  await shot("我的品項-編輯複製品", "#profile-custom-food-form");
-  await click("#profile-custom-food-form [data-cf-cancel]");
+  check(!(await js(`!!document.getElementById('custom-foods-section')`)), "7-0 基本資料還有「我的品項」區塊（已搬到我的食物）");
+  await tab("foods");
+  await foodsSub("convenience");
+  await until(`!!(${foodRow(builtinName)})`, "7-1 超商的我的品項沒有剛才的複製品");
+  check((await foodRowText(builtinName)).indexOf("從內建複製") !== -1, "7-1 複製品沒有標「從內建複製」");
+  const mineOrder = await js(`[...document.querySelectorAll('#foods-body .foods-mine .food-name')].map((n) => n.innerText)`);
+  check(mineOrder.indexOf("有蛋的三明治") !== -1 && mineOrder.indexOf("有蛋的三明治") < mineOrder.indexOf("朋友做的飯糰") && mineOrder.indexOf("朋友做的飯糰") < mineOrder.indexOf("巷口新開的便當"),
+    "7-1 我的品項不是新到舊：" + mineOrder.join("、"));
+  await openFood(builtinName);
+  await until(`!!document.querySelector('#foods-body .food-detail .builtin-compare')`, "7-1 複製品的明細沒有「內建目前的數值」");
+  check((await js(text("#foods-body .food-detail"))).indexOf("出處：從內建複製") !== -1, "7-1 複製品的出處不是「從內建複製」");
+  await inFoodRow(builtinName, "[data-cf-edit]");
+  await until(`!!document.getElementById('foods-custom-food-form')`, "7-1 按編輯沒有出現表單");
+  await shot("我的食物-編輯複製品", "#foods-custom-food-form");
+  await click("#foods-custom-food-form [data-cf-cancel]");
 
   // 7-2 補填只給未確認類：設過敏原「蛋」並按計算 → 未確認的有「補填」、含蛋的沒有
+  await tab("profile");
   await setAllergens(["蛋"]);
   await submitProfile();
-  await until(`${text("#target-kcal")} === "1896.1" && !!(${rowOf("巷口新開的便當")}) && (${rowOf("巷口新開的便當")}).innerText.indexOf("不能選") !== -1`, "7-2 設過敏原後，未確認的我的品項沒有標「不能選」");
-  check(await js(`!!(${rowOf("巷口新開的便當")}).querySelector('[data-cf-fill]')`), "7-2 未確認的我的品項沒有「補填」");
-  check((await rowText("有蛋的三明治")).indexOf("含過敏原") !== -1 && !(await js(`!!(${rowOf("有蛋的三明治")}).querySelector('[data-cf-fill]')`)), "7-2 含蛋的我的品項沒有寫原因、或出現「補填」（不能引導改答案）");
-  await shot("我的品項-清單狀態", "#custom-foods-section");
+  await until(`${text("#target-kcal")} === "1896.1"`, "7-2 設過敏原後按計算沒有完成");
+  await tab("foods");
+  await until(`!!(${foodRow("巷口新開的便當")}) && (${foodRow("巷口新開的便當")}).innerText.indexOf("成分未確認") !== -1`, "7-2 設過敏原後，未確認的我的品項沒有寫原因");
+  await openFood("巷口新開的便當");
+  check(await js(`!!(${foodRow("巷口新開的便當")}).querySelector('[data-cf-fill]')`), "7-2 未確認的我的品項沒有「補填」");
+  await openFood("有蛋的三明治");
+  check((await foodRowText("有蛋的三明治")).indexOf("含過敏原") !== -1 && !(await js(`!!(${foodRow("有蛋的三明治")}).querySelector('[data-cf-fill]')`)), "7-2 含蛋的我的品項沒有寫原因、或出現「補填」（不能引導改答案）");
+  await shot("我的食物-我的品項狀態", "#foods-body .foods-mine");
+  await tab("profile");
   await setAllergens([]);
   await submitProfile();
-  await until(`${text("#target-kcal")} === "1896.1" && (${rowOf("巷口新開的便當")}).innerText.indexOf("不能選") === -1`, "7-2 取消過敏原後狀態沒有更新");
+  await until(`${text("#target-kcal")} === "1896.1"`, "7-2 取消過敏原後按計算沒有完成");
+  await tab("foods");
+  await until(`!!(${foodRow("巷口新開的便當")}) && (${foodRow("巷口新開的便當")}).innerText.indexOf("成分未確認") === -1`, "7-2 取消過敏原後狀態沒有更新");
 
   // 7-3 封存複製品 → 移到「已封存」、提示原品項仍隱藏；還原
-  await clickInRow(builtinName, "[data-cf-archive]");
-  await until(`!!document.querySelector('#custom-foods-section .custom-foods-archived') && ${text("#custom-foods-status")}.indexOf("仍是隱藏的") !== -1`, "7-3 封存複製品後沒有移到已封存或沒有「仍是隱藏的」提示");
-  await js(`document.querySelector('#custom-foods-section .custom-foods-archived').open = true`);
-  await clickInRow(builtinName, "[data-cf-restore]");
-  await until(`${text("#custom-foods-status")}.indexOf("已還原") !== -1 && !document.querySelector('#custom-foods-section .custom-foods-archived')`, "7-3 還原後沒有回到清單");
+  await openFood(builtinName);
+  await inFoodRow(builtinName, "[data-cf-archive]");
+  await until(`${text("#foods-status")}.indexOf("仍是隱藏的") !== -1 && [...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已封存") === 0)`, "7-3 封存複製品後沒有「已封存」組或沒有「仍是隱藏的」提示");
+  await openFolded();
+  // 複製品跟被隱藏的原品項同名：只在「已封存」組裡找
+  const archivedRow = `[...[...document.querySelectorAll('#foods-body details.foods-folded')].find((d) => d.querySelector('summary').innerText.indexOf("已封存") === 0).querySelectorAll('.food-row')].find((r) => r.querySelector('.food-name').textContent === ${JSON.stringify(builtinName)})`;
+  await js(`(() => { const r = ${archivedRow}; if (!r.querySelector('[data-cf-restore]')) r.querySelector('.food-row-main').click(); })()`);
+  await until(`!!(${archivedRow}).querySelector('[data-cf-restore]')`, "7-3 已封存的複製品明細沒有「還原」");
+  await js(`(${archivedRow}).querySelector('[data-cf-restore]').click()`);
+  await until(`${text("#foods-status")}.indexOf("已還原") !== -1 && ![...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已封存") === 0)`, "7-3 還原後沒有回到清單");
 
   // 7-4 已隱藏的內建品項：取消隱藏，有複製品時提示
-  await js(`document.querySelector('#custom-foods-hidden details').open = true`);
-  check((await js(text("#custom-foods-hidden"))).indexOf(builtinName) !== -1, "7-4 已隱藏的內建品項沒有列出複製時自動隱藏的原品項");
-  await shot("我的品項-已隱藏", "#custom-foods-hidden");
-  await js(`(() => { const b = [...document.querySelectorAll('#custom-foods-hidden .custom-food-row')].find((r) => r.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1).querySelector('[data-cf-unhide]'); b.click(); })()`);
-  await until(`${text("#custom-foods-status")}.indexOf("你有一筆從它複製的我的品項") !== -1`, "7-4 取消隱藏時沒有提示有複製品");
+  await openFolded();
+  check(!!(await js(`!!(${foodRow(builtinName)}) && [...document.querySelectorAll('#foods-body details.foods-folded')].some((d) => d.querySelector('summary').innerText.indexOf("已隱藏") === 0 && d.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1)`)), "7-4 「已隱藏」組沒有列出複製時自動隱藏的原品項");
+  await shot("我的食物-已隱藏", "#foods-body details.foods-folded");
+  await js(`(() => { const d = [...document.querySelectorAll('#foods-body details.foods-folded')].find((x) => x.querySelector('summary').innerText.indexOf("已隱藏") === 0);
+    const b = [...d.querySelectorAll('.food-row')].find((r) => r.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1).querySelector('[data-cf-unhide]'); b.click(); })()`);
+  await until(`${text("#foods-status")}.indexOf("你有一筆從它複製的我的品項") !== -1`, "7-4 取消隱藏時沒有提示有複製品");
 
-  // 7-5 搜尋
-  await js(`(() => { const el = document.getElementById('custom-foods-search'); el.value = '三明治'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
-  check((await js(`[...document.querySelectorAll('#custom-foods-list > .custom-food-row .custom-food-name')].map((n) => n.innerText).join('|')`)) === "有蛋的三明治", "7-5 搜尋「三明治」後清單不是只剩有蛋的三明治");
-  await js(`(() => { const el = document.getElementById('custom-foods-search'); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  // 7-5 搜尋：我的品項與內建都找得到，結果標子分頁
+  await foodsSearch("三明治");
+  await until(`!!(${foodRow("有蛋的三明治")})`, "7-5 搜尋「三明治」沒有找到我的品項");
+  check((await foodRowText("有蛋的三明治")).indexOf("超商 · 我的品項") !== -1, "7-5 搜尋結果沒有標子分頁與分組");
+  await foodsSearch("");
 
-  // 7-6 ＋新增我的品項
-  await click("#custom-foods-add");
-  await until(`!!document.querySelector('#custom-foods-form-slot #profile-custom-food-form')`, "7-6 按新增沒有出現表單");
-  await js(`(() => { const f = document.getElementById('profile-custom-food-form'); f.querySelector('[data-cf=name]').value = '在家整理的新品'; f.querySelector('[data-cf=kcal]').value = '210'; })()`);
-  await click(`#profile-custom-food-form [data-cf-channel=delivery]`);
-  await shot("我的品項-新增表單", "#custom-foods-form-slot");
-  await click("#profile-custom-food-form [data-cf-save]");
-  await until(`${text("#custom-foods-status")}.indexOf("已新增") !== -1 && !!(${rowOf("在家整理的新品")})`, "7-6 新增後清單沒有新的一筆");
-  check((await rowText("在家整理的新品")).indexOf("外食") !== -1, "7-6 新增的品項不是外食");
+  // 7-6 ＋新增：飲品・水果預帶飲料角色；改成外食主餐存檔 → 說明存到「外食」
+  await foodsSub("drinks");
+  await click("#foods-body [data-foods-add]");
+  await until(`!!document.getElementById('foods-custom-food-form')`, "7-6 按新增沒有出現表單");
+  check(await js(`!!document.querySelector('#foods-custom-food-form [data-cf-role=drink].selected')`), "7-6 飲品・水果的新增沒有預帶飲料角色");
+  await js(`(() => { const f = document.getElementById('foods-custom-food-form'); f.querySelector('[data-cf=name]').value = '在家整理的新品'; f.querySelector('[data-cf=kcal]').value = '210'; })()`);
+  await click(`#foods-custom-food-form [data-cf-channel=delivery]`);
+  await click(`#foods-custom-food-form [data-cf-role=main]`);
+  await shot("我的食物-新增表單", "#foods-custom-food-form");
+  await click("#foods-custom-food-form [data-cf-save]");
+  await until(`${text("#foods-status")}.indexOf("已新增") !== -1 && ${text("#foods-status")}.indexOf("外食") !== -1`, "7-6 新增到別的子分頁後沒有說明存到哪裡");
+  await foodsSub("delivery");
+  await until(`!!(${foodRow("在家整理的新品")})`, "7-6 外食的我的品項沒有新的一筆");
+
+  // ---------- 8. 我的食物（工作線 D 切片 2，PRD 13） ----------
+  console.log("[8. 我的食物]");
+  // 8-1 三個子分頁
+  for (const [sub, label] of [["convenience", "超商"], ["delivery", "外食"], ["drinks", "飲品・水果"]]) {
+    await foodsSub(sub);
+    await until(`!!document.querySelector('[data-foods-subtab=${sub}][aria-selected=true]') && !!document.querySelector('#foods-body .food-row')`, "8-1 " + label + " 子分頁沒有內容");
+    await shot("我的食物-" + label);
+  }
+  check((await js(text("#foods-body"))).indexOf("現成飲料") !== -1, "8-1 飲品・水果沒有「現成飲料」組");
+  // 8-2 搜尋「豆漿」：有結果、標子分頁
+  await foodsSearch("豆漿");
+  await until(`!!document.querySelector('#foods-body .food-row')`, "8-2 搜尋「豆漿」沒有結果");
+  check((await js(text("#foods-body"))).indexOf("飲品・水果 ·") !== -1, "8-2 搜尋結果沒有標子分頁");
+  await shot("我的食物-搜尋豆漿");
+  // 8-3 明細：出處分組、衛福部附編號、不顯示 ref、鈉中性寫法、能在哪些餐出現
+  const latte = await js(`(async () => (await (await import('./js/data/catalog.js')).loadCatalog()).productsByUid.tw_dr05.name)()`);
+  await foodsSearch("拿鐵");
+  await until(`!!(${foodRow(latte)})`, "8-3 搜尋「拿鐵」沒有 tw_dr05");
+  await openFood(latte);
+  const latteText = await js(text("#foods-body .food-detail"));
+  check(latteText.indexOf("衛福部（整合編號 O0700301）") !== -1, "8-3 衛福部換算的品項出處沒有附整合編號：" + latteText);
+  check(latteText.indexOf("鈉 約 113 mg（參考 2400 mg）") !== -1, "8-3 鈉不是中性寫法：" + latteText);
+  check(latteText.indexOf("能在哪些餐出現") !== -1 && latteText.indexOf("「不吃」只擋這一項") !== -1, "8-3 明細缺「能在哪些餐出現」或「只擋這一項」");
+  check(!/TFDA|Google|AI|decisions|審核|×/.test(latteText), "8-3 明細出現了 ref 或開發註記：" + latteText);
+  await shot("我的食物-明細衛福部", "#foods-body .food-detail");
+  const mid = await js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); return c.products.find((p) => p.kcal_basis === 'midpoint' && p.role !== 'drink').name; })()`);
+  await foodsSearch(mid);
+  await until(`!!(${foodRow(mid)})`, "8-3 搜尋區間中點的外食沒有結果");
+  await openFood(mid);
+  check(/區間 \d+–\d+ kcal/.test(await js(text("#foods-body .food-detail"))) && (await js(text("#foods-body .food-detail"))).indexOf("估算") !== -1, "8-3 區間中點的熱量沒有附區間或出處不是估算");
+  await shot("我的食物-明細區間", "#foods-body .food-detail");
+  await foodsSearch("");
+  // 8-4 標不吃 → 移到「你標了不吃（1）」收合組；選擇器同一分頁在最下方收合組，按「取消不吃」回原位
+  await foodsSub("convenience");
+  const target = await js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); return c.products.find((p) => !p.is_taiwan && p.channel === 'convenience' && p.role === 'main' && p.valid_slots.indexOf('dinner') !== -1); })()`);
+  await openFood(target.name);
+  await inFoodRow(target.name, "[data-foods-dislike]");
+  await until(`[...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText === "你標了不吃（1）")`, "8-4 標不吃後沒有「你標了不吃（1）」組");
+  check(await js(`(() => { const d = [...document.querySelectorAll('#foods-body details.foods-folded')].find((x) => x.querySelector('summary').innerText === "你標了不吃（1）"); return d.innerText.indexOf(${JSON.stringify(target.name)}) !== -1; })()`), "8-4 標不吃的品項不在「你標了不吃」組");
+  await shot("我的食物-標不吃之後", "#foods-body details.foods-folded");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  check(await js(`!!document.querySelector('#meal-picker-panel .meal-picker-disliked .item-card[data-uid="${target.uid}"]') && !document.querySelector('#meal-picker-panel .meal-picker-group:not(.meal-picker-disliked) .item-card[data-uid="${target.uid}"]')`), "8-4 選擇器裡標了不吃的品項不在最下方的不吃組");
+  await js(`document.querySelector('#meal-picker-panel .meal-picker-disliked').open = true`);
+  await click(`#meal-picker-panel .meal-picker-disliked [data-undislike-uid="${target.uid}"]`);
+  await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid="${target.uid}"]:not([disabled])') && !document.querySelector('#meal-picker-panel .meal-picker-disliked')`, "8-4 選擇器裡取消不吃後沒有回到原位可選");
+  await closePicker();
+  // 8-5 設過敏原後被擋品項的明細有「複製成我的版本」，按鈕不在原因旁邊
+  await tab("profile");
+  await setAllergens(["蛋"]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "8-5 設過敏原後按計算沒有完成");
+  await tab("foods");
+  await foodsSub("convenience");
+  const blockedName = await js(`(() => { const r = document.querySelector('#foods-body .food-row.is-blocked .food-name'); return r ? r.innerText : null; })()`);
+  check(!!blockedName, "8-5 設過敏原後超商沒有被擋的品項");
+  if (blockedName) {
+    await openFood(blockedName);
+    check(await js(`(() => { const r = ${foodRow(blockedName)}; const b = r.querySelector('[data-foods-copy]'); return !!b && !!b.closest('.backup-actions') && !b.closest('.food-status'); })()`), "8-5 被擋品項的明細沒有「複製成我的版本」或按鈕位置不對");
+    check((await foodRowText(blockedName)).indexOf("以你目前的設定：") !== -1, "8-5 被擋品項的明細沒有「以你目前的設定」");
+    await shot("我的食物-被擋可複製", "#foods-body .food-detail");
+  }
+  await tab("profile");
+  await setAllergens([]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "8-5 取消過敏原後按計算沒有完成");
+  // 8-6 全部清單的「已不提供」可以移除（先用 db 函式寫一個不存在的 key）
+  await js(`import('./js/data/db.js').then((m) => m.addDislikedIngredient({ type: 'item', key: 'gone_walkthrough', label: '已下架的舊品項' }))`);
+  await tab("today");
+  await tab("foods");
+  await until(`!!document.querySelector('.foods-disliked-all [data-foods-undislike="gone_walkthrough"]')`, "8-6 全部清單沒有查不到的 key");
+  await js(`document.querySelector('.foods-disliked-all').open = true`);
+  check((await js(text(".foods-disliked-all"))).indexOf("已下架的舊品項（已不提供）") !== -1, "8-6 查不到的 key 沒有寫「已不提供」");
+  await shot("我的食物-已不提供", ".foods-disliked-all");
+  await click(`.foods-disliked-all [data-foods-undislike="gone_walkthrough"]`);
+  await until(`(${dbDislikedKeys}).then((s) => JSON.parse(s).length === 0)`, "8-6 移除後不吃清單不是空的");
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();

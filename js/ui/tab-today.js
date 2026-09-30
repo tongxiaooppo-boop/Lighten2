@@ -6,7 +6,7 @@ import { dateAddDays, mondayOf } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
-  getProfile, saveProfile, getDailyLogs, addDailyLog, undoDailyLog,
+  getProfile, addDislikedIngredient, getDailyLogs, addDailyLog, undoDailyLog,
   getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids,
 } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
@@ -237,18 +237,19 @@ export function onDislikeClick(id) {
   });
 }
 
+// 「順便不要」：寫入走 db.js 專用函式（一個 transaction 讀改寫、只比 key，decisions #99）。
+// 基本資料的不吃清單已搬到「我的食物」，按完告訴使用者去哪裡取消（計畫 S13）。
 export async function onDislikeChipClick(chip) {
-  const entry = { type: chip.getAttribute("data-type"), key: chip.getAttribute("data-key"), label: chip.getAttribute("data-label") };
-  const profile = await getProfile();
-  if (!profile) return;
-  const list = Array.isArray(profile.disliked_ingredients) ? profile.disliked_ingredients : [];
-  const exists = list.some(function (d) { return d.type === entry.type && d.key === entry.key; });
-  if (!exists) {
-    list.push(entry);
-    profile.disliked_ingredients = list;
-    await saveProfile(profile);
+  const entry = { type: chip.getAttribute("data-type"), key: chip.getAttribute("data-key"), label: chip.getAttribute("data-label") || "" };
+  try {
+    await addDislikedIngredient(entry);
+  } catch (err) {
+    console.error(err);
+    setStatus("存檔失敗，請重試。");
+    return;
   }
   await buildRecommendation();
+  setStatus("已標不吃「" + (entry.label || entry.key) + "」，可以在「我的食物」取消。");
 }
 
 export function initTodayTab() {

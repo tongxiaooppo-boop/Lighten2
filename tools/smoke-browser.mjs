@@ -14,8 +14,12 @@ const URL_BASE = H.url;
 async function run() {
   await send("Page.navigate", { url: URL_BASE });
   await until(`${text("#today-status")}.indexOf("基本資料") !== -1`, "沒有基本資料時，今日建議沒有提示先填基本資料");
-  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,week,exercise,shopping",
-    "分頁不是 基本資料/今日建議/本週/運動/採買（美饗日曆應已移除）");
+  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,foods,week,exercise",
+    "分頁不是 基本資料/今日建議/我的食物/本週/運動（decisions #96）");
+  // 還沒有基本資料：不吃的專用函式丟「還沒有基本資料」（PRD 13.5）
+  check(/還沒有基本資料/.test(await js(`(async () => { const m = await import('./js/data/db.js');
+    try { await m.addDislikedIngredient({ type: 'item', key: 'conv_bx04', label: 'x' }); return 'ok'; } catch (e) { return String(e.message); } })()`)),
+    "沒有 profile 時 addDislikedIngredient 沒有丟「還沒有基本資料」");
 
   console.log("[基本資料]");
   await js(`(() => { const f = document.getElementById('profile-form');
@@ -97,7 +101,7 @@ async function run() {
   await js(`(() => { const f = document.getElementById('weight-form'); f.elements.weight_kg.value = 79.5; f.requestSubmit(); })()`);
   await until(`${text("#weight-log-status")}.indexOf("79.5") !== -1`, "體重沒有記錄");
 
-  console.log("[我的品項：隱藏、複製、份量（真的 IndexedDB）]");
+  console.log("[我的品項與不吃：複製、不吃、份量（真的 IndexedDB）]");
   {
     const DBM = `(await import('./js/data/db.js'))`;
     const CAT = `(await (await import('./js/data/catalog.js')).loadCatalog())`;
@@ -114,24 +118,48 @@ async function run() {
       check(msg !== null, "copyBuiltinToCustom 的 " + op + " 丟錯時沒有回報失敗");
       check((await snap()) === before, "copyBuiltinToCustom 的 " + op + " 丟錯後資料被改了（不是全有全無）");
     }
-    // 隱藏「目前推薦卡片裡的品項」→ 今日建議重算後推薦不含它；取消隱藏後回來
+    // 在「我的食物」明細標「不吃」目前推薦卡片裡的品項 → 今日建議重算後推薦不含它；取消後回來
     await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
     await until(`!!document.querySelector('#rec-lunch .rec-log-btn') || !!document.querySelector('#rec-lunch .rec-undo-btn') || !!document.querySelector('#rec-lunch .rec-pick-btn')`, "今日建議沒有午餐卡片");
     // 推薦卡片「順便不要」的 chip 帶著現成品項的 uid（data-type=item）
     const recUid = await js(`(() => { const c = document.querySelector('[id^=rec-] .dislike-chip[data-type=item]'); return c ? c.dataset.key : null; })()`);
     check(!!recUid, "找不到推薦卡片裡的現成品項（測試前提不成立）");
     if (recUid) {
-      await js(`(async () => { const m = ${DBM}; await m.hideCatalogItem(${JSON.stringify(recUid)}); })()`);
-      await js(`document.querySelector('.tab-btn[data-tab=week]').click()`);
+      const U = JSON.stringify(recUid);
+      await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+      await until(`!!document.querySelector('#foods-search')`, "我的食物分頁沒有搜尋框");
+      await js(`(async () => { const c = ${CAT}; const i = document.getElementById('foods-search'); i.value = c.productsByUid[${U}].name; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await until(`!!document.querySelector('[data-foods-open=' + JSON.stringify(${U}) + ']')`, "搜尋推薦裡的品項沒有結果");
+      await js(`document.querySelector('[data-foods-open=' + JSON.stringify(${U}) + ']').click()`);
+      await until(`!!document.querySelector('[data-foods-dislike=' + JSON.stringify(${U}) + ']')`, "明細沒有「不吃」按鈕");
+      await js(`document.querySelector('[data-foods-dislike=' + JSON.stringify(${U}) + ']').click()`);
+      await until(`!!document.querySelector('[data-foods-undislike=' + JSON.stringify(${U}) + ']')`, "按「不吃」後沒有變成「取消不吃」");
+      const keys = JSON.parse(await js(`(async () => { const m = ${DBM}; const p = await m.getProfile(); return JSON.stringify(p.disliked_ingredients.map((d) => d.key)); })()`));
+      check(keys.indexOf(recUid) !== -1, "按「不吃」後資料庫的不吃清單沒有 " + recUid);
       await js(`document.querySelectorAll('[id^=rec-]').forEach((el) => el.insertAdjacentHTML('beforeend', '<i class="smoke-stale"></i>'))`);
       await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
-      await until(`!document.querySelector('.smoke-stale')`, "隱藏後今日建議沒有重算");
-      check(!(await js(`!!document.querySelector('[id^=rec-] .dislike-chip[data-key=${JSON.stringify(recUid).slice(1, -1)}]')`)), "隱藏推薦裡的品項 " + recUid + " 後，今日建議還推薦它");
-      await js(`(async () => { const m = ${DBM}; await m.unhideCatalogItem(${JSON.stringify(recUid)}); })()`);
+      await until(`!document.querySelector('.smoke-stale')`, "標不吃後今日建議沒有重算");
+      check(!(await js(`!!document.querySelector('[id^=rec-] .dislike-chip[data-key=' + JSON.stringify(${U}) + ']')`)), "標不吃推薦裡的品項 " + recUid + " 後，今日建議還推薦它");
+      await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+      await until(`!!document.querySelector('#foods-body')`, "回到我的食物失敗");
+      await js(`(async () => { const i = document.getElementById('foods-search'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+      await until(`!!document.querySelector('.foods-disliked-all [data-foods-undislike=' + JSON.stringify(${U}) + ']')`, "全部清單沒有剛標的不吃");
+      await js(`document.querySelector('.foods-disliked-all [data-foods-undislike=' + JSON.stringify(${U}) + ']').click()`);
+      await until(`(async () => { const m = await import('./js/data/db.js'); const p = await m.getProfile(); return !p.disliked_ingredients.some((d) => d.key === ${U}); })()`, "在全部清單取消不吃後資料庫還有它");
     }
-    // 備份來回（M9）：先寫進一個隱藏 uid、一筆複製品、一筆份量 ×2 的紀錄，下一段的匯出→還原要逐字相同
+    // 併發（計畫 S11）：兩個不同 key 同時標不吃、saveProfileForm 與標不吃同時送，最後清單都在
+    const conc = await js(`(async () => { const m = ${DBM}; const p0 = await m.getProfile();
+      await Promise.all([m.addDislikedIngredient({ type: 'item', key: 'conv_sl01', label: 'a' }), m.addDislikedIngredient({ type: 'protein', key: 'chicken_breast', label: '雞胸肉' })]);
+      const form = Object.assign({}, p0, { disliked_ingredients: [] });
+      await Promise.all([m.saveProfileForm(form), m.addDislikedIngredient({ type: 'item', key: 'conv_sl02', label: 'b' })]);
+      await m.saveProfileForm(Object.assign({}, p0, { disliked_ingredients: [{ type: 'item', key: 'zzz', label: 'z' }] }));
+      const keys = (await m.getProfile()).disliked_ingredients.map((d) => d.key).sort().join(',');
+      await m.removeDislikedIngredient('conv_sl01'); await m.removeDislikedIngredient('conv_sl02');
+      return keys; })()`);
+    check(conc === "chicken_breast,conv_sl01,conv_sl02", "不吃的併發寫入互蓋，或 saveProfileForm 改到了不吃清單：" + conc);
+    // 備份來回（M9）：兩筆複製品（原品項自動隱藏）、一筆份量 ×2 的紀錄、不吃清單（上面留下的雞胸肉），下一段的匯出→還原要逐字相同
     await js(`(async () => { const m = ${DBM}; const mc = await import('./js/engine/meal-content.js'); const c = ${CAT};
-      await m.hideCatalogItem('tw_dr05');
+      await m.copyBuiltinToCustom(mc.copyFromBuiltin(c.productsByUid['tw_dr05']));
       await m.copyBuiltinToCustom(mc.copyFromBuiltin(c.productsByUid['conv_bx04']));
       const p = c.productsByUid['conv_bx01'];
       const content = mc.buildDraftContent({ kind: 'products', meal_type: 'convenience', items: [p], estimates: [], drink: null, qtyByUid: { conv_bx01: 2 } });
