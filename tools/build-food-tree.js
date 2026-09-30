@@ -76,6 +76,33 @@ function report() {
     const nulls = FIELDS.filter((k) => it.per_100g[k] == null);
     if (nulls.length) console.log("- " + it.id + " " + it.name + "（" + it.tfda_id + "）：" + nulls.join("、"));
   });
+  // 切片 3 抽查 T3：不收的理由常是「衛福部沒有樣品」——用品名詞根搜樣品名稱與俗名，列出來給人確認（3 字詞根有命中就不看 2 字）
+  console.log("\n## 不收的品名在衛福部的可能樣品（人工確認理由；每個詞根最多 5 筆）\n");
+  const codes = Object.keys(T);
+  ctx.map.entries.filter((e) => e.action === "exclude").forEach((e) => {
+    const base = L.cleanExchangeName(names[e.key].name).replace(/[（(][^）)]*[）)]/g, "");
+    const findRoots = (len) => {
+      const out = {};
+      for (let i = 0; i + len <= base.length; i++) {
+        const root = base.slice(i, i + len);
+        const hits = codes.filter((c) => ((T[c]["樣品名稱"] || "") + "," + (T[c]["俗名"] || "")).indexOf(root) !== -1);
+        if (hits.length) out[root] = hits;
+      }
+      return out;
+    };
+    let roots = findRoots(3);
+    if (!Object.keys(roots).length) roots = findRoots(2);
+    const text = Object.keys(roots).map((r) => r + "→" + roots[r].slice(0, 5).map((c) => c + T[c]["樣品名稱"]).join("、") + (roots[r].length > 5 ? "…共 " + roots[r].length : "")).join("；");
+    console.log("- " + e.key + "「" + base + "」：" + (text || "（沒有命中）"));
+  });
+  // 切片 3 抽查 T4：沒用平均值的品項，列出編號是它前綴的「平均值」樣品（例 J0403102 → J04031），確認是刻意不用
+  console.log("\n## 沒用平均值、但衛福部有平均值的品項（確認理由）\n");
+  tree.items.forEach((it) => {
+    const r = T[it.tfda_id];
+    if (!r || /平均值/.test(r["樣品名稱"])) return;
+    const avg = codes.filter((c) => c !== it.tfda_id && it.tfda_id.indexOf(c) === 0 && /平均值/.test(T[c]["樣品名稱"]));
+    if (avg.length) console.log("- " + it.id + " " + it.name + "（" + it.tfda_id + " " + r["樣品名稱"] + "）：" + avg.map((c) => c + " " + T[c]["樣品名稱"]).join("、"));
+  });
   console.log("\n## 高鈣深色蔬菜交叉比對（指南定義：每 100g 鈣 > 75mg，只當提醒）\n");
   tree.items.filter((it) => it.group === "vegetable").forEach((it) => {
     const r = T[it.tfda_id];

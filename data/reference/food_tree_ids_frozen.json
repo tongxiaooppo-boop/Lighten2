@@ -13,7 +13,6 @@
     "fx_dried_shrimp",
     "fx_dried_small_fish",
     "fx_dried_baby_shrimp",
-    "fx_dried_fish",
     "fx_skipjack",
     "fx_tuna",
     "fx_pomfret",
@@ -293,7 +292,17 @@
     "fx_almond",
     "fx_cashew",
     "fx_pistachio",
-    "fx_walnut"
+    "fx_walnut",
+    "fx_dried_guava",
+    "fx_dried_pineapple",
+    "fx_dumpling_wrapper",
+    "fx_taro_cake"
   ],
-  "retired": []
+  "retired": [
+    {
+      "id": "fx_dried_fish",
+      "date": "2026-09-30",
+      "reason": "魚脯改成不收：衛福部丁香魚脯是乾貨，代換表 30g 的蛋白質是 1 份的 2.2 倍，找不到狀態相符的樣品（切片 3 抽查 M1）"
+    }
+  ]
 }
