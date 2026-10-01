@@ -2,10 +2,10 @@
 // 預設分頁、品項分到哪個分頁、分頁內怎麼分組、快速新增的預設值與送出前預告。
 // 不碰 DOM、不 import data（章程 C1）；選擇器記住的「上次選的型態」由 ui 讀好，這裡只收 lastPicked 值（章程 C4.15）。
 
-import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN } from "../core/config.js";
+import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_QTY_STEP, FOOD_QTY_MAX } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
-import { emptyOptionalNutrients, canAddManualItem, manualSelectionProblem } from "./meal-content.js";
+import { emptyOptionalNutrients, canAddManualItem, manualSelectionProblem, foodLimitProblem } from "./meal-content.js";
 
 function validMealType(v) {
   return MEAL_TYPES.indexOf(v) !== -1 ? v : null;
@@ -181,4 +181,29 @@ export function placeNewCustom(item, ctx) {
   const roleItems = ctx.roleItems || [];
   if (canAddManualItem(roleItems, item, ctx.slot)) return { dest: "tab", tab: tab, select: true, reason: null, roleProblem: null };
   return { dest: "tab", tab: tab, select: false, reason: null, roleProblem: manualSelectionProblem(roleItems.concat([item]), ctx.slot) };
+}
+
+// ---------- 單品的選取（工作線 D 切片 7；PRD 13.4） ----------
+// sel：[{ uid, qty }]，照點選順序；三個型態分頁共用一份。一餐裡同一個 uid 只有一筆。
+
+// 再點已選的不新增（existed: true，畫面捲到它的步進器）；第 5 項回 problem；否則附在最後、份量 1
+export function addFood(sel, uid) {
+  const list = sel || [];
+  if (list.some(function (f) { return f.uid === uid; })) return { sel: list, existed: true, problem: null };
+  const problem = foodLimitProblem(list.length + 1);
+  if (problem) return { sel: list, existed: false, problem: problem };
+  return { sel: list.concat([{ uid: uid, qty: 1 }]), existed: false, problem: null };
+}
+
+// 步進器：dir 是 1 或 -1，一格 FOOD_QTY_STEP，夾在 FOOD_QTY_STEP–FOOD_QTY_MAX（不會變成 0；移除另有按鈕）
+export function stepFood(sel, uid, dir) {
+  return (sel || []).map(function (f) {
+    if (f.uid !== uid) return f;
+    const q = Math.min(FOOD_QTY_MAX, Math.max(FOOD_QTY_STEP, f.qty + (dir > 0 ? FOOD_QTY_STEP : -FOOD_QTY_STEP)));
+    return { uid: f.uid, qty: q };
+  });
+}
+
+export function removeFood(sel, uid) {
+  return (sel || []).filter(function (f) { return f.uid !== uid; });
 }

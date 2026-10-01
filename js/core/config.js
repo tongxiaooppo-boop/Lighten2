@@ -36,8 +36,18 @@ export function manualRoleMax(role, slot) {
 
 export const ROLE_LABELS = { main: "主餐", side: "配菜", drink: "飲料", snack: "點心" };
 
-// 選擇器的份量倍數（PRD 12.3、decisions #66）：只用在商品元件，db.js 驗證只接受這幾個值
+// 選擇器的份量倍數（PRD 12.3、decisions #66）：只用在商品元件（不用在單品），db.js 驗證只接受這幾個值
 export const QTY_OPTIONS = [0.5, 1, 1.5, 2];
+
+// 單品（food 元件，PRD 13.4、decisions #122）：一餐最多 4 項、不佔角色名額；份量步進器 0.5 一格、0.5–12
+export const FOOD_MAX_PER_MEAL = 4;
+export const FOOD_QTY_STEP = 0.5;
+export const FOOD_QTY_MAX = 12;
+
+// 單品份量是否合法（db 寫入驗證與 engine 共用）
+export function isFoodQty(q) {
+  return typeof q === "number" && isFinite(q) && q >= FOOD_QTY_STEP && q <= FOOD_QTY_MAX && Number.isInteger(q / FOOD_QTY_STEP);
+}
 
 // 自煮分頁的多選上限（PRD 6.3 的軸上限）；主食、醬料、烹調法單選
 export const COMPOSE_MAX = { protein: 2, vegetable: 3 };
