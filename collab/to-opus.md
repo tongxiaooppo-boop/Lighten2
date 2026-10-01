@@ -2,7 +2,7 @@
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**先讀這段（2026-09-30 晚的狀態）**：使用者可能先開 Sonnet 聽「還有哪些沒做」的說明（`collab/to-sonnet.md`，內容與本檔第 4 節一致），再回來找你決定順序。接手時先問：①手機短清單第 6 項跑了沒、有沒有問題（有就先修）；②下一步做什麼——候選是原順序的切片 5 常吃，或 Opus 提的「這週只做用得到的」：切片 7 單品 → 工作線 C 我的組合 → 切片 5 常吃。**使用者還沒決定，不要自己開工**。使用者說這週做不完是正常的。
+**先讀這段（2026-10-01 的狀態）**：使用者回報手機短清單第 6 項（切片 3＋4）測過沒問題。下一步定案（decisions #121）：**切片 7 單品 → 工作線 C 我的組合 → 切片 5 常吃**。切片 7 實作計畫初稿由 Sonnet agent 撰寫中（`docs/review/2026-10-01-D7-實作計畫.md`），Opus 驗證依賴後照慣例送獨立 Opus 審核；程式由誰寫等計畫審核通過再跟使用者確認。
 
 ## 1. 專案
 
@@ -70,7 +70,7 @@
    - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
-   - **衛福部全表剩餘 1895 筆的過敏原／素食標註已合併（2026-10-01，commit `3cbf1e0`）**：`collab/transcripts/tfda_tags_merged.json`＋審查 `tfda_tags_review.md`（Cline、Sonnet 兩份比對，1562 一致、333 裁決，一致的抽查改正 11 筆、補芒果 14 筆）。**還沒進 App**，給切片 8「我的食材」預帶用；排到切片 8 時先看審查檔「還沒解決」第 2、3、4、7 點（標註說明還是 11 詞、`composite` 與「等」字規則、check-data 芒果同義字會誤判「檸檬果乾」、自製茶葉蛋）。第 1 點（市售飲料標未確認要不要放寬）待使用者決定。
+   - **衛福部全表剩餘 1895 筆的過敏原／素食標註已合併（2026-10-01，commit `3cbf1e0`）**：`collab/transcripts/tfda_tags_merged.json`＋審查 `tfda_tags_review.md`（Cline、Sonnet 兩份比對，1562 一致、333 裁決，一致的抽查改正 11 筆、補芒果 14 筆）。**還沒進 App**，給切片 8「我的食材」預帶用；排到切片 8 時先看審查檔「還沒解決」第 2、3、4、7 點（標註說明還是 11 詞、`composite` 與「等」字規則、check-data 芒果同義字會誤判「檸檬果乾」、自製茶葉蛋）。第 1 點使用者已決定維持保守（沒確認的不讓勾過敏原的人點，日後有成分再翻案）。
 
 1. **Phase 0 已驗收並推送**（2026-09-29，commit `402ad83`～`0d727b1`；smoke-browser 14 項、mobile-walkthrough 144 項全過）。**已驗收**：使用者 2026-09-29 用手機跑短清單通過。
    - 新架構：`js/engine/picker.js`（預設分頁、分頁、分組、快速新增預設與預告）；`js/ui/meal-picker/`（index.js 狀態與事件、product-tab.js、cook-tab.js、estimate-card.js、quick-add.js）；合計一律 `buildDraftContent`＋`contentTotals`；草稿合計凍結在 `tools/fixtures/draft-totals.json`（`node tools/check-engine.js --freeze-draft-totals` 重錄，只有刻意改資料時才用）。
