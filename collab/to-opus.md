@@ -1,8 +1,10 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-01 更新；工作線 C 我的組合已實作、還沒推送）
+# 給接手的 Opus：Lighten2 交接（2026-10-01 更新；工作線 C 我的組合已推送，等使用者手機短清單第 8 項）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**先讀這段（2026-10-01 的狀態）**：順序定案（decisions #121）：切片 7 單品 → 工作線 C 我的組合 → **切片 5 常吃**。切片 7 已推送、使用者手機測過。**工作線 C 已實作完（commit `49f50d4`～`32e991b`，見第 4 節），還沒推送**：推送前先問使用者；推送後請使用者跑手機短清單第 8 項（辨認新版：「我的食物」搜尋框下有「我的組合（N）」）。使用者回報問題先修，再寫**切片 5 常吃（選擇器）的實作計畫**送審（PRD 13.6、13.9；新 settings key `favorite_refs` → 備份 v4）。
+**先讀這段（2026-10-01 的狀態）**：順序定案（decisions #121）：切片 7 單品 → 工作線 C 我的組合 → **切片 5 常吃**。切片 7 已推送、使用者手機測過。**工作線 C 已實作並推送（commit `49f50d4`～`86ab418`，2026-10-01 推送，CI 通過；手機資料庫已升到 DB_VERSION 2，不能退回）**：等使用者跑手機短清單第 8 項（辨認新版：「我的食物」搜尋框下有「我的組合（N）」）。使用者回報問題先修，再寫**切片 5 常吃（選擇器）的實作計畫**送審（PRD 13.6、13.9；新 settings key `favorite_refs` → 備份 v4）。
+
+**新 session 接手的做法**：先讀本段與第 4 節的工作線 C、切片 7 兩條；寫切片 5 計畫比照 `docs/review/2026-10-01-C-實作計畫.md` 的格式（現況→範圍→Q 表→驗收→commit 拆法→自查），寫前從要動的函式往外查依賴（記憶：寫計畫前先查依賴），送一個獨立 Opus agent 審核、問答逐字存 `collab/opus-review-log/`，產品問題問使用者（附建議）。實作時注意：①含反引號的腳本先寫成檔案再跑（不要放進 shell heredoc 以外的地方）；②選擇器、今日建議的 render 路徑不能無條件 query 新的 DOM id（快照的 fake DOM 會多一行、domNN 位移）；③每個 commit 的 hook 跑 check-data、check-engine、check-arch、diff-recs；改 js/css 要 stamp-version＋git add index.html；④畫面改動跑 smoke 與 mobile-walkthrough 並逐張看截圖。
 
 **2026-10-01 Sonnet 做好的外圍準備（都在 `collab/proofs/`，Opus 已抽驗）**：`2026-10-01-d7-serving-text-cases.md`（切片 7 份量文字測資）、`2026-10-01-d7-phone-script-draft.md`（切片 7 手機腳本草稿，實作後搬進正式腳本的第 8 節）、`2026-10-01-workline-c-survey.md`（工作線 C 調研，17 條規格空白；寫 C 計畫時整理成問題問使用者，例如管理區塊放哪）、`2026-10-01-workline-a-archetype-survey.md`（工作線 A 擴充餐型調研：13 個候選骨架，瓶頸是缺「蒸、水煮／燙、滷／燉」三個烹調法；建議先做清蒸魚定食、滷燉定食、蛋飯類；口味方向〔湯品、麵食、豬肉、滷與湯的鈉〕要問使用者）。`collab/to-ai-allergen-tagging.md` 已改成 12 詞通用版。
 
@@ -76,7 +78,7 @@
      - `e6d6ff9` 工具：diff-recs 只新增 98 行（`foods/*`、`open/*/foods/*`）；smoke 35、walkthrough 405 全過，截圖看過（含 360 寬）；手機實機腳本新第 8 節（程式裡是 9-x）、短清單第 7 項。
      - **留給工作線 C 的接縫**（計畫 2.3、8.3 S11）：`toSavedContent` 把 `food` 變成只存 `ref`、`qty`；`remapSavedRefs`／`resolveSavedMeal` 查 `catalog.foodTree.byId`；單品上限用 `FOOD_MAX_PER_MEAL`、骨架重新驗證略過 `food`；「已記錄的一餐存成組合」會碰到只有單品的自煮紀錄（`archetype_id` null、implicit {0,null}，`keepImplicit` 要處理）；「帶入選擇器」預載 `mealPicker.foodSel = [{ uid, qty }]`；含單品的組合引用時重算過敏原與不吃；v3 備份 fixture 要含一筆 `food` 紀錄。
      - 已知行為（刻意）：推薦跨時段不重複不看單品；只記單品的一餐也會記住分頁型態（下次停在那個分頁）；纖維 null 的 15 個加工肉等品項讓那一餐纖維「無資料」。
-   - **工作線 C 我的組合已實作（2026-10-01，commit `49f50d4`～`32e991b`，還沒推送）**：計畫第二版 [docs/review/2026-10-01-C-實作計畫.md](../docs/review/2026-10-01-C-實作計畫.md)（第 8 節為準）；審核逐字 `collab/opus-review-log/2026-10-01-c-plan-review.md`（一輪，「改完可以開工」）；decisions #124（使用者：管理區塊在我的食物最上方、入口 2 只在今天的卡片、名稱只寫品名、日期切換的預選移走、卡片熱量＝帶入後 1 倍、型態寫字）、#125（技術）。
+   - **工作線 C 我的組合已實作（2026-10-01，commit `49f50d4`～`32e991b`，已推送，待使用者手機短清單第 8 項）**：計畫第二版 [docs/review/2026-10-01-C-實作計畫.md](../docs/review/2026-10-01-C-實作計畫.md)（第 8 節為準）；審核逐字 `collab/opus-review-log/2026-10-01-c-plan-review.md`（一輪，「改完可以開工」）；decisions #124（使用者：管理區塊在我的食物最上方、入口 2 只在今天的卡片、名稱只寫品名、日期切換的預選移走、卡片熱量＝帶入後 1 倍、型態寫字）、#125（技術）。
      - `a5892ef` engine：`toSavedContent`／`remapSavedRefs`／`resolveSavedMeal`（`ctx = { hidden, customs, slot, profile }`）／`savedMealDraft`／`savedMealTotals`／`savedMealDefaultName`／`savedMealProblem`／`savedMealUnavailableLine`；`ingredientFilterResult` 搬到 filters；`manualRoleMax(role, null)`＝主餐 2；`fromCustomFood` 帶 `copied_from`。
      - `c359c32` db：`saved_meals`（DB_VERSION 2，部署後不能退回 1）、`validateSavedMeal`、`applySavedMealPatch`、`listSavedMeals`／`getSavedMeal`／`addSavedMeal`／`updateSavedMeal`／`addDailyLogWithSavedMeal`（同 transaction）；備份 v3；舊分頁 VersionError 提示重新整理。
      - `8d24c59` 畫面：選擇器組合列（`saved-row.js`）、帶入（取代目標分頁＋共用飲料與單品；插進清單的品項標「從我的組合帶入」）、「存成組合」勾選、編輯模式 `openMealPicker(null, { savedEdit, onSaved })`；今日建議「存成組合」；`js/ui/foods/saved-meals.js` 管理區塊與搜尋；`savedMealForSave`。快照只有 `flow/log-breakfast/dom01` 一行刻意改變（多了「存成組合」鈕）。
