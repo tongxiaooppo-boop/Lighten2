@@ -10,7 +10,8 @@ import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
 
 const DB_NAME = "lighten2";
-const DB_VERSION = 1;
+// v2（工作線 C）：saved_meals。部署後不能退回較小的版本（已升級的瀏覽器會打不開，decisions #125）
+const DB_VERSION = 2;
 const SETTING_PREFIX = "lighten2.";
 const PROFILE_KEY = "primary";
 
@@ -22,12 +23,14 @@ const STORE = {
   customFoods: "custom_foods",       // keyPath id
   recipeFeedback: "recipe_feedback", // key = 推薦組合 id
   settings: "settings",              // key = "lighten2." + 名稱
+  savedMeals: "saved_meals",         // keyPath id（我的組合，PRD 11）
 };
 
 // 備份檔的格式版本（PRD 11.6）：新增 store、新增 settings key、改變區塊結構就 +1，並在 tools/fixtures/ 凍結一份新版 fixture。
 // 跟 DB_VERSION 分開計：資料庫升級不一定改備份格式。
 // v2（B-1a）：settings 多了 hidden_catalog_uids；v1→v2 沒有資料要改（v1 檔只是沒有這個 key），BACKUP_MIGRATIONS 不放步驟。
-export const BACKUP_SCHEMA_VERSION = 2;
+// v3（工作線 C）：多了 saved_meals；舊檔沒有這個區塊，升級時補成空的，同樣不放步驟。
+export const BACKUP_SCHEMA_VERSION = 3;
 const BACKUP_FORMAT = "lighten2-backup";
 
 // 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
@@ -39,12 +42,13 @@ export const BACKUP_SECTIONS = {
   weight_log: ["logs", "weight_log"],
   exercise_log: ["logs", "exercise_log"],
   custom_foods: ["custom_foods"],
+  saved_meals: ["saved_meals"],
 };
 export const STORE_NAMES = Object.values(STORE);
 
 const BACKUP_LABELS = {
   user_profile: "基本資料", settings: "設定", recipe_feedback: "推薦紀錄", daily_log: "飲食紀錄",
-  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項",
+  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項", saved_meals: "我的組合",
 };
 
 let _dbPromise = null;
@@ -59,6 +63,9 @@ function upgrade(db, oldVersion) {
     db.createObjectStore(STORE.customFoods, { keyPath: "id" });
     db.createObjectStore(STORE.recipeFeedback);
     db.createObjectStore(STORE.settings);
+  }
+  if (oldVersion < 2) {
+    db.createObjectStore(STORE.savedMeals, { keyPath: "id" });
   }
 }
 
@@ -75,7 +82,12 @@ function openDb() {
         db.onversionchange = function () { db.close(); _dbPromise = null; };
         resolve(db);
       };
-      req.onerror = function () { _dbPromise = null; reject(req.error); };
+      // 這個分頁的程式比資料庫舊（別的分頁已經升級）：提示重新整理，不要只出現「記錄失敗」
+      req.onerror = function () {
+        _dbPromise = null;
+        const err = req.error;
+        reject(err && err.name === "VersionError" ? new Error("[db.js] App 已更新，請重新整理頁面") : err);
+      };
       // 舊版本的分頁還開著、沒有關閉連線：不要無聲卡住，直接報錯讓畫面提示重新整理。
       req.onblocked = function () { gaveUp = true; _dbPromise = null; reject(new Error("[db.js] 資料庫升級被其他開著的分頁擋住，請關閉其他分頁後重新整理")); };
     });
@@ -289,6 +301,75 @@ function isPlainObject(v) {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
 
+// 我的組合（PRD 11.1）的結構驗證；語意（角色上限、骨架、免開火）由 ui 在寫入前呼叫 engine（章程 C1）。
+// 元件只存 ref 與份量：ingredient { axis, ref, is_primary? }、product { ref, qty }、food { ref, qty }；
+// 估算與料理不收（料理等 D 切片 9）。時間戳是 ISO 字串。
+function savedContentProblems(c) {
+  const problems = [];
+  if (!isPlainObject(c) || !Array.isArray(c.components) || c.components.length === 0) return ["content.components"];
+  if (MEAL_TYPES.indexOf(c.meal_type) === -1) problems.push("content.meal_type");
+  ["archetype_id", "method_id"].forEach(function (k) {
+    if (!(k in c) || (c[k] !== null && (typeof c[k] !== "string" || c[k] === ""))) problems.push("content." + k);
+  });
+  const cook = COOK_TYPES.indexOf(c.meal_type) !== -1;
+  const hasIngredient = c.components.some(function (comp) { return comp && comp.kind === "ingredient"; });
+  if (!("implicit" in c)) problems.push("content.implicit");
+  else if (c.implicit !== null) {
+    if (!cook || implicitProblem(c.implicit)) problems.push("content.implicit");
+    else if (!hasIngredient && (Object.keys(c.implicit).length !== 2 || c.implicit.oil_g !== 0 || c.implicit.seasoning !== null)) problems.push("content.implicit");
+  }
+  if (cook && !hasIngredient && (c.archetype_id !== null || c.method_id !== null)) problems.push("content.archetype_id/method_id");
+  c.components.forEach(function (comp, i) {
+    const at = "content.components[" + i + "]";
+    if (!isPlainObject(comp) || ["ingredient", "product", "food"].indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
+    if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
+    if ("snapshot" in comp) problems.push(at + ".snapshot");
+    if (comp.kind === "ingredient") {
+      if (INGREDIENT_AXES.indexOf(comp.axis) === -1) problems.push(at + ".axis");
+      if ("is_primary" in comp && typeof comp.is_primary !== "boolean") problems.push(at + ".is_primary");
+      if ("scale" in comp) problems.push(at + ".scale");
+    } else if (comp.kind === "product") {
+      if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty");
+      if ("role" in comp) problems.push(at + ".role");
+    } else if (!isFoodQty(comp.qty)) problems.push(at + ".qty");
+  });
+  return problems;
+}
+
+export function validateSavedMeal(rec) {
+  assertRecord(rec, "saved_meals");
+  const problems = [];
+  if (typeof rec.id !== "string" || rec.id === "") problems.push("id");
+  if (typeof rec.name !== "string" || rec.name.trim() === "") problems.push("name");
+  if (typeof rec.archived !== "boolean") problems.push("archived");
+  ["created_at", "updated_at"].forEach(function (k) {
+    if (typeof rec[k] !== "string" || isNaN(Date.parse(rec[k]))) problems.push(k);
+  });
+  Array.prototype.push.apply(problems, savedContentProblems(rec.content));
+  if (problems.length > 0) throw new Error("[db.js] 我的組合格式不對：" + problems.join("、"));
+}
+
+// 修改我的組合的純函式（改名、改內容、封存、還原）：id、created_at 不能改；自己補 updated_at；寫入驗證
+const SAVED_MEAL_FIXED = ["id", "created_at"];
+export function applySavedMealPatch(old, patch, nowIso) {
+  assertRecord(old, "saved_meals");
+  assertRecord(patch, "saved_meals 的修改");
+  SAVED_MEAL_FIXED.forEach(function (k) {
+    if (k in patch && patch[k] !== old[k]) throw new Error("[db.js] 我的組合的 " + k + " 不能修改");
+  });
+  const next = Object.assign({}, old, patch, { updated_at: nowIso });
+  validateSavedMeal(next);
+  return next;
+}
+
+// 新增的組合補上 id、時間戳、archived 再驗證（addSavedMeal、addDailyLogWithSavedMeal 共用）
+function newSavedMealRecord(rec, nowIso) {
+  assertRecord(rec, "saved_meals");
+  const record = Object.assign({ archived: false }, rec, { id: rec.id || generateId("saved"), created_at: nowIso, updated_at: nowIso });
+  validateSavedMeal(record);
+  return record;
+}
+
 // 修改我的品項的純函式（check-engine 直接測）：合併 → 不能改的欄位跟原值不同就丟錯（相同放行，表單整筆回傳不誤擋）
 // → 更新 updated_at → 寫入驗證。回傳新紀錄，不改輸入。
 const CUSTOM_FOOD_FIXED = ["id", "created_at", "copied_from"];
@@ -494,6 +575,7 @@ export function validateBackup(obj, ctx) { // eslint-disable-line no-unused-vars
         else if (store === STORE.weightLog) validateWeightLog(rec);
         else if (store === STORE.exerciseLog) validateExerciseLog(rec);
         else if (store === STORE.customFoods) validateCustomFood(rec);
+        else if (store === STORE.savedMeals) validateSavedMeal(rec);
         else throw new Error("沒有驗證器（新增 store 要在 validateBackup 補上）");
       } catch (e) {
         problems.push(at + errText(e));
@@ -782,6 +864,63 @@ export async function addDailyLog(entry) {
     return reqPromise(s[STORE.dailyLog].add(record));
   });
   return record;
+}
+
+// ---------- 6b. saved_meals（我的組合，PRD 11；讀取函式只准章程 C4.16 白名單的檔案 import） ----------
+
+// 全部組合（含已封存的），依建立順序（同時間依 id）
+export async function listSavedMeals() {
+  const all = await withStores([STORE.savedMeals], "readonly", function (s) {
+    return reqPromise(s[STORE.savedMeals].getAll());
+  });
+  return all.sort(function (a, b) {
+    if (a.created_at !== b.created_at) return a.created_at < b.created_at ? -1 : 1;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
+}
+
+export async function getSavedMeal(id) {
+  const v = await withStores([STORE.savedMeals], "readonly", function (s) {
+    return reqPromise(s[STORE.savedMeals].get(id));
+  });
+  return v === undefined ? null : v;
+}
+
+// 新增一筆組合（入口 2、管理區塊）：rec = { name, content }。回傳寫入的紀錄
+export async function addSavedMeal(rec) {
+  const record = newSavedMealRecord(rec, new Date().toISOString());
+  await withStores([STORE.savedMeals], "readwrite", function (s) {
+    return reqPromise(s[STORE.savedMeals].add(record));
+  });
+  return record;
+}
+
+// 改名、改內容、封存、還原。一個 transaction 讀改寫；找不到 id 丟錯
+export async function updateSavedMeal(id, patch) {
+  if (typeof id !== "string" || id === "") throw new Error("[db.js] updateSavedMeal 需要組合 id");
+  assertRecord(patch, "saved_meals 的修改");
+  const now = new Date().toISOString();
+  return withStores([STORE.savedMeals], "readwrite", function (s) {
+    const store = s[STORE.savedMeals];
+    return reqPromise(store.get(id)).then(function (old) {
+      if (!old) throw new Error("[db.js] 找不到我的組合：" + id);
+      const next = applySavedMealPatch(old, patch, now);
+      return reqPromise(store.put(next)).then(function () { return next; });
+    });
+  });
+}
+
+// 入口 1：「自己選」送出時勾了「存成組合」——紀錄與組合同一個 transaction（全有全無，decisions #125）。
+// 兩筆都先驗證過才開 transaction。回傳 { log, saved }
+export async function addDailyLogWithSavedMeal(entry, rec) {
+  validateDailyLog(entry);
+  const now = new Date().toISOString();
+  const saved = newSavedMealRecord(rec, now);
+  const log = Object.assign({}, entry, { id: entry.id || generateId("log") });
+  await withStores([STORE.dailyLog, STORE.savedMeals], "readwrite", function (s) {
+    return Promise.all([reqPromise(s[STORE.dailyLog].add(log)), reqPromise(s[STORE.savedMeals].add(saved))]);
+  });
+  return { log: log, saved: saved };
 }
 
 export function getDailyLogs(dateRange) {

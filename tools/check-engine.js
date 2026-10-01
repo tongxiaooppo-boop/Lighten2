@@ -815,6 +815,8 @@ async function main() {
   console.log("[我的組合]");
   checkSavedMeals(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+  checkSavedMealsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
 
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
@@ -1032,7 +1034,7 @@ async function checkBackupFormat() {
   bad("版本號小於 1", (f) => { f.schema_version = 0; }, /版本號/);
   bad("版本較新", (f) => { f.schema_version = db.BACKUP_SCHEMA_VERSION + 1; }, /較新的版本/);
   bad("缺 sections", (f) => { delete f.sections; }, /缺少資料區塊/);
-  bad("不認得的區塊", (f) => { f.sections.saved_meals = []; }, /不認得的資料區塊「saved_meals」/);
+  bad("不認得的區塊", (f) => { f.sections.unknown_block = []; }, /不認得的資料區塊「unknown_block」/);
   bad("不認得的巢狀區塊", (f) => { f.sections.logs.meal_plan = []; }, /不認得的資料區塊「logs\.meal_plan」/);
   bad("缺一類", (f) => { delete f.sections.logs.exercise_log; }, /缺少「運動紀錄」/);
   bad("不認得的 settings key", (f) => { f.sections.system.settings.push({ id: "__unregistered_key", value: [] }); f.manifest.settings++; }, /設定第 3 筆.*沒有登記/);
@@ -1713,7 +1715,6 @@ function checkSingleFoodsDb(catalog) {
 
   // 4. 備份：v2 加一筆單品紀錄照樣能還原，不升版（Q2）
   const fixtureV2 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v2.json"), "utf8"));
-  check(db.BACKUP_SCHEMA_VERSION === 2, "切片 7 不升備份版本");
   const withLog = (log) => {
     const f = clone(fixtureV2);
     const logs = f.sections.logs.daily_log;
@@ -1723,7 +1724,11 @@ function checkSingleFoodsDb(catalog) {
   };
   const fv = withLog(ok.cook_full);
   check(db.validateBackup(db.migrateBackup(fv)).length === 0, "v2 備份加一筆單品紀錄不能還原：" + db.validateBackup(db.migrateBackup(fv)).slice(0, 2).join("；"));
-  check(JSON.stringify(db.migrateBackup(fv)) === JSON.stringify(fv), "migrateBackup 不能改含單品的 v2 備份");
+  // 單品本身不升版；v2→v3（工作線 C）只多了空的 saved_meals 區塊與版本號
+  const mfv = db.migrateBackup(fv);
+  const strip = clone(mfv);
+  delete strip.sections.saved_meals; delete strip.manifest.saved_meals; strip.schema_version = fv.schema_version;
+  check(JSON.stringify(strip) === JSON.stringify(fv) && mfv.sections.saved_meals.length === 0 && mfv.manifest.saved_meals === 0, "v2 升級後除了空的 saved_meals 與版本號，其他（含單品紀錄）要原樣");
   check(db.summarizeBackup(fv).daily_log.count === db.summarizeBackup(fixtureV2).daily_log.count + 1, "summarizeBackup 單品紀錄的筆數");
   const badQty = clone(ok.convenience);
   badQty.content.components[0].qty = 13;
@@ -1861,6 +1866,79 @@ function checkSavedMeals(catalog) {
   x = res(three, { slot: null });
   check(/^有 2 項目前不能用：/.test(mc.savedMealUnavailableLine(x)) && mc.savedMealUnavailableLine(res(S([pc(mains[0].uid)]))) === null, "savedMealUnavailableLine");
   check(mc.savedMealProblem(res(S([pc(mains[0].uid)]))) === null && mc.savedMealProblem(x).length === 2 && mc.savedMealProblem(res(S([pc("nope_x")])))[0] === "沒有可以存的品項。", "savedMealProblem");
+}
+
+// 工作線 C：saved_meals 的寫入驗證與備份 v3（計畫第 4 節、8.2 M2、M7）
+function checkSavedMealsDb(catalog) {
+  const mc = M.mc, db = M.db;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const errOf = (fn) => { try { fn(); return null; } catch (e) { return String(e && e.message); } };
+  const tree = catalog.foodTree.byId;
+  const main = catalog.products.find((p) => p.role === "main");
+  const now = "2026-10-01T04:00:00.000Z";
+  const rec = (content, extra) => Object.assign({ id: "saved_t1", name: "測試組合", content: content, archived: false, created_at: now, updated_at: now }, extra || {});
+  const prod = mc.toSavedContent(mc.buildDraftContent({ kind: "products", meal_type: "convenience", items: [main], estimates: [], drink: catalog.productsByUid.tw_dr05,
+    qtyByUid: { [main.uid]: 2 }, foods: [{ item: tree.fx_cooked_rice, qty: 4 }] }), { keepImplicit: false });
+  const stir = catalog.archetypes.find((a) => a.id === "protein_stir_fry");
+  const ing = (id) => catalog.ingredients.find((x) => x.id === id);
+  const cook = mc.toSavedContent(mc.buildDraftContent({ kind: "cook", meal_type: "cook_full", archetype: stir, proteins: [ing(stir.protein.allow[0])], staple: ing(stir.staple.allow[0]),
+    vegetables: [], seasoning: null, method: ing("method_stir_fry"), primaryScale: 1, implicitOverride: { oil_g: 10 } }), { keepImplicit: true });
+  const foodsOnly = mc.toSavedContent(mc.buildDraftContent({ kind: "cook", meal_type: "cook_quick", archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null,
+    method: null, primaryScale: 1, foods: [{ item: tree.fx_cooked_rice, qty: 1 }] }), { keepImplicit: false });
+  [["商品＋單品＋飲料", prod], ["自煮（保留用油）", cook], ["只有單品的自煮", foodsOnly], ["只有單品的自煮 implicit {0,null}", Object.assign({}, foodsOnly, { implicit: { oil_g: 0, seasoning: null } })]]
+    .forEach((g) => check(errOf(() => db.validateSavedMeal(rec(g[1]))) === null, "合法的組合（" + g[0] + "）被擋：" + errOf(() => db.validateSavedMeal(rec(g[1])))));
+  const withComp = (base, i, patch) => { const c = clone(base); Object.assign(c.components[i], patch); return c; };
+  const broken = [
+    ["名稱空白", rec(prod, { name: "  " }), /name/],
+    ["沒有 id", rec(prod, { id: "" }), /id/],
+    ["archived 不是布林", rec(prod, { archived: "false" }), /archived/],
+    ["created_at 只有日期以外的字", rec(prod, { created_at: "昨天" }), /created_at/],
+    ["沒有元件", rec(Object.assign({}, prod, { components: [] })), /content\.components/],
+    ["估算", rec(Object.assign({}, prod, { components: [{ kind: "estimate", name: "喜宴", size: "L" }] })), /kind/],
+    ["料理（切片 9 才收）", rec(Object.assign({}, prod, { components: [{ kind: "dish", ref: "dish_x", qty: 1 }] })), /kind/],
+    ["商品帶快照", rec(withComp(prod, 0, { snapshot: { kcal: 1 } })), /snapshot/],
+    ["商品帶角色", rec(withComp(prod, 0, { role: "main" })), /role/],
+    ["商品份量 3", rec(withComp(prod, 0, { qty: 3 })), /qty/],
+    ["單品帶快照", rec(withComp(prod, 1, { snapshot: { kcal: 1 } })), /snapshot/],
+    ["單品份量 13", rec(withComp(prod, 1, { qty: 13 })), /qty/],
+    ["食材帶縮放", rec(withComp(cook, 0, { scale: 1.2 })), /scale/],
+    ["食材 is_primary 不是布林", rec(withComp(cook, 0, { is_primary: "yes" })), /is_primary/],
+    ["食材 axis 不合法", rec(withComp(cook, 0, { axis: "method" })), /axis/],
+    ["沒有 archetype_id 鍵", rec((() => { const c = clone(prod); delete c.archetype_id; return c; })()), /archetype_id/],
+    ["超商帶 implicit", rec(Object.assign({}, prod, { implicit: { oil_g: 5, seasoning: null } })), /implicit/],
+    ["只有單品的自煮 implicit 有用油", rec(Object.assign({}, foodsOnly, { implicit: { oil_g: 5, seasoning: null } })), /implicit/],
+    ["只有單品的自煮帶餐型", rec(Object.assign({}, foodsOnly, { archetype_id: "protein_stir_fry" })), /archetype_id/],
+    ["型態不在列舉", rec(Object.assign({}, prod, { meal_type: "cook" })), /meal_type/],
+  ];
+  broken.forEach((b) => check(b[2].test(errOf(() => db.validateSavedMeal(b[1])) || ""), "組合「" + b[0] + "」沒有擋下或訊息不對：" + errOf(() => db.validateSavedMeal(b[1]))));
+  check(/不能傳陣列/.test(errOf(() => db.validateSavedMeal([rec(prod)])) || ""), "validateSavedMeal 傳陣列要擋");
+  // applySavedMealPatch：改名、封存、改內容；id、created_at 不能改；自己補 updated_at；不改輸入
+  const old = rec(prod);
+  const later = "2026-10-02T04:00:00.000Z";
+  const renamed = db.applySavedMealPatch(old, { name: "新名字", archived: true }, later);
+  check(renamed.name === "新名字" && renamed.archived === true && renamed.updated_at === later && renamed.created_at === now && old.name === "測試組合", "applySavedMealPatch 改名與封存");
+  check(/id/.test(errOf(() => db.applySavedMealPatch(old, { id: "saved_x" }, later)) || "") && /created_at/.test(errOf(() => db.applySavedMealPatch(old, { created_at: later }, later)) || ""), "applySavedMealPatch 不能改 id、created_at");
+  check(db.applySavedMealPatch(old, { id: old.id, content: cook }, later).content === cook, "applySavedMealPatch 相同的 id 放行、可以改內容");
+  check(/content/.test(errOf(() => db.applySavedMealPatch(old, { content: Object.assign({}, prod, { components: [] }) }, later)) || ""), "applySavedMealPatch 壞內容要擋");
+
+  // 備份 v3
+  check(db.BACKUP_SCHEMA_VERSION === 3 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v3 與 saved_meals 區塊");
+  ["backup-v1.json", "backup-v2.json"].forEach((f) => {
+    const m = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", f), "utf8")));
+    check(m.schema_version === 3 && Array.isArray(m.sections.saved_meals) && m.sections.saved_meals.length === 0 && m.manifest.saved_meals === 0 &&
+      db.validateBackup(m).length === 0, f + " 升級後要有空的 saved_meals 並且讀得了");
+  });
+  const v3 = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v2.json"), "utf8")));
+  v3.sections.saved_meals = [rec(prod), rec(cook, { id: "saved_t2", archived: true })];
+  v3.manifest.saved_meals = 2;
+  check(db.validateBackup(v3).length === 0, "含組合的 v3 備份不能還原：" + db.validateBackup(v3).slice(0, 2).join("；"));
+  check(db.summarizeBackup(v3).saved_meals.count === 2 && db.summarizeBackup(v3).saved_meals.label === "我的組合", "summarizeBackup 我的組合筆數");
+  const bad1 = clone(v3); bad1.sections.saved_meals[1].content.components[0].scale = 2;
+  check(db.validateBackup(bad1).some((x) => /我的組合第 2 筆.*scale/.test(x)), "壞的組合要指出「我的組合第 2 筆」");
+  const dup = clone(v3); dup.sections.saved_meals[1].id = "saved_t1";
+  check(db.validateBackup(dup).some((x) => /我的組合第 2 筆：id 重複/.test(x)), "組合 id 重複要擋");
+  const newer = clone(v3); newer.schema_version = 4;
+  check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "v4 的檔案要擋（較新的版本）");
 }
 
 main().catch((err) => {

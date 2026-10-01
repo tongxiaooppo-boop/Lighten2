@@ -12,7 +12,7 @@ import { todayStr, nowIso } from "./clock.js";
 const APP_VERSION = new URL(import.meta.url).searchParams.get("v") || "";
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const CHANNEL_NAME = "lighten2";
-const PREVIEW_STORES = ["user_profile", "daily_log", "weight_log", "exercise_log", "custom_foods"];
+const PREVIEW_STORES = ["user_profile", "daily_log", "weight_log", "exercise_log", "custom_foods", "saved_meals"];
 
 let channel = null;
 let pending = null; // 預覽中的備份（已升級、已驗證）
@@ -55,7 +55,7 @@ function download(text, filename) {
 }
 
 function countsText(summary) {
-  return ["daily_log", "weight_log", "custom_foods"].map(function (k) {
+  return ["daily_log", "weight_log", "custom_foods", "saved_meals"].map(function (k) {
     return summary[k].label + " " + summary[k].count + " 筆";
   }).join("、");
 }
@@ -128,7 +128,7 @@ function renderPreview(data, fileSum, curSum) {
   const notes = [];
   const exportedAt = typeof data.exported_at === "string" ? data.exported_at : null;
   if (exportedAt) {
-    const newer = ["daily_log", "custom_foods"].some(function (k) { return curSum[k].last_created_at && curSum[k].last_created_at > exportedAt; });
+    const newer = ["daily_log", "custom_foods", "saved_meals"].some(function (k) { return curSum[k].last_created_at && curSum[k].last_created_at > exportedAt; });
     if (newer) notes.push("目前有 " + mmdd(exportedAt) + " 匯出這份備份之後新增的紀錄，還原後不會保留。");
   }
   notes.push("還原會取代這台裝置上的所有資料，不是同步。其他開著這個 App 的分頁會自動重新整理。");
