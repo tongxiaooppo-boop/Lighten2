@@ -40,21 +40,28 @@ function qtyChipsHtml(uid, q) {
   }).join("") + "</div>";
 }
 
-// 已選的一行：名稱、份量；內建品項再加「不吃」「複製成我的版本」（PRD 10.2、13.5；「隱藏」由「不吃」取代，decisions #99）。
-// note：從我的組合帶入、這個分頁平常不列出的品項寫一行說明（PRD 11.3 第 6 點）
-export function selectedRowHtml(item, q, note) {
-  const actions = item.is_custom ? "" :
-    '<div class="selected-actions"><button type="button" class="link-btn" data-dislike-uid="' + escapeHtml(item.uid) + '">不吃</button>' +
-    '<button type="button" class="link-btn" data-copy-uid="' + escapeHtml(item.uid) + '">複製成我的版本</button></div>';
+// 常吃／取消常吃的連結（PRD 13.6、decisions #126 ①）：已選列與單品已選框共用
+export function favoriteLinkHtml(uid, isFav) {
+  return isFav
+    ? '<button type="button" class="link-btn" data-unfavorite-uid="' + escapeHtml(uid) + '">取消常吃</button>'
+    : '<button type="button" class="link-btn" data-favorite-uid="' + escapeHtml(uid) + '">常吃</button>';
+}
+
+// 已選的一行：名稱、份量；「常吃」（內建與我的品項都有）；內建品項再加「複製成我的版本」「不吃」（PRD 10.2、13.5、13.6；「隱藏」由「不吃」取代，decisions #99）。
+// 常吃第一個、不吃最後（意思相反，中間隔開；審核 S13）。note：從我的組合帶入、這個分頁平常不列出的品項寫一行說明（PRD 11.3 第 6 點）
+export function selectedRowHtml(item, q, note, isFav) {
+  const actions = '<div class="selected-actions">' + favoriteLinkHtml(item.uid, isFav) + (item.is_custom ? "" :
+    '<button type="button" class="link-btn" data-copy-uid="' + escapeHtml(item.uid) + '">複製成我的版本</button>' +
+    '<button type="button" class="link-btn" data-dislike-uid="' + escapeHtml(item.uid) + '">不吃</button>') + "</div>";
   return '<div class="selected-row"><div class="selected-name">' + escapeHtml(item.name) + "</div>" +
     (note ? '<div class="food-qty-text">' + escapeHtml(note) + "</div>" : "") + qtyChipsHtml(item.uid, q) + actions + "</div>";
 }
 
 // 「已選」段（超商／外食分頁，品項清單上方）
-export function selectedSectionHtml(items, qtyByUid, noteOf) {
+export function selectedSectionHtml(items, qtyByUid, noteOf, favSet) {
   if (items.length === 0) return "";
   return '<div class="meal-picker-selected"><div class="meal-picker-step-label">已選（可以改份量）</div>' +
-    items.map(function (it) { return selectedRowHtml(it, qtyByUid[it.uid] || 1, noteOf ? noteOf(it.uid) : null); }).join("") + "</div>";
+    items.map(function (it) { return selectedRowHtml(it, qtyByUid[it.uid] || 1, noteOf ? noteOf(it.uid) : null, !!(favSet && favSet[it.uid])); }).join("") + "</div>";
 }
 
 // 標不吃後的提示列＋復原（取消不吃）
@@ -74,16 +81,25 @@ export function dislikedGroupHtml(items, drink) {
     }).join("") + "</div></details>";
 }
 
-// groups：engine groupForTab 的結果（不含標了不吃的，那些在 dislikedGroupHtml）；selected：這個分頁已選的 uid；
-// tabLabel：「超商」「外食」；fillable：原因可不可以補填
-export function productTabHtml(groups, selected, tabLabel, fillable) {
-  const total = groups.reduce(function (n, g) { return n + g.entries.length; }, 0);
-  const blocked = groups.reduce(function (n, g) { return n + g.blocked; }, 0);
+// 「常吃」組的標題（decisions #126 ②）。不用 .meal-picker-step-label（walkthrough 數步驟編號）
+export function favoriteTitleHtml() {
+  return '<h4 class="meal-picker-role meal-picker-fav-title">常吃</h4>';
+}
+
+// groups：engine groupForTab 的結果（不含標了不吃與常吃的）；favEntries：常吃組（engine favoriteEntries，被擋的在組尾）；
+// selected：這個分頁已選的 uid；tabLabel：「超商」「外食」；fillable：原因可不可以補填
+export function productTabHtml(groups, selected, tabLabel, fillable, favEntries) {
+  const favs = favEntries || [];
+  const favBlocked = favs.filter(function (e) { return e.reason; }).length;
+  // 空狀態與灰字筆數都要含常吃組（審核 M5）
+  const total = groups.reduce(function (n, g) { return n + g.entries.length; }, 0) + favs.length;
+  const blocked = groups.reduce(function (n, g) { return n + g.blocked; }, 0) + favBlocked;
   let html = "";
   if (total - blocked === 0) {
     html += '<p class="meal-picker-note">這個時段的' + escapeHtml(tabLabel) + "分頁沒有可以選的品項，可以看看其他分頁，或只記飲料。</p>";
   }
   if (blocked > 0) html += '<p class="meal-picker-note">灰色的 ' + blocked + " 項因你的過敏原／飲食設定不能選。</p>";
+  if (favs.length > 0) html += '<section class="meal-picker-group meal-picker-favorites">' + favoriteTitleHtml() + cardsHtml(favs, selected, fillable) + "</section>";
   let role = null;
   groups.forEach(function (g) {
     if (g.is_custom) {
@@ -114,7 +130,12 @@ export function drinkGridHtml(entries, drinkUid, fillable) {
   let html = '<div class="item-grid">';
   html += '<button type="button" class="item-card' + (drinkUid ? "" : " selected") + '" data-drink=""><span class="item-card-name">不加</span></button>';
   entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; })).forEach(function (e) {
-    html += withFill(cardHtml(e.item, { drink: true, selected: !e.reason && e.item.uid === drinkUid, blockedReason: e.reason }), e.item, e.reason, fillable);
+    html += drinkCardHtml(e, drinkUid, fillable);
   });
   return html + "</div>";
+}
+
+// 一張現成飲料卡（單選；被擋的我的品項可以補填）。飲品・水果步驟的常吃組也用（審核 S4）
+export function drinkCardHtml(e, drinkUid, fillable) {
+  return withFill(cardHtml(e.item, { drink: true, selected: !e.reason && e.item.uid === drinkUid, blockedReason: e.reason }), e.item, e.reason, fillable);
 }

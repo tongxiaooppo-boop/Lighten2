@@ -70,6 +70,44 @@ export function splitDisliked(items, codeOf) {
   return { rest: rest, disliked: disliked };
 }
 
+// ---------- 常吃（工作線 D 切片 5；PRD 13.6、decisions #126、#127） ----------
+// 參數名 favoriteRefs 只准出現在 engine 的這個檔案、today.js、recommend.js（章程 C4.17②）；這裡只做排序與分組。
+
+// 實際有效的常吃：扣掉不吃清單的 key（PRD 13.5：兩邊都有時以不吃為準）。回傳 { id: true }；查不到的 id 不用處理（只拿來比對，B9）
+export function effectiveFavorites(favoriteRefs, disliked) {
+  const out = {};
+  const no = {};
+  (Array.isArray(disliked) ? disliked : []).forEach(function (d) { if (d && d.key) no[d.key] = true; });
+  (Array.isArray(favoriteRefs) ? favoriteRefs : []).forEach(function (r) { if (typeof r === "string" && !no[r]) out[r] = true; });
+  return out;
+}
+
+// 把常吃的分到另一組（搬到最上面，decisions #126）。兩組都維持 items 原順序；只在組 HTML 時用，選擇器 state 不動。
+// 呼叫順序：先 splitDisliked，再對 rest 用這個（不吃的不會進常吃組）。idOf 省略＝用 uid
+export function splitFavorites(items, favSet, idOf) {
+  const id = idOf || function (it) { return it.uid; };
+  const fav = favSet || {};
+  const favorites = [];
+  const rest = [];
+  (items || []).forEach(function (it) { (fav[id(it)] ? favorites : rest).push(it); });
+  return { favorites: favorites, rest: rest };
+}
+
+// 常吃組的卡片順序：能選的在前、被過敏原或飲食擋的灰在組尾（decisions #127 ④），各自維持原順序。回傳 [{ item, reason }]
+export function favoriteEntries(items, reasonOf) {
+  const entries = (items || []).map(function (it) { return { item: it, reason: reasonOf(it) || null }; });
+  return entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; }));
+}
+
+// 自煮各軸的選項：常吃且沒被硬性過濾擋（okOf，只看設定、選擇過程中不變）的穩定排到前面；其他照原順序原位（decisions #127 ⑤）
+export function favoritesFirst(options, favSet, idOf, okOf) {
+  const fav = favSet || {};
+  const up = [];
+  const rest = [];
+  (options || []).forEach(function (it) { (fav[idOf(it)] && okOf(it) ? up : rest).push(it); });
+  return up.concat(rest);
+}
+
 const ROLE_ORDER = ["main", "side", "snack"];
 
 // 分頁內的分組（PRD 6.3）：內建品項先依角色分區（主餐 → 配菜 → 點心），區內依 category 分組，
