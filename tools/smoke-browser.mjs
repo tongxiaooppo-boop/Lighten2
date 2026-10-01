@@ -311,6 +311,70 @@ async function run() {
     check(hiddenNow.indexOf("tw_dr05") !== -1 && hiddenNow.indexOf("conv_bx04") !== -1, "隱藏清單沒有 tw_dr05 與複製後自動隱藏的 conv_bx04：" + JSON.stringify(hiddenNow));
   }
 
+  console.log("[常吃（真的 IndexedDB，工作線 D 切片 5）]");
+  {
+    const DBM = `(await import('./js/data/db.js'))`;
+    const CAT = `(await (await import('./js/data/catalog.js')).loadCatalog())`;
+    // 互斥兩個方向（PRD 13.5）：同一個 transaction 開 settings＋user_profile
+    const mutual = await js(`(async () => { const m = ${DBM};
+      await m.addDislikedIngredient({ type: 'item', key: 'conv_sl03', label: 'x' });
+      const r = await m.addFavoriteRef('conv_sl03');
+      const a = r.favorites.indexOf('conv_sl03') !== -1 && !r.disliked.some((d) => d.key === 'conv_sl03') && !(await m.getProfile()).disliked_ingredients.some((d) => d.key === 'conv_sl03');
+      await m.addDislikedIngredient({ type: 'item', key: 'conv_sl03', label: 'x' });
+      const b = (await m.getFavoriteRefs()).indexOf('conv_sl03') === -1;
+      await m.removeDislikedIngredient('conv_sl03');
+      return a + ',' + b; })()`);
+    check(mutual === "true,true", "常吃與不吃互斥（標常吃移出不吃、標不吃移出常吃）不對：" + mutual);
+    // 全有全無：標常吃時 put 同步丟錯，常吃與不吃都沒變
+    const favSnap = () => js(`(async () => { const m = ${DBM}; return JSON.stringify([await m.getFavoriteRefs(), (await m.getProfile()).disliked_ingredients]); })()`);
+    await js(`(async () => { const m = ${DBM}; await m.addDislikedIngredient({ type: 'item', key: 'conv_sl03', label: 'x' }); })()`);
+    const favBefore = await favSnap();
+    const favFail = await js(`(async () => { const m = ${DBM}; const orig = IDBObjectStore.prototype.put; let n = 0;
+      IDBObjectStore.prototype.put = function () { n++; if (n === 2) throw new DOMException('模擬的 put 失敗', 'DataError'); return orig.apply(this, arguments); };
+      try { await m.addFavoriteRef('conv_sl03'); return null; } catch (e) { return String(e && e.message); }
+      finally { IDBObjectStore.prototype.put = orig; } })()`);
+    check(favFail !== null && (await favSnap()) === favBefore, "addFavoriteRef 中途丟錯時沒有回報失敗，或資料被改了（不是全有全無）");
+    await js(`(async () => { const m = ${DBM}; await m.removeDislikedIngredient('conv_sl03'); })()`);
+    // 複製成我的版本：常吃跟著換成新的我的品項（decisions #127 ⑦）
+    const moved = await js(`(async () => { const m = ${DBM}; const mc = await import('./js/engine/meal-content.js'); const c = ${CAT};
+      await m.addFavoriteRef('conv_bx02');
+      const rec = await m.copyBuiltinToCustom(mc.copyFromBuiltin(c.productsByUid['conv_bx02']));
+      const f = await m.getFavoriteRefs();
+      return f.indexOf('conv_bx02') === -1 && f.indexOf(rec.id) !== -1; })()`);
+    check(moved === true, "複製成我的版本後常吃沒有換成新的我的品項");
+    // 我的食物：白米明細標常吃 → 自煮子分頁最上面的常吃組有它、原分類不再出現
+    await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+    await until(`!!document.querySelector('#foods-search')`, "我的食物分頁沒有搜尋框");
+    await js(`(() => { const i = document.getElementById('foods-search'); i.value = '白米'; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await until(`!!document.querySelector('[data-foods-open="fx_rice"]')`, "搜尋白米沒有分層品項");
+    await js(`document.querySelector('[data-foods-open="fx_rice"]').click()`);
+    await until(`!!document.querySelector('[data-foods-favorite="fx_rice"]')`, "白米明細沒有「常吃」");
+    await js(`document.querySelector('[data-foods-favorite="fx_rice"]').click()`);
+    await until(`!!document.querySelector('[data-foods-unfavorite="fx_rice"]')`, "按「常吃」後沒有變成「取消常吃」");
+    await js(`(() => { const i = document.getElementById('foods-search'); i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await js(`document.querySelector('[data-foods-subtab=cook]').click()`);
+    await until(`!!document.querySelector('#foods-body .foods-favorites [data-foods-open="fx_rice"]')`, "自煮子分頁最上面的常吃組沒有白米");
+    check((await js(`document.querySelectorAll('#foods-body [data-foods-open="fx_rice"]').length`)) === 1, "白米標常吃後在自煮子分頁出現不只一次");
+    // 選擇器：加點單品最上面的常吃組有白米；超商已選列標常吃 → 搬到常吃組、資料庫有；再取消
+    await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
+    await until(`!!document.querySelector('#rec-lunch .rec-pick-btn')`, "午餐沒有「自己選」按鈕");
+    await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
+    await until(`!document.getElementById('meal-picker-overlay').hidden && !!document.querySelector('#meal-picker-drinks .meal-picker-favorites [data-food-uid="fx_rice"]')`, "選擇器加點單品的常吃組沒有白米");
+    await js(`document.querySelector('#meal-picker-tabs [data-tab=convenience]').click()`);
+    await until(`!!document.querySelector('#meal-picker-panel .item-card[data-uid=conv_bx04]:not([disabled])') || !!document.querySelector('#meal-picker-panel .item-card:not([disabled])')`, "超商分頁沒有可選的品項");
+    // 挑常吃組以外的（複製後的我的品項已經是常吃，在常吃組）
+    const pickUid = await js(`([...document.querySelectorAll('#meal-picker-panel .item-card[data-uid]:not([disabled])')].find((c) => !c.closest('.meal-picker-favorites')) || {}).dataset.uid`);
+    check((await js(`!!document.querySelector('#meal-picker-panel .meal-picker-favorites .item-card[data-uid^=custom]')`)) === true, "複製後的我的品項（常吃）沒有在超商分頁的常吃組");
+    await js(`document.querySelector('#meal-picker-panel .item-card[data-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']').click()`);
+    await until(`!!document.querySelector('#meal-picker-panel [data-favorite-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']')`, "已選列沒有「常吃」");
+    await js(`document.querySelector('#meal-picker-panel [data-favorite-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']').click()`);
+    await until(`!!document.querySelector('#meal-picker-panel .meal-picker-favorites .item-card.selected[data-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']')`, "已選列標常吃後沒有搬到常吃組（或取消了選取）");
+    check((await js(`(async () => { const m = ${DBM}; return (await m.getFavoriteRefs()).indexOf(${JSON.stringify(pickUid)}) !== -1; })()`)) === true, "選擇器標常吃沒有寫進資料庫");
+    await js(`document.querySelector('#meal-picker-panel [data-unfavorite-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']').click()`);
+    await until(`!document.querySelector('#meal-picker-panel .meal-picker-favorites [data-uid=' + JSON.stringify(${JSON.stringify(pickUid)}) + ']')`, "取消常吃後還在常吃組");
+    await js(`document.getElementById('meal-picker-cancel').click()`);
+  }
+
   console.log("[備份與還原（真的 IndexedDB）]");
   // import('./js/data/db.js') 經過 import map，跟 App 是同一個模組實體（PRD 11.6、B-3 計畫第 4 節 9–11）
   const DB = `(await import('./js/data/db.js'))`;
@@ -323,7 +387,9 @@ async function run() {
     console.log("  已凍結 " + process.env.SMOKE_FREEZE_BACKUP);
   }
   check(JSON.parse(exported).sections.logs.daily_log.some((l) => l.content.components.some((x) => x.kind === "food")), "備份沒有帶到單品紀錄");
-  check(JSON.parse(exported).schema_version === 3 && JSON.parse(exported).sections.saved_meals.length === 2 &&
+  const favExported = JSON.parse(exported).sections.system.settings.find((x) => x.id === "favorite_refs");
+  check(!!favExported && favExported.value.indexOf("fx_rice") !== -1 && favExported.value.some((u) => /^custom/.test(u)), "備份沒有帶到常吃（v4，含白米與複製後的我的品項）");
+  check(JSON.parse(exported).schema_version === 4 && JSON.parse(exported).sections.saved_meals.length === 2 &&
     JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v3，含單品的組合）");
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));

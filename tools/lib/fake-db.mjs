@@ -3,7 +3,8 @@
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
 import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
-  addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch } from "../../js/data/db.js";
+  addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch,
+  addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -37,6 +38,9 @@ function writeDisliked(op, list) {
 }
 export async function addDislikedIngredient(entry) {
   const list = addDislikedTo(S().profile ? S().profile.disliked_ingredients : [], entry);
+  // 常吃同一個 key 默默移出（寫入紀錄的形狀不變：推薦快照錄了這一行，審核 M1）
+  const fav = S().settings.favorite_refs;
+  if (Array.isArray(fav) && fav.indexOf(entry.key) !== -1) S().settings.favorite_refs = applyFavoriteOp({ favorites: fav, disliked: list }, "dislike", entry.key).favorites;
   return writeDisliked("addDislikedIngredient", list);
 }
 export async function removeDislikedIngredient(key) {
@@ -104,6 +108,32 @@ export async function updateCustomFood(id, patch) {
   S().writes.push({ op: "updateCustomFood", id: id, record: clone(next) });
   return clone(next);
 }
+// 常吃（PRD 13.6；語意用 db.js 同一份純函式；寫入紀錄 { op, favorites, disliked }）
+export { addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef };
+export async function getFavoriteRefs() {
+  const v = S().settings.favorite_refs;
+  return Array.isArray(v) ? v.slice() : [];
+}
+function checkRef(ref, fn) {
+  if (typeof ref !== "string" || ref === "") throw new Error("[db.js] " + fn + " 需要一個 id" + (Array.isArray(ref) ? "，不能傳陣列" : ""));
+}
+export async function addFavoriteRef(ref) {
+  checkRef(ref, "addFavoriteRef");
+  const p = S().profile;
+  const next = applyFavoriteOp({ favorites: S().settings.favorite_refs, disliked: p ? p.disliked_ingredients : [] }, "favorite", ref);
+  S().settings.favorite_refs = clone(next.favorites);
+  if (p) S().profile = Object.assign({}, p, { disliked_ingredients: clone(next.disliked) });
+  const out = { favorites: next.favorites, disliked: p ? next.disliked : null };
+  S().writes.push({ op: "addFavoriteRef", favorites: clone(out.favorites), disliked: clone(out.disliked) });
+  return clone(out);
+}
+export async function removeFavoriteRef(ref) {
+  checkRef(ref, "removeFavoriteRef");
+  const list = applyFavoriteOp({ favorites: S().settings.favorite_refs, disliked: [] }, "unfavorite", ref).favorites;
+  S().settings.favorite_refs = clone(list);
+  S().writes.push({ op: "removeFavoriteRef", favorites: clone(list), disliked: clone(S().profile ? S().profile.disliked_ingredients : null) });
+  return list.slice();
+}
 export async function getHiddenCatalogUids() {
   const v = S().settings.hidden_catalog_uids;
   return Array.isArray(v) ? v.slice() : [];
@@ -122,6 +152,7 @@ export async function copyBuiltinToCustom(food) {
     { id: food.id || "custom_" + String(++seq).padStart(4, "0"), updated_at: now });
   S().customFoods.push(record);
   S().settings.hidden_catalog_uids = (await getHiddenCatalogUids()).filter((u) => u !== record.copied_from).concat([record.copied_from]);
+  if (Array.isArray(S().settings.favorite_refs)) S().settings.favorite_refs = replaceFavoriteRef(S().settings.favorite_refs, record.copied_from, record.id);
   S().writes.push({ op: "copyBuiltinToCustom", record: clone(record) });
   return clone(record);
 }

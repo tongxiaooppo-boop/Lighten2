@@ -818,8 +818,104 @@ async function main() {
   checkSavedMealsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
 
+  // ---------- 13. 常吃（工作線 D 切片 5，計畫 docs/review/2026-10-01-D5-實作計畫.md） ----------
+  console.log("[常吃]");
+  await checkFavorites(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+async function checkFavorites(catalog) {
+  const db = M.db, pk = M.picker, fd = M.foods;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const errOf = (fn) => { try { fn(); return null; } catch (e) { return String(e && e.message); } };
+  async function errorOf(fn) { try { await fn(); } catch (e) { return String(e && e.message); } return null; }
+  const dis = (key) => ({ type: "item", key: key, label: key });
+
+  // 1. 純函式：加、重複加、移除、不存在的移除；都回新陣列、不改輸入
+  const f0 = ["a"];
+  const f1 = db.addFavoriteTo(f0, "b");
+  check(f1.join() === "a,b" && f0.join() === "a" && f1 !== f0, "addFavoriteTo 加在最後、不改輸入");
+  check(db.addFavoriteTo(f1, "a").join() === "a,b" && db.addFavoriteTo(null, "x").join() === "x", "addFavoriteTo 重複不加、沒有清單從空的開始");
+  check(db.removeFavoriteFrom(f1, "a").join() === "b" && db.removeFavoriteFrom(f1, "zz").join() === "a,b" && db.removeFavoriteFrom(undefined, "a").length === 0, "removeFavoriteFrom");
+  check(db.replaceFavoriteRef(["a", "b", "c"], "b", "custom_1").join() === "a,custom_1,c", "replaceFavoriteRef 位置不變");
+  check(db.replaceFavoriteRef(["a", "b"], "x", "y").join() === "a,b" && db.replaceFavoriteRef(["a", "b", "y"], "b", "y").join() === "a,y", "replaceFavoriteRef 沒有舊的不動、新的已在只拿掉舊的");
+
+  // 2. 互斥（PRD 13.5）
+  const st = { favorites: ["a"], disliked: [dis("b"), dis("c")] };
+  const fav = db.applyFavoriteOp(st, "favorite", "b");
+  check(fav.favorites.join() === "a,b" && fav.disliked.map((d) => d.key).join() === "c" && st.disliked.length === 2, "標常吃要移出不吃、不改輸入");
+  check(db.applyFavoriteOp(st, "unfavorite", "a").favorites.length === 0 && db.applyFavoriteOp(st, "unfavorite", "a").disliked.length === 2, "取消常吃不碰不吃");
+  check(db.applyFavoriteOp(st, "dislike", "a").favorites.length === 0, "標不吃要移出常吃");
+  check(/op/.test(errOf(() => db.applyFavoriteOp(st, "x", "a")) || ""), "applyFavoriteOp 不認得的 op 要丟錯");
+
+  // 3. 寫入函式：傳陣列、空字串報錯（C1.5）；setSetting 擋下；驗證器
+  check(/陣列/.test(await errorOf(() => db.addFavoriteRef(["a"])) || "") && /陣列/.test(await errorOf(() => db.removeFavoriteRef(["a"])) || ""), "常吃寫入函式傳陣列沒有報錯");
+  check(/id/.test(await errorOf(() => db.addFavoriteRef("")) || "") && /id/.test(await errorOf(() => db.removeFavoriteRef("")) || ""), "常吃寫入函式空字串沒有報錯");
+  check(/專用函式/.test(await errorOf(() => db.setSetting("favorite_refs", [])) || ""), "setSetting 寫常吃沒有擋下（只能用專用函式）");
+  check(db.SETTING_KEY_NAMES.indexOf("favorite_refs") !== -1 && errOf(() => db.validateSetting("favorite_refs", ["conv_bx04", "fx_rice"])) === null, "合法的常吃清單被擋下");
+  [["a", "a"], [""], "a", [1], null].forEach((v) => check(errOf(() => db.validateSetting("favorite_refs", v)) !== null, "不合法的常吃清單 " + JSON.stringify(v) + " 沒有擋下"));
+
+  // 4. fake-db（diff-recs 用）：互斥兩個方向、addDislikedIngredient 的寫入紀錄形狀不變（推薦快照錄了它，審核 M1）、複製轉移
+  const fdb = await imp("tools/lib/fake-db.mjs");
+  globalThis.__fakeDbState = { profile: { disliked_ingredients: [dis("conv_bx04")] }, settings: { favorite_refs: ["fx_rice"] }, customFoods: [], writes: [] };
+  const r1 = await fdb.addFavoriteRef("conv_bx04");
+  check(r1.favorites.join() === "fx_rice,conv_bx04" && r1.disliked.length === 0 && globalThis.__fakeDbState.profile.disliked_ingredients.length === 0, "fake-db 標常吃要移出不吃");
+  await fdb.addDislikedIngredient(dis("fx_rice"));
+  const w = globalThis.__fakeDbState.writes.filter((x) => x.op === "addDislikedIngredient");
+  check(globalThis.__fakeDbState.settings.favorite_refs.join() === "conv_bx04" && w.length === 1 && Object.keys(w[0]).sort().join() === "disliked,op", "fake-db 標不吃要移出常吃、寫入紀錄只有 op 與 disliked");
+  const copied = await fdb.copyBuiltinToCustom(M.mc.copyFromBuiltin(catalog.productsByUid.conv_bx04));
+  check(globalThis.__fakeDbState.settings.favorite_refs.join() === copied.id, "fake-db 複製成我的版本時常吃要換成新的我的品項");
+  check((await fdb.removeFavoriteRef(copied.id)).length === 0 && (await fdb.getFavoriteRefs()).length === 0, "fake-db 取消常吃");
+  globalThis.__fakeDbState = { profile: null, settings: {}, customFoods: [], writes: [] };
+  check((await fdb.addFavoriteRef("fx_rice")).disliked === null, "沒有基本資料時標常吃只寫常吃（disliked 回 null）");
+  delete globalThis.__fakeDbState;
+
+  // 5. engine：有效常吃扣掉不吃；分組保序；空清單時 rest 跟輸入逐項相同
+  const eff = pk.effectiveFavorites(["a", "b", "gone"], [dis("b")]);
+  check(eff.a === true && !eff.b && eff.gone === true && Object.keys(pk.effectiveFavorites(null, null)).length === 0, "effectiveFavorites 扣掉不吃");
+  const items = catalog.products.filter((p) => p.channel === "convenience").slice(0, 8);
+  const none = pk.splitFavorites(items, {});
+  check(none.favorites.length === 0 && none.rest.length === items.length && none.rest.every((it, i) => it === items[i]), "沒有常吃時 rest 跟輸入逐項相同");
+  const sp = pk.splitFavorites(items, { [items[5].uid]: true, [items[1].uid]: true });
+  check(sp.favorites.map((x) => x.uid).join() === [items[1].uid, items[5].uid].join() && sp.rest.length === 6 && sp.rest[1] === items[2], "splitFavorites 兩邊保持原順序");
+  const ent = pk.favoriteEntries([items[0], items[1], items[2]], (it) => (it === items[0] ? "擋" : null));
+  check(ent.map((e) => e.item.uid).join() === [items[1].uid, items[2].uid, items[0].uid].join() && ent[2].reason === "擋", "favoriteEntries 被擋的在組尾");
+  const opts = [{ id: "p1" }, { id: "p2" }, { id: "p3" }, { id: "p4" }];
+  const ff = pk.favoritesFirst(opts, { p3: true, p4: true }, (o) => o.id, (o) => o.id !== "p4");
+  check(ff.map((o) => o.id).join() === "p3,p1,p2,p4", "favoritesFirst 只提前沒被擋的常吃，被擋的常吃留原位");
+  check(pk.favoritesFirst(opts, {}, (o) => o.id, () => true).map((o) => o.id).join() === "p1,p2,p3,p4", "favoritesFirst 沒有常吃時原順序");
+
+  // 6. 訊息與明細文字（decisions #127 ⑥）
+  const b = catalog.foodTree.byId;
+  check(fd.favoriteMessage(b.fx_rice, true, false) === "已標常吃「白米」，自己選會放在最上面。" && /原本標的不吃已取消/.test(fd.favoriteMessage(b.fx_rice, true, true)), "標常吃的訊息");
+  check(fd.favoriteMessage(b.fx_rice, false) === "已取消常吃「白米」。" && fd.favoriteEffectText() === "常吃只影響自己選的排列。", "取消常吃與作用文字");
+  check(/原本標的常吃已取消/.test(fd.dislikedMessage(b.fx_rice, true, true)) && !/常吃/.test(fd.dislikedMessage(b.fx_rice, true, false)), "標不吃時原本是常吃要補一句");
+
+  // 7. 備份 v4：v3 升上來沒有這個 key 也合法；重複擋下；兩邊都有照樣還原、engine 以不吃為準（審核 S8）
+  const v3 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v3.json"), "utf8"));
+  const up = db.migrateBackup(v3);
+  check(up.schema_version === 4 && db.validateBackup(up).length === 0 && !up.sections.system.settings.some((x) => x.id === "favorite_refs"), "v3 升到 v4 不需要常吃 key");
+  const withFav = clone(up);
+  withFav.sections.system.settings.push({ id: "favorite_refs", value: ["fx_rice", "conv_bx04"] });
+  withFav.manifest.settings = withFav.sections.system.settings.length;
+  check(db.validateBackup(withFav).length === 0, "含常吃的 v4 備份不能還原：" + db.validateBackup(withFav).slice(0, 2).join("；"));
+  const dupFav = clone(withFav);
+  dupFav.sections.system.settings.find((x) => x.id === "favorite_refs").value.push("fx_rice");
+  check(db.validateBackup(dupFav).some((x) => /favorite_refs/.test(x)), "備份裡的常吃清單重複沒有擋下");
+  const both = clone(withFav);
+  both.sections.system.user_profile.disliked_ingredients = [{ type: "food_tree", key: "fx_rice", label: "白米" }];
+  check(db.validateBackup(both).length === 0, "常吃與不吃兩邊都有的備份要能還原（匯入不改寫）");
+  const effBoth = pk.effectiveFavorites(both.sections.system.settings.find((x) => x.id === "favorite_refs").value, both.sections.system.user_profile.disliked_ingredients);
+  check(!effBoth.fx_rice && effBoth.conv_bx04, "兩邊都有時 engine 以不吃為準");
+  // 凍結的 v4 fixture（smoke 真的匯出：常吃有白米與複製後轉移的我的品項；審核 S8：兩邊都有的不放進 fixture，上面自己加）
+  const fixtureV4 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v4.json"), "utf8"));
+  const v4fav = fixtureV4.sections.system.settings.find((x) => x.id === "favorite_refs");
+  check(fixtureV4.schema_version === 4 && db.validateBackup(db.migrateBackup(fixtureV4)).length === 0, "凍結的 backup-v4.json 不能還原：" + db.validateBackup(db.migrateBackup(fixtureV4)).slice(0, 2).join("；"));
+  check(!!v4fav && v4fav.value.indexOf("fx_rice") !== -1 && v4fav.value.some((u) => fixtureV4.sections.custom_foods.some((r) => r.id === u && r.copied_from === "conv_bx02")) &&
+    v4fav.value.indexOf("conv_bx02") === -1, "backup-v4.json 缺常吃白米或複製後轉移的我的品項");
 }
 
 // 模擬新使用者：每兩天量一次體重，在「剛滿足資格門檻」（第 22、28 天）跟更久之後（第 42 天）估斜率。
@@ -1930,11 +2026,11 @@ function checkSavedMealsDb(catalog) {
   check(db.applySavedMealPatch(old, { id: old.id, content: cook }, later).content === cook, "applySavedMealPatch 相同的 id 放行、可以改內容");
   check(/content/.test(errOf(() => db.applySavedMealPatch(old, { content: Object.assign({}, prod, { components: [] }) }, later)) || ""), "applySavedMealPatch 壞內容要擋");
 
-  // 備份 v3
-  check(db.BACKUP_SCHEMA_VERSION === 3 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v3 與 saved_meals 區塊");
+  // 備份 v3（切片 5 起目前版本是 v4，v3 的檔案照樣升級後讀得了）
+  check(db.BACKUP_SCHEMA_VERSION === 4 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v4 與 saved_meals 區塊");
   ["backup-v1.json", "backup-v2.json"].forEach((f) => {
     const m = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", f), "utf8")));
-    check(m.schema_version === 3 && Array.isArray(m.sections.saved_meals) && m.sections.saved_meals.length === 0 && m.manifest.saved_meals === 0 &&
+    check(m.schema_version === db.BACKUP_SCHEMA_VERSION && Array.isArray(m.sections.saved_meals) && m.sections.saved_meals.length === 0 && m.manifest.saved_meals === 0 &&
       db.validateBackup(m).length === 0, f + " 升級後要有空的 saved_meals 並且讀得了");
   });
   const v3 = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v2.json"), "utf8")));
@@ -1953,8 +2049,8 @@ function checkSavedMealsDb(catalog) {
   check(sm.some((r) => r.content.components.some((c) => c.kind === "food")) && sm.some((r) => r.content.meal_type.indexOf("cook") === 0 && r.content.archetype_id) &&
     fixtureV3.sections.logs.daily_log.some((l) => l.content.components.some((c) => c.kind === "food")), "backup-v3.json 缺含單品的組合、自煮組合或單品紀錄");
   check(sm.every((r) => mc.resolveSavedMeal(r, catalog, { hidden: [], customs: fixtureV3.sections.custom_foods.map(M.catalog.fromCustomFood), slot: null, profile: {} }).available.length > 0), "v3 fixture 的組合解析後要有可用元件");
-  const newer = clone(v3); newer.schema_version = 4;
-  check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "v4 的檔案要擋（較新的版本）");
+  const newer = clone(v3); newer.schema_version = db.BACKUP_SCHEMA_VERSION + 1;
+  check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "比目前新一版的檔案要擋（較新的版本）");
 }
 
 main().catch((err) => {
