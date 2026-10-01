@@ -4,7 +4,7 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS } from "../core/config.js";
+import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
@@ -144,7 +144,7 @@ function isDateStr(v) {
 
 // ---------- 寫入驗證（不碰資料庫，check-engine 直接測） ----------
 
-const COMPONENT_KINDS = ["ingredient", "product", "estimate"];
+const COMPONENT_KINDS = ["ingredient", "product", "estimate", "food"];
 const INGREDIENT_AXES = ["protein", "staple", "vegetable", "seasoning"];
 
 
@@ -160,6 +160,31 @@ function snapshotProblem(snap) {
   return !snap || typeof snap !== "object" || !isNum(snap.kcal);
 }
 
+const FOOD_SNAPSHOT_NUTRIENTS = ["protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+
+// 單品的快照（PRD 13.4）：1 份的量（amount、unit）與七個營養欄位都要有，熱量是數字、其餘是數字或 null；partial 選填（切片 8 的我的食材）
+function foodSnapshotProblems(snap, at) {
+  if (snapshotProblem(snap)) return [at + ".snapshot"];
+  const problems = [];
+  if (typeof snap.name !== "string" || snap.name === "") problems.push(at + ".snapshot.name");
+  if (!isNum(snap.amount) || !(snap.amount > 0)) problems.push(at + ".snapshot.amount");
+  if (snap.unit !== "g" && snap.unit !== "ml") problems.push(at + ".snapshot.unit");
+  FOOD_SNAPSHOT_NUTRIENTS.forEach(function (k) {
+    if (!(k in snap) || (snap[k] !== null && !isNum(snap[k]))) problems.push(at + ".snapshot." + k);
+  });
+  if ("partial" in snap && !Array.isArray(snap.partial)) problems.push(at + ".snapshot.partial");
+  return problems;
+}
+
+// 自煮的一餐沒有食材（只有單品、飲料）：沒有餐型與烹調法，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123、章程 C4.11）
+function noIngredientCookProblems(c) {
+  const problems = [];
+  if (c.archetype_id !== null || c.method_id !== null) problems.push("content.archetype_id/method_id");
+  const imp = c.implicit;
+  if (!imp || Object.keys(imp).length !== 2 || imp.oil_g !== 0 || imp.seasoning !== null) problems.push("content.implicit");
+  return problems;
+}
+
 // 一個 MealContent（PRD 第 3 節）的結構檢查，回傳問題清單
 function contentProblems(c, mealType) {
   const problems = [];
@@ -169,6 +194,9 @@ function contentProblems(c, mealType) {
   // 自煮一律帶實際採用的用油與調味（章程 C4.11），其他型態是 null
   if (!("implicit" in c)) problems.push("content.implicit");
   else if (COOK_TYPES.indexOf(mealType) !== -1 ? implicitProblem(c.implicit) : c.implicit !== null) problems.push("content.implicit");
+  else if (COOK_TYPES.indexOf(mealType) !== -1 && !c.components.some(function (comp) { return comp && comp.kind === "ingredient"; })) {
+    Array.prototype.push.apply(problems, noIngredientCookProblems(c));
+  }
   c.components.forEach(function (comp, i) {
     const at = "content.components[" + i + "]";
     if (!comp || COMPONENT_KINDS.indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
@@ -180,6 +208,10 @@ function contentProblems(c, mealType) {
       if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
       if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty"); // 只能是 0.5／1／1.5／2（PRD 12.3）
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
+    } else if (comp.kind === "food") {
+      if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
+      if (!isFoodQty(comp.qty)) problems.push(at + ".qty"); // 0.5 的倍數、0.5–12（PRD 13.4）
+      Array.prototype.push.apply(problems, foodSnapshotProblems(comp.snapshot, at));
     } else {
       if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
