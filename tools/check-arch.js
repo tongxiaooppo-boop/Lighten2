@@ -39,10 +39,10 @@ const EXERCISE_FILES = [/^js\/ui\/tab-exercise\.js$/, /^js\/data\/db\.js$/, /^js
 // picker_last_meal_type 只允許出現在 db.js 與「自己選」選擇器（C4.15）
 const PICKER_LAST_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//];
 // C4.17 ②：常吃清單。字串 favorite_refs 只准 db.js（掃原始碼含字串）；getFavoriteRefs 只准這些檔案 import（料理編輯器到切片 9 再加）；
-// engine 的參數名 favoriteRefs 只准這三個檔案（recommend.js 的「只在 score 裡」函式範圍檢查到切片 6 才有對象）
+// engine 的參數名 favoriteRefs 只准 picker.js（推薦不讀常吃，decisions #128 取消切片 6）
 const FAVORITE_KEY_FILES = [/^js\/data\/db\.js$/];
-const FAVORITE_READER_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//, /^js\/ui\/tab-foods\.js$/, /^js\/ui\/tab-today\.js$/];
-const FAVORITE_PARAM_ENGINE_FILES = [/^js\/engine\/picker\.js$/, /^js\/engine\/today\.js$/, /^js\/engine\/recommend\.js$/];
+const FAVORITE_READER_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//, /^js\/ui\/tab-foods\.js$/];
+const FAVORITE_PARAM_ENGINE_FILES = [/^js\/engine\/picker\.js$/];
 
 // ui/ 禁用字（C4.13 不評判）
 const BANNED_WORDS = ["遵循率", "偏離計畫", "未完成", "連續達成", "達成天數", "照計畫天數", "外食比較多", "多自己煮", "吃太多", "爆卡", "罪惡"];
@@ -341,10 +341,10 @@ for (const f of files) {
   const i = f.src.indexOf("favorite_refs");
   if (i !== -1) fail(f.rel + ":" + lineOf(f.src, i) + " 出現 favorite_refs（常吃清單只能經 db.js 的專用函式讀寫，C4.17 ②）");
 }
-restrictNames(["getFavoriteRefs"], FAVORITE_READER_FILES, "常吃清單只准選擇器、我的食物、今日建議讀取，C4.17 ②");
+restrictNames(["getFavoriteRefs"], FAVORITE_READER_FILES, "常吃清單只准選擇器、我的食物讀取，推薦不讀，C4.17 ②");
 for (const f of files.filter((x) => x.layer === "engine" && !FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test(x.rel)))) {
   checks++;
-  nameHits(f.code, ["favoriteRefs"]).forEach((h) => fail(f.rel + ":" + lineOf(f.code, h.index) + " 出現 favoriteRefs（engine 只准 picker.js 排序分組、today.js 傳遞、recommend.js 加分，C4.17 ②）"));
+  nameHits(f.code, ["favoriteRefs"]).forEach((h) => fail(f.rel + ":" + lineOf(f.code, h.index) + " 出現 favoriteRefs（engine 只准 picker.js 排序分組，推薦不讀常吃，C4.17 ②）"));
 }
 
 console.log("[推薦不讀單品、料理與分層資料 C4.17 ③]");
@@ -356,10 +356,10 @@ for (const r of RECOMMEND_FILES) {
 
 console.log("[工具自我檢查]");
 // C4.17 ②：白名單與名稱比對要擋得住、也不能誤報
-check(!FAVORITE_READER_FILES.some((re) => re.test("js/ui/today-hero.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/engine/recommend.js")) &&
+check(!FAVORITE_READER_FILES.some((re) => re.test("js/ui/tab-today.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/ui/today-hero.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/engine/recommend.js")) &&
   FAVORITE_READER_FILES.some((re) => re.test("js/ui/meal-picker/index.js")) && FAVORITE_READER_FILES.some((re) => re.test("js/ui/tab-foods.js")) &&
   !FAVORITE_READER_FILES.some((re) => re.test("js/ui/foods/list.js")), "C4.17 ② getFavoriteRefs 白名單不對");
-check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/pool.js")) && FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/picker.js")), "C4.17 ② favoriteRefs 檔案清單不對");
+check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/recommend.js")) && !FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/today.js")) && FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/picker.js")), "C4.17 ② favoriteRefs 檔案清單不對");
 [["f(favoriteRefs)", 1], ["const { favoriteRefs } = o;", 1], ["const favoriteRefsX = 1; myfavoriteRefs();", 0]].forEach(([src, n]) => {
   check(nameHits(stripCommentsAndStrings(src), ["favoriteRefs"]).length === n, "C4.17 ② favoriteRefs 對「" + src + "」應找到 " + n + " 處");
 });
