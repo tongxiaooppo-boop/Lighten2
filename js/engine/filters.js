@@ -91,6 +91,16 @@ export function passesHardFilters(item, profile) {
   return { ok: true, reason: null, code: null };
 }
 
+// 自煮的單一食材（自煮分頁的選項、我的組合的解析共用，章程 C2）：包成自組食譜的形狀再過濾，「不吃食材」才比得中食材 id。
+// axis：protein／staple／vegetable／seasoning
+const INGREDIENT_ID_FIELDS = { protein: "protein_id", staple: "staple_id", vegetable: "vegetable_id", seasoning: "sauce_id" };
+
+export function ingredientFilterResult(item, axis, profile) {
+  const wrapper = { is_composed: true, allergen_tags: item.allergen_tags || [], diet_tag_sets: [item.diet_tags || []] };
+  wrapper[INGREDIENT_ID_FIELDS[axis]] = item.id;
+  return passesHardFilters(wrapper, profile);
+}
+
 // 找出 item 命中哪個「不吃食材」。disliked 每項 { type, key, label }：
 //   - 自組食譜：type 對應 protein/vegetable/staple/sauce，key 用食材 id（章程 C2：改名後仍然命中；比對只看 key）
 //   - 現成品項：type='item'，key 用成分 uid（item.components）

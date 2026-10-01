@@ -103,6 +103,7 @@ export function fromCustomFood(f) {
     tier: "🟢", diet_tags: dietTags({ vegan: f.vegan === true, lacto_ovo: f.lacto_ovo === true }),
     allergen_tags: Array.isArray(f.allergen_tags) ? f.allergen_tags : [UNVERIFIED],
     note: orNull(f.note), is_taiwan: false, is_custom: true, archived: f.archived === true,
+    copied_from: orNull(f.copied_from), // 我的組合：隱藏的內建品項改用複製版本（PRD 11.3 規則 2）
     source_class: null, tfda_ids: [],
   };
 }
