@@ -1,8 +1,8 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-01 更新；工作線 D 切片 3、4 已上線；等使用者手機短清單與決定下一步順序）
+# 給接手的 Opus：Lighten2 交接（2026-10-01 更新；工作線 D 切片 7 單品已實作、還沒推送）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**先讀這段（2026-10-01 的狀態）**：使用者回報手機短清單第 6 項（切片 3＋4）測過沒問題。下一步定案（decisions #121）：**切片 7 單品 → 工作線 C 我的組合 → 切片 5 常吃**。切片 7 實作計畫**第二版已定案**（docs/review/2026-10-01-D7-實作計畫.md，第 8 節是審核意見與使用者決定的處理，以它為準；審核逐字 collab/opus-review-log/2026-10-01-d7-plan-review.md；decisions #122、#123）。**下一步：commit 0（PRD）已完成（`12926cf`），直接照計畫 8.5 從 commit 1（engine）開工**；份量文字測資在 collab/proofs/2026-10-01-d7-serving-text-cases.md，程式由 Opus 寫。
+**先讀這段（2026-10-01 的狀態）**：下一步定案（decisions #121）：**切片 7 單品 → 工作線 C 我的組合 → 切片 5 常吃**。**切片 7 已實作完（commit `6970979`～`e6d6ff9`，見第 4 節），還沒推送**：推送前要先問使用者；推送後請使用者跑手機短清單第 7 項（辨認新版：「自己選」下面有「3. 加點單品（選填）」）。使用者回報問題先修，再寫**工作線 C 的實作計畫**（先看 `collab/proofs/2026-10-01-workline-c-survey.md` 的 17 條規格空白，整理成問題問使用者，例如管理區塊放哪；第 4 節列了切片 7 留給 C 的接縫）。
 
 **2026-10-01 Sonnet 做好的外圍準備（都在 `collab/proofs/`，Opus 已抽驗）**：`2026-10-01-d7-serving-text-cases.md`（切片 7 份量文字測資）、`2026-10-01-d7-phone-script-draft.md`（切片 7 手機腳本草稿，實作後搬進正式腳本的第 8 節）、`2026-10-01-workline-c-survey.md`（工作線 C 調研，17 條規格空白；寫 C 計畫時整理成問題問使用者，例如管理區塊放哪）、`2026-10-01-workline-a-archetype-survey.md`（工作線 A 擴充餐型調研：13 個候選骨架，瓶頸是缺「蒸、水煮／燙、滷／燉」三個烹調法；建議先做清蒸魚定食、滷燉定食、蛋飯類；口味方向〔湯品、麵食、豬肉、滷與湯的鈉〕要問使用者）。`collab/to-ai-allergen-tagging.md` 已改成 12 詞通用版。
 
@@ -30,12 +30,12 @@
 |---|---|
 | `node tools/check-data.js` | 食物資料（章程 B12）；`--list` 列出待查證的 estimate／label_unsourced 欄位 |
 | `node tools/build-ingredients.js` | 由 `data/reference/` 重算食材 per_100g（`--dry` 只列差異） |
-| `node tools/check-engine.js` | 引擎斷言（約 38000 項，台灣時區跑） |
+| `node tools/check-engine.js` | 引擎斷言（約 43249 項，台灣時區跑；切片 7 起有「單品」一節） |
 | `node tools/check-arch.js` | 章程 C1/C2/C4 的架構規則 |
 | `node tools/diff-recs.js` | 快照逐字比對；`--update` 重錄、`--full` 看全部差異 |
 | `node tools/stamp-version.js` | **改了 js/、css/、data/ 就要跑，再 `git add index.html`** |
-| `node tools/smoke-browser.mjs` | 無頭 Edge 實際操作 App（約 30 秒；Phase 驗收時跑；B-3 起含備份還原與全有全無，B-1a 起含複製全有全無、隱藏推薦品項，26 項）。**沙箱擋外網時 Google Fonts 會報 console 錯誤（ERR_SSL_PROTOCOL_ERROR），那一項失敗是環境問題** |
-| `node tools/mobile-walkthrough.mjs` | 手機實機腳本自動版：模擬手機照腳本操作＋每步截圖（約 1.5 分鐘，219 項；第 5 節資料備份、第 6–7 節我的品項）。**動到畫面流程、Phase 驗收時必跑，截圖要逐張看過**，再請使用者跑腳本開頭的「使用者短清單」（章程 C6.5） |
+| `node tools/smoke-browser.mjs` | 無頭 Edge 實際操作 App（約 30 秒；Phase 驗收時跑；B-3 起含備份還原與全有全無，B-1a 起含複製全有全無、隱藏推薦品項；切片 7 起含單品寫入與備份來回，35 項）。**沙箱擋外網時 Google Fonts 會報 console 錯誤（ERR_SSL_PROTOCOL_ERROR），那一項失敗是環境問題** |
+| `node tools/mobile-walkthrough.mjs` | 手機實機腳本自動版：模擬手機照腳本操作＋每步截圖（約 2 分鐘，405 項；第 5 節資料備份、第 6–7 節我的品項、第 8 節我的食物、第 9 節單品）。**動到畫面流程、Phase 驗收時必跑，截圖要逐張看過**，再請使用者跑腳本開頭的「使用者短清單」（章程 C6.5） |
 
 - pre-commit hook 約 8 秒。禁止 `--no-verify`。
 - 推送前要先問使用者。2026-09-29 已推送，CI（check）通過。
@@ -69,6 +69,13 @@
      - **待使用者決定（2026-09-30 晚）**：使用者問「自煮的各大類可以看，哪裡可以用？」——目前只能看與標不吃（共用內建 id 的約 37 種會擋推薦與自己選；其餘 fx_ 要等切片 7 單品才有作用）。已問使用者：照原順序先做切片 5 常吃，還是把**切片 7 單品記錄**提前（不依賴常吃，但動 MealContent、db 寫入驗證、記錄名稱，要先寫計畫送審）。使用者還沒回答，接手時先問這題。
      - **使用者新定案（2026-09-30 晚，decisions #118）**：今日建議加日期切換（一條線七個圓點＝今天＋未來 6 天，每一餐可先自選或跳過），排在其他已定案工作之後、日後討論之前；PRD 第 7 節路線圖最後一列有 5 個做的時候再定的細節。**週格子（Phase 3 餐點日曆）不做**，由日期切換取代，每一天跟今日建議同一個風格（decisions #119）。**補記過去的一餐**另外定案（decisions #120）：「本週總覽」按鈕＋系統日期選擇器（不做圖形），只能選過去 7 天，選時段 → 三分頁選擇器 → 確認寫 daily_log；**複製上週不做**。兩者都在 PRD 第 7 節路線圖最後兩列。使用者也說這週做不完是正常的，還在想優先順序，不用現在排。
      - **下一步：切片 5 常吃（選擇器）**（PRD 13.6、13.9）：新 settings key `favorite_refs`、專用函式、備份升版與 fixture；選擇器各分頁最上面「常吃」組；推薦快照逐字不變。要先寫實作計畫送審。
+   - **切片 7 單品已實作（2026-10-01，commit `6970979`～`e6d6ff9`，還沒推送）**：計畫 [docs/review/2026-10-01-D7-實作計畫.md](../docs/review/2026-10-01-D7-實作計畫.md)（第 8 節為準）；PRD 13.4 已在 `12926cf` 改好；decisions #121–#123（實作沒有新增決策）。
+     - `6970979` engine：`config` FOOD 常數與 `isFoodQty`；`meal-content` 的 `foodComponent`／`foodAmount`／`foodLogName`／`foodLimitProblem`、草稿 `foods`（估算之後、飲料之前）、自煮沒有食材時 implicit 恰好 {0,null}、`contentTotals` 只在有食材時加隱含成分（M1）、`composeProblem` 沒餐型時有單品或飲料可送出（S3）；`picker` 的 `addFood`／`stepFood`／`removeFood`；`foods` 的 `foodQtyText`、`scaleHousehold`（Sonnet 測資 1062 格全對）。
+     - `0c5651f` db：`food` 元件驗證（快照七個營養欄位必有）、自煮沒有食材的 implicit 規則；備份不升版。
+     - `9db2cb7` 畫面：新檔 `js/ui/meal-picker/food-step.js`；兩步一次寫進 `#meal-picker-drinks`；已選框步進器；捲動補償；搜尋；自煮再點餐型取消；`drinkStepHtml` 改成 `drinkGridHtml`。
+     - `e6d6ff9` 工具：diff-recs 只新增 98 行（`foods/*`、`open/*/foods/*`）；smoke 35、walkthrough 405 全過，截圖看過（含 360 寬）；手機實機腳本新第 8 節（程式裡是 9-x）、短清單第 7 項。
+     - **留給工作線 C 的接縫**（計畫 2.3、8.3 S11）：`toSavedContent` 把 `food` 變成只存 `ref`、`qty`；`remapSavedRefs`／`resolveSavedMeal` 查 `catalog.foodTree.byId`；單品上限用 `FOOD_MAX_PER_MEAL`、骨架重新驗證略過 `food`；「已記錄的一餐存成組合」會碰到只有單品的自煮紀錄（`archetype_id` null、implicit {0,null}，`keepImplicit` 要處理）；「帶入選擇器」預載 `mealPicker.foodSel = [{ uid, qty }]`；含單品的組合引用時重算過敏原與不吃；v3 備份 fixture 要含一筆 `food` 紀錄。
+     - 已知行為（刻意）：推薦跨時段不重複不看單品；只記單品的一餐也會記住分頁型態（下次停在那個分頁）；纖維 null 的 15 個加工肉等品項讓那一餐纖維「無資料」。
    - decisions #109（果乾只有無加糖樣品的名稱加「（無加糖）」收進來；優格(無糖)、優酪乳(無糖)不收）：**使用者 2026-09-30 已確認照預設**。
    - decisions #95 的三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）是照審核建議，待使用者確認。
    - 原始資料：`collab/transcripts/`（代換表 339 列／374 品名、過敏原標註合併版 `exchange_tags.json` 與審查 `exchange_tags_review.md`；第二輪審核指出的標註修正〔牛油、饅頭、瓜子、芒果類〕要在切片 3 轉入時一起做）。
