@@ -4,6 +4,8 @@
 
 **先讀這段（2026-10-01 的狀態）**：使用者回報手機短清單第 6 項（切片 3＋4）測過沒問題。下一步定案（decisions #121）：**切片 7 單品 → 工作線 C 我的組合 → 切片 5 常吃**。切片 7 實作計畫**第二版已定案**（docs/review/2026-10-01-D7-實作計畫.md，第 8 節是審核意見與使用者決定的處理，以它為準；審核逐字 collab/opus-review-log/2026-10-01-d7-plan-review.md；decisions #122、#123）。**下一步：commit 0（PRD）已完成（`12926cf`），直接照計畫 8.5 從 commit 1（engine）開工**；份量文字測資在 collab/proofs/2026-10-01-d7-serving-text-cases.md，程式由 Opus 寫。
 
+**2026-10-01 Sonnet 做好的外圍準備（都在 `collab/proofs/`，Opus 已抽驗）**：`2026-10-01-d7-serving-text-cases.md`（切片 7 份量文字測資）、`2026-10-01-d7-phone-script-draft.md`（切片 7 手機腳本草稿，實作後搬進正式腳本的第 8 節）、`2026-10-01-workline-c-survey.md`（工作線 C 調研，17 條規格空白；寫 C 計畫時整理成問題問使用者，例如管理區塊放哪）、`2026-10-01-workline-a-archetype-survey.md`（工作線 A 擴充餐型調研：13 個候選骨架，瓶頸是缺「蒸、水煮／燙、滷／燉」三個烹調法；建議先做清蒸魚定食、滷燉定食、蛋飯類；口味方向〔湯品、麵食、豬肉、滷與湯的鈉〕要問使用者）。`collab/to-ai-allergen-tagging.md` 已改成 12 詞通用版。
+
 ## 1. 專案
 
 - 「輕盈計畫」2.0（Lighten2）：個人減脂飲食追蹤 App，純前端 vanilla JS（ES modules）＋IndexedDB，沒有後端、單人使用。
