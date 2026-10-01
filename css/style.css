@@ -1347,3 +1347,117 @@ div.food-row-main {
   margin: 0;
   padding-left: 1.2rem;
 }
+
+/* 工作線 C：我的組合（選擇器最上面一列、入口 1 的勾選、今日建議的「存成組合」、我的食物的管理區塊；不上色，章程 C4.13） */
+.saved-row {
+  margin-bottom: 0.8rem;
+}
+.saved-row-label {
+  font-size: 0.85rem;
+  color: #8A7A63;
+  margin-bottom: 0.3rem;
+}
+.saved-row-cards {
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.3rem;
+}
+.saved-card {
+  flex: 0 0 auto;
+  width: 11rem;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 2px solid #EFE3D2;
+  border-radius: 12px;
+  background-color: #ffffff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.saved-card:hover {
+  border-color: #E0B98C;
+}
+.saved-card.is-blocked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.saved-card-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #3A2E22;
+  overflow-wrap: break-word;
+}
+.saved-card-meta,
+.saved-card-note {
+  font-size: 0.75rem;
+  color: #8A7A63;
+  overflow-wrap: break-word;
+}
+.save-as {
+  margin-top: 1.2rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed #EFE3D2;
+}
+.save-as-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  color: #3A2E22;
+}
+.save-as-check input {
+  width: 22px;
+  height: 22px;
+}
+.rec-save-btn {
+  margin-left: 0.4rem;
+}
+.rec-save-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+.rec-save-form .foods-search {
+  flex: 1 1 12rem;
+  margin: 0;
+}
+.rec-save-form .secondary-btn {
+  min-height: 44px;
+}
+.rec-save-note {
+  flex: 1 1 100%;
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: #5C4D3C;
+}
+.saved-block > summary {
+  font-weight: 600;
+}
+.saved-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #EFE3D2;
+}
+.saved-item-name {
+  font-weight: 600;
+  color: #3A2E22;
+}
+.saved-rename {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.saved-rename .foods-search {
+  flex: 1 1 10rem;
+  margin: 0;
+}
+.saved-rename .secondary-btn {
+  min-height: 44px;
+}

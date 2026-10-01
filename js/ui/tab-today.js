@@ -7,12 +7,12 @@ import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
   getProfile, addDislikedIngredient, getDailyLogs, addDailyLog, undoDailyLog,
-  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids,
+  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, getCustomFoods, addSavedMeal,
 } from "../data/db.js";
-import { loadCatalog } from "../data/catalog.js";
+import { loadCatalog, fromCustomFood } from "../data/catalog.js";
 import { buildCandidatePool } from "../engine/pool.js";
 import { planToday } from "../engine/today.js";
-import { contentFromRec, logsKcal, buildLogEntry } from "../engine/meal-content.js";
+import { contentFromRec, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
 import { getCalibratedTargets } from "./calibration.js";
 import { renderHero } from "./today-hero.js";
 import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
@@ -31,6 +31,9 @@ const MEAL_DEFAULT_IMAGE = {
 let currentRecs = {};
 // 最近一次的目標與推薦流程中間值（預算、缺口、跳過的時段），diff-recs 快照用
 let lastPlan = null;
+// 入口 2「存成組合」（工作線 C；PRD 11.2）：展開中的名稱欄 { logId, name, message, done }；重畫後照舊（審核建議 11）
+let saveForm = null;
+let lastLogsBySlot = {};
 
 export function getCurrentRecs() {
   return currentRecs;
@@ -47,15 +50,94 @@ function setStatus(msg) {
 
 // 這個時段已經記錄過：顯示記了什麼＋撤銷，不再推薦新的組合。
 // 撤銷按鈕跟著卡片一起渲染（用 daily_log 的 id），所以任何重新整理都不會把它吃掉。
+// 「存成組合」：含估算的那一餐不提供（PRD 11.2 入口 2）；只在今天的卡片（decisions #124）
 function loggedHtml(logs) {
   const total = logsKcal(logs);
   const names = logs.map(function (l) { return l.name || "已記錄的餐點"; }).join("、");
   let html = '<p class="rec-logged-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
   logs.forEach(function (l) {
-    html += '<button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' +
-      (logs.length > 1 ? "「" + escapeHtml(l.name || "") + "」" : "") + "</button>";
+    const which = logs.length > 1 ? "「" + escapeHtml(l.name || "") + "」" : "";
+    html += '<button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' + which + "</button>";
+    if (canSaveLog(l)) {
+      html += '<button type="button" class="undo-btn rec-save-btn" data-save-log-id="' + escapeHtml(l.id) + '">存成組合' + which + "</button>";
+    }
+    if (saveForm && saveForm.logId === l.id) html += saveFormHtml(saveForm);
   });
   return html;
+}
+
+function canSaveLog(l) {
+  return !!(l.content && Array.isArray(l.content.components) && l.content.components.length > 0 &&
+    !l.content.components.some(function (c) { return c.kind === "estimate"; }));
+}
+
+function saveFormHtml(f) {
+  if (f.done) return '<p class="rec-save-note">' + escapeHtml(f.message) + "</p>";
+  return '<div class="rec-save-form"><input type="text" class="foods-search" id="rec-save-name" maxlength="40" placeholder="組合名稱" value="' + escapeHtml(f.name) + '">' +
+    '<button type="button" class="secondary-btn" data-save-confirm="' + escapeHtml(f.logId) + '">存</button>' +
+    '<button type="button" class="secondary-btn" data-save-cancel>取消</button>' +
+    (f.message ? '<p class="rec-save-note">' + escapeHtml(f.message) + "</p>" : "") + "</div>";
+}
+
+function findTodayLog(logId) {
+  let hit = null;
+  Object.keys(lastLogsBySlot).forEach(function (slot) {
+    (lastLogsBySlot[slot] || []).forEach(function (l) { if (l.id === logId) hit = l; });
+  });
+  return hit;
+}
+
+function rerenderLoggedSlot(slot) {
+  const body = $("#rec-" + slot);
+  const logs = lastLogsBySlot[slot];
+  if (body && logs && logs.length > 0) body.innerHTML = loggedHtml(logs);
+}
+
+async function saveCtx() {
+  const catalog = await loadCatalog();
+  const customs = (await getCustomFoods()).map(fromCustomFood);
+  let hidden = [];
+  try { hidden = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
+  return { catalog: catalog, ctx: { hidden: hidden, customs: customs, slot: null, profile: await getProfile() } };
+}
+
+// 點「存成組合」：展開名稱欄，預填品名（只寫品名、不寫量，decisions #124）
+async function onSaveLogClick(logId) {
+  const log = findTodayLog(logId);
+  if (!log) return;
+  try {
+    const c = await saveCtx();
+    saveForm = { logId: logId, name: savedMealDefaultName(toSavedContent(log.content, { keepImplicit: false }), c.catalog, c.ctx), message: null, done: false };
+  } catch (err) {
+    console.error(err);
+    saveForm = { logId: logId, name: "", message: null, done: false };
+  }
+  rerenderLoggedSlot(log.slot);
+  const input = document.getElementById("rec-save-name");
+  if (input && input.focus) input.focus();
+}
+
+// 存：紀錄的內容 → 組合（入口 2 一律不保留用油調味）→ 已下架、隱藏的照規則 1–2 → 語意驗證（沒有時段）→ 寫入
+async function onSaveLogConfirm(logId) {
+  const log = findTodayLog(logId);
+  if (!log || !saveForm) return;
+  const name = (saveForm.name || "").trim();
+  if (!name) { saveForm.message = "請填組合名稱。"; rerenderLoggedSlot(log.slot); return; }
+  try {
+    const c = await saveCtx();
+    const s = savedMealForSave(toSavedContent(log.content, { keepImplicit: false }), c.catalog, c.ctx);
+    if (s.problems) {
+      saveForm.message = "不能存成組合：" + s.problems.join("；");
+    } else {
+      await addSavedMeal({ name: name, content: s.content });
+      saveForm = { logId: logId, done: true, message: "已存成組合「" + name + "」，在「自己選」最上面。" +
+        (s.dropped.length ? "以下品項已不提供，沒有存進組合：" + s.dropped.map(function (d) { return d.name; }).join("、") + "。" : "") };
+    }
+  } catch (err) {
+    console.error(err);
+    saveForm.message = "存檔失敗，請重試。";
+  }
+  rerenderLoggedSlot(log.slot);
 }
 
 // 依組合內容列出可以「順便不要」的項目：
@@ -187,6 +269,8 @@ export async function buildRecommendation() {
 
   renderHero(plan.remainingBudget, targets, todayLogs, recentLogs, profile, recs, today).catch(function (err) { console.error(err); });
 
+  lastLogsBySlot = plan.logsBySlot || {};
+  if (saveForm && !findTodayLog(saveForm.logId)) saveForm = null; // 撤銷了就收起來
   renderRecs(recs, profile, plan.logsBySlot);
   // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
   const shownIds = Object.keys(recs).map(function (slot) { return recs[slot] && recs[slot].id; }).filter(Boolean);
@@ -273,6 +357,16 @@ export function initTodayTab() {
         onUndoClick(undoBtn.getAttribute("data-log-id"), undoBtn);
         return;
       }
+      const saveBtn = e.target.closest("[data-save-log-id]");
+      if (saveBtn) { onSaveLogClick(saveBtn.getAttribute("data-save-log-id")); return; }
+      const saveOk = e.target.closest("[data-save-confirm]");
+      if (saveOk) { onSaveLogConfirm(saveOk.getAttribute("data-save-confirm")); return; }
+      if (e.target.closest("[data-save-cancel]")) {
+        const log = saveForm && findTodayLog(saveForm.logId);
+        saveForm = null;
+        if (log) rerenderLoggedSlot(log.slot);
+        return;
+      }
       const logBtn = e.target.closest(".rec-log-btn");
       if (logBtn && logBtn.getAttribute("data-slot")) {
         const slot = logBtn.getAttribute("data-slot");
@@ -282,13 +376,19 @@ export function initTodayTab() {
       }
       const pickBtn = e.target.closest(".rec-pick-btn");
       if (pickBtn && pickBtn.getAttribute("data-slot")) {
-        openMealPicker(pickBtn.getAttribute("data-slot"), buildRecommendation);
+        openMealPicker(pickBtn.getAttribute("data-slot"), { onLogged: buildRecommendation });
         return;
       }
       const chipBtn = e.target.closest(".dislike-chip");
       if (chipBtn && chipBtn.getAttribute("data-key")) {
         onDislikeChipClick(chipBtn);
       }
+    });
+  }
+
+  if (grid) {
+    grid.addEventListener("input", function (e) {
+      if (e.target.id === "rec-save-name" && saveForm) saveForm.name = e.target.value;
     });
   }
 

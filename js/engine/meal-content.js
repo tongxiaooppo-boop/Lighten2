@@ -776,7 +776,12 @@ export function remapSavedRefs(content, catalog, ctx) {
     const mine = own[c.ref];
     if (mine && !mine.archived) comps.push(c); else drop(c, mine ? mine.name : null);
   });
-  return { content: Object.assign({}, content, { components: comps }), dropped: dropped };
+  const out = Object.assign({}, content, { components: comps });
+  // 自煮的食材全部被丟掉時，跟「沒有食材的自煮」同一個形狀（沒有餐型、烹調法，implicit null，decisions #123）
+  if (isCookType(content.meal_type) && !comps.some(function (c) { return c.kind === "ingredient"; })) {
+    out.archetype_id = null; out.method_id = null; out.implicit = null;
+  }
+  return { content: out, dropped: dropped };
 }
 
 const SAVED_AXIS_MAX = { protein: COMPOSE_MAX.protein, vegetable: COMPOSE_MAX.vegetable, staple: 1, seasoning: 1 };
@@ -911,6 +916,14 @@ export function savedMealProblem(resolved) {
     .concat(resolved.notes);
   if (resolved.available.length === 0) lines.unshift("沒有可以存的品項。");
   return lines.length > 0 ? lines : null;
+}
+
+// 存檔前（入口 1、入口 2、編輯模式共用）：toSavedContent 的結果 → 規則 1–2 改寫 → 沒有時段的語意驗證。
+// 回傳 { content: 要寫進資料庫的內容, dropped: 已不提供而沒存進去的, problems: 不能存的原因清單或 null }
+export function savedMealForSave(savedContent, catalog, ctx) {
+  const r = remapSavedRefs(savedContent, catalog, ctx);
+  const resolved = resolveSavedMeal(r.content, catalog, Object.assign({}, ctx, { slot: null }));
+  return { content: r.content, dropped: r.dropped, problems: savedMealProblem(resolved) };
 }
 
 // 卡片上的一行（PRD 11.3）：「有 N 項目前不能用：原因、原因」；全部能用回 null

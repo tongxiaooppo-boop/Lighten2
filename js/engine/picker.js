@@ -25,7 +25,8 @@ export function tabOfMealType(mealType) {
 
 // 飲料任何時段都能選（decisions #44）；其他品項照 valid_slots
 export function fitsSlot(item, slot) {
-  return item.role === "drink" || (Array.isArray(item.valid_slots) && item.valid_slots.indexOf(slot) !== -1);
+  // slot === null：沒有時段（編輯我的組合），每個品項都算符合（跟 partitionAllChannels 一致）
+  return item.role === "drink" || slot === null || (Array.isArray(item.valid_slots) && item.valid_slots.indexOf(slot) !== -1);
 }
 
 // 品項分到分頁：超商分頁＝超商的非飲料；外食分頁＝台式外食非飲料在前、宅配/連鎖餐盒在後；

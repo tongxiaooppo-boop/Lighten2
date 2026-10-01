@@ -3,7 +3,7 @@
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
 import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
-  addDislikedTo, removeDislikedFrom, mergeProfileForm } from "../../js/data/db.js";
+  addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -22,7 +22,8 @@ function byDateThenId(a, b) {
 }
 
 let seq = 0;
-export function __resetSeq() { seq = 0; }
+let savedSeq = 0; // 我的組合的 id 自己一套序號（不影響既有紀錄的 id，審核建議 15）
+export function __resetSeq() { seq = 0; savedSeq = 0; }
 
 export { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood };
 
@@ -123,6 +124,44 @@ export async function copyBuiltinToCustom(food) {
   S().settings.hidden_catalog_uids = (await getHiddenCatalogUids()).filter((u) => u !== record.copied_from).concat([record.copied_from]);
   S().writes.push({ op: "copyBuiltinToCustom", record: clone(record) });
   return clone(record);
+}
+
+// ---------- 我的組合（工作線 C；語意照 db.js，寫入驗證用真的 validateSavedMeal） ----------
+const savedOf = () => S().savedMeals || (S().savedMeals = []);
+function newSaved(rec) {
+  const now = new Date().toISOString();
+  const record = Object.assign({ archived: false }, clone(rec), { id: rec.id || "saved_" + String(++savedSeq).padStart(4, "0"), created_at: now, updated_at: now });
+  validateSavedMeal(record);
+  return record;
+}
+export { validateSavedMeal, applySavedMealPatch };
+export async function listSavedMeals() {
+  return clone(savedOf().slice().sort((a, b) => (a.created_at !== b.created_at ? (a.created_at < b.created_at ? -1 : 1) : a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+}
+export async function getSavedMeal(id) { return clone(savedOf().find((r) => r.id === id)) || null; }
+export async function addSavedMeal(rec) {
+  const record = newSaved(rec);
+  savedOf().push(record);
+  S().writes.push({ op: "addSavedMeal", record: clone(record) });
+  return clone(record);
+}
+export async function updateSavedMeal(id, patch) {
+  const i = savedOf().findIndex((r) => r.id === id);
+  if (i === -1) throw new Error("[fake-db] 找不到我的組合：" + id);
+  const next = applySavedMealPatch(savedOf()[i], patch, new Date().toISOString());
+  savedOf()[i] = clone(next);
+  S().writes.push({ op: "updateSavedMeal", id: id, record: clone(next) });
+  return clone(next);
+}
+export async function addDailyLogWithSavedMeal(entry, rec) {
+  validateDailyLog(entry);
+  const saved = newSaved(rec);
+  const log = Object.assign({}, clone(entry), { id: entry.id || "log_" + String(++seq).padStart(4, "0") });
+  S().dailyLogs.push(log);
+  savedOf().push(saved);
+  S().writes.push({ op: "addDailyLog", entry: clone(log) });
+  S().writes.push({ op: "addSavedMeal", record: clone(saved) });
+  return { log: clone(log), saved: clone(saved) };
 }
 
 export async function addDailyLog(entry) {
