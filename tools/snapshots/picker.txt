@@ -604,3 +604,14 @@ saved/submit+estimate/write1	markRecipesShown conv_bx05+conv_sl04+conv_dr01,prot
 saved/edit/open	{"cook":{"archetype":null,"method":null,"override":{},"proteins":[],"seasoning":null,"staple":null,"vegetables":[]},"drink":"tw_dr05","foods":[{"qty":2,"uid":"fx_whole_milk"}],"inserted":{},"notice":"編輯「超商早午餐」。","qty":{},"selected":{"convenience":["conv_bx01"],"delivery":[]},"tab":"convenience","tier":"cook_full"}
 saved/edit/submit/write0	updateSavedMeal saved_s1 "超商早午餐" content=convenience|-/-|conv_bx01x1,food:fx_whole_milkx3,tw_dr05x1|implicit=null
 saved/edit/lastPicked	null
+fav/list	conv_bx08,conv_sl01,custom_a,tw_dr05,conv_dr01,custom_c,fx_rice,fx_whole_milk,fx_banana,chicken_breast,fx_gone_for_test,edamame,beef_shank
+fav/lunch/convenience/favorites	conv_bx08,conv_sl01
+fav/lunch/convenience/also-elsewhere	-
+fav/lunch/convenience/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,edamame,fx_rice,beef_shank
+fav/lunch/convenience/drinks+foods/also-elsewhere	-
+fav/lunch/delivery/favorites	custom_a
+fav/lunch/delivery/also-elsewhere	-
+fav/lunch/delivery/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,edamame,fx_rice,beef_shank
+fav/lunch/delivery/drinks+foods/also-elsewhere	-
+fav/lunch/cook/protein_stir_fry/protein-before	beef_shank(擋),shrimp(擋),chicken_thigh(擋),edamame
+fav/lunch/cook/protein_stir_fry/protein-after	edamame,beef_shank(擋),shrimp(擋),chicken_thigh(擋)

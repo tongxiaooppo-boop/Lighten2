@@ -821,6 +821,74 @@ async function snapPicker() {
   }
 }
 
+// 常吃（工作線 D 切片 5；計畫審核 S9）：只新增 fav/* 行。從選擇器真的畫出來的 HTML 取「常吃」組的卡片順序，
+// 以及其他組還有沒有出現常吃的（搬過去、不重複）。常吃清單用 settings.favorite_refs 帶入。
+async function snapFavorites() {
+  const htmlOf = (lines, sel) => {
+    const l = lines.find((x) => x.indexOf(sel + " ") === 0);
+    const m = l && /html=("(?:[^"\\]|\\.)*")/.exec(l);
+    return m ? JSON.parse(m[1]) : "";
+  };
+  const cardIds = (html) => [...html.matchAll(/data-(?:uid|drink|food-uid)="([^"]+)"/g)].map((x) => x[1]);
+  const favPart = (html) => {
+    const m = /<section class="meal-picker-group meal-picker-favorites">([\s\S]*?)<\/section>/g;
+    return [...html.matchAll(m)].map((x) => x[1]).join("");
+  };
+  const report = (k, html) => {
+    const favs = cardIds(favPart(html));
+    emit("picker", k + "/favorites", favs.join(",") || "-");
+    // 常吃組以外還出現的常吃（應該是空的；搜尋結果不算，這裡沒有搜尋）
+    const elsewhere = cardIds(html.split(/<section class="meal-picker-group meal-picker-favorites">[\s\S]*?<\/section>/).join("")).filter((u) => favs.indexOf(u) !== -1);
+    emit("picker", k + "/also-elsewhere", elsewhere.join(",") || "-");
+  };
+  // 不吃 conv_dr01、雞胸肉（也在常吃清單：要以不吃為準）＋蛋奶素（讓常吃組與自煮軸有被擋的）
+  const profile = Object.assign({}, P.DISLIKE, { diet_restriction: "蛋奶素" });
+  env.setNow(NOW_DAY);
+  A.setDb({ profile: profile, dailyLogs: [], customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }) });
+  const base = await A.pickerOpen("lunch");
+  A.takeDom();
+  const passOf = (t) => base[t].pass;
+  const blockedOf = (t) => base[t].blocked.map((x) => x.split(":")[0]);
+  // 自煮：找一個午餐餐型，蛋白質有能選的也有被飲食擋的；先畫一次（沒有常吃）看哪些被擋
+  const cat = base.catalog;
+  const optionsOf = (html) => [...html.matchAll(/class="compose-option( is-blocked)?" data-axis="protein" data-id="([^"]+)"/g)].map((x) => ({ id: x[2], blocked: !!x[1] }));
+  let arche = null, opts0 = [];
+  for (const a of cat.archetypes.filter((x) => (x.valid_slots || []).indexOf("lunch") !== -1)) {
+    A.takeDom();
+    A.pickerCompose({ archetype: a.id, proteins: [], staple: null, vegetables: [], seasoning: null, method: null });
+    const o = optionsOf(htmlOf(A.takeDom(), "#meal-picker-panel"));
+    const okIdx = o.map((x, i) => (x.blocked ? -1 : i)).filter((i) => i > 0);
+    if (okIdx.length > 0 && o.some((x) => x.blocked)) { arche = a; opts0 = o; break; }
+  }
+  const okProteins = opts0.filter((x) => !x.blocked).map((x) => x.id);
+  const cookFavs = arche ? [okProteins[okProteins.length - 1], opts0.find((x) => x.blocked).id] : [];
+  const favs = [
+    passOf("convenience")[3], passOf("convenience")[0], blockedOf("convenience")[0],
+    passOf("delivery")[0], "custom_a",
+    passOf("drinks")[2], "conv_dr01", "custom_c",
+    "fx_rice", "fx_whole_milk", "fx_banana", "chicken_breast", "fx_gone_for_test",
+  ].concat(cookFavs).filter(Boolean);
+  emit("picker", "fav/list", favs.join(","));
+  A.setDb({ profile: profile, dailyLogs: [], customFoods: CUSTOM_FOODS, tdeeState: tdeeState({ goal_mode: null }), settings: { favorite_refs: favs } });
+  await A.pickerOpen("lunch");
+  for (const tab of ["convenience", "delivery"]) {
+    A.takeDom();
+    A.pickerTab(tab);
+    const lines = A.takeDom();
+    report("fav/lunch/" + tab, htmlOf(lines, "#meal-picker-panel"));
+    report("fav/lunch/" + tab + "/drinks+foods", htmlOf(lines, "#meal-picker-drinks"));
+  }
+  // 自煮：常吃且沒被擋的排前面，被擋的常吃留原位（decisions #127 ⑤）
+  if (arche) {
+    emit("picker", "fav/lunch/cook/" + arche.id + "/protein-before", opts0.map((x) => x.id + (x.blocked ? "(擋)" : "")).join(","));
+    A.takeDom();
+    A.pickerCompose({ archetype: arche.id, proteins: [], staple: null, vegetables: [], seasoning: null, method: null });
+    emit("picker", "fav/lunch/cook/" + arche.id + "/protein-after", optionsOf(htmlOf(A.takeDom(), "#meal-picker-panel")).map((x) => x.id + (x.blocked ? "(擋)" : "")).join(","));
+  }
+  // 標不吃的寫入（fake-db 寫入紀錄形狀不變，常吃默默移出）
+  A.takeWrites();
+}
+
 async function snapWeek() {
   const cases = {
     "none": [],
@@ -883,6 +951,7 @@ async function main() {
   await snapToday();
   await snapTdee();
   await snapPicker();
+  await snapFavorites();
   await snapWeek();
   await snapExercise();
 

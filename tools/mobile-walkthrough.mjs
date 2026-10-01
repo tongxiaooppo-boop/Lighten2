@@ -135,6 +135,7 @@ async function run() {
   await until(`!!document.querySelector('#foods-body [data-foods-dislike]')`, "0-2 明細沒有「不吃」按鈕");
   check(await js(`document.querySelector('#foods-body [data-foods-dislike]').disabled`), "0-2 沒有基本資料時「不吃」沒有停用");
   check((await js(text("#foods-body .food-detail"))).indexOf("先在基本資料填好身體數據並按計算") !== -1, "0-2 停用的「不吃」旁邊沒有說明");
+  check(await js(`(document.querySelector('#foods-body [data-foods-favorite]') || {}).disabled === true`), "0-2 沒有基本資料時「常吃」沒有停用（切片 5）");
   await shot("我的食物-沒有基本資料", "#foods-body .food-detail");
   // 自煮的分層品項也一樣停用（切片 4）
   await foodsSub("cook");
@@ -1312,6 +1313,106 @@ async function run() {
   await click(`#foods-body [data-saved-goto]`);
   await until(`(() => { const r = document.querySelector('#foods-saved .saved-item'); if (!r) return false; const b = r.getBoundingClientRect(); return b.top >= 0 && b.bottom <= window.innerHeight; })()`, "10-6 點組合結果沒有捲到管理區塊");
   await js(`(() => { const el = document.getElementById('foods-search'); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+
+  // ---------- 11. 常吃（工作線 D 切片 5，計畫 docs/review/2026-10-01-D5-實作計畫.md；放最後：前面各節不會看到常吃組，審核 S11） ----------
+  console.log("[11. 常吃]");
+  const DBW = `(await import('./js/data/db.js'))`;
+  const dbFavs = () => js(`(async () => { const m = ${DBW}; return JSON.stringify(await m.getFavoriteRefs()); })()`).then(JSON.parse);
+  // 11-1 我的食物超商：點開一列按「常吃」→ 搬到最上面的「常吃（1）」、按鈕變「取消常吃」、訊息；原分類不再出現
+  await tab("foods");
+  await foodsSub("convenience");
+  await until(`!!document.querySelector('#foods-body .food-row-main')`, "11-1 超商子分頁沒有品項");
+  const uid11 = await js(`[...document.querySelectorAll('#foods-body .food-row-main')].map((b) => b.dataset.foodsOpen).find((u) => /^conv_/.test(u))`);
+  await click(`#foods-body [data-foods-open=${uid11}]`);
+  const btnOrder = await js(`[...document.querySelector('#foods-body .food-detail .backup-actions').querySelectorAll('button')].map((b) => b.textContent).join(",")`);
+  check(btnOrder === "常吃,複製成我的版本,不吃", "11-1 明細按鈕順序不是常吃、複製、不吃（審核 S13）：" + btnOrder);
+  check((await js(text("#foods-body .food-detail"))).indexOf("常吃只影響自己選的排列。") !== -1, "11-1 明細沒有寫常吃的作用");
+  await click(`#foods-body [data-foods-favorite=${uid11}]`);
+  await until(`!!document.querySelector('#foods-body .foods-favorites [data-foods-unfavorite=${uid11}]')`, "11-1 標常吃後沒有在最上面的常吃組變成「取消常吃」");
+  check((await js(`document.querySelector('#foods-body .foods-favorites h4').textContent`)) === "常吃（1）" &&
+    (await js(`document.querySelectorAll('#foods-body [data-foods-open=${uid11}]').length`)) === 1, "11-1 常吃組標題不對，或那一列在原分類還出現");
+  check((await js(text("#foods-status"))).indexOf("自己選會放在最上面") !== -1, "11-1 標常吃沒有訊息");
+  await shot("常吃-我的食物", "#foods-body .foods-favorites");
+  // 11-2 互斥：常吃的按「不吃」→ 移到不吃、訊息補一句；再取消不吃（不會自己變回常吃）
+  await click(`#foods-body [data-foods-dislike=${uid11}]`);
+  await until(`${text("#foods-status")}.indexOf("原本標的常吃已取消") !== -1`, "11-2 常吃的標不吃沒有說明常吃已取消");
+  check((await dbFavs()).indexOf(uid11) === -1 && !(await js(`!!document.querySelector('#foods-body .foods-favorites')`)), "11-2 標不吃後常吃沒有拿掉");
+  await click(`#foods-body [data-foods-undislike=${uid11}]`);
+  await until(`!document.querySelector('#foods-body [data-foods-undislike=${uid11}]')`, "11-2 取消不吃沒有完成");
+  // 11-3 自煮：白米標常吃 → 自煮子分頁最上面；長清單（審核 S13）：再標 10 樣超商，看 360 寬
+  await foodsSearch("白米");
+  await until(`!!document.querySelector('[data-foods-open="fx_rice"]')`, "11-3 搜尋白米沒有結果");
+  await click(`[data-foods-open="fx_rice"]`);
+  await click(`[data-foods-favorite="fx_rice"]`);
+  await until(`!!document.querySelector('[data-foods-unfavorite="fx_rice"]')`, "11-3 白米標常吃沒有完成");
+  check((await js(text("#foods-body"))).indexOf("常吃") !== -1, "11-3 搜尋結果沒有寫「常吃」");
+  await foodsSearch("");
+  await foodsSub("cook");
+  await until(`!!document.querySelector('#foods-body .foods-favorites [data-foods-open="fx_rice"]')`, "11-3 自煮子分頁最上面沒有白米");
+  await shot("常吃-自煮子分頁", "#foods-body .foods-favorites");
+  const many = await js(`(async () => { const m = ${DBW}; const c = await (await import('./js/data/catalog.js')).loadCatalog();
+    const us = c.products.filter((p) => p.channel === 'convenience' && p.role !== 'drink').slice(0, 10).map((p) => p.uid);
+    for (const u of us) await m.addFavoriteRef(u); return us; })()`);
+  await tab("today"); await tab("foods");
+  await foodsSub("convenience");
+  await until(`document.querySelectorAll('#foods-body .foods-favorites .food-row').length === ${many.length}`, "11-3 超商的常吃組不是 " + many.length + " 列");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("常吃-我的食物長清單-360寬", "#foods-body .foods-favorites");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  // 11-4 選擇器：超商「1. 選品項」最上面一組常吃（被擋的灰在組尾）；加點單品最上面有白米；步驟編號連續
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await until(`!!document.querySelector('#meal-picker-panel .meal-picker-favorites .item-card')`, "11-4 超商分頁沒有常吃組");
+  const favCards = await js(`[...document.querySelectorAll('#meal-picker-panel .meal-picker-favorites .item-card')].map((b) => b.dataset.uid)`);
+  const elsewhere = await js(`[...document.querySelectorAll('#meal-picker-panel .item-card[data-uid]')].filter((b) => !b.closest('.meal-picker-favorites') && ${JSON.stringify(favCards)}.indexOf(b.dataset.uid) !== -1).length`);
+  check(favCards.length > 0 && elsewhere === 0, "11-4 常吃的卡片在原分類還出現 " + elsewhere + " 張");
+  const blockedTail = await js(`(() => { const cs = [...document.querySelectorAll('#meal-picker-panel .meal-picker-favorites .item-card')]; const i = cs.findIndex((b) => b.disabled); return i === -1 || cs.slice(i).every((b) => b.disabled); })()`);
+  check(blockedTail, "11-4 常吃組裡被擋的沒有排在組尾");
+  await checkStepNumbers("11-4");
+  await shot("常吃-選擇器超商", "#meal-picker-panel .meal-picker-favorites");
+  check(!!(await js(`document.querySelector('#meal-picker-drinks .meal-picker-favorites [data-food-uid="fx_rice"]')`)), "11-4 加點單品最上面的常吃組沒有白米");
+  await shot("常吃-選擇器加點單品", "#meal-picker-drinks .meal-picker-favorites");
+  // 11-5 已選列：選一個不是常吃的 → 已選列「常吃」在第一個 → 搬到常吃組、還是選著；360 寬；再取消
+  const pick11 = await js(`([...document.querySelectorAll('#meal-picker-panel .item-card[data-uid]:not([disabled])')].find((b) => !b.closest('.meal-picker-favorites')) || {}).dataset.uid`);
+  await click(`#meal-picker-panel .item-card[data-uid=${pick11}]`);
+  const rowOrder = await js(`[...document.querySelector('#meal-picker-panel .selected-actions').querySelectorAll('button')].map((b) => b.textContent).join(",")`);
+  check(rowOrder === "常吃,複製成我的版本,不吃", "11-5 已選列按鈕順序不對：" + rowOrder);
+  await click(`#meal-picker-panel [data-favorite-uid=${pick11}]`);
+  await until(`!!document.querySelector('#meal-picker-panel .meal-picker-favorites .item-card.selected[data-uid=${pick11}]')`, "11-5 已選列標常吃後沒有搬到常吃組或取消了選取");
+  check((await js(text("#meal-picker-summary"))).indexOf("已選 1 件") === 0, "11-5 標常吃後選取變了");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("常吃-已選列-360寬", "#meal-picker-panel .meal-picker-selected");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await click(`#meal-picker-panel [data-unfavorite-uid=${pick11}]`);
+  await until(`!document.querySelector('#meal-picker-panel .meal-picker-favorites [data-uid=${pick11}]')`, "11-5 取消常吃後還在常吃組");
+  // 單品已選框也有「常吃」
+  await click(`#meal-picker-drinks .meal-picker-favorites [data-food-uid="fx_rice"]`);
+  check(!!(await js(`document.querySelector('#food-sel-fx_rice [data-unfavorite-uid="fx_rice"]')`)), "11-5 單品已選框沒有「取消常吃」");
+  await closePicker();
+  // 11-6 自煮：常吃且能選的蛋白質排第一個（只看設定，點選過程不跳位置）
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  // 找一個能選的蛋白質至少 2 個的餐型（再點一次餐型＝取消，decisions #122）
+  const archIds = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=archetype]')].map((b) => b.dataset.id)`);
+  let prots = [], arch11 = null;
+  for (const id of archIds) {
+    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${id}]`);
+    prots = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein]:not([disabled])')].map((b) => b.dataset.id)`);
+    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${id}]`);
+    if (prots.length >= 2) { arch11 = id; break; }
+  }
+  await closePicker();
+  if (prots.length >= 2) {
+    const target = prots[prots.length - 1];
+    await js(`(async () => { const m = ${DBW}; await m.addFavoriteRef(${JSON.stringify(target)}); })()`);
+    await openPicker("dinner");
+    await click(`#meal-picker-tabs [data-tab=cook]`);
+    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${arch11}]`);
+    const first = await js(`document.querySelector('#meal-picker-panel .compose-option[data-axis=protein]').dataset.id`);
+    check(first === target, "11-6 常吃的蛋白質沒有排第一個：" + first + "（應為 " + target + "）");
+    await shot("常吃-自煮蛋白質", "#meal-picker-panel .compose-step");
+    await closePicker();
+  } else fail("11-6 晚餐沒有能選的蛋白質至少 2 個的餐型（測試前提不成立）");
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
