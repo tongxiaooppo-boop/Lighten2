@@ -106,13 +106,13 @@ export function productTabHtml(groups, selected, tabLabel, fillable) {
   return html;
 }
 
-// 飲料步驟（三分頁共用）：「不加」＋可選的飲料，被擋的排最後、灰階寫原因。entries：[{ item, reason }]（不含標了不吃的）
-// extraHtml：選中那杯的份量與動作、提示、表單（B-1a）；fillable：被擋的我的品項飲料可不可以補填；dislikedItems：標了不吃的飲料
-export function drinkStepHtml(entries, drinkUid, stepNo, extraHtml, fillable, dislikedItems) {
-  let html = '<div class="meal-picker-step-label">' + stepNo + ". 加飲料（選填）</div><div class=\"item-grid\">";
+// 現成飲料（「加飲品・水果」步驟裡，三分頁共用）：「不加」＋可選的飲料，被擋的排最後、灰階寫原因。
+// entries：[{ item, reason }]（不含標了不吃的，那些併進步驟最下方的不吃組，food-step.js）；fillable：被擋的我的品項飲料可不可以補填
+export function drinkGridHtml(entries, drinkUid, fillable) {
+  let html = '<div class="item-grid">';
   html += '<button type="button" class="item-card' + (drinkUid ? "" : " selected") + '" data-drink=""><span class="item-card-name">不加</span></button>';
   entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; })).forEach(function (e) {
     html += withFill(cardHtml(e.item, { drink: true, selected: !e.reason && e.item.uid === drinkUid, blockedReason: e.reason }), e.item, e.reason, fillable);
   });
-  return html + "</div>" + dislikedGroupHtml(dislikedItems, true) + (extraHtml || "");
+  return html + "</div>";
 }

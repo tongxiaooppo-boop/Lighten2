@@ -43,7 +43,9 @@ function optionHtml(axis, id, label, o) {
   const cls = "compose-option" + (o.selected ? " selected" : "") + (o.reason ? " is-blocked" : "");
   // 已選的選項即使現在不合法（例：切到快煮）也要能點掉，送出時由 composeProblem 擋
   const disabled = o.reason && !o.selected;
-  return '<button type="button" class="' + cls + '" data-axis="' + axis + '" data-id="' + escapeHtml(id) + '"' + (disabled ? " disabled" : "") + ">" +
+  // 餐型再點一次＝取消（decisions #122），用 aria-pressed 讓讀屏知道它是開關
+  const pressed = axis === "archetype" ? ' aria-pressed="' + (o.selected ? "true" : "false") + '"' : "";
+  return '<button type="button" class="' + cls + '" data-axis="' + axis + '" data-id="' + escapeHtml(id) + '"' + pressed + (disabled ? " disabled" : "") + ">" +
     escapeHtml(label) + (o.reason ? '<span class="item-card-reason">' + escapeHtml(o.reason) + "</span>" : "") + "</button>";
 }
 
@@ -68,7 +70,8 @@ export function cookTabHtml(catalog, slot, st, profile) {
   });
   html += "</div></div>";
 
-  html += '<div class="compose-step">' + step("選餐型") + '<div class="compose-options">';
+  html += '<div class="compose-step">' + step("選餐型") +
+    '<p class="meal-picker-note">只記單品可以不選餐型，直接到下面加點單品。</p><div class="compose-options">';
   catalog.archetypes.filter(function (a) { return (a.valid_slots || []).indexOf(slot) !== -1; }).forEach(function (a) {
     html += optionHtml("archetype", a.id, a.name, { selected: !!(d.archetype && d.archetype.id === a.id) });
   });
