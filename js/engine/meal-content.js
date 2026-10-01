@@ -13,7 +13,7 @@
 
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
-  ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN,
+  ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
 } from "../core/config.js";
 import { SLOT_LABELS } from "../core/slots.js";
 import { round1, isNum } from "../core/num.js";
@@ -202,10 +202,19 @@ function roleCounts(items) {
   return n;
 }
 
-// 可以送出回傳 null，否則回傳原因。opts.estimates：這一餐的「直接估算」筆數（不佔角色名額，但算有選東西）
+// 單品數超過一餐上限（PRD 13.4）：回傳原因或 null
+export function foodLimitProblem(n) {
+  return n > FOOD_MAX_PER_MEAL ? "單品最多選 " + FOOD_MAX_PER_MEAL + " 項。" : null;
+}
+
+// 可以送出回傳 null，否則回傳原因。opts.estimates：這一餐的「直接估算」筆數（不佔角色名額，但算有選東西）；
+// opts.foods：單品項數（同樣不佔角色名額，章程 C4.8）
 export function manualSelectionProblem(items, slot, opts) {
   const estimates = (opts && opts.estimates) || 0;
-  if (items.length === 0 && estimates === 0) return "請至少選一個品項。";
+  const foods = (opts && opts.foods) || 0;
+  if (items.length === 0 && estimates === 0 && foods === 0) return "請至少選一個品項。";
+  const limit = foodLimitProblem(foods);
+  if (limit) return limit;
   const n = roleCounts(items);
   const over = Object.keys(n).filter(function (r) { return n[r] > manualRoleMax(r, slot); })[0];
   if (!over) return null;
@@ -288,10 +297,14 @@ export function composeOptionProblem(item, axis, d, opts) {
   return null;
 }
 
-// 自煮草稿能不能送出：回傳原因或 null。順序固定：餐型不完整 → 免開火（食安優先顯示）→ 骨架 allow → 軸上限 → 快煮難度。
+// 自煮草稿能不能送出：回傳原因或 null。順序固定：單品上限 → 餐型不完整 → 免開火（食安優先顯示）→ 骨架 allow → 軸上限 → 快煮難度。
+// 沒選餐型時有單品（d.foods）或飲料（d.drink）就可以送出（PRD 13.4，decisions #122 修正 #45）；選了餐型就照餐型檢查，半套照樣擋。
 export function composeProblem(d, opts) {
   const a = d.archetype;
-  if (!a) return "請先選餐型";
+  const foods = (d.foods || []).length;
+  const limit = foodLimitProblem(foods);
+  if (limit) return limit;
+  if (!a) return foods > 0 || d.drink ? null : "請先選餐型";
   if (onAxis(d, "protein").length === 0) return "請選蛋白質";
   if (archetypeHasStaple(a) && !d.staple) return "請選主食";
   if (!d.method) return "請選烹調法";
@@ -526,19 +539,67 @@ export function estimateComponent(size, name) {
   };
 }
 
+// ---------- 單品（food 元件，PRD 13.4） ----------
+// 品項形狀：{ uid, name, group?, state?, serving: { amount, unit: "g"|"ml" }, per_serving: { kcal, …七個欄位 } }。
+// 分層品項（catalog.foodTree.items）本來就是這個形狀；切片 8 的我的食材由 engine 轉成同一形狀。
+
+// 份數 × 1 份的量（g 或 ml），進位到 0.1；記錄名稱與步進器旁的文字共用（PRD 13.4，章程 C2）
+export function foodAmount(item, qty) {
+  return round1(item.serving.amount * qty);
+}
+
+// 生的水果與油脂寫「可食部分」，不是生重（章程 B5.5）；步進器文字（foods.js）與記錄名稱共用這條判斷
+export function isEdiblePortionItem(item) {
+  return item.state === "raw" && (item.group === "fruit" || item.group === "fat");
+}
+
+// 記錄名稱的短狀態詞（decisions #122）：生的加「生」（可食部分的水果、油脂不加）、乾的加「乾」，熟食與液體不加
+function foodNameState(item) {
+  if (item.serving.unit === "ml") return "";
+  if (item.state === "raw") return isEdiblePortionItem(item) ? "" : "生 ";
+  return item.state === "dry" ? "乾 " : "";
+}
+
+// 「雞胸肉 生 120g」「白飯 160g」「全脂奶（自己倒） 480ml」
+export function foodLogName(item, qty) {
+  return item.name + " " + foodNameState(item) + foodAmount(item, qty) + (item.serving.unit === "ml" ? "ml" : "g");
+}
+
+// 單品元件：快照是 1 份的量與營養（不乘份數，合計時才乘 qty）
+export function foodComponent(item, qty) {
+  const ps = item.per_serving || {};
+  const orNull = function (v) { return v != null ? v : null; };
+  return {
+    kind: "food", ref: item.uid, qty: qty,
+    snapshot: {
+      name: item.name, amount: item.serving.amount, unit: item.serving.unit, kcal: ps.kcal,
+      protein_g: orNull(ps.protein_g), carb_g: orNull(ps.carb_g), fat_g: orNull(ps.fat_g), fiber_g: orNull(ps.fiber_g),
+      sat_fat_g: orNull(ps.sat_fat_g), sodium_mg: orNull(ps.sodium_mg),
+    },
+  };
+}
+
 // 選擇器的草稿 → MealContent（摘要與送出共用，看到的＝存下的）。
 // draft.kind："products"（超商/外食分頁：items、estimates [{ size, name }]、drink）或 "cook"（自煮草稿，見 composeProblem）。
-// draft.meal_type：分頁值或自煮子切換值，飲料不影響（decisions #47）。opts.oilHabit：基本資料的用油習慣。
+// draft.foods（選填）：[{ item, qty }] 單品，三個分頁共用；元件順序：（食材｜品項）→ 估算 → 單品 → 飲料。
+// draft.meal_type：分頁值或自煮子切換值，飲料與單品不影響（decisions #47、#83）。opts.oilHabit：基本資料的用油習慣。
+// 自煮沒有食材（只有單品或飲料）時，餐型、烹調法是 null，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123）。
 export function buildDraftContent(draft, opts) {
   const drink = draft.drink ? [productComponent(draft.drink, draftQty(draft, draft.drink.uid))] : [];
+  const foods = (draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty); });
   if (draft.kind === "cook") {
     const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
-    content.components = content.components.concat(drink);
+    if (content.components.length === 0) {
+      content.archetype_id = null;
+      content.method_id = null;
+      content.implicit = { oil_g: 0, seasoning: null };
+    }
+    content.components = content.components.concat(foods, drink);
     return content;
   }
   const comps = (draft.items || []).map(function (p) { return productComponent(p, draftQty(draft, p.uid)); })
     .concat((draft.estimates || []).map(function (e) { return estimateComponent(e.size, e.name); }))
-    .concat(drink);
+    .concat(foods, drink);
   return { meal_type: draft.meal_type, archetype_id: null, method_id: null, components: comps, implicit: null };
 }
 
@@ -556,7 +617,7 @@ function ingredientById(catalog, id) {
   return it;
 }
 
-// 一餐 MealContent 的營養合計。商品與估算一律用快照乘份數、不查 catalog（我的品項不在 catalog 裡）；
+// 一餐 MealContent 的營養合計。商品、估算、單品一律用快照乘份數、不查 catalog（我的品項不在 catalog 裡）；
 // 食材依 ref 查 catalog，只有主要槽位乘倍數，隱含成分不縮放。食材與商品各自加總（空的一組不放進來，
 // 否則只有自煮的一餐會被標成鈉「部分無資料」），最後才進位一次。
 export function contentTotals(content, catalog) {
@@ -571,7 +632,8 @@ export function contentTotals(content, catalog) {
       productParts.push(productPart(c.snapshot, c.qty));
     }
   });
-  if (content.implicit) ingredientParts.push(implicitContribution(content.implicit, catalog.implicit));
+  // 隱含成分只跟著食材（decisions #123）：只有單品、飲料的自煮一餐不加，跟同樣內容的超商紀錄合計相同
+  if (content.implicit && ingredientParts.length > 0) ingredientParts.push(implicitContribution(content.implicit, catalog.implicit));
   const groups = [];
   if (ingredientParts.length > 0) groups.push(addContributions(ingredientParts));
   if (productParts.length > 0) groups.push(addContributions(productParts));
@@ -601,16 +663,19 @@ export function buildLogEntry(o) {
   };
 }
 
-// 選擇器草稿的記錄名稱（原本在 ui/meal-picker/index.js）：自煮＝餐型＋食材＋飲料；商品＝各品項（帶份量）＋估算＋飲料，以「＋」串接。
-// 份量：「便當（半份）」「茶葉蛋 ×2」（PRD 12.3）。
+// 選擇器草稿的記錄名稱（原本在 ui/meal-picker/index.js）：自煮＝餐型＋食材＋單品＋飲料（沒選餐型就從單品開始）；
+// 商品＝各品項（帶份量）＋估算＋單品＋飲料，以「＋」串接。
+// 份量：「便當（半份）」「茶葉蛋 ×2」（PRD 12.3）；單品寫量不寫份數：「白飯 160g」（PRD 13.4）。
 export function draftLogName(d) {
   const withQty = function (p) {
     const q = draftQty(d, p.uid);
     return p.name + (q === 0.5 ? "（半份）" : q !== 1 ? " " + qtyLabel(q) : "");
   };
-  if (d.kind === "cook") return [d.archetype.name].concat(draftIngredients(d).map(function (it) { return it.name; }), d.drink ? [withQty(d.drink)] : []).join("＋");
-  return d.items.map(withQty)
-    .concat(d.estimates.map(function (x) { return x.name || "外食估算"; }), d.drink ? [withQty(d.drink)] : []).join("＋");
+  const tail = (d.foods || []).map(function (f) { return foodLogName(f.item, f.qty); }).concat(d.drink ? [withQty(d.drink)] : []);
+  if (d.kind === "cook") {
+    return (d.archetype ? [d.archetype.name] : []).concat(draftIngredients(d).map(function (it) { return it.name; }), tail).join("＋");
+  }
+  return d.items.map(withQty).concat(d.estimates.map(function (x) { return x.name || "外食估算"; }), tail).join("＋");
 }
 
 // ---------- B-1a：複製成我的版本（PRD 10.2、decisions #61；有鈉與飽和脂肪，放在這裡，章程 C4.14） ----------

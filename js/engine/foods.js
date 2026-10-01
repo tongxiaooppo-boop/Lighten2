@@ -3,6 +3,8 @@
 
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
 import { quickAddProblem } from "./picker.js";
+import { foodAmount, isEdiblePortionItem } from "./meal-content.js";
+import { round1 } from "../core/num.js";
 
 // 不吃的全部清單（PRD 13.2）：依 key 去重（保留第一筆），key 依序查內建品項 uid、內建食材 id、分層品項 id；
 // 查得到用現在的名稱（改名後跟著變），查不到 gone: true（畫面寫「已不提供」，章程 B9）。順序照清單。
@@ -137,7 +139,7 @@ export function foodTreeSections(foodTree, where) {
 function stateWord(item) {
   if (item.serving.unit === "ml") return "";
   switch (item.state) {
-    case "raw": return item.group === "fruit" || item.group === "fat" ? "可食部分 " : "生重 ";
+    case "raw": return isEdiblePortionItem(item) ? "可食部分 " : "生重 ";
     case "cooked": return "熟重 ";
     case "dry": return "乾重 ";
     case "wet": return "濕重 ";
@@ -160,6 +162,72 @@ export function foodTreeServingText(item) {
 // 列上的簡寫（審核 S12）：「代換表 1 份 · 生重 30g」「內建一餐 · 熟重 150g」
 export function foodTreeServingShort(item) {
   return (item.serving.builtin_meal ? "內建一餐 · " : "代換表 1 份 · ") + amountText(item, item.serving.amount);
+}
+
+// ---------- 單品步進器旁的份量文字（切片 7；PRD 13.4、計畫 8.2 M2–M3、8.6） ----------
+
+// 可以乘的家用量：開頭是整數、小數、分數或帶分數，後面是單位（不含數字與 ~–-，、或約）；數字與單位之間可以有空白
+const HOUSEHOLD_RE = /^(\d+(?:\s+\d+\/\d+|\/\d+|\.\d+)?)(\s*)([^\d~～–\-，,、或約]+)$/;
+const COUNTABLE_UNITS = ["個", "粒", "張", "片", "根", "顆"];
+
+function gcd(a, b) {
+  return b ? gcd(b, a % b) : a;
+}
+
+// 「1 1/2」「1/8」「2.5」「3」→ [分子, 分母]
+function parseHouseholdNumber(s) {
+  let m = /^(\d+)\s+(\d+)\/(\d+)$/.exec(s);
+  if (m) return [Number(m[1]) * Number(m[3]) + Number(m[2]), Number(m[3])];
+  m = /^(\d+)\/(\d+)$/.exec(s);
+  if (m) return [Number(m[1]), Number(m[2])];
+  m = /^(\d+)(?:\.(\d+))?$/.exec(s);
+  const dec = m[2] || "";
+  return [Number(m[1] + dec), Math.pow(10, dec.length)];
+}
+
+function fractionText(num, den) {
+  const whole = Math.floor(num / den);
+  const rem = num % den;
+  if (rem === 0) return String(whole);
+  return (whole > 0 ? whole + " " : "") + rem + "/" + den;
+}
+
+// 家用量乘份數（有理數）：約分後分母 ≤ 4 才寫（米杯放寬到 8）；可數單位且原值是 ≥2 的整數時，結果是整數才寫；
+// 不寫小數；寫不乾淨或不是可乘的寫法回 null（只寫克數或毫升）。qty 是 0.5 的倍數
+export function scaleHousehold(household, qty) {
+  const m = HOUSEHOLD_RE.exec(String(household || "").trim());
+  if (!m) return null;
+  const base = parseHouseholdNumber(m[1]);
+  const g0 = gcd(base[0], base[1]);
+  const bn = base[0] / g0, bd = base[1] / g0;
+  let num = bn * Math.round(qty * 2), den = bd * 2;
+  const g = gcd(num, den);
+  num /= g; den /= g;
+  const unit = m[3];
+  if (den > (unit.indexOf("米杯") !== -1 ? 8 : 4)) return null;
+  const countable = COUNTABLE_UNITS.some(function (u) { return unit.indexOf(u) === 0; });
+  if (countable && bd === 1 && bn >= 2 && den !== 1) return null;
+  return fractionText(num, den) + m[2] + unit;
+}
+
+// 「煮熟約 35g」「購買量約 170g」乘份數
+function scaleDisplay(display, qty) {
+  return display.replace(/(\d+(?:\.\d+)?)g$/, function (_, n) { return round1(Number(n) * qty) + "g"; });
+}
+
+// 步進器旁的文字：克數或毫升為主、必寫狀態詞，家用量與 display 放括號（份數 1 原樣）。
+// 「4 份＝熟重 160g（1碗）」「4 份＝可食部分 520g（4個，購買量約 680g）」「1 份＝內建一餐 熟重 150g」
+export function foodQtyText(item, qty) {
+  const s = item.serving;
+  const amt = amountText(item, foodAmount(item, qty));
+  if (s.builtin_meal) {
+    return qty === 1 ? "1 份＝內建一餐 " + amt : qty + " 份＝" + amt + "（1 份是內建一餐 " + amountText(item, s.amount) + "）";
+  }
+  const extras = [];
+  const hh = qty === 1 ? s.household : scaleHousehold(s.household, qty);
+  if (hh) extras.push(hh);
+  if (s.display) extras.push(qty === 1 ? s.display : scaleDisplay(s.display, qty));
+  return qty + " 份＝" + amt + (extras.length ? "（" + extras.join("，") + "）" : "");
 }
 
 // 共用內建 id 的代換表品項：今日建議的一餐是多少（審核 S5），份數取最接近的 0.5；其餘 null

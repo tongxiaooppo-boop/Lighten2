@@ -804,6 +804,11 @@ async function main() {
   checkFoodTreeViews(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), readJson("food_tree.json"));
 
+  // ---------- 11. 單品（工作線 D 切片 7） ----------
+  console.log("[單品]");
+  checkSingleFoods(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), candidatePool);
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -1461,6 +1466,169 @@ async function checkMyFoods(catalog, convenienceData) {
   const g = fd.sourceClassGroups({ source_class: { kcal: "label", protein_g: "label", carb_g: "estimate", fat_g: "estimate", fiber_g: "tfda", sat_fat_g: "estimate", sodium_mg: "label" } });
   check(JSON.stringify(g) === JSON.stringify([{ cls: "tfda", fields: ["fiber_g"] }, { cls: "label", fields: ["kcal", "protein_g", "sodium_mg"] }, { cls: "estimate", fields: ["carb_g", "fat_g", "sat_fat_g"] }]), "sourceClassGroups 分組或順序不對：" + JSON.stringify(g));
   check(fd.sourceClassGroups({ source_class: null }).length === 0, "sourceClassGroups 我的品項要回 []");
+}
+
+// 工作線 D 切片 7：單品 food 元件的 engine（計畫 docs/review/2026-10-01-D7-實作計畫.md 第 4 節、第 8 節）
+function checkSingleFoods(catalog, candidatePool) {
+  const mc = M.mc, pk = M.picker, fd = M.foods, cfg = M.config;
+  const ft = catalog.foodTree, b = ft.byId;
+  const same = (a, x) => JSON.stringify(a) === JSON.stringify(x);
+  const NUTR = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+  const latte = catalog.productsByUid["tw_dr05"];
+  const ing = (id) => catalog.ingredients.find((x) => x.id === id);
+  const arch = (id) => catalog.archetypes.find((a) => a.id === id);
+  const F = (id, qty) => ({ item: b[id], qty: qty });
+
+  // 1. 常數與份量
+  check(cfg.FOOD_MAX_PER_MEAL === 4 && cfg.FOOD_QTY_MAX === 12 && cfg.FOOD_QTY_STEP === 0.5, "單品常數（4 項、0.5–12）");
+  [0.5, 1, 2.5, 12].forEach((q) => check(cfg.isFoodQty(q), "isFoodQty 要接受 " + q));
+  [0, 0.25, 12.5, 13, -1, "2", null, undefined, NaN, Infinity].forEach((q) => check(!cfg.isFoodQty(q), "isFoodQty 要拒絕 " + String(q)));
+
+  // 2. foodComponent：333 個分層品項的快照逐欄等於 serving 與 per_serving
+  let bad = 0;
+  ft.items.forEach((it) => [1, 12].forEach((q) => {
+    const c = mc.foodComponent(it, q);
+    const s = c.snapshot;
+    if (c.kind !== "food" || c.ref !== it.id || c.qty !== q || s.name !== it.name || s.amount !== it.serving.amount || s.unit !== it.serving.unit) bad++;
+    if (!NUTR.every((k) => s[k] === (it.per_serving[k] != null ? it.per_serving[k] : null)) || typeof s.kcal !== "number") bad++;
+    if (Object.keys(c).sort().join() !== "kind,qty,ref,snapshot" || "partial" in s) bad++;
+  }));
+  check(ft.items.length > 300 && bad === 0, "foodComponent 的快照要逐欄等於分層品項（不一致 " + bad + " 處）");
+  check(ft.items.filter((it) => mc.foodComponent(it, 1).snapshot.unit === "ml").map((it) => it.id).sort().join() ===
+    "fx_evaporated_milk,fx_lowfat_milk,fx_skim_milk,fx_whole_milk,soy_milk", "ml 的單品要恰好 5 筆");
+  check(mc.foodComponent(b.brown_rice_cooked, 1).snapshot.amount === 150 && mc.foodComponent(b.quinoa, 1).snapshot.amount === 45, "內建一餐的單品 1 份＝內建克數");
+
+  // 3. contentTotals：快照乘 qty、null 傳染、鈉與飽和脂肪 partial
+  const cont = (tab, foods, extra) => mc.buildDraftContent(Object.assign(tab === "cook"
+    ? { kind: "cook", meal_type: "cook_quick", archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1 }
+    : { kind: "products", meal_type: tab, items: [], estimates: [] }, { foods: foods }, extra || {}), { oilHabit: "normal" });
+  const tot = (tab, foods, extra) => mc.contentTotals(cont(tab, foods, extra), catalog);
+  const rice = b.fx_cooked_rice;
+  const t25 = tot("convenience", [F("fx_cooked_rice", 2.5)]);
+  check(NUTR.every((k) => t25[k] === (rice.per_serving[k] == null ? null : Math.round(rice.per_serving[k] * 2.5 * 10) / 10)), "單一單品 qty 2.5 的合計要等於快照 ×2.5");
+  const two = tot("delivery", [F("fx_cooked_rice", 4), F("fx_whole_milk", 2)], { drink: latte });
+  const sum = (k) => [rice.per_serving[k] * 4, b.fx_whole_milk.per_serving[k] * 2, latte[k]].reduce((s, v) => s + v, 0);
+  check(["kcal", "protein_g", "carb_g", "fat_g"].every((k) => Math.abs(two[k] - Math.round(sum(k) * 10) / 10) < 1e-9), "兩個單品＋飲料的合計要等於逐項相加");
+  const ham = tot("convenience", [F("fx_ham", 1)]);
+  check(ham.fiber_g === null && typeof ham.kcal === "number", "纖維無資料的單品（火腿）讓合計纖維是 null、熱量照算");
+  const taroRice = tot("convenience", [F("fx_taro", 1), F("fx_cooked_rice", 1)]);
+  check(taroRice.sat_fat_g != null && taroRice.partial.indexOf("sat_fat_g") !== -1, "飽和脂肪缺資料的單品要記進 partial、有資料的部分照加");
+  // M1：同一個單品在超商與自煮分頁的合計逐欄相同（隱含成分只跟著食材）
+  ["fx_ham", "fx_taro", "fx_cooked_rice", "chicken_breast"].forEach((id) => {
+    const a = tot("convenience", [F(id, 1.5)]), c = tot("cook", [F(id, 1.5)]);
+    check(same(a, c), id + "：超商與自煮分頁只有單品時合計要相同（" + JSON.stringify(a) + " vs " + JSON.stringify(c) + "）");
+  });
+  check(tot("cook", [F("fx_cooked_rice", 1)]).partial.length === 0, "只有單品的自煮合計不能多出 partial");
+
+  // 4. buildDraftContent
+  ["convenience", "delivery", "cook"].forEach((tab) => {
+    const c = cont(tab, [F("fx_cooked_rice", 4)]);
+    check(c.meal_type === (tab === "cook" ? "cook_quick" : tab) && c.archetype_id === null && c.method_id === null, tab + "：只有單品時 meal_type 是分頁值、沒有餐型與烹調法");
+    check(tab === "cook" ? same(c.implicit, { oil_g: 0, seasoning: null }) : c.implicit === null, tab + "：只有單品時 implicit 不對：" + JSON.stringify(c.implicit));
+    check(c.components.length === 1 && c.components[0].kind === "food" && c.components[0].qty === 4, tab + "：只有單品的元件不對");
+  });
+  const fd2 = cont("delivery", [F("fx_cooked_rice", 1), F("fx_banana", 1.5)], { items: [catalog.productsByUid.tw_bf03], estimates: [{ size: "S" }], drink: latte });
+  check(fd2.components.map((c) => c.kind + ":" + (c.ref || c.size)).join() === "product:tw_bf03,estimate:S,food:fx_cooked_rice,food:fx_banana,product:tw_dr05", "元件順序：品項 → 估算 → 單品 → 飲料");
+  const stir = arch("protein_stir_fry");
+  const full = { kind: "cook", meal_type: "cook_full", archetype: stir, proteins: [ing(stir.protein.allow[0])], staple: ing(stir.staple.allow[0]),
+    vegetables: [ing(stir.vegetable.allow[0])], seasoning: null, method: ing("method_stir_fry"), primaryScale: 1.2, drink: latte };
+  check(mc.composeProblem(full, { tier: "cook_full" }) === null, "測試前提：快炒完整");
+  const plain = mc.buildDraftContent(full, { oilHabit: "normal" });
+  const withF = mc.buildDraftContent(Object.assign({}, full, { foods: [F("fx_cooked_rice", 2), F("fx_whole_milk", 1)] }), { oilHabit: "normal" });
+  check(withF.implicit.oil_g > 0 && same(withF.implicit, plain.implicit) && withF.archetype_id === stir.id, "完整餐型＋單品：implicit 照餐型（有用油）");
+  check(withF.components.map((c) => c.kind).join() === "ingredient,ingredient,ingredient,food,food,product", "完整餐型＋單品的元件順序：食材 → 單品 → 飲料");
+  check(same(mc.buildDraftContent(Object.assign({}, full, { foods: [] }), { oilHabit: "normal" }), plain) &&
+    same(mc.buildDraftContent(Object.assign({}, full, { foods: undefined }), { oilHabit: "normal" }), plain), "foods 是 [] 或 undefined 時跟沒有這個欄位逐字相同");
+  const drinkOnly = cont("cook", [], { drink: latte });
+  check(same(drinkOnly.implicit, { oil_g: 0, seasoning: null }) && drinkOnly.archetype_id === null, "自煮只有飲料：implicit 恰好 0 與 null（S3）");
+  const halfMethod = cont("cook", [F("fx_cooked_rice", 1)], { archetype: stir, method: ing("method_stir_fry") });
+  check(same(halfMethod.implicit, { oil_g: 0, seasoning: null }) && halfMethod.archetype_id === null && halfMethod.method_id === null, "自煮沒有食材時不帶餐型、烹調法與用油");
+
+  // 5. 送出規則
+  const R = (role, uid) => ({ role: role, uid: uid || role });
+  check(mc.manualSelectionProblem([], "lunch", { foods: 1 }) === null, "只有單品可以送出");
+  check(mc.manualSelectionProblem([], "lunch", { foods: 4 }) === null, "4 項單品可以送出");
+  check(/4/.test(mc.manualSelectionProblem([], "lunch", { foods: 5 }) || ""), "5 項單品要擋，訊息寫出 4");
+  check(mc.manualSelectionProblem([R("main", "a"), R("main", "b"), R("side"), R("drink"), R("snack")], "lunch", { foods: 4 }) === null, "單品不佔角色名額（4 項單品＋2 主餐＋配菜＋飲料＋點心）");
+  check(mc.manualSelectionProblem([], "lunch", { foods: 0 }) !== null && mc.manualSelectionProblem([], "lunch") !== null, "什麼都沒選仍然擋");
+  check(mc.manualSelectionProblem([R("main", "a"), R("main", "b")], "afternoon_tea", { foods: 1 }) !== null, "有單品時角色上限照擋");
+  const cd = (o) => Object.assign({ archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1 }, o);
+  check(mc.composeProblem(cd({ foods: [F("fx_cooked_rice", 1)] })) === null, "自煮沒餐型有單品可以送出");
+  check(mc.composeProblem(cd({})) === "請先選餐型" && mc.composeProblem(cd({ foods: [] })) === "請先選餐型", "自煮什麼都沒選：請先選餐型");
+  check(mc.composeProblem(cd({ drink: latte })) === null, "自煮只選飲料可以送出（S3，修正 #45）");
+  check(mc.composeProblem(cd({ archetype: stir, foods: [F("fx_cooked_rice", 1)] })) === "請選蛋白質", "半套餐型加單品照樣擋");
+  const five = ["fx_cooked_rice", "fx_banana", "fx_whole_milk", "fx_ham", "fx_taro"].map((id) => F(id, 1));
+  check(/4/.test(mc.composeProblem(cd({ foods: five })) || "") && /4/.test(mc.composeProblem(Object.assign({}, full, { foods: five }), { tier: "cook_full" }) || ""), "自煮 5 項單品要擋");
+  check(mc.composeProblem(Object.assign({}, full, { foods: five.slice(0, 4) }), { tier: "cook_full" }) === null, "完整餐型＋4 項單品可以送出");
+
+  // 6. 記錄名稱
+  const nm = (d) => mc.draftLogName(d);
+  check(nm({ kind: "cook", archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, foods: [F("fx_cooked_rice", 4)] }) === "白飯 160g", "只有單品（自煮、沒有餐型）的名稱");
+  check(nm({ kind: "products", items: [], estimates: [], foods: [F("fx_whole_milk", 2), F("fx_cooked_rice", 4)] }) === "全脂奶（自己倒） 480ml＋白飯 160g", "單品名稱照點選順序");
+  check(nm({ kind: "products", items: [], estimates: [], foods: [F("chicken_breast", 4)], drink: latte }) === "雞胸肉 生 120g＋" + latte.name, "單品＋飲料：生的加「生」");
+  check(mc.foodLogName(b.quinoa, 1) === "藜麥 乾 45g" && mc.foodLogName(b.fx_orange, 4) === "柳丁 520g" && mc.foodLogName(b.fx_whole_milk_powder, 1) === "全脂奶粉 30g", "名稱的狀態詞：乾加「乾」、可食部分的水果不加、as_is 不加");
+  check(mc.foodLogName(b.fx_soybean_oil, 0.5) === "大豆油 2.5g", "名稱的量進位到 0.1");
+  const fullName = nm(Object.assign({}, full, { foods: [F("fx_cooked_rice", 2)] }));
+  check(fullName === [stir.name].concat(mc.draftIngredients(full).map((x) => x.name), ["白飯 80g", latte.name]).join("＋"), "自煮完整＋單品的名稱順序：" + fullName);
+  check(nm({ kind: "products", items: [], estimates: [{ name: "喜宴", size: "L" }], foods: [F("fx_banana", 1)] }) === "喜宴＋香蕉 70g", "估算在單品前面");
+
+  // 7. picker.js 選取
+  let s = [];
+  s = pk.addFood(s, "a").sel; s = pk.addFood(s, "b").sel;
+  const again = pk.addFood(s, "a");
+  check(again.existed && again.sel === s && again.problem === null, "addFood 再點已選的不新增、回 existed");
+  s = pk.addFood(pk.addFood(s, "c").sel, "d").sel;
+  const fifth = pk.addFood(s, "e");
+  check(fifth.problem === mc.foodLimitProblem(5) && fifth.sel.length === 4 && !fifth.existed, "addFood 第 5 項回原因");
+  check(s.map((f) => f.uid + f.qty).join() === "a1,b1,c1,d1", "addFood 照點選順序、份量 1");
+  let t = s;
+  for (let i = 0; i < 30; i++) t = pk.stepFood(t, "b", 1);
+  check(t.find((f) => f.uid === "b").qty === 12 && s[1].qty === 1, "stepFood ＋ 夾在 12、不改輸入");
+  for (let i = 0; i < 40; i++) t = pk.stepFood(t, "b", -1);
+  check(t.find((f) => f.uid === "b").qty === 0.5 && t.length === 4, "stepFood － 停在 0.5、不會變成 0 或移除");
+  check(pk.removeFood(t, "b").map((f) => f.uid).join() === "a,c,d" && pk.removeFood(null, "x").length === 0, "removeFood 保留其他項順序");
+
+  // 8. 步進器旁的份量文字（計畫 8.2 M2–M3、8.6；測資 collab/proofs/2026-10-01-d7-serving-text-cases.md）
+  const qt = (id, q) => fd.foodQtyText(b[id], q);
+  [["fx_cooked_rice", 4, "4 份＝熟重 160g（1碗）"], ["fx_cooked_rice", 1, "1 份＝熟重 40g（1/4碗）"], ["fx_rice", 3, "3 份＝生重 60g（3/8杯(米杯)）"],
+    ["fx_whole_milk", 2, "2 份＝480ml（2杯）"], ["fx_evaporated_milk", 3, "3 份＝360ml（1 1/2 杯）"], ["fx_banana", 2, "2 份＝可食部分 140g（購買量約 190g）"],
+    ["fx_banana", 1, "1 份＝可食部分 70g（大的 1/2 根或小的 1 根，購買量約 95g）"], ["brown_rice_cooked", 1, "1 份＝內建一餐 熟重 150g"],
+    ["brown_rice_cooked", 2, "2 份＝熟重 300g（1 份是內建一餐 熟重 150g）"], ["quinoa", 1, "1 份＝內建一餐 乾重 45g"],
+    ["fx_orange", 4, "4 份＝可食部分 520g（4個，購買量約 680g）"], ["fx_oyster", 4, "4 份＝生重 260g（煮熟約 140g）"], ["fx_soybean_oil", 0.5, "0.5 份＝2.5g（1/2茶匙）"],
+  ].forEach((x) => check(qt(x[0], x[1]) === x[2], "foodQtyText " + x[0] + " ×" + x[1] + "：「" + qt(x[0], x[1]) + "」應為「" + x[2] + "」"));
+  // 家用量乘法（審核 M3 列的反例與 8.6 的界線）
+  const hh = (h, q) => fd.scaleHousehold(h, q);
+  [["1/8杯(米杯)", 0.5, null], ["1/8杯(米杯)", 2.5, null], ["1/8杯(米杯)", 2, "1/4杯(米杯)"], ["1/8杯(米杯)", 12, "1 1/2杯(米杯)"],
+    ["1/3杯", 2, "2/3杯"], ["1/3杯", 0.5, null], ["1/10片", 0.5, null], ["1/10片", 2.5, "1/4片"], ["3張", 1.5, null], ["3張", 2, "6張"],
+    ["9個", 0.5, null], ["13個", 2.5, null], ["1個", 0.5, "1/2個"], ["1 1/2張", 0.5, "3/4張"], ["2/3根", 2.5, "1 2/3根"], ["2/5個", 2, null],
+    ["1/3個(小)", 3, "1個(小)"], ["2.5湯匙", 1.5, "3 3/4湯匙"], ["1/2 盒", 3, "1 1/2 盒"], ["40粒", 0.5, "20粒"],
+    ["大的 1/2 根或小的 1 根", 2, null], ["1/2~1/3片", 3, null], ["3-7張", 2, null], ["1 片（25×3.5×0.1 公分）", 1.5, null], ["小1個", 2, null], ["2 湯匙（1/6 個）", 2, null], [null, 2, null],
+  ].forEach((x) => check(hh(x[0], x[1]) === x[2], "scaleHousehold「" + x[0] + "」×" + x[1] + "：" + hh(x[0], x[1]) + " 應為 " + x[2]));
+  let hhBad = 0;
+  ft.items.forEach((it) => [0.5, 1.5, 2, 2.5, 4.5, 12].forEach((q) => {
+    const v = hh(it.serving.household, q);
+    if (v !== null && /\d\.\d/.test(v)) hhBad++; // 不寫小數
+    if (/份＝.*NaN|undefined/.test(fd.foodQtyText(it, q))) hhBad++;
+  }));
+  check(hhBad === 0, "全部分層品項的份量文字不能有小數家用量、NaN 或 undefined（" + hhBad + " 處）");
+
+  // 9. 硬性過濾：分層品項直接用 passesHardFilters
+  const pass = (id, p) => M.filters.passesHardFilters(b[id], p).ok;
+  check(!pass("fx_mayonnaise", { allergens: ["蛋"] }), "設蛋過敏要擋美乃滋單品");
+  const unv = ft.items.find((it) => it.allergen_tags.indexOf("未確認") !== -1);
+  check(unv && !pass(unv.id, { allergens: ["蛋"] }), "設了過敏原要擋標未確認的單品");
+  check(!pass("chicken_breast", { diet_restriction: "蛋奶素" }), "蛋奶素要擋雞胸單品");
+  check(!pass("chicken_breast", { disliked_ingredients: [{ type: "protein", key: "chicken_breast", label: "雞胸肉" }] }), "標雞胸不吃（protein）要擋共用 id 的雞胸單品");
+  check(!pass("fx_rice", { disliked_ingredients: [{ type: "food_tree", key: "fx_rice", label: "白米" }] }) && pass("fx_cooked_rice", { disliked_ingredients: [{ type: "food_tree", key: "fx_rice", label: "白米" }] }), "標白米不吃只擋白米單品");
+
+  // 10. 推薦不讀單品（PRD 13.4 刻意的行為）
+  const rec = (logged) => M.recommend.getTodayRecommendation({
+    pool: candidatePool, feedbackMap: {}, remainingBudget: { perSlotSuggestion: { breakfast: 400, lunch: 600, dinner: 600 } },
+    hardConstraints: { proteinGapToday: 30, fiberGapThisWeek: 10 }, mealPrefs: {}, dietRestriction: "一般", allergens: [], skipSlots: {},
+    lowCarb: false, nowMs: Date.parse("2026-10-01T04:00:00Z"), loggedContents: logged,
+  });
+  const foodOnly = cont("cook", [F("chicken_breast", 4), F("fx_cooked_rice", 4)]);
+  check(same(rec([foodOnly]), rec([])) && same(rec([cont("convenience", [F("chicken_breast", 4)])]), rec([])), "今天記了單品（雞胸）時推薦要逐字不變");
 }
 
 main().catch((err) => {
