@@ -255,6 +255,30 @@ module.exports = async function createV2Adapter(ROOT) {
       mp.foodSel = r.sel;
       picker.renderMealPicker();
     },
+    // 我的組合（工作線 C）：組合列、帶入、入口 1 的勾選、編輯模式
+    pickerSavedCards: () => clone(picker.mealPicker.savedCards),
+    pickerLoadSaved(id) { return picker.loadSavedMeal(id); },
+    pickerSaveAs(name) {
+      picker.mealPicker.saveAs = { on: true, name: name, nameEdited: name != null };
+      picker.renderMealPicker();
+    },
+    async pickerOpenEdit(id) {
+      const rec = (globalThis.__fakeDbState.savedMeals || []).find((r) => r.id === id);
+      await picker.openMealPicker(null, { savedEdit: clone(rec) });
+    },
+    // 帶入後的狀態：分頁、各分頁選取、飲料、份量、單品、自煮草稿（id）、說明
+    pickerState() {
+      const mp = picker.mealPicker;
+      const d = mp.cook.draft || {};
+      const ids = (l) => (l || []).map((x) => x.id);
+      return {
+        tab: mp.tab, tier: mp.cook.tier, selected: { convenience: mp.tabs.convenience.selected.slice(), delivery: mp.tabs.delivery.selected.slice() },
+        drink: mp.drinkUid, qty: clone(mp.qtyByUid), foods: clone(mp.foodSel), inserted: clone(mp.inserted),
+        cook: { archetype: d.archetype ? d.archetype.id : null, proteins: ids(d.proteins), staple: d.staple ? d.staple.id : null, vegetables: ids(d.vegetables),
+          seasoning: d.seasoning ? d.seasoning.id : null, method: d.method ? d.method.id : null, override: clone(d.implicitOverride) },
+        notice: mp.savedNotice,
+      };
+    },
     pickerSubmit: () => picker.onMealSubmit(),
     pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,
 

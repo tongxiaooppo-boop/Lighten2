@@ -1946,6 +1946,13 @@ function checkSavedMealsDb(catalog) {
   check(db.validateBackup(bad1).some((x) => /我的組合第 2 筆.*scale/.test(x)), "壞的組合要指出「我的組合第 2 筆」");
   const dup = clone(v3); dup.sections.saved_meals[1].id = "saved_t1";
   check(db.validateBackup(dup).some((x) => /我的組合第 2 筆：id 重複/.test(x)), "組合 id 重複要擋");
+  // 凍結的 v3 fixture（smoke 真的匯出：含單品的組合、從推薦存的自煮組合、單品紀錄；切片 7 S11）
+  const fixtureV3 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v3.json"), "utf8"));
+  check(fixtureV3.schema_version === 3 && db.validateBackup(db.migrateBackup(fixtureV3)).length === 0, "凍結的 backup-v3.json 不能還原：" + db.validateBackup(db.migrateBackup(fixtureV3)).slice(0, 2).join("；"));
+  const sm = fixtureV3.sections.saved_meals;
+  check(sm.some((r) => r.content.components.some((c) => c.kind === "food")) && sm.some((r) => r.content.meal_type.indexOf("cook") === 0 && r.content.archetype_id) &&
+    fixtureV3.sections.logs.daily_log.some((l) => l.content.components.some((c) => c.kind === "food")), "backup-v3.json 缺含單品的組合、自煮組合或單品紀錄");
+  check(sm.every((r) => mc.resolveSavedMeal(r, catalog, { hidden: [], customs: fixtureV3.sections.custom_foods.map(M.catalog.fromCustomFood), slot: null, profile: {} }).available.length > 0), "v3 fixture 的組合解析後要有可用元件");
   const newer = clone(v3); newer.schema_version = 4;
   check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "v4 的檔案要擋（較新的版本）");
 }
