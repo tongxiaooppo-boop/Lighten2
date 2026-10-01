@@ -11,6 +11,7 @@ import { foodsWhereOf, dislikedMessage } from "../engine/foods.js";
 import {
   FOODS_FORM_ID, customFoodEditing, syncCustomFoodForm, saveCustomFoodForm, setCustomFoodArchived, unhideBuiltin,
 } from "./foods/custom-foods.js";
+import { refreshSavedMeals, savedSearchHtml, revealSavedMeal, initSavedMeals } from "./foods/saved-meals.js";
 
 // openSections：可收合的組哪些展開（key 見 rows.js detailsGroup；切子分頁、搜尋後保留，審核 M3）。
 // acted：剛在哪一列標了不吃或取消（明細顯示「也標不吃」「也取消」，decisions #115）；scrollTo：重畫後捲到哪一列
@@ -46,7 +47,9 @@ function renderFoods() {
   const status = foodsEl("foods-status");
   if (status) status.textContent = s.message;
   const body = foodsEl("foods-body");
-  if (body) body.innerHTML = s.query.trim() ? foodsSearchHtml(s) : foodsSubtabHtml(s);
+  // 搜尋也搜我的組合（PRD 13.2），結果放在最上面
+  const savedHits = s.query.trim() ? savedSearchHtml(s.query) : "";
+  if (body) body.innerHTML = s.query.trim() ? savedHits + foodsSearchHtml(s, !!savedHits) : foodsSubtabHtml(s);
   // 重畫表單時保留「更多（選填）」展開的狀態
   const after = document.querySelector("#" + FOODS_FORM_ID + " .quick-add-more");
   if (after && moreOpen) after.open = true;
@@ -66,6 +69,7 @@ function itemOf(s, uid) {
 
 export async function refreshFoods() {
   try { await loadFoods(); renderFoods(); } catch (err) { console.error("載入我的食物失敗", err); }
+  await refreshSavedMeals();
 }
 
 // also：明細裡的「也標不吃」「也取消」——不改點開的列、不捲動（decisions #115）
@@ -118,7 +122,9 @@ function onFoodsClick(e) {
   const at = function (sel) { return e.target.closest(sel); };
   const done = function () { renderFoods(); };
   let el;
-  if ((el = at("[data-foods-subtab]"))) {
+  if ((el = at("[data-saved-goto]"))) {
+    revealSavedMeal(el.getAttribute("data-saved-goto"));
+  } else if ((el = at("[data-foods-subtab]"))) {
     s.subtab = el.getAttribute("data-foods-subtab");
     s.query = "";
     const input = foodsEl("foods-search");
@@ -188,6 +194,7 @@ export function initFoodsTab() {
   const panel = foodsEl("tab-foods");
   if (!panel) return;
   panel.addEventListener("click", onFoodsClick);
+  initSavedMeals();
   panel.addEventListener("input", onFoodsInput);
   // 可收合的組：記住展開狀態，重畫時照舊（toggle 不冒泡，用捕獲階段；審核 M3）
   panel.addEventListener("toggle", function (e) {

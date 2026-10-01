@@ -203,8 +203,10 @@ function searchEntries(s) {
   });
 }
 
-export function foodsSearchHtml(s) {
+// otherHits：同一次搜尋已經有別的結果（我的組合）時，食物沒有命中就不寫「沒有符合」
+export function foodsSearchHtml(s, otherHits) {
   const hits = searchFoods(searchEntries(s), s.query);
+  if (hits.length === 0 && otherHits) return "";
   if (hits.length === 0) return '<p class="backup-note">沒有符合「' + escapeHtml(s.query.trim()) + "」的食物。</p>";
   return '<section class="foods-group">' + hits.map(function (e) {
     const meta = [e.where].concat(e.matchedAlias ? ["別名：" + e.matchedAlias] : [], e.status).join(" · ");

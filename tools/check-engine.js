@@ -1866,6 +1866,15 @@ function checkSavedMeals(catalog) {
   x = res(three, { slot: null });
   check(/^有 2 項目前不能用：/.test(mc.savedMealUnavailableLine(x)) && mc.savedMealUnavailableLine(res(S([pc(mains[0].uid)]))) === null, "savedMealUnavailableLine");
   check(mc.savedMealProblem(res(S([pc(mains[0].uid)]))) === null && mc.savedMealProblem(x).length === 2 && mc.savedMealProblem(res(S([pc("nope_x")])))[0] === "沒有可以存的品項。", "savedMealProblem");
+  // 8. 存檔前（入口 1、2、編輯共用）：食材全部下架的自煮 → 沒有餐型、烹調法、用油；有被擋的不能存；下架的列在 dropped
+  const goneCook = Object.assign({}, cookSaved, { components: [{ kind: "ingredient", axis: "protein", ref: "gone_ing" }, { kind: "food", ref: "fx_cooked_rice", qty: 1 }], implicit: { oil_g: 10, seasoning: null } });
+  let fs1 = mc.savedMealForSave(goneCook, catalog, ctx0);
+  check(fs1.content.archetype_id === null && fs1.content.method_id === null && fs1.content.implicit === null && fs1.problems === null &&
+    fs1.dropped.map((d) => d.ref).join() === "gone_ing", "savedMealForSave：食材全部下架的自煮變成沒有食材的形狀、可以存");
+  check(M.db && (() => { try { M.db.validateSavedMeal({ id: "saved_x", name: "x", archived: false, created_at: "2026-10-01T00:00:00.000Z", updated_at: "2026-10-01T00:00:00.000Z", content: fs1.content }); return true; } catch (e) { return false; } })(),
+    "savedMealForSave 的結果要通過寫入驗證");
+  fs1 = mc.savedMealForSave(S(mains.map((p) => pc(p.uid))), catalog, Object.assign({}, ctx0, { slot: "afternoon_tea" }));
+  check(fs1.problems && fs1.problems.length === 1 && /主餐最多選 2 個/.test(fs1.problems[0]), "savedMealForSave 一律用沒有時段（主餐 2）驗證：" + JSON.stringify(fs1.problems));
 }
 
 // 工作線 C：saved_meals 的寫入驗證與備份 v3（計畫第 4 節、8.2 M2、M7）

@@ -70,7 +70,10 @@ export function cookTabHtml(catalog, slot, st, profile) {
 
   html += '<div class="compose-step">' + step("選餐型") +
     '<p class="meal-picker-note">只記單品可以不選餐型，直接到下面加點單品。</p><div class="compose-options">';
-  catalog.archetypes.filter(function (a) { return (a.valid_slots || []).indexOf(slot) !== -1; }).forEach(function (a) {
+  // 沒有時段（編輯組合）列出全部；帶入的餐型不在這個時段也列出，才能點掉（PRD 11.3 第 6 點）
+  catalog.archetypes.filter(function (a) {
+    return slot === null || (a.valid_slots || []).indexOf(slot) !== -1 || !!(d.archetype && d.archetype.id === a.id);
+  }).forEach(function (a) {
     html += optionHtml("archetype", a.id, a.name, { selected: !!(d.archetype && d.archetype.id === a.id) });
   });
   html += "</div></div>";

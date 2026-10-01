@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>輕盈計畫 (Lighten Plan)</title>
-  <link rel="stylesheet" href="css/style.css?v=20261001-124006" />
+  <link rel="stylesheet" href="css/style.css?v=20261001-124827" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&display=swap" />
 </head>
@@ -290,6 +290,7 @@
       <h2>我的食物</h2>
       <p class="backup-note">內建品項和你自己的品項都在這裡：看營養與出處、標「不吃」、複製成我的版本、管理我的品項。</p>
       <input type="search" id="foods-search" class="foods-search" placeholder="搜尋名稱" autocomplete="off" />
+      <div id="foods-saved"></div>
       <div id="foods-subtabs" class="foods-subtabs" role="tablist" aria-label="我的食物的分類"></div>
       <p id="foods-status" class="status-text" aria-live="polite"></p>
       <div id="foods-body"></div>
@@ -403,51 +404,53 @@
   <script type="importmap">
 {
   "imports": {
-    "./js/core/config.js": "./js/core/config.js?v=20261001-124006",
-    "./js/core/dates.js": "./js/core/dates.js?v=20261001-124006",
-    "./js/core/html.js": "./js/core/html.js?v=20261001-124006",
-    "./js/core/num.js": "./js/core/num.js?v=20261001-124006",
-    "./js/core/slots.js": "./js/core/slots.js?v=20261001-124006",
-    "./js/data/catalog.js": "./js/data/catalog.js?v=20261001-124006",
-    "./js/data/db.js": "./js/data/db.js?v=20261001-124006",
-    "./js/engine/budget.js": "./js/engine/budget.js?v=20261001-124006",
-    "./js/engine/filters.js": "./js/engine/filters.js?v=20261001-124006",
-    "./js/engine/foods.js": "./js/engine/foods.js?v=20261001-124006",
-    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20261001-124006",
-    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20261001-124006",
-    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20261001-124006",
-    "./js/engine/picker.js": "./js/engine/picker.js?v=20261001-124006",
-    "./js/engine/pool.js": "./js/engine/pool.js?v=20261001-124006",
-    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20261001-124006",
-    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20261001-124006",
-    "./js/engine/today.js": "./js/engine/today.js?v=20261001-124006",
-    "./js/ui/app.js": "./js/ui/app.js?v=20261001-124006",
-    "./js/ui/backup.js": "./js/ui/backup.js?v=20261001-124006",
-    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20261001-124006",
-    "./js/ui/clock.js": "./js/ui/clock.js?v=20261001-124006",
-    "./js/ui/custom-food-form.js": "./js/ui/custom-food-form.js?v=20261001-124006",
-    "./js/ui/dom.js": "./js/ui/dom.js?v=20261001-124006",
-    "./js/ui/foods/custom-foods.js": "./js/ui/foods/custom-foods.js?v=20261001-124006",
-    "./js/ui/foods/disliked.js": "./js/ui/foods/disliked.js?v=20261001-124006",
-    "./js/ui/foods/list.js": "./js/ui/foods/list.js?v=20261001-124006",
-    "./js/ui/foods/rows.js": "./js/ui/foods/rows.js?v=20261001-124006",
-    "./js/ui/foods/tree.js": "./js/ui/foods/tree.js?v=20261001-124006",
-    "./js/ui/meal-picker/cook-tab.js": "./js/ui/meal-picker/cook-tab.js?v=20261001-124006",
-    "./js/ui/meal-picker/estimate-card.js": "./js/ui/meal-picker/estimate-card.js?v=20261001-124006",
-    "./js/ui/meal-picker/food-step.js": "./js/ui/meal-picker/food-step.js?v=20261001-124006",
-    "./js/ui/meal-picker/index.js": "./js/ui/meal-picker/index.js?v=20261001-124006",
-    "./js/ui/meal-picker/product-tab.js": "./js/ui/meal-picker/product-tab.js?v=20261001-124006",
-    "./js/ui/meal-picker/quick-add.js": "./js/ui/meal-picker/quick-add.js?v=20261001-124006",
-    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20261001-124006",
-    "./js/ui/tab-foods.js": "./js/ui/tab-foods.js?v=20261001-124006",
-    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20261001-124006",
-    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20261001-124006",
-    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20261001-124006",
-    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20261001-124006",
-    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20261001-124006"
+    "./js/core/config.js": "./js/core/config.js?v=20261001-124827",
+    "./js/core/dates.js": "./js/core/dates.js?v=20261001-124827",
+    "./js/core/html.js": "./js/core/html.js?v=20261001-124827",
+    "./js/core/num.js": "./js/core/num.js?v=20261001-124827",
+    "./js/core/slots.js": "./js/core/slots.js?v=20261001-124827",
+    "./js/data/catalog.js": "./js/data/catalog.js?v=20261001-124827",
+    "./js/data/db.js": "./js/data/db.js?v=20261001-124827",
+    "./js/engine/budget.js": "./js/engine/budget.js?v=20261001-124827",
+    "./js/engine/filters.js": "./js/engine/filters.js?v=20261001-124827",
+    "./js/engine/foods.js": "./js/engine/foods.js?v=20261001-124827",
+    "./js/engine/matcher.js": "./js/engine/matcher.js?v=20261001-124827",
+    "./js/engine/meal-content.js": "./js/engine/meal-content.js?v=20261001-124827",
+    "./js/engine/nutrition.js": "./js/engine/nutrition.js?v=20261001-124827",
+    "./js/engine/picker.js": "./js/engine/picker.js?v=20261001-124827",
+    "./js/engine/pool.js": "./js/engine/pool.js?v=20261001-124827",
+    "./js/engine/recommend.js": "./js/engine/recommend.js?v=20261001-124827",
+    "./js/engine/tdee.js": "./js/engine/tdee.js?v=20261001-124827",
+    "./js/engine/today.js": "./js/engine/today.js?v=20261001-124827",
+    "./js/ui/app.js": "./js/ui/app.js?v=20261001-124827",
+    "./js/ui/backup.js": "./js/ui/backup.js?v=20261001-124827",
+    "./js/ui/calibration.js": "./js/ui/calibration.js?v=20261001-124827",
+    "./js/ui/clock.js": "./js/ui/clock.js?v=20261001-124827",
+    "./js/ui/custom-food-form.js": "./js/ui/custom-food-form.js?v=20261001-124827",
+    "./js/ui/dom.js": "./js/ui/dom.js?v=20261001-124827",
+    "./js/ui/foods/custom-foods.js": "./js/ui/foods/custom-foods.js?v=20261001-124827",
+    "./js/ui/foods/disliked.js": "./js/ui/foods/disliked.js?v=20261001-124827",
+    "./js/ui/foods/list.js": "./js/ui/foods/list.js?v=20261001-124827",
+    "./js/ui/foods/rows.js": "./js/ui/foods/rows.js?v=20261001-124827",
+    "./js/ui/foods/saved-meals.js": "./js/ui/foods/saved-meals.js?v=20261001-124827",
+    "./js/ui/foods/tree.js": "./js/ui/foods/tree.js?v=20261001-124827",
+    "./js/ui/meal-picker/cook-tab.js": "./js/ui/meal-picker/cook-tab.js?v=20261001-124827",
+    "./js/ui/meal-picker/estimate-card.js": "./js/ui/meal-picker/estimate-card.js?v=20261001-124827",
+    "./js/ui/meal-picker/food-step.js": "./js/ui/meal-picker/food-step.js?v=20261001-124827",
+    "./js/ui/meal-picker/index.js": "./js/ui/meal-picker/index.js?v=20261001-124827",
+    "./js/ui/meal-picker/product-tab.js": "./js/ui/meal-picker/product-tab.js?v=20261001-124827",
+    "./js/ui/meal-picker/quick-add.js": "./js/ui/meal-picker/quick-add.js?v=20261001-124827",
+    "./js/ui/meal-picker/saved-row.js": "./js/ui/meal-picker/saved-row.js?v=20261001-124827",
+    "./js/ui/tab-exercise.js": "./js/ui/tab-exercise.js?v=20261001-124827",
+    "./js/ui/tab-foods.js": "./js/ui/tab-foods.js?v=20261001-124827",
+    "./js/ui/tab-profile.js": "./js/ui/tab-profile.js?v=20261001-124827",
+    "./js/ui/tab-today.js": "./js/ui/tab-today.js?v=20261001-124827",
+    "./js/ui/tab-week.js": "./js/ui/tab-week.js?v=20261001-124827",
+    "./js/ui/tabs.js": "./js/ui/tabs.js?v=20261001-124827",
+    "./js/ui/today-hero.js": "./js/ui/today-hero.js?v=20261001-124827"
   }
 }
   </script>
-  <script type="module" src="js/ui/app.js?v=20261001-124006"></script>
+  <script type="module" src="js/ui/app.js?v=20261001-124827"></script>
 </body>
 </html>

@@ -40,19 +40,21 @@ function qtyChipsHtml(uid, q) {
   }).join("") + "</div>";
 }
 
-// 已選的一行：名稱、份量；內建品項再加「不吃」「複製成我的版本」（PRD 10.2、13.5；「隱藏」由「不吃」取代，decisions #99）
-export function selectedRowHtml(item, q) {
+// 已選的一行：名稱、份量；內建品項再加「不吃」「複製成我的版本」（PRD 10.2、13.5；「隱藏」由「不吃」取代，decisions #99）。
+// note：從我的組合帶入、這個分頁平常不列出的品項寫一行說明（PRD 11.3 第 6 點）
+export function selectedRowHtml(item, q, note) {
   const actions = item.is_custom ? "" :
     '<div class="selected-actions"><button type="button" class="link-btn" data-dislike-uid="' + escapeHtml(item.uid) + '">不吃</button>' +
     '<button type="button" class="link-btn" data-copy-uid="' + escapeHtml(item.uid) + '">複製成我的版本</button></div>';
-  return '<div class="selected-row"><div class="selected-name">' + escapeHtml(item.name) + "</div>" + qtyChipsHtml(item.uid, q) + actions + "</div>";
+  return '<div class="selected-row"><div class="selected-name">' + escapeHtml(item.name) + "</div>" +
+    (note ? '<div class="food-qty-text">' + escapeHtml(note) + "</div>" : "") + qtyChipsHtml(item.uid, q) + actions + "</div>";
 }
 
 // 「已選」段（超商／外食分頁，品項清單上方）
-export function selectedSectionHtml(items, qtyByUid) {
+export function selectedSectionHtml(items, qtyByUid, noteOf) {
   if (items.length === 0) return "";
   return '<div class="meal-picker-selected"><div class="meal-picker-step-label">已選（可以改份量）</div>' +
-    items.map(function (it) { return selectedRowHtml(it, qtyByUid[it.uid] || 1); }).join("") + "</div>";
+    items.map(function (it) { return selectedRowHtml(it, qtyByUid[it.uid] || 1, noteOf ? noteOf(it.uid) : null); }).join("") + "</div>";
 }
 
 // 標不吃後的提示列＋復原（取消不吃）
