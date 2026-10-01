@@ -443,12 +443,13 @@ async function run() {
   const methods = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=method]')].map((b) => b.innerText.trim() + (b.disabled ? '(不可選)' : ''))`);
   check(methods.some((m) => m.indexOf("免開火") === 0) && methods.some((m) => m.indexOf("微波") === 0) && methods.every((m) => m.indexOf("不可選") === -1),
     "3-5 早餐碗的烹調法不是免開火、微波都可選：" + methods.join(","));
-  // 3-5a 自煮分頁沒配好只選飲料 → 不能送出，提示到超商或外食分頁
+  // 3-5a 自煮分頁什麼都沒選 → 請先選餐型；只選飲料 → 可以送出（decisions #122 修正 #45，不再提示到超商或外食分頁）
   await closePicker();
   await openPicker("breakfast");
   await click(`#meal-picker-tabs [data-tab=cook]`);
+  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))) === "請先選餐型", "3-5a 自煮分頁什麼都沒選時沒有擋下或提示不是「請先選餐型」");
   await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
-  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))).indexOf("只記飲料請到超商或外食分頁") !== -1, "3-5a 自煮分頁只選飲料時沒有擋下或沒有提示到超商／外食分頁");
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))).indexOf("只記飲料") === -1, "3-5a 自煮分頁只選飲料時不能送出，或還有「只記飲料請到超商或外食分頁」");
   await shot("自煮-早餐只選飲料", "#meal-picker-hint");
   await closePicker();
 
@@ -1000,6 +1001,221 @@ async function run() {
   await js(`(() => { const s = document.querySelector('select[name=diet_restriction]'); s.value = '一般'; s.dispatchEvent(new Event('change', { bubbles: true })); })()`);
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "8-11 還原飲食設定後按計算沒有完成");
+
+
+  // ---------- 9. 單品（工作線 D 切片 7，計畫 docs/review/2026-10-01-D7-實作計畫.md 第 4 節、第 8 節） ----------
+  console.log("[9. 單品]");
+  const foodCardSel = (uid, inResults) => "#meal-picker-drinks " + (inResults ? "#meal-picker-food-results " : "") + "[data-food-uid=" + uid + "]";
+  const foodCardText = (uid, inResults) => js(`(() => { const el = document.querySelector(${JSON.stringify(foodCardSel(uid, inResults))}); return el ? el.innerText.replace(/\\s+/g, " ") : null; })()`);
+  const foodSearch = (q) => js(`(() => { const el = document.getElementById('meal-picker-food-search'); el.value = ${JSON.stringify(q)}; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  const pickFood = async (uid, q) => {
+    if (q) { await foodSearch(q); await until(`!!document.querySelector(${JSON.stringify(foodCardSel(uid, true))})`, "搜尋「" + q + "」沒有 " + uid); }
+    await click(foodCardSel(uid, !!q));
+  };
+  const stepFoodBtn = (uid, dir, times) => js(`(() => { for (let i = 0; i < ${times || 1}; i++) document.querySelector('#meal-picker-drinks [data-food-step=${uid}][data-dir="${dir}"]').click(); })()`);
+  const pickedFoodText = (uid) => js(`(() => { const el = document.getElementById('food-sel-${uid}'); return el ? el.innerText.replace(/\\s+/g, " ") : null; })()`);
+  const stepDisabled = (uid, dir) => js(`document.querySelector('#meal-picker-drinks [data-food-step=${uid}][data-dir="${dir}"]').disabled`);
+  const kcalOfFoods = (list) => js(`(async () => { const mc = await import('./js/engine/meal-content.js'); const c = await (await import('./js/data/catalog.js')).loadCatalog();
+    return Math.round(mc.contentTotals(mc.buildDraftContent({ kind: 'products', meal_type: 'convenience', items: [], estimates: [], foods: ${JSON.stringify(list)}.map((f) => ({ item: c.foodTree.byId[f[0]], qty: f[1] })) }), c).kcal); })()`);
+  const loggedName = (slot) => js(`(() => { const t = document.getElementById('rec-${slot}').innerText; const m = t.match(/已記錄：(.+?)（約/); return m ? m[1] : t; })()`);
+  const submitAndUndo = async (slot, label) => {
+    await click("#meal-picker-submit");
+    await until(`${text("#rec-" + slot)}.indexOf("已記錄") !== -1 && !!document.querySelector('#rec-${slot} .rec-undo-btn')`, label + " 送出後沒有變成已記錄");
+    const name = await loggedName(slot);
+    await click(`#rec-${slot} .rec-undo-btn`);
+    await until(`!!document.querySelector('#rec-${slot} .rec-pick-btn')`, label + " 撤銷後沒有回到推薦");
+    return name;
+  };
+  const foodSectionSel = (key) => `#meal-picker-drinks details[data-food-section="${key}"]`;
+  const openFoodSection = async (key) => {
+    if (!(await js(`!!document.querySelector('${foodSectionSel(key)}[open]')`))) await click(foodSectionSel(key) + " > summary");
+    await until(`!!document.querySelector('${foodSectionSel(key)}[open] .item-card, ${foodSectionSel(key)}[open] details')`, "展開 " + key + " 沒有內容");
+  };
+  const treeInfo = (id) => js(`(async () => { const c = await (await import('./js/data/catalog.js')).loadCatalog(); const it = c.foodTree.byId[${JSON.stringify(id)}]; return { name: it.name, group: it.group, subgroup: it.subgroup }; })()`);
+  const stepLabels = () => js(`[...document.querySelectorAll('#meal-picker-overlay .meal-picker-step-label')].filter((el) => el.offsetParent !== null).map((el) => el.textContent).join("|")`);
+
+  await tab("today");
+  await until(`!!document.querySelector("#rec-dinner .rec-log-btn, #rec-dinner .rec-undo-btn")`, "9 今日建議沒有畫出來");
+  // 前面的節次留下的紀錄先撤銷（第 9 節要用午餐、晚餐的「自己選」）
+  for (const s of ["lunch", "dinner"]) {
+    if (await js(`!!document.querySelector("#rec-${s} .rec-undo-btn")`)) {
+      await click(`#rec-${s} .rec-undo-btn`);
+      await until(`!!document.querySelector("#rec-${s} .rec-pick-btn")`, "9 開頭撤銷" + s + "沒有回到推薦");
+    }
+  }
+  // 9-1 步驟名稱與編號：三個分頁都連續；自煮不選餐型、選了餐型都連續；手機打開看得到取消與記下
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await checkStepNumbers("9-1 超商");
+  check(/2\. 加飲品・水果（選填）\|3\. 加點單品（選填）$/.test(await stepLabels()), "9-1 超商分頁的步驟名稱不對：" + (await stepLabels()));
+  check(await inViewport("#meal-picker-submit") && await inViewport("#meal-picker-cancel"), "9-1 打開選擇器看不到「取消」「記下這餐」");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await checkStepNumbers("9-1 外食");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await checkStepNumbers("9-1 自煮沒選餐型");
+  check((await js(text("#meal-picker-panel"))).indexOf("只記單品可以不選餐型，直接到下面加點單品") !== -1, "9-1 自煮「選餐型」上方沒有只記單品的說明");
+  check(/3\. 加飲品・水果（選填）\|4\. 加點單品（選填）$/.test(await stepLabels()), "9-1 自煮沒選餐型的步驟不是 3、4：" + (await stepLabels()));
+  await cookPick("archetype");
+  await checkStepNumbers("9-1 自煮選了餐型");
+  check(/加飲品・水果（選填）\|\d+\. 加點單品（選填）$/.test(await stepLabels()), "9-1 自煮選了餐型後兩個共用步驟不在最後");
+  await shot("單品-步驟編號", "#meal-picker-panel");
+  await closePicker();
+
+  // 9-2 飲品・水果：現成飲料 → 家裡的飲品 → 水果（收著）；全脂奶 2 份；連點兩張卡片；送出名稱
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const heads = await js(`[...document.querySelectorAll('#meal-picker-drinks .meal-picker-role')].map((h) => h.textContent).join(",")`);
+  check(heads.indexOf("現成飲料,家裡的飲品") === 0, "9-2 飲品・水果步驟的順序不是現成飲料 → 家裡的飲品：" + heads);
+  check(await js(`!!document.querySelector('${foodSectionSel("fruit:fruit")}') && !document.querySelector('${foodSectionSel("fruit:fruit")}[open]')`), "9-2 水果不是收著的");
+  await pickFood("fx_whole_milk");
+  check((await foodCardText("fx_whole_milk")).indexOf("已選 · 1 份") !== -1 && (await foodCardText("fx_whole_milk")).indexOf("代換表 1 份 · 240ml") !== -1, "9-2 全脂奶卡片沒有標「已選 · 1 份」或份量：" + (await foodCardText("fx_whole_milk")));
+  await stepFoodBtn("fx_whole_milk", 1, 2);
+  check((await pickedFoodText("fx_whole_milk")).indexOf("2 份＝480ml（2杯）") !== -1, "9-2 全脂奶 2 份的說明不對：" + (await pickedFoodText("fx_whole_milk")));
+  const milk2 = await kcalOfFoods([["fx_whole_milk", 2]]);
+  check((await js(text("#meal-picker-summary"))).indexOf("已選 1 件 · 約 " + milk2 + " kcal") !== -1, "9-2 全脂奶 2 份的摘要不是約 " + milk2 + " kcal：" + (await js(text("#meal-picker-summary"))));
+  await shot("單品-全脂奶2份", "#meal-picker-drinks");
+  // 連點兩張卡片（審核 S2）：點的那張留在畫面裡
+  await pickFood("fx_lowfat_milk");
+  await pickFood("fx_skim_milk");
+  check(await inViewport(foodCardSel("fx_skim_milk")), "9-2 連點兩張卡片後，剛點的那張不在畫面裡（捲動錨點補償）");
+  await shot("單品-連點兩張", foodCardSel("fx_skim_milk"));
+  await click(`#meal-picker-drinks [data-food-remove=fx_lowfat_milk]`);
+  await click(`#meal-picker-drinks [data-food-remove=fx_skim_milk]`);
+  check((await submitAndUndo("lunch", "9-2")) === "全脂奶（自己倒） 480ml", "9-2 紀錄名稱不是「全脂奶（自己倒） 480ml」");
+
+  // 9-3 加點單品：大類收著有筆數、水果不在這一步；搜尋白飯；步進器 0.5–12；再點捲到步進器；移除
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const majors = await js(`[...document.querySelectorAll('#meal-picker-drinks details[data-food-section^="cook:"]')].map((d) => (d.open ? "open:" : "") + d.querySelector('summary').textContent)`);
+  check(majors.length >= 5 && majors.every((t) => /（\d+）$/.test(t) && t.indexOf("open:") !== 0) && majors.every((t) => t.indexOf("水果") === -1), "9-3 大類不是收著、沒有筆數，或水果在加點單品：" + majors.join(","));
+  check((await js(text("#meal-picker-drinks"))).indexOf("單品不含烹調用油；有用油可以加油脂類") !== -1, "9-3 加點單品沒有用油的說明");
+  await foodSearch("白飯");
+  await until(`!!document.querySelector(${JSON.stringify(foodCardSel("fx_cooked_rice", true))})`, "9-3 搜尋白飯沒有結果");
+  check((await foodCardText("fx_cooked_rice", true)).indexOf("代換表 1 份 · 熟重 40g · 約 73 kcal") !== -1, "9-3 白飯卡片：" + (await foodCardText("fx_cooked_rice", true)));
+  await click(foodCardSel("fx_cooked_rice", true));
+  await stepFoodBtn("fx_cooked_rice", 1, 6);
+  check((await pickedFoodText("fx_cooked_rice")).indexOf("4 份＝熟重 160g（1碗）") !== -1, "9-3 白飯 4 份的說明不對：" + (await pickedFoodText("fx_cooked_rice")));
+  await shot("單品-白飯4份", "#food-sel-fx_cooked_rice");
+  // 360 寬：步進器、份量說明不橫捲（shot 會檢查左右溢出與 44px）
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("單品-白飯4份-360寬", "#food-sel-fx_cooked_rice");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await stepFoodBtn("fx_cooked_rice", 1, 20);
+  check((await pickedFoodText("fx_cooked_rice")).indexOf("12 份＝熟重 480g（3碗）") !== -1 && await stepDisabled("fx_cooked_rice", 1), "9-3 白飯到 12 份時 ＋ 沒停用或說明不對：" + (await pickedFoodText("fx_cooked_rice")));
+  await stepFoodBtn("fx_cooked_rice", -1, 1);
+  check((await pickedFoodText("fx_cooked_rice")).indexOf("11.5 份") !== -1 && !(await stepDisabled("fx_cooked_rice", 1)), "9-3 從 12 按 − 沒有回到 11.5、＋ 沒恢復");
+  await stepFoodBtn("fx_cooked_rice", -1, 30);
+  const half = await pickedFoodText("fx_cooked_rice");
+  check(half.indexOf("0.5 份＝熟重 20g") !== -1 && half.indexOf("碗") === -1 && await stepDisabled("fx_cooked_rice", -1), "9-3 0.5 份時 − 沒停用、或寫了 1/8 碗：" + half);
+  await click(foodCardSel("fx_cooked_rice", true));
+  check((await js(`document.querySelectorAll('#food-sel-fx_cooked_rice').length`)) === 1 && (await pickedFoodText("fx_cooked_rice")).indexOf("0.5 份") !== -1, "9-3 再點已選的白飯多了一筆或份量變了");
+  await until(`(() => { const r = document.querySelector('#food-sel-fx_cooked_rice .food-stepper').getBoundingClientRect(); return r.top >= 0 && r.bottom <= window.innerHeight; })()`, "9-3 再點已選的白飯沒有捲到它的步進器");
+  await click(`#meal-picker-drinks [data-food-remove=fx_cooked_rice]`);
+  check(!(await js(`!!document.getElementById('food-sel-fx_cooked_rice')`)) && (await foodCardText("fx_cooked_rice", true)).indexOf("已選") === -1, "9-3 移除後白飯還在已選框或卡片還標已選");
+  // 兩層收合裡連點兩張卡片（審核 S2）
+  const riceInfo = await treeInfo("fx_cooked_rice");
+  await foodSearch("");
+  await openFoodSection("cook:" + riceInfo.group);
+  await openFoodSection("cook:" + riceInfo.group + ":" + riceInfo.subgroup);
+  await click(foodCardSel("fx_cooked_rice") + ":not([disabled])");
+  await click(`#meal-picker-drinks details[data-food-section="cook:${riceInfo.group}:${riceInfo.subgroup}"] [data-food-uid=brown_rice_cooked]`);
+  check(await inViewport(`#meal-picker-drinks details [data-food-uid=brown_rice_cooked]`), "9-3 在分類裡連點兩張卡片後，剛點的那張不在畫面裡");
+  check((await pickedFoodText("brown_rice_cooked")).indexOf("1 份＝內建一餐 熟重 150g") !== -1, "9-3 糙米飯的說明不是「1 份＝內建一餐 熟重 150g」：" + (await pickedFoodText("brown_rice_cooked")));
+  await shot("單品-分類裡連點", `#meal-picker-drinks details [data-food-uid=brown_rice_cooked]`);
+  await closePicker();
+
+  // 9-4 自煮只記單品；半套餐型＋單品擋下並提示取消；再點餐型取消；完整餐型＋單品＋飲料的名稱順序
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await pickFood("fx_cooked_rice", "白飯");
+  await stepFoodBtn("fx_cooked_rice", 1, 6);
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-summary"))).indexOf("已選 1 件 · 約 293 kcal") === 0, "9-4 自煮只選單品不能送出或摘要不對：" + (await js(text("#meal-picker-summary"))));
+  check((await submitAndUndo("dinner", "9-4")) === "白飯 160g", "9-4 自煮只記單品的名稱不是「白飯 160g」");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await cookPick("archetype");
+  const archName = await js(`document.querySelector('#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]').textContent`);
+  await pickFood("fx_cooked_rice", "白飯");
+  check(await js(`document.getElementById('meal-picker-submit').disabled`) && (await js(text("#meal-picker-hint"))).indexOf("只記單品可以再點一次「" + archName + "」取消餐型") !== -1, "9-4 半套餐型＋單品沒有擋下或沒有取消餐型的提示：" + (await js(text("#meal-picker-hint"))));
+  await shot("單品-半套餐型", "#meal-picker-hint");
+  await click(`#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]')`)) && !(await js(`document.getElementById('meal-picker-submit').disabled`)) && !!(await pickedFoodText("fx_cooked_rice")),
+    "9-4 再點餐型沒有取消、單品不見了或不能送出");
+  // 完整餐型＋單品＋飲料：名稱是 餐型與食材 → 單品 → 飲料
+  await cookPick("archetype");
+  await cookFill(["protein", "staple", "method"]);
+  await pickFood("fx_whole_milk");
+  await stepFoodBtn("fx_whole_milk", 1, 2);
+  await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)), "9-4 完整餐型＋單品＋飲料不能送出：" + (await js(text("#meal-picker-hint"))));
+  const fullName = await submitAndUndo("dinner", "9-4 完整");
+  check(new RegExp("^" + archName + "＋.+＋白飯 40g＋全脂奶（自己倒） 480ml＋[^＋]+$").test(fullName), "9-4 完整餐型＋單品＋飲料的名稱順序不對：" + fullName);
+
+  // 9-5 上限：第 5 項 alert；4 項單品＋主餐＋配菜＋飲料可以送出
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await pickFood("fx_cooked_rice", "白飯");
+  await pickFood("fx_skim_milk");
+  await pickFood("fx_soft_tofu", "嫩豆腐");
+  await pickFood("fx_whole_milk");
+  const dlgBefore = H.dialogs.length;
+  await pickFood("fx_banana", "香蕉");
+  check(H.dialogs.length === dlgBefore + 1 && H.dialogs[H.dialogs.length - 1] === "單品最多選 4 項。", "9-5 第 5 項單品沒有出現「單品最多選 4 項。」");
+  check((await js(`document.querySelectorAll('#meal-picker-drinks [id^=food-sel-]').length`)) === 4, "9-5 第 5 項被加進去了");
+  const main5 = (await passUids("main"))[0], side5 = (await passUids("side"))[0];
+  await click(`#meal-picker-panel .item-card[data-uid=${main5}]`);
+  if (side5) await click(`#meal-picker-panel .item-card[data-uid=${side5}]`);
+  await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-summary"))).indexOf("已選 " + (side5 ? 7 : 6) + " 件") === 0, "9-5 4 項單品＋主餐＋配菜＋飲料不能送出或件數不對：" + (await js(text("#meal-picker-summary"))));
+  await shot("單品-上限", "#meal-picker-drinks");
+  await closePicker();
+
+  // 9-6 過敏原灰字；不吃組（飲品・水果步驟合併一組、加點單品自己一組）；取消不吃；搜尋標「在飲品・水果」
+  await tab("profile");
+  await setAllergens(["蛋"]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "9-6 設蛋過敏後按計算沒有完成");
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await foodSearch("美乃滋");
+  await until(`!!document.querySelector(${JSON.stringify(foodCardSel("fx_mayonnaise", true))})`, "9-6 搜尋美乃滋沒有結果");
+  check(await js(`document.querySelector(${JSON.stringify(foodCardSel("fx_mayonnaise", true))}).disabled`) && (await foodCardText("fx_mayonnaise", true)).indexOf("含過敏原") !== -1, "9-6 設蛋過敏時美乃滋沒有灰掉、寫「含過敏原」");
+  await foodSearch("火腿");
+  await until(`!!document.querySelector(${JSON.stringify(foodCardSel("fx_ham", true))})`, "9-6 搜尋火腿沒有結果");
+  check(await js(`document.querySelector(${JSON.stringify(foodCardSel("fx_ham", true))}).disabled`) && (await foodCardText("fx_ham", true)).indexOf("成分未確認") !== -1, "9-6 設蛋過敏時火腿沒有寫「成分未確認」");
+  await shot("單品-過敏原灰字", "#meal-picker-food-results");
+  await closePicker();
+  await tab("profile");
+  await setAllergens([]);
+  await submitProfile();
+  await until(`${text("#target-kcal")} === "1896.1"`, "9-6 取消過敏原後按計算沒有完成");
+  await js(`(async () => { const m = await import('./js/data/db.js');
+    await m.addDislikedIngredient({ type: 'food_tree', key: 'fx_rice', label: '白米' });
+    await m.addDislikedIngredient({ type: 'food_tree', key: 'fx_orange', label: '柳丁' });
+    await m.addDislikedIngredient({ type: 'item', key: 'tw_dr05', label: '拿鐵' }); })()`);
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const groups = await js(`[...document.querySelectorAll('#meal-picker-drinks details.meal-picker-disliked')].map((d) => [...d.querySelectorAll('[data-drink], [data-food-uid]')].map((b) => b.dataset.drink || b.dataset.foodUid).sort().join(","))`);
+  const inG = (i, u) => (groups[i] || "").split(",").indexOf(u) !== -1;
+  check(groups.length === 2 && inG(0, "tw_dr05") && inG(0, "fx_orange") && !inG(0, "fx_rice") && inG(1, "fx_rice") && !inG(1, "tw_dr05") && !inG(1, "fx_orange"), "9-6 不吃組不是「飲品・水果合併一組＋加點單品一組」：" + JSON.stringify(groups));
+  check(!(await js(`!!document.querySelector('#meal-picker-drinks [data-dislike-uid^="fx_"]')`)), "9-6 選擇器裡的單品有「不吃」按鈕");
+  await js(`document.querySelectorAll('#meal-picker-drinks details.meal-picker-disliked').forEach((d) => { d.open = true; })`);
+  await shot("單品-不吃組", "#meal-picker-drinks details.meal-picker-disliked");
+  await click(`#meal-picker-drinks [data-undislike-uid=fx_rice]`);
+  await until(`![...document.querySelectorAll('#meal-picker-drinks details.meal-picker-disliked [data-food-uid]')].some((b) => b.dataset.foodUid === 'fx_rice')`, "9-6 取消不吃後白米還在不吃組");
+  check(JSON.parse(await js(dbDislikedKeys)).indexOf("fx_rice") === -1, "9-6 取消不吃沒有寫進資料庫");
+  await js(`(async () => { const m = await import('./js/data/db.js'); await m.removeDislikedIngredient('fx_orange'); await m.removeDislikedIngredient('tw_dr05'); })()`);
+  await closePicker();
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await foodSearch("柳丁");
+  await until(`!!document.querySelector(${JSON.stringify(foodCardSel("fx_orange", true))})`, "9-6 加點單品搜尋柳丁沒有結果");
+  check((await foodCardText("fx_orange", true)).indexOf("在飲品・水果") !== -1, "9-6 搜尋到的柳丁沒有標「在飲品・水果」");
+  await click(foodCardSel("fx_orange", true));
+  check((await pickedFoodText("fx_orange")) !== null, "9-6 搜尋結果的柳丁點了沒有選進去");
+  await stepFoodBtn("fx_orange", 1, 6);
+  check((await pickedFoodText("fx_orange")).indexOf("4 份＝可食部分 520g（4個，購買量約 680g）") !== -1, "9-6 柳丁 4 份的說明不對：" + (await pickedFoodText("fx_orange")));
+  check((await submitAndUndo("lunch", "9-6")) === "柳丁 520g", "9-6 柳丁的紀錄名稱不是「柳丁 520g」");
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();

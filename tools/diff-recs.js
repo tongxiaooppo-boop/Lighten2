@@ -76,6 +76,7 @@ function normContent(c) {
   const comps = c.components.map((x) => {
     if (x.kind === "ingredient") return x.axis + ":" + x.ref + (x.scale != null ? "*" + n(x.scale) : "");
     if (x.kind === "product") return x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal);
+    if (x.kind === "food") return "food:" + x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal) + "/" + n(x.snapshot.amount) + x.snapshot.unit;
     return "estimate:" + x.name + "@" + n(x.snapshot.kcal);
   });
   return c.meal_type + "|" + (c.archetype_id || "-") + "/" + (c.method_id || "-") + "|" + comps.join(",") + "|implicit=" + stable(c.implicit);
@@ -432,6 +433,9 @@ async function snapPicker() {
         // 不吃置底（PRD 13.9 切片 2 的刻意新增行，只錄有不吃清單的 profile）
         if (pk === "DISLIKE") emit("picker", k + "/" + t + "/disliked", r[t].disliked.join(","));
       });
+      // 單品（工作線 D 切片 7，審核 S6）：被擋的（uid:灰字）與標了不吃的
+      emit("picker", k + "/foods/blocked", r.foods.blocked.join(","));
+      if (pk === "DISLIKE") emit("picker", k + "/foods/disliked", r.foods.disliked.join(","));
       A.takeDom();
     }
   }
@@ -636,6 +640,79 @@ async function snapPicker() {
       emit("picker", "tab/" + name + "/" + slot, (await A.pickerOpen(slot)).tab);
       A.takeDom();
     }
+  }
+
+  // 單品（工作線 D 切片 7，計畫 8.2 M5）：合計、摘要／缺口／提示／送出鈕、送出的紀錄、記住的型態
+  const foodSubmit = async (k) => {
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", k + "/submit" + i, normWrite(w)); });
+    A.takeAlerts().forEach((m, i) => emit("picker", k + "/alert" + i, m));
+    emit("picker", k + "/lastPicked", stable(A.pickerLastPicked()));
+    A.takeDom(); A.takeEngineIO();
+  };
+  const foodOpen = async (slot, tab) => {
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: [], customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    const r = await A.pickerOpen(slot);
+    A.pickerTab(tab);
+    A.takeDom(); A.takeWrites(); A.takeAlerts(); A.takeEngineIO();
+    return r;
+  };
+  const F = (uid, qty) => ({ uid: uid, qty: qty });
+  // 三個分頁各一，只有單品
+  for (const [tab, slot, sel] of [["convenience", "lunch", [F("fx_whole_milk", 2)]], ["delivery", "dinner", [F("fx_banana", 1.5)]], ["cook", "breakfast", [F("fx_cooked_rice", 4)]]]) {
+    await foodOpen(slot, tab);
+    const k = "foods/" + tab + "/" + slot + "/only";
+    emit("picker", k, normTotals(A.pickerFoods(sel)));
+    uiLines(k);
+    await foodSubmit(k);
+  }
+  {
+    // 自煮：完整餐型＋2 項單品＋飲料（元件順序、implicit 有用油）；半套餐型＋單品（hint）；只有現成飲料（S3）
+    const r = await foodOpen("lunch", "cook");
+    const a0 = r.catalog.archetypes.find((a) => a.id === "protein_stir_fry");
+    const full = { tier: "cook_full", archetype: a0.id, proteins: a0.protein.allow.slice(0, 1), staple: ((a0.staple && a0.staple.allow) || [])[0],
+      vegetables: ((a0.vegetable && a0.vegetable.allow) || []).slice(0, 1), method: (a0.methods || [])[0], drink: r.drinks.pass[0] };
+    A.pickerCompose(full);
+    let k = "foods/cook/lunch/compose+food";
+    emit("picker", k, normTotals(A.pickerFoods([F("fx_cooked_rice", 2), F("fx_whole_milk", 1)])));
+    uiLines(k);
+    await foodSubmit(k);
+    await foodOpen("lunch", "cook");
+    A.pickerCompose({ tier: "cook_full", archetype: a0.id });
+    k = "foods/cook/lunch/half+food";
+    emit("picker", k, normTotals(A.pickerFoods([F("fx_cooked_rice", 1)])));
+    uiLines(k);
+    await foodOpen("dinner", "cook");
+    k = "foods/cook/dinner/drink-only";
+    emit("picker", k, normTotals(A.pickerCompose({ tier: "cook_quick", drink: r.drinks.pass[0] })));
+    uiLines(k);
+    await foodSubmit(k);
+  }
+  {
+    // 上限：第 5 項 alert；份量 12 與 0.5
+    await foodOpen("lunch", "convenience");
+    ["fx_cooked_rice", "fx_banana", "fx_whole_milk", "fx_ham", "fx_taro"].forEach((u) => A.pickerAddFood(u));
+    A.pickerAddFood("fx_cooked_rice"); // 再點已選的：不新增
+    A.takeAlerts().forEach((m, i) => emit("picker", "foods/limit/alert" + i, m));
+    let k = "foods/limit/four";
+    emit("picker", k, normTotals(A.pickerFoods(A.pickerFoodSel())));
+    uiLines(k);
+    k = "foods/limit/qty12+0.5";
+    emit("picker", k, normTotals(A.pickerFoods([F("fx_cooked_rice", 12), F("fx_banana", 0.5)])));
+    uiLines(k);
+    await foodSubmit(k);
+    // 毫升：全脂奶、無糖豆漿
+    await foodOpen("breakfast", "convenience");
+    k = "foods/ml";
+    emit("picker", k, normTotals(A.pickerFoods([F("fx_whole_milk", 1), F("soy_milk", 2)])));
+    await foodSubmit(k);
+    // 纖維無資料（火腿）、飽和脂肪無資料（芋頭）：自煮分頁也不加隱含成分（M1）
+    await foodOpen("dinner", "cook");
+    k = "foods/nullfiber";
+    emit("picker", k, normTotals(A.pickerFoods([F("fx_ham", 1), F("fx_taro", 1)])));
+    uiLines(k);
+    await foodSubmit(k);
   }
 }
 
