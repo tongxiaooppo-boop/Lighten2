@@ -1189,6 +1189,46 @@ body {
   border-top: 1px dashed #EFE3D2;
 }
 
+/* 工作線 D 切片 7：單品的已選框與份量步進器（不上色，章程 C4.13；按鈕 ≥44px） */
+.food-selected-title {
+  font-size: 0.85rem;
+  color: #8A7A63;
+  margin-bottom: 0.2rem;
+}
+.food-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+.food-step-btn {
+  min-width: 44px;
+  font-size: 1.1rem;
+}
+.food-step-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.food-qty {
+  min-width: 3.2rem;
+  text-align: center;
+  font-weight: 600;
+  color: #3A2E22;
+}
+.food-qty-text {
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: #5C4D3C;
+  overflow-wrap: break-word;
+}
+#meal-picker-drinks .meal-picker-step-label + .food-selected,
+#meal-picker-drinks .meal-picker-note + .food-selected {
+  margin-top: 0.4rem;
+}
+#meal-picker-drinks .meal-picker-step-label ~ .meal-picker-step-label {
+  margin-top: 1.4rem;
+}
+
 /* 工作線 D：「我的食物」分頁（狀態只用中性文字，不上色、不警告，章程 C4.13） */
 .foods-search {
   display: block;
