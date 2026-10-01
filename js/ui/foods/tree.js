@@ -8,7 +8,10 @@ import {
   foodTreeSections, foodTreeServingText, foodTreeServingShort, builtinMealLine, foodTreeSourceText, sugarLine,
   allergenSummary, foodsBlockLabel, foodBlockText,
 } from "../../engine/foods.js";
-import { nutrientLines, dietText, linesHtml, foodsRowHtml, detailsGroup, dislikeButtonHtml, dislikeNotesHtml, sameSampleHtml } from "./rows.js";
+import {
+  nutrientLines, dietText, linesHtml, foodsRowHtml, detailsGroup, dislikeButtonHtml, dislikeNotesHtml, sameSampleHtml,
+  foodsFavSet, favoritesGroupHtml, favoriteButtonHtml,
+} from "./rows.js";
 import { dislikedAllHtml } from "./disliked.js";
 
 const HIGH_CALCIUM = "高鈣深色蔬菜";
@@ -30,7 +33,7 @@ export function treeDetailHtml(s, item) {
       item.tags.indexOf(HIGH_CALCIUM) !== -1 ? "每日飲食指南的高鈣深色蔬菜" : null,
     ], foodTreeSourceText(item), [block ? "以你目前的設定：" + block : null]);
   return '<div class="food-detail">' + linesHtml(lines) + sameSampleHtml(s, item.uid) + dislikeNotesHtml(s, item.uid) +
-    '<div class="backup-actions">' + dislikeButtonHtml(s, item.uid) + "</div></div>";
+    '<div class="backup-actions">' + favoriteButtonHtml(s, item.uid) + dislikeButtonHtml(s, item.uid) + "</div></div>";
 }
 
 export function treeRow(s, item, reason) {
@@ -45,13 +48,25 @@ function rowsHtml(s, items) {
     .map(function (e) { return treeRow(s, e.item, e.reason); }).join("");
 }
 
-function notDisliked(s) {
-  return function (it) { return codeOf(s, it) !== "disliked"; };
+// 留在原分類的：不是不吃（在最下面）、也不是常吃（在最上面，decisions #126）
+function treeListed(s) {
+  const fav = foodsFavSet(s);
+  return function (it) { return codeOf(s, it) !== "disliked" && !fav[it.uid]; };
 }
 
-// 一個大類：可收合（預設收合），裡面每個子類也可收合；乳品類沒有子類只有一層（審核 S3）。筆數不含標了不吃的
+// 分層品項的常吃（扣掉不吃的），照分層原順序
+export function treeFavorites(s, where) {
+  const fav = foodsFavSet(s);
+  return treeItemsOf(s, where).filter(function (it) { return fav[it.uid] && codeOf(s, it) !== "disliked"; });
+}
+
+export function treeFavoriteEntry(s, it) {
+  return { uid: it.uid, row: function (reason) { return treeRow(s, it, reason); }, tree: it };
+}
+
+// 一個大類：可收合（預設收合），裡面每個子類也可收合；乳品類沒有子類只有一層（審核 S3）。筆數不含標了不吃與常吃的
 function majorHtml(s, prefix, group) {
-  const keep = notDisliked(s);
+  const keep = treeListed(s);
   const subs = group.subgroups.map(function (sg) { return Object.assign({}, sg, { items: sg.items.filter(keep) }); })
     .filter(function (sg) { return sg.items.length > 0; });
   const count = subs.reduce(function (n, sg) { return n + sg.items.length; }, 0);
@@ -85,13 +100,15 @@ function blockedNote(n) {
   return n > 0 ? '<p class="meal-picker-note">灰色的 ' + n + " 項因你的過敏原／飲食設定不能選，點開可以看原因。</p>" : "";
 }
 
-// 自煮子分頁（PRD 13.3、計畫第 20 項）：六大類（水果除外）→ 你標了不吃 → 不吃的全部清單。
+// 自煮子分頁（PRD 13.3、計畫第 20 項）：常吃 → 六大類（水果除外）→ 你標了不吃 → 不吃的全部清單。
 // 沒有我的品項、新增、已隱藏、已封存（我的食材、我的料理在切片 8、9，不放空殼，decisions #94、#97）
 export function cookSubtabHtml(s) {
   const all = treeItemsOf(s, "cook");
   const disliked = all.filter(function (it) { return codeOf(s, it) === "disliked"; });
   const blocked = all.filter(function (it) { const c = codeOf(s, it); return c && c !== "disliked"; }).length;
+  const favs = treeFavorites(s, "cook").map(function (it) { return treeFavoriteEntry(s, it); });
   return blockedNote(blocked) +
+    favoritesGroupHtml(favs, function (e) { return foodsBlockLabel(e.tree, s.profile || {}); }) +
     foodTreeSections(s.catalog.foodTree, "cook").map(function (g) { return majorHtml(s, "cook", g); }).join("") +
     detailsGroup(s, "cook:disliked", "你標了不吃", disliked.length, function () {
       return disliked.map(function (it) { return treeRow(s, it, "你標了不吃"); }).join("");
@@ -102,7 +119,7 @@ export function cookSubtabHtml(s) {
 // 飲品・水果的分層兩組（緊接在現成飲料之後，decisions #114）：家裡的飲品（平列）、水果（兩層收合）
 export function drinksTreeHtml(s) {
   const d = foodTreeSections(s.catalog.foodTree, "drinks");
-  const home = d.homeDrinks.filter(notDisliked(s));
+  const home = d.homeDrinks.filter(treeListed(s));
   let html = home.length ? '<section class="foods-group"><h4 class="meal-picker-role">家裡的飲品</h4>' + rowsHtml(s, home) + "</section>" : "";
   if (d.fruit) html += majorHtml(s, "drinks", d.fruit);
   return html;

@@ -1,13 +1,17 @@
 // 輕盈計畫 — 主分頁「我的食物」（工作線 D 切片 2；PRD 13.2、13.3、13.5）：狀態、載入、子分頁、搜尋、事件。
 // 這個檔案是分頁狀態唯一的擁有者；foods/*.js 只組 HTML、做寫入動作，狀態由參數傳入（計畫 S4）。
-// 不吃只經 db.js 專用函式寫入（decisions #99）；還沒有基本資料時「不吃」停用（PRD 13.5）。
+// 不吃、常吃只經 db.js 專用函式寫入（decisions #99、#127）；還沒有基本資料時「不吃」「常吃」停用（PRD 13.5）。
 
 import { escapeHtml } from "../core/html.js";
-import { getProfile, getCustomFoods, getHiddenCatalogUids, addDislikedIngredient, removeDislikedIngredient } from "../data/db.js";
+import {
+  getProfile, getCustomFoods, getHiddenCatalogUids, addDislikedIngredient, removeDislikedIngredient,
+  getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
+} from "../data/db.js";
 import { loadCatalog, fromCustomFood } from "../data/catalog.js";
 import { onCustomFoodFormClick, customFoodNotes } from "./custom-food-form.js";
 import { foodsSubtabHtml, foodsSearchHtml, foodsSubtabsHtml, FOODS_SUBTABS, FOODS_SUBTAB_LABELS } from "./foods/list.js";
-import { foodsWhereOf, dislikedMessage } from "../engine/foods.js";
+import { foodsWhereOf, dislikedMessage, favoriteMessage } from "../engine/foods.js";
+import { foodsFavSet, NO_PROFILE_NOTE } from "./foods/rows.js";
 import {
   FOODS_FORM_ID, customFoodEditing, syncCustomFoodForm, saveCustomFoodForm, setCustomFoodArchived, unhideBuiltin,
 } from "./foods/custom-foods.js";
@@ -15,8 +19,9 @@ import { refreshSavedMeals, savedSearchHtml, revealSavedMeal, initSavedMeals } f
 
 // openSections：可收合的組哪些展開（key 見 rows.js detailsGroup；切子分頁、搜尋後保留，審核 M3）。
 // acted：剛在哪一列標了不吃或取消（明細顯示「也標不吃」「也取消」，decisions #115）；scrollTo：重畫後捲到哪一列
+// favorites：常吃清單原樣（getFavoriteRefs）；畫面一律經 foodsFavSet 扣掉不吃（PRD 13.5）
 const foodsState = {
-  loaded: false, profile: null, catalog: null, records: [], hidden: [],
+  loaded: false, profile: null, catalog: null, records: [], hidden: [], favorites: [],
   subtab: "convenience", query: "", openUid: null, editing: null, message: "",
   openSections: {}, acted: null, scrollTo: null,
 };
@@ -33,6 +38,8 @@ async function loadFoods() {
   s.records = r[2];
   // 隱藏清單讀不到不擋這個分頁（隱藏不是安全規則）
   try { s.hidden = await getHiddenCatalogUids(); } catch (err) { console.error(err); s.hidden = []; }
+  // 常吃讀不到也不擋（只影響排列）
+  try { s.favorites = await getFavoriteRefs(); } catch (err) { console.error(err); s.favorites = []; }
   s.loaded = true;
 }
 
@@ -62,9 +69,10 @@ function renderFoods() {
   s.scrollTo = null;
 }
 
-// 品項：現成品項或代換表分層品項（不吃只對這兩種）
+// 品項：現成品項或代換表分層品項（不吃只對這兩種）；常吃另外可以是我的品項
 function itemOf(s, uid) {
-  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || null;
+  const rec = s.records.filter(function (r) { return r.id === uid; })[0];
+  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || (rec ? fromCustomFood(rec) : null);
 }
 
 export async function refreshFoods() {
@@ -75,8 +83,9 @@ export async function refreshFoods() {
 // also：明細裡的「也標不吃」「也取消」——不改點開的列、不捲動（decisions #115）
 async function setDisliked(uid, on, also) {
   const s = foodsState;
-  if (!s.profile) { s.message = "先在基本資料填好身體數據並按計算，才能標「不吃」。"; return; }
+  if (!s.profile) { s.message = NO_PROFILE_NOTE; return; }
   const item = itemOf(s, uid);
+  const wasFavorite = on && !!foodsFavSet(s)[uid];
   const label = item ? item.name : uid;
   // 分層品項寫 food_tree（比對只看 key，decisions #115）
   const type = s.catalog.foodTree.byId[uid] && !s.catalog.productsByUid[uid] ? "food_tree" : "item";
@@ -89,12 +98,39 @@ async function setDisliked(uid, on, also) {
     return;
   }
   s.profile = Object.assign({}, s.profile, { disliked_ingredients: list });
-  s.message = dislikedMessage(item || { name: label }, on);
+  // 標不吃時 db 已在同一個 transaction 移出常吃（PRD 13.5），這裡跟著更新
+  if (on) s.favorites = removeFavoriteFrom(s.favorites, uid);
+  s.message = dislikedMessage(item || { name: label }, on, wasFavorite);
   if (!also) {
     s.openUid = uid;
     s.acted = { uid: uid };
     s.scrollTo = uid;
   }
+}
+
+// 常吃（PRD 13.6）：標了以後那一列搬到最上面的常吃組，照不吃的做法打開並捲到它＋一行訊息（decisions #115、審核 S2）
+async function setFavorite(uid, on) {
+  const s = foodsState;
+  if (!s.profile) { s.message = NO_PROFILE_NOTE; return; }
+  const item = itemOf(s, uid);
+  const wasDisliked = on && (s.profile.disliked_ingredients || []).some(function (d) { return d && d.key === uid; });
+  try {
+    if (on) {
+      const r = await addFavoriteRef(uid);
+      s.favorites = r.favorites;
+      if (r.disliked) s.profile = Object.assign({}, s.profile, { disliked_ingredients: r.disliked });
+    } else {
+      s.favorites = await removeFavoriteRef(uid);
+    }
+  } catch (err) {
+    console.error(err);
+    s.message = "存檔失敗，請重試。";
+    return;
+  }
+  s.message = favoriteMessage(item || { name: uid }, on, wasDisliked);
+  s.openUid = uid;
+  s.acted = null;
+  s.scrollTo = uid;
 }
 
 // 存檔後：角色不屬於目前子分頁的（例：飲品・水果裡新增後改成主餐），說明存到哪裡（計畫 S14）
@@ -137,6 +173,10 @@ function onFoodsClick(e) {
     if (s.editing && s.editing.mode !== "add") s.editing = null;
     s.message = ""; s.acted = null;
     renderFoods();
+  } else if ((el = at("[data-foods-favorite]"))) {
+    setFavorite(el.getAttribute("data-foods-favorite"), true).then(done);
+  } else if ((el = at("[data-foods-unfavorite]"))) {
+    setFavorite(el.getAttribute("data-foods-unfavorite"), false).then(done);
   } else if ((el = at("[data-foods-also-dislike]"))) {
     setDisliked(el.getAttribute("data-foods-also-dislike"), true, true).then(done);
   } else if ((el = at("[data-foods-also-undislike]"))) {
@@ -204,7 +244,7 @@ export function initFoodsTab() {
     // 分層的大類、子類收合時沒有內容（量大，不預先畫）：打開時重畫一次補上
     if (e.target.open && e.target.hasAttribute("data-foods-lazy") && e.target.children.length <= 1) renderFoods();
   }, true);
-  // 切到本分頁時重讀：選擇器、今日建議、基本資料都可能改了不吃清單、我的品項、隱藏清單、過敏原設定
+  // 切到本分頁時重讀：選擇器、今日建議、基本資料都可能改了不吃清單、常吃、我的品項、隱藏清單、過敏原設定
   document.addEventListener("tab:activated", function (e) { if (e.detail === "foods") refreshFoods(); });
   refreshFoods();
 }

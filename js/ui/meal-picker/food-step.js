@@ -5,10 +5,11 @@
 import { escapeHtml } from "../../core/html.js";
 import { FOOD_QTY_STEP, FOOD_QTY_MAX } from "../../core/config.js";
 import { foodQtyText, foodTreeServingShort, foodsWhereOf, searchFoods } from "../../engine/foods.js";
-import { cardHtml } from "./product-tab.js";
+import { cardHtml, favoriteLinkHtml, favoriteTitleHtml } from "./product-tab.js";
 
-// st：{ foods: { items, byId, labels, codes }, sections: { cook, drinks }, sel: [{ uid, qty }], open: {key: bool}, query }
-// labels：uid → 灰字（foodsBlockLabel）；codes：uid → passesHardFilters 的 code（"disliked" 的移到不吃組）
+// st：{ foods: { items, byId, labels, codes }, sections: { cook, drinks }, sel: [{ uid, qty }], open: {key: bool}, query, fav: { uid: true } }
+// labels：uid → 灰字（foodsBlockLabel）；codes：uid → passesHardFilters 的 code（"disliked" 的移到不吃組）；
+// fav：扣掉不吃之後的常吃（engine effectiveFavorites），常吃的搬到步驟最上面的常吃組（decisions #126 ②）
 
 function qtyOf(st, uid) {
   const f = st.sel.filter(function (x) { return x.uid === uid; })[0];
@@ -28,15 +29,37 @@ function foodCardHtml(st, item, where) {
     (reason ? '<span class="item-card-reason">' + escapeHtml(reason) + "</span>" : "") + "</button>";
 }
 
-// 組內：能選的在前、被擋的灰在最後；標了不吃的不在這裡（在步驟最下方的不吃組）
+// 留在原分類的：不是不吃（步驟最下方）、也不是常吃（步驟最上面）
+function stepListed(st, it) {
+  return st.foods.codes[it.uid] !== "disliked" && !(st.fav && st.fav[it.uid]);
+}
+
+// 組內：能選的在前、被擋的灰在最後；標了不吃與常吃的不在這裡
 function gridHtml(st, items) {
-  const shown = items.filter(function (it) { return st.foods.codes[it.uid] !== "disliked"; });
+  const shown = items.filter(function (it) { return stepListed(st, it); });
   const ordered = shown.filter(function (it) { return !st.foods.labels[it.uid]; }).concat(shown.filter(function (it) { return st.foods.labels[it.uid]; }));
   return '<div class="item-grid">' + ordered.map(function (it) { return foodCardHtml(st, it, null); }).join("") + "</div>";
 }
 
 function countShown(st, items) {
-  return items.filter(function (it) { return st.foods.codes[it.uid] !== "disliked"; }).length;
+  return items.filter(function (it) { return stepListed(st, it); }).length;
+}
+
+// 常吃的分層品項（照原順序；不吃的不算，codes 已含不吃判斷）
+function favoriteFoods(st, items) {
+  return items.filter(function (it) { return st.fav && st.fav[it.uid] && st.foods.codes[it.uid] !== "disliked"; });
+}
+
+// 步驟最上面的常吃組：drinkEntries（現成飲料 [{ item, reason }]，用 drinkCard 畫）→ 分層品項；能選的在前、被擋的灰在組尾（decisions #127 ④）
+function favoriteGroupHtml(st, drinkEntries, drinkCard, foodItems) {
+  const drinks = drinkEntries || [];
+  const drinkCardOf = drinkCard || function () { return ""; };
+  if (drinks.length + foodItems.length === 0) return "";
+  const ok = drinks.filter(function (e) { return !e.reason; }).map(drinkCardOf)
+    .concat(foodItems.filter(function (it) { return !st.foods.labels[it.uid]; }).map(function (it) { return foodCardHtml(st, it, null); }));
+  const blocked = drinks.filter(function (e) { return e.reason; }).map(drinkCardOf)
+    .concat(foodItems.filter(function (it) { return st.foods.labels[it.uid]; }).map(function (it) { return foodCardHtml(st, it, null); }));
+  return '<section class="meal-picker-group meal-picker-favorites">' + favoriteTitleHtml() + '<div class="item-grid">' + ok.concat(blocked).join("") + "</div></section>";
 }
 
 // 可收合的組：展開狀態記在 st.open[key]（index.js 聽 toggle 寫回）；收合時不產生內容（量大）
@@ -72,6 +95,7 @@ function selectedBoxHtml(st, where) {
       '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="-1" aria-label="少 0.5 份"' + (x.f.qty <= FOOD_QTY_STEP ? " disabled" : "") + ">−</button>" +
       '<span class="food-qty">' + x.f.qty + " 份</span>" +
       '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="1" aria-label="多 0.5 份"' + (x.f.qty >= FOOD_QTY_MAX ? " disabled" : "") + ">＋</button>" +
+      favoriteLinkHtml(x.f.uid, !!(st.fav && st.fav[x.f.uid])) +
       '<button type="button" class="link-btn" data-food-remove="' + uid + '">移除</button></div>' +
       '<div class="food-qty-text">' + escapeHtml(foodQtyText(x.item, x.f.qty)) + "</div></div>";
   }).join("") + "</div>";
@@ -92,12 +116,14 @@ function dislikedOf(st, items) {
   return items.filter(function (it) { return st.foods.codes[it.uid] === "disliked"; });
 }
 
-// 加飲品・水果：已選框 → 現成飲料（drinkGridHtml，照舊 1 杯）＋選中那杯的份量與動作（drinkExtraHtml）→ 家裡的飲品 → 水果（兩層收合）→ 不吃（合併）
-export function drinksFruitStepHtml(st, stepNo, drinkGridHtml, drinkExtraHtml, dislikedDrinks) {
+// 加飲品・水果：已選框 → 常吃（favDrinks＋家裡的飲品＋水果）→ 現成飲料（drinkGridHtml，照舊 1 杯）＋選中那杯的份量與動作（drinkExtraHtml）
+// → 家裡的飲品 → 水果（兩層收合）→ 不吃（合併）。favDrinks：常吃的現成飲料 [{ item, reason }]，drinkCard 畫一張（審核 S4）
+export function drinksFruitStepHtml(st, stepNo, drinkGridHtml, drinkExtraHtml, dislikedDrinks, favDrinks, drinkCard) {
   const d = st.sections.drinks;
   const fruitItems = [];
   if (d.fruit) d.fruit.subgroups.forEach(function (s) { Array.prototype.push.apply(fruitItems, s.items); });
   let html = '<div class="meal-picker-step-label">' + stepNo + ". 加飲品・水果（選填）</div>" + selectedBoxHtml(st, "drinks") +
+    favoriteGroupHtml(st, favDrinks, drinkCard, favoriteFoods(st, d.homeDrinks.concat(fruitItems))) +
     '<h4 class="meal-picker-role">現成飲料</h4>' + drinkGridHtml + (drinkExtraHtml || "");
   if (countShown(st, d.homeDrinks) > 0) html += '<h4 class="meal-picker-role">家裡的飲品</h4>' + gridHtml(st, d.homeDrinks);
   if (d.fruit) html += foodMajorHtml(st, "fruit:", d.fruit);
@@ -115,12 +141,13 @@ export function foodSearchResultsHtml(st) {
   }).join("") + "</div>";
 }
 
-// 加點單品：說明 → 已選框 → 搜尋 → 大類 > 子類兩層收合 → 不吃
+// 加點單品：說明 → 已選框 → 常吃 → 搜尋 → 大類 > 子類兩層收合 → 不吃（搜尋結果照舊全列，常吃的也在）
 export function addFoodsStepHtml(st, stepNo) {
   const cookItems = [];
   st.sections.cook.forEach(function (g) { g.subgroups.forEach(function (s) { Array.prototype.push.apply(cookItems, s.items); }); });
   return '<div class="meal-picker-step-label">' + stepNo + ". 加點單品（選填）</div>" +
     '<p class="meal-picker-note">單品不含烹調用油；有用油可以加油脂類。</p>' + selectedBoxHtml(st, "cook") +
+    favoriteGroupHtml(st, [], null, favoriteFoods(st, cookItems)) +
     '<input type="search" class="foods-search" id="meal-picker-food-search" placeholder="搜尋單品（名稱或別名）" value="' + escapeHtml(st.query || "") + '">' +
     '<div id="meal-picker-food-results">' + foodSearchResultsHtml(st) + "</div>" +
     st.sections.cook.map(function (g) { return foodMajorHtml(st, "cook:", g); }).join("") +

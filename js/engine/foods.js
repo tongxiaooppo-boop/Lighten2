@@ -319,8 +319,23 @@ export function sameSampleEntries(uid, catalog, disliked) {
 }
 
 // 標不吃／取消的訊息（審核 M7）：fx_ 品項推薦與「自己選」本來就不會出現，不能說「都不會再選它」
-export function dislikedMessage(item, on) {
+// wasFavorite：標不吃前它是常吃（互斥，PRD 13.5），補一句
+export function dislikedMessage(item, on, wasFavorite) {
   if (!on) return "已取消不吃「" + item.name + "」。";
-  if (isFoodTreeItem(item) && !item.builtin) return "已標不吃「" + item.name + "」。只擋這一項，不影響推薦裡的其他食物。";
-  return "已標不吃「" + item.name + "」。推薦與「自己選」都不會再選它。";
+  const tail = wasFavorite ? "原本標的常吃已取消。" : "";
+  if (isFoodTreeItem(item) && !item.builtin) return "已標不吃「" + item.name + "」。只擋這一項，不影響推薦裡的其他食物。" + tail;
+  return "已標不吃「" + item.name + "」。推薦與「自己選」都不會再選它。" + tail;
+}
+
+// ---------- 常吃（工作線 D 切片 5；PRD 13.6） ----------
+
+// 標常吃／取消的訊息；wasDisliked：標常吃前它是不吃（互斥），補一句
+export function favoriteMessage(item, on, wasDisliked) {
+  if (!on) return "已取消常吃「" + item.name + "」。";
+  return "已標常吃「" + item.name + "」，自己選會放在最上面。" + (wasDisliked ? "原本標的不吃已取消。" : "");
+}
+
+// 明細寫常吃的作用（decisions #127 ⑥）：切片 5 推薦不讀常吃，一律這一句；切片 6 再依品項能不能進推薦分兩種
+export function favoriteEffectText() {
+  return "常吃只影響自己選的排列。";
 }

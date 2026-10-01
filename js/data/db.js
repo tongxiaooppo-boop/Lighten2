@@ -30,7 +30,8 @@ const STORE = {
 // 跟 DB_VERSION 分開計：資料庫升級不一定改備份格式。
 // v2（B-1a）：settings 多了 hidden_catalog_uids；v1→v2 沒有資料要改（v1 檔只是沒有這個 key），BACKUP_MIGRATIONS 不放步驟。
 // v3（工作線 C）：多了 saved_meals；舊檔沒有這個區塊，升級時補成空的，同樣不放步驟。
-export const BACKUP_SCHEMA_VERSION = 3;
+// v4（工作線 D 切片 5）：settings 多了 favorite_refs（常吃）；舊檔只是沒有這個 key，不放步驟。
+export const BACKUP_SCHEMA_VERSION = 4;
 const BACKUP_FORMAT = "lighten2-backup";
 
 // 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
@@ -422,7 +423,7 @@ export function validateProfile(profile) {
 
 // settings 的每個 key 都要登記在這裡（附驗證）；setSetting 拒絕沒登記的 key 與不合法的值，備份也用同一張表。
 // 之後加 key（例：B-1a 的 hidden_catalog_uids）要登記並把 BACKUP_SCHEMA_VERSION +1；
-// dedicatedOnly：只准專用函式讀寫的 key（B-4a 的 favorite_ingredient_ids，章程 C4.17②）。
+// dedicatedOnly：只准專用函式讀寫的 key（隱藏清單、常吃清單，章程 C4.17②）。
 const SETTING_KEYS = {
   tdee_state: {
     validate: function (v) { return isPlainObject(v) && "version" in v; },
@@ -437,6 +438,13 @@ const SETTING_KEYS = {
   // 隱藏的內建品項（PRD 10.2、13.5）：只有 copyBuiltinToCustom 會加、unhideCatalogItem 會拿掉（各自一個 transaction 讀改寫）；
   // 選擇器的「隱藏」已由「不吃」取代（decisions #99）
   hidden_catalog_uids: {
+    dedicatedOnly: true,
+    validate: function (v) {
+      return Array.isArray(v) && v.every(function (u, i) { return typeof u === "string" && u !== "" && v.indexOf(u) === i; });
+    },
+  },
+  // 常吃（PRD 13.6）：分層品項、內建食材、內建品項、我的品項的 id；只經 addFavoriteRef／removeFavoriteRef 寫（decisions #127）
+  favorite_refs: {
     dedicatedOnly: true,
     validate: function (v) {
       return Array.isArray(v) && v.every(function (u, i) { return typeof u === "string" && u !== "" && v.indexOf(u) === i; });
@@ -651,18 +659,60 @@ export function removeDislikedFrom(list, key) {
   return (Array.isArray(list) ? list : []).filter(function (d) { return !(d && d.key === key); });
 }
 
+// 常吃清單的語意（PRD 13.5、13.6、decisions #127）：純函式，專用寫入函式與 tools/lib/fake-db.mjs 共用，check-engine 直接測。
+// 都回新陣列，不改傳入的。
+export function addFavoriteTo(list, ref) {
+  const cur = Array.isArray(list) ? list.slice() : [];
+  return cur.indexOf(ref) !== -1 ? cur : cur.concat([ref]);
+}
+
+export function removeFavoriteFrom(list, ref) {
+  return (Array.isArray(list) ? list : []).filter(function (u) { return u !== ref; });
+}
+
+// 常吃與不吃互斥：state＝{ favorites, disliked }（disliked 是 profile.disliked_ingredients），回傳新的 state。
+// op："favorite"（加常吃、移出不吃）｜"unfavorite"（移出常吃）｜"dislike"（只把常吃移出；不吃清單由 addDislikedTo 加）
+export function applyFavoriteOp(state, op, ref) {
+  const st = state || {};
+  const fav = Array.isArray(st.favorites) ? st.favorites : [];
+  const dis = Array.isArray(st.disliked) ? st.disliked : [];
+  if (op === "favorite") return { favorites: addFavoriteTo(fav, ref), disliked: removeDislikedFrom(dis, ref) };
+  if (op === "unfavorite" || op === "dislike") return { favorites: removeFavoriteFrom(fav, ref), disliked: dis.slice() };
+  throw new Error("[db.js] applyFavoriteOp 不認得的 op：" + op);
+}
+
+// 複製成我的版本（decisions #127）：常吃的原內建品項換成新的我的品項 id，位置不變；新 id 已經在清單裡就只拿掉舊的
+export function replaceFavoriteRef(list, from, to) {
+  const cur = Array.isArray(list) ? list : [];
+  if (cur.indexOf(from) === -1) return cur.slice();
+  if (cur.indexOf(to) !== -1) return removeFavoriteFrom(cur, from);
+  return cur.map(function (u) { return u === from ? to : u; });
+}
+
 // 基本資料「計算」：表單送什麼都不影響不吃清單，一律用資料庫裡的
 export function mergeProfileForm(saved, form) {
   return Object.assign({}, form, { disliked_ingredients: saved && Array.isArray(saved.disliked_ingredients) ? saved.disliked_ingredients.slice() : [] });
 }
 
-function changeDisliked(fn, change) {
-  return withStores([STORE.userProfile], "readwrite", function (s) {
+const FAVORITE_KEY = SETTING_PREFIX + "favorite_refs";
+
+// favoriteRef：標不吃時要一起移出常吃的 key（同一個 transaction，PRD 13.5）；取消不吃傳 null，不碰常吃
+function changeDisliked(fn, change, favoriteRef) {
+  const names = favoriteRef ? [STORE.userProfile, STORE.settings] : [STORE.userProfile];
+  return withStores(names, "readwrite", function (s) {
     const store = s[STORE.userProfile];
     return reqPromise(store.get(PROFILE_KEY)).then(function (p) {
       if (!p) throw new Error("[db.js] " + fn + "：還沒有基本資料");
       const list = change(p.disliked_ingredients);
-      return reqPromise(store.put(Object.assign({}, p, { disliked_ingredients: list }), PROFILE_KEY)).then(function () { return list; });
+      return reqPromise(store.put(Object.assign({}, p, { disliked_ingredients: list }), PROFILE_KEY)).then(function () {
+        if (!favoriteRef) return list;
+        const settings = s[STORE.settings];
+        return reqPromise(settings.get(FAVORITE_KEY)).then(function (v) {
+          if (!Array.isArray(v) || v.indexOf(favoriteRef) === -1) return list;
+          const next = applyFavoriteOp({ favorites: v, disliked: list }, "dislike", favoriteRef).favorites;
+          return reqPromise(settings.put(next, FAVORITE_KEY)).then(function () { return list; });
+        });
+      });
     });
   });
 }
@@ -671,13 +721,14 @@ function changeDisliked(fn, change) {
 export async function addDislikedIngredient(entry) {
   const problem = dislikedEntryProblem(entry);
   if (problem) throw new Error("[db.js] addDislikedIngredient：" + problem);
-  return changeDisliked("addDislikedIngredient", function (list) { return addDislikedTo(list, entry); });
+  // 回傳值仍是不吃清單（decisions #127）：呼叫端手上有常吃清單的，自己用 removeFavoriteFrom 更新
+  return changeDisliked("addDislikedIngredient", function (list) { return addDislikedTo(list, entry); }, entry.key);
 }
 
 // 取消不吃。清單裡沒有也不丟錯。回傳新清單。
 export async function removeDislikedIngredient(key) {
   if (typeof key !== "string" || key === "") throw new Error("[db.js] removeDislikedIngredient 需要 key" + (Array.isArray(key) ? "，不能傳陣列" : ""));
-  return changeDisliked("removeDislikedIngredient", function (list) { return removeDislikedFrom(list, key); });
+  return changeDisliked("removeDislikedIngredient", function (list) { return removeDislikedFrom(list, key); }, null);
 }
 
 // 基本資料「計算」專用：一個 transaction 讀舊的 profile，不吃清單保留資料庫裡的。回傳存進去的 profile。
@@ -837,7 +888,51 @@ export async function unhideCatalogItem(uid) {
   return removeHiddenUid(uid);
 }
 
-// 複製成我的版本（PRD 10.2）：一個 transaction 新增我的品項並隱藏原品項（全有全無）。回傳寫入的紀錄。
+// ---------- 常吃清單（PRD 13.6；章程 C4.17②：favorite_refs 只准出現在這個檔案） ----------
+
+function checkRef(ref, fn) {
+  if (typeof ref !== "string" || ref === "") throw new Error("[db.js] " + fn + " 需要一個 id" + (Array.isArray(ref) ? "，不能傳陣列" : ""));
+}
+
+// 常吃清單（沒存過回傳 []）。不扣不吃清單：扣掉是 engine 的事（effectiveFavorites，PRD 13.5）
+export async function getFavoriteRefs() {
+  const v = await withStores([STORE.settings], "readonly", function (s) {
+    return reqPromise(s[STORE.settings].get(FAVORITE_KEY));
+  });
+  return Array.isArray(v) ? v.slice() : [];
+}
+
+// 標常吃：一個 transaction 加進常吃、移出不吃（沒有基本資料就只寫常吃）。回傳 { favorites, disliked }（disliked 沒有基本資料時是 null）
+export async function addFavoriteRef(ref) {
+  checkRef(ref, "addFavoriteRef");
+  return withStores([STORE.settings, STORE.userProfile], "readwrite", function (s) {
+    const settings = s[STORE.settings];
+    const profiles = s[STORE.userProfile];
+    return Promise.all([reqPromise(settings.get(FAVORITE_KEY)), reqPromise(profiles.get(PROFILE_KEY))]).then(function (r) {
+      const p = r[1];
+      const next = applyFavoriteOp({ favorites: r[0], disliked: p ? p.disliked_ingredients : [] }, "favorite", ref);
+      settings.put(next.favorites, FAVORITE_KEY);
+      if (!p) return { favorites: next.favorites, disliked: null };
+      const changed = (Array.isArray(p.disliked_ingredients) ? p.disliked_ingredients : []).length !== next.disliked.length;
+      if (changed) profiles.put(Object.assign({}, p, { disliked_ingredients: next.disliked }), PROFILE_KEY);
+      return { favorites: next.favorites, disliked: next.disliked };
+    });
+  });
+}
+
+// 取消常吃。清單裡沒有也不丟錯。回傳新清單
+export async function removeFavoriteRef(ref) {
+  checkRef(ref, "removeFavoriteRef");
+  return withStores([STORE.settings], "readwrite", function (s) {
+    const settings = s[STORE.settings];
+    return reqPromise(settings.get(FAVORITE_KEY)).then(function (v) {
+      const list = applyFavoriteOp({ favorites: v, disliked: [] }, "unfavorite", ref).favorites;
+      return reqPromise(settings.put(list, FAVORITE_KEY)).then(function () { return list; });
+    });
+  });
+}
+
+// 複製成我的版本（PRD 10.2）：一個 transaction 新增我的品項並隱藏原品項（全有全無）；原品項是常吃時，常吃換成新的我的品項（decisions #127）。回傳寫入的紀錄。
 export async function copyBuiltinToCustom(food) {
   validateCustomFood(food);
   if (typeof food.copied_from !== "string" || food.copied_from === "") throw new Error("[db.js] 複製的品項要有 copied_from");
@@ -850,6 +945,9 @@ export async function copyBuiltinToCustom(food) {
       const list = hiddenFrom(v).filter(function (u) { return u !== record.copied_from; });
       list.push(record.copied_from);
       settings.put(list, HIDDEN_KEY);
+      return reqPromise(settings.get(FAVORITE_KEY)).then(function (fav) {
+        if (Array.isArray(fav) && fav.indexOf(record.copied_from) !== -1) settings.put(replaceFavoriteRef(fav, record.copied_from, record.id), FAVORITE_KEY);
+      });
     });
   });
   return record;

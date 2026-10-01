@@ -6,6 +6,7 @@ import { escapeHtml } from "../../core/html.js";
 import { COMPOSE_MAX } from "../../core/config.js";
 import { ingredientFilterResult } from "../../engine/filters.js";
 import { composeOptionProblem, composePrimary, archetypeHasStaple, oilOptions, composeImplicit } from "../../engine/meal-content.js";
+import { favoritesFirst } from "../../engine/picker.js";
 
 export const TIER_LABELS = { cook_quick: "快煮（簡單料理）", cook_full: "開伙" };
 
@@ -47,18 +48,20 @@ function optionHtml(axis, id, label, o) {
     escapeHtml(label) + (o.reason ? '<span class="item-card-reason">' + escapeHtml(o.reason) + "</span>" : "") + "</button>";
 }
 
-function axisHtml(label, axis, catalog, st, profile, withNone) {
+// favSet：扣掉不吃之後的常吃；常吃且沒被硬性過濾擋的排前面（只看設定，選擇過程中不會跳位置），被擋的位置不變（decisions #127 ⑤）
+function axisHtml(label, axis, catalog, st, profile, withNone, favSet) {
   const d = st.draft;
   let html = '<div class="compose-axis"><div class="compose-axis-label">' + escapeHtml(label) + '</div><div class="compose-options">';
   if (withNone) html += optionHtml(axis, "", "不加", { selected: !d[axis] });
-  archetypeOptions(catalog, axis, d.archetype).forEach(function (it) {
+  const ok = function (it) { return axis === "method" || !hardFilterReason(it, axis, profile); };
+  favoritesFirst(archetypeOptions(catalog, axis, d.archetype), favSet, function (it) { return it.id; }, ok).forEach(function (it) {
     html += optionHtml(axis, it.id, it.name, { selected: isSelected(d, axis, it), reason: optionReason(it, axis, d, st.tier, profile) });
   });
   return html + "</div></div>";
 }
 
-// st = { tier, draft }；回傳 { html, steps }（steps：這個分頁用掉的步驟數，飲料步驟接在後面）
-export function cookTabHtml(catalog, slot, st, profile) {
+// st = { tier, draft }；favSet：常吃（可省略）；回傳 { html, steps }（steps：這個分頁用掉的步驟數，飲料步驟接在後面）
+export function cookTabHtml(catalog, slot, st, profile, favSet) {
   const d = st.draft;
   let n = 0;
   const step = function (label) { n++; return '<div class="meal-picker-step-label">' + n + ". " + escapeHtml(label) + "</div>"; };
@@ -82,11 +85,11 @@ export function cookTabHtml(catalog, slot, st, profile) {
   const a = d.archetype;
   const has = function (axis) { return !!(a[axis] && a[axis].allow && a[axis].allow.length > 0); };
   html += '<div class="compose-step">' + step("選食材與烹調法");
-  html += axisHtml("蛋白質（必選，最多 " + COMPOSE_MAX.protein + " 個）", "protein", catalog, st, profile, false);
-  if (archetypeHasStaple(a)) html += axisHtml("主食（必選）", "staple", catalog, st, profile, false);
-  if (has("vegetable")) html += axisHtml("蔬菜（選填，最多 " + COMPOSE_MAX.vegetable + " 個）", "vegetable", catalog, st, profile, false);
-  if (has("seasoning")) html += axisHtml("醬料（選填）", "seasoning", catalog, st, profile, true);
-  html += axisHtml("烹調法（必選）", "method", catalog, st, profile, false);
+  html += axisHtml("蛋白質（必選，最多 " + COMPOSE_MAX.protein + " 個）", "protein", catalog, st, profile, false, favSet);
+  if (archetypeHasStaple(a)) html += axisHtml("主食（必選）", "staple", catalog, st, profile, false, favSet);
+  if (has("vegetable")) html += axisHtml("蔬菜（選填，最多 " + COMPOSE_MAX.vegetable + " 個）", "vegetable", catalog, st, profile, false, favSet);
+  if (has("seasoning")) html += axisHtml("醬料（選填）", "seasoning", catalog, st, profile, true, favSet);
+  html += axisHtml("烹調法（必選）", "method", catalog, st, profile, false, favSet);
   html += "</div>";
 
   const oils = oilOptions(d, profile.oil_habit);

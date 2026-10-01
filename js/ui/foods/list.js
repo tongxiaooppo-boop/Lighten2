@@ -17,9 +17,10 @@ import { customFoodCompareHtml, customFoodEditFormHtml } from "./custom-foods.js
 import { dislikedAllHtml } from "./disliked.js";
 import {
   dislikedKeys, nutrientLines, dietText, linesHtml, foodsRowHtml, detailsGroup,
-  dislikeButtonHtml, dislikeNotesHtml, sameSampleHtml,
+  dislikeButtonHtml, dislikeNotesHtml, sameSampleHtml, foodsFavSet, favoritesGroupHtml, favoriteButtonHtml, favoriteNoteHtml,
 } from "./rows.js";
-import { cookSubtabHtml, drinksTreeHtml, treeItemsOf, treeRow, treeDetailHtml, treeSearchEntries } from "./tree.js";
+import { splitFavorites } from "../../engine/picker.js";
+import { cookSubtabHtml, drinksTreeHtml, treeItemsOf, treeRow, treeDetailHtml, treeSearchEntries, treeFavorites, treeFavoriteEntry } from "./tree.js";
 
 export const FOODS_SUBTABS = ["convenience", "delivery", "cook", "drinks"];
 export const FOODS_SUBTAB_LABELS = { convenience: "超商", delivery: "外食", cook: "自煮", drinks: "飲品・水果" };
@@ -67,9 +68,9 @@ function builtinDetailHtml(s, item) {
     slotsText(item), sourceText(item),
     block ? "以你目前的設定：" + block : null,
   ]);
-  // 被擋的也可以複製；按鈕在按鈕列、不在原因旁邊（章程 C4.1、decisions #84）
-  const buttons = dislikeButtonHtml(s, item.uid) +
-    '<button type="button" class="secondary-btn" data-foods-copy="' + escapeHtml(item.uid) + '">複製成我的版本</button>';
+  // 被擋的也可以複製；按鈕在按鈕列、不在原因旁邊（章程 C4.1、decisions #84）。常吃第一個、不吃最後（意思相反，中間隔開；審核 S13）
+  const buttons = favoriteButtonHtml(s, item.uid) +
+    '<button type="button" class="secondary-btn" data-foods-copy="' + escapeHtml(item.uid) + '">複製成我的版本</button>' + dislikeButtonHtml(s, item.uid);
   const editing = s.editing && s.editing.mode === "copy" && s.editing.uid === item.uid;
   return '<div class="food-detail">' + linesHtml(lines) + sameSampleHtml(s, item.uid) + dislikeNotesHtml(s, item.uid) +
     '<div class="backup-actions">' + buttons + "</div>" + (editing ? customFoodEditFormHtml(s) : "") + "</div>";
@@ -87,13 +88,15 @@ function customDetailHtml(s, rec) {
     res.ok ? null : "以你目前的設定不能選：" + res.reason,
     rec.archived === true ? "已封存" : null,
   ]);
-  let buttons = '<button type="button" class="secondary-btn" data-cf-edit="' + escapeHtml(rec.id) + '">編輯</button>';
+  // 我的品項有常吃、沒有不吃（PRD 13.3）；封存的不能標常吃（不出現在選擇器）
+  let buttons = (rec.archived === true ? "" : favoriteButtonHtml(s, rec.id)) +
+    '<button type="button" class="secondary-btn" data-cf-edit="' + escapeHtml(rec.id) + '">編輯</button>';
   if (!res.ok && fillableReason(res.reason)) buttons += '<button type="button" class="secondary-btn" data-cf-fill="' + escapeHtml(rec.id) + '">補填</button>';
   buttons += rec.archived === true
     ? '<button type="button" class="secondary-btn" data-cf-restore="' + escapeHtml(rec.id) + '">還原</button>'
     : '<button type="button" class="secondary-btn" data-cf-archive="' + escapeHtml(rec.id) + '">封存</button>';
   const editing = s.editing && (s.editing.mode === "edit" || s.editing.mode === "fill") && s.editing.id === rec.id;
-  return '<div class="food-detail">' + linesHtml(lines) + customFoodCompareHtml(s, rec) +
+  return '<div class="food-detail">' + linesHtml(lines) + customFoodCompareHtml(s, rec) + (rec.archived === true ? "" : favoriteNoteHtml()) +
     '<div class="backup-actions">' + buttons + "</div>" + (editing ? customFoodEditFormHtml(s) : "") + "</div>";
 }
 
@@ -117,6 +120,7 @@ function recordsOfSubtab(s, sub, archived) {
 // 內建品項的組：超商、外食照選擇器的分組（角色分區、category 分組，被擋的在組內最後）；飲品・水果是「現成飲料」一組
 function builtinGroupsHtml(s, sub, items) {
   const reasonOf = function (it) { return foodsBlockLabel(it, s.profile || {}); };
+  if (items.length === 0) return "";
   if (sub === "drinks") {
     const entries = items.map(function (it) { return { item: it, reason: reasonOf(it) }; });
     const sorted = entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; }));
@@ -135,8 +139,9 @@ function builtinGroupsHtml(s, sub, items) {
   return html;
 }
 
-// 一個子分頁。超商、外食：內建各組 → 我的品項 → 你標了不吃 → 已隱藏 → 已封存 → 不吃的全部清單。
-// 飲品・水果：現成飲料 → 家裡的飲品 → 水果 → 我的品項 → 你標了不吃（現成與分層合併）→ 已隱藏 → 已封存 → 全部清單（計畫第 21 項）。
+// 一個子分頁。超商、外食：常吃 → 內建各組 → 我的品項 → 你標了不吃 → 已隱藏 → 已封存 → 不吃的全部清單。
+// 飲品・水果：常吃 → 現成飲料 → 家裡的飲品 → 水果 → 我的品項 → 你標了不吃（現成與分層合併）→ 已隱藏 → 已封存 → 全部清單（計畫第 21 項）。
+// 常吃組（decisions #126 ③）：現成 → 分層 → 我的品項，搬過去、原分類不再出現；被擋的灰在組尾
 // 自煮在 tree.js
 export function foodsSubtabHtml(s) {
   const sub = s.subtab;
@@ -148,12 +153,21 @@ export function foodsSubtabHtml(s) {
   const codeOf = function (it) { return blockOf(s, it).code; };
   const split = splitDisliked(builtin, codeOf);
   const treeSplit = splitDisliked(sub === "drinks" ? treeItemsOf(s, "drinks") : [], codeOf);
+  // 灰字筆數在分出常吃組之前算（常吃組裡被擋的也算進去，審核 S3）
   const blocked = split.rest.concat(treeSplit.rest).filter(function (it) { return !blockOf(s, it).ok; }).length;
   let html = blocked > 0 ? '<p class="meal-picker-note">灰色的 ' + blocked + " 項因你的過敏原／飲食設定不能選，點開可以看原因。</p>" : "";
-  html += builtinGroupsHtml(s, sub, split.rest);
+  const fav = foodsFavSet(s);
+  const favSplit = splitFavorites(split.rest, fav);
+  const mineAll = recordsOfSubtab(s, sub, false);
+  const mine = mineAll.filter(function (r) { return !fav[r.id]; });
+  const reasonOf = function (it) { return foodsBlockLabel(it, s.profile || {}); };
+  const favs = favSplit.favorites.map(function (it) { return { uid: it.uid, check: it, row: function (reason) { return builtinRow(s, it, reason); } }; })
+    .concat((sub === "drinks" ? treeFavorites(s, "drinks") : []).map(function (it) { const e = treeFavoriteEntry(s, it); e.check = it; return e; }))
+    .concat(mineAll.filter(function (r) { return fav[r.id]; }).map(function (r) { return { uid: r.id, check: fromCustomFood(r), row: function () { return customRow(s, r); } }; }));
+  html += favoritesGroupHtml(favs, function (e) { return reasonOf(e.check); });
+  html += builtinGroupsHtml(s, sub, favSplit.rest);
   if (sub === "drinks") html += drinksTreeHtml(s);
 
-  const mine = recordsOfSubtab(s, sub, false);
   const label = FOODS_SUBTAB_LABELS[sub];
   html += '<section class="foods-group foods-mine"><h4 class="meal-picker-role">我的品項（' + mine.length + "）</h4>" +
     (mine.length ? mine.map(function (r) { return customRow(s, r); }).join("") : '<p class="backup-note">還沒有。</p>') +
@@ -185,18 +199,19 @@ export function foodsSubtabHtml(s) {
 // 標位置與狀態；別名命中的寫出別名（PRD 13.2）
 function searchEntries(s) {
   const keys = dislikedKeys(s);
+  const fav = foodsFavSet(s);
   const out = [];
   s.catalog.products.forEach(function (p) {
-    const status = [s.hidden.indexOf(p.uid) !== -1 ? "已隱藏" : null, keys.indexOf(p.uid) !== -1 ? "你標了不吃" : null].filter(Boolean);
+    const status = [s.hidden.indexOf(p.uid) !== -1 ? "已隱藏" : null, fav[p.uid] ? "常吃" : null, keys.indexOf(p.uid) !== -1 ? "你標了不吃" : null].filter(Boolean);
     const sub = foodsWhereOf(p);
     out.push({ uid: p.uid, name: p.name, sub: sub, rank: 0, where: FOODS_SUBTAB_LABELS[sub] + " · " + (p.category || "其他"), status: status, item: p });
   });
   treeSearchEntries(s, FOODS_SUBTAB_LABELS).forEach(function (e) {
-    out.push(Object.assign(e, { rank: 1, status: keys.indexOf(e.uid) !== -1 ? ["你標了不吃"] : [] }));
+    out.push(Object.assign(e, { rank: 1, status: keys.indexOf(e.uid) !== -1 ? ["你標了不吃"] : fav[e.uid] ? ["常吃"] : [] }));
   });
   customFoodsNewestFirst(s.records).forEach(function (r) {
     const sub = foodsWhereOf(fromCustomFood(r));
-    out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已封存"] : [], rec: r });
+    out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已封存"] : fav[r.id] ? ["常吃"] : [], rec: r });
   });
   return out.map(function (e, i) { return Object.assign(e, { seq: i }); }).sort(function (a, b) {
     return FOODS_SUBTABS.indexOf(a.sub) - FOODS_SUBTABS.indexOf(b.sub) || a.rank - b.rank || a.seq - b.seq;
