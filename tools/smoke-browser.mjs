@@ -12,8 +12,27 @@ const { send, js, until, check, fail, text } = H;
 const URL_BASE = H.url;
 
 async function run() {
+  console.log("[資料庫升級 v1 → v2（工作線 C）]");
+  await send("Page.navigate", { url: URL_BASE.replace(/index\.html$/, "data/food_tree.json") });
+  await until(`document.readyState === "complete"`, "升級測試的空白頁沒有載入");
+  check((await js(`new Promise((res, rej) => { const r = indexedDB.open('lighten2', 1);
+    r.onupgradeneeded = () => { const db = r.result;
+      db.createObjectStore('user_profile'); db.createObjectStore('weight_log', { keyPath: 'log_date' });
+      db.createObjectStore('daily_log', { keyPath: 'id' }).createIndex('log_date', 'log_date');
+      db.createObjectStore('exercise_log', { keyPath: 'id' }).createIndex('log_date', 'log_date');
+      db.createObjectStore('custom_foods', { keyPath: 'id' }); db.createObjectStore('recipe_feedback'); db.createObjectStore('settings'); };
+    r.onsuccess = () => { const db = r.result; const tx = db.transaction('weight_log', 'readwrite');
+      tx.objectStore('weight_log').put({ log_date: '2000-01-05', weight_kg: 81 }); tx.oncomplete = () => { db.close(); res(db.version); }; };
+    r.onerror = () => rej(r.error); })`)) === 1, "沒有建出 v1 資料庫");
   await send("Page.navigate", { url: URL_BASE });
   await until(`${text("#today-status")}.indexOf("基本資料") !== -1`, "沒有基本資料時，今日建議沒有提示先填基本資料");
+  const upgraded = JSON.parse(await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result;
+    const out = { version: db.version, stores: [...db.objectStoreNames].sort() };
+    const q = db.transaction('weight_log').objectStore('weight_log').getAll(); q.onsuccess = () => { out.weights = q.result.length; db.close(); res(JSON.stringify(out)); }; }; })`));
+  check(upgraded.version === 2 && upgraded.stores.indexOf("saved_meals") !== -1 && upgraded.weights === 1, "v1 升到 v2 後要有 saved_meals、舊資料還在：" + JSON.stringify(upgraded));
+  // 升級測試留下的體重刪掉，後面的檢查照舊
+  await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result; const tx = db.transaction('weight_log', 'readwrite');
+    tx.objectStore('weight_log').delete('2000-01-05'); tx.oncomplete = () => { db.close(); res(true); }; }; })`);
   check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,foods,week,exercise",
     "分頁不是 基本資料/今日建議/我的食物/本週/運動（decisions #96）");
   // 還沒有基本資料：不吃的專用函式丟「還沒有基本資料」（PRD 13.5）
@@ -128,6 +147,66 @@ async function run() {
     JSON.stringify(riceLog.content.implicit) === '{"oil_g":0,"seasoning":null}' && riceLog.name === "白飯 40g", "自煮只記單品的紀錄不對：" + JSON.stringify(riceLog));
   await js(`document.querySelector('#rec-dinner .rec-undo-btn').click()`);
   await until(`!!document.querySelector('#rec-dinner .rec-log-btn')`, "撤銷自煮單品紀錄後晚餐沒有回到推薦");
+
+  console.log("[我的組合（真的 IndexedDB，工作線 C）]");
+  const savedAll = async () => JSON.parse(await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => {
+    const q = r.result.transaction('saved_meals').objectStore('saved_meals').getAll(); q.onsuccess = () => res(JSON.stringify(q.result)); }; })`));
+  // 入口 1：超商選一個主餐＋全脂奶單品，勾「存成組合」送出 → 紀錄與組合都寫入
+  await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "午餐自己選沒有打開（組合）");
+  await js(`document.querySelector('#meal-picker-tabs [data-tab=convenience]').click()`);
+  await js(`document.querySelector('#meal-picker-panel .item-card[data-uid=conv_bx04]').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-food-uid=fx_whole_milk]').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-save-as]').click()`);
+  await until(`!!document.getElementById('meal-picker-save-name') && document.getElementById('meal-picker-save-name').value.indexOf('全脂奶') !== -1`, "存成組合的名稱沒有預填品名");
+  const logsBefore = (await dailyLogs()).length;
+  await js(`document.getElementById('meal-picker-submit').click()`);
+  await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "勾存成組合送出後午餐沒有變成已記錄");
+  let saved = await savedAll();
+  check((await dailyLogs()).length === logsBefore + 1 && saved.length === 1 && saved[0].content.components.map((c) => c.kind + ":" + c.ref).join() === "product:conv_bx04,food:fx_whole_milk" &&
+    !saved[0].content.components.some((c) => c.snapshot), "入口 1 沒有同時寫入紀錄與組合，或組合帶了快照：" + JSON.stringify(saved));
+  // 全有全無：組合 id 重複讓 add 失敗 → 紀錄也不能寫進去（審核 Q5）
+  const atomic = await js(`(async () => { const m = await import('./js/data/db.js'); const mc = await import('./js/engine/meal-content.js'); const c = await (await import('./js/data/catalog.js')).loadCatalog();
+    const d = { kind: 'products', meal_type: 'convenience', items: [c.productsByUid.conv_bx04], estimates: [], drink: null };
+    const content = mc.buildDraftContent(d);
+    const entry = mc.buildLogEntry({ date: '2026-09-25', slot: 'dinner', source: 'manual', name: 'x', content: content, totals: mc.contentTotals(content, c), createdAt: new Date().toISOString() });
+    try { await m.addDailyLogWithSavedMeal(entry, { id: ${JSON.stringify(saved[0].id)}, name: 'dup', content: mc.toSavedContent(content) }); return 'ok'; } catch (e) { return 'failed'; } })()`);
+  check(atomic === "failed" && !(await dailyLogs()).some((l) => l.log_date === "2026-09-25"), "組合寫入失敗時紀錄被寫進去了（不是全有全無）");
+  // 帶入：撤銷後重開，組合列帶入
+  await js(`document.querySelector('#rec-lunch .rec-undo-btn').click()`);
+  await until(`!!document.querySelector('#rec-lunch .rec-pick-btn')`, "撤銷後午餐沒有回到推薦（組合）");
+  await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
+  await until(`!!document.querySelector('#meal-picker-panel .saved-card')`, "選擇器最上面沒有組合卡片");
+  await js(`document.querySelector('#meal-picker-panel .saved-card').click()`);
+  await until(`${text("#meal-picker-summary")}.indexOf("已選 2 件") !== -1`, "帶入組合後摘要不是已選 2 件");
+  await js(`document.getElementById('meal-picker-cancel').click()`);
+  // 入口 2：記一筆推薦的晚餐，從今日建議存成組合
+  await until(`!!document.querySelector('#rec-dinner .rec-log-btn')`, "晚餐沒有記錄按鈕（組合）");
+  await js(`document.querySelector('#rec-dinner .rec-log-btn').click()`);
+  await until(`!!document.querySelector('#rec-dinner [data-save-log-id]')`, "已記錄的晚餐沒有「存成組合」");
+  await js(`document.querySelector('#rec-dinner [data-save-log-id]').click()`);
+  await until(`!!document.getElementById('rec-save-name') && document.getElementById('rec-save-name').value !== ''`, "入口 2 的名稱沒有預填");
+  await js(`document.querySelector('#rec-dinner [data-save-confirm]').click()`);
+  await until(`${text("#rec-dinner")}.indexOf("已存成組合") !== -1`, "入口 2 沒有存成組合");
+  saved = await savedAll();
+  check(saved.length === 2 && saved[1].content.implicit === null, "入口 2 存的組合不對（implicit 一律 null）：" + JSON.stringify(saved[1]));
+  await js(`document.querySelector('#rec-dinner .rec-undo-btn').click()`);
+  await until(`!!document.querySelector('#rec-dinner .rec-log-btn')`, "撤銷晚餐沒有回到推薦（組合）");
+  // 管理區塊：改名、刪除（封存）、復原
+  await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+  await until(`!!document.querySelector('#foods-saved [data-saved-rename]')`, "我的食物沒有我的組合區塊");
+  await js(`document.querySelector('#foods-saved details[data-saved-section=main] > summary').click()`);
+  await js(`document.querySelectorAll('#foods-saved [data-saved-rename]')[1].click()`);
+  await js(`(() => { const el = document.getElementById('saved-rename-input'); el.value = '推薦晚餐'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await js(`document.querySelector('#foods-saved [data-saved-rename-save]').click()`);
+  await until(`${text("#foods-saved")}.indexOf("已改名為「推薦晚餐」") !== -1`, "改名沒有完成");
+  await js(`document.querySelectorAll('#foods-saved [data-saved-archive]')[1].click()`);
+  await until(`${text("#foods-saved")}.indexOf("已刪除「推薦晚餐」") !== -1`, "刪除沒有提示復原");
+  check((await savedAll())[1].archived === true, "刪除沒有封存");
+  await js(`document.querySelector('#foods-saved .dislike-notice [data-saved-restore]').click()`);
+  await until(`${text("#foods-saved")}.indexOf("已還原") !== -1`, "復原沒有完成");
+  check((await savedAll()).every((r) => !r.archived) && (await savedAll())[1].name === "推薦晚餐", "復原後組合不對");
+  await js(`document.querySelector('.tab-btn[data-tab=today]').click()`);
 
   console.log("[本週、運動、體重]");
   await js(`document.querySelector('.tab-btn[data-tab=week]').click()`);
@@ -244,6 +323,8 @@ async function run() {
     console.log("  已凍結 " + process.env.SMOKE_FREEZE_BACKUP);
   }
   check(JSON.parse(exported).sections.logs.daily_log.some((l) => l.content.components.some((x) => x.kind === "food")), "備份沒有帶到單品紀錄");
+  check(JSON.parse(exported).schema_version === 3 && JSON.parse(exported).sections.saved_meals.length === 2 &&
+    JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v3，含單品的組合）");
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
   // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）

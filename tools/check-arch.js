@@ -271,15 +271,22 @@ for (const f of files.filter((x) => x.layer === "ui")) {
 }
 
 console.log("[運動與飲食脫鉤 C4.12]");
+// 一段原始碼裡出現哪些受限名稱（整個字；純函式，工具自我檢查也用）
+function nameHits(code, names) {
+  const out = [];
+  names.forEach((nm) => {
+    const re = new RegExp("\\b" + nm + "\\b", "g");
+    let m;
+    while ((m = re.exec(code))) out.push({ name: nm, index: m.index });
+  });
+  return out;
+}
+
 function restrictNames(names, allowFiles, label) {
   for (const f of files) {
     if (allowFiles.some((re) => re.test(f.rel))) continue;
-    names.forEach((nm) => {
-      const re = new RegExp("\\b" + nm + "\\b", "g");
-      let m;
-      while ((m = re.exec(f.code))) fail(f.rel + ":" + lineOf(f.code, m.index) + " 使用了 " + nm + "（" + label + "）");
-      checks++;
-    });
+    nameHits(f.code, names).forEach((h) => fail(f.rel + ":" + lineOf(f.code, h.index) + " 使用了 " + h.name + "（" + label + "）"));
+    checks += names.length;
   }
 }
 restrictNames(EXERCISE_READERS, EXERCISE_FILES, "只有運動分頁、db.js 與備份匯出匯入可以讀運動紀錄");
@@ -336,6 +343,14 @@ console.log("[工具自我檢查]");
   ["// 註解裡的 \"food\" 也算（不去掉字串與註解）", 1]].forEach(([src, n]) => {
   check(recommendLeaks(src).length === n, "C4.17 ③ 規則對「" + src + "」應找到 " + n + " 處，實際 " + recommendLeaks(src).length);
 });
+// C4.16：今日建議只能用組合的寫入函式（入口 2），不能讀；白名單只放選擇器、管理區、備份、db
+[["const all = await listSavedMeals();", 1], ["import { getSavedMeal, addSavedMeal } from './db.js';", 1], ["await addSavedMeal(rec); updateSavedMeal(id, p);", 0],
+  ["mylistSavedMealsX()", 0]].forEach(([src, n]) => {
+  check(nameHits(src, SAVED_MEAL_READERS).length === n, "C4.16 讀取函式規則對「" + src + "」應找到 " + n + " 處，實際 " + nameHits(src, SAVED_MEAL_READERS).length);
+});
+check(!SAVED_MEAL_READER_FILES.some((re) => re.test("js/ui/tab-today.js")) && !SAVED_MEAL_READER_FILES.some((re) => re.test("js/ui/tab-foods.js")) &&
+  !SAVED_MEAL_READER_FILES.some((re) => re.test("js/engine/meal-content.js")) && SAVED_MEAL_READER_FILES.some((re) => re.test("js/ui/foods/saved-meals.js")),
+  "C4.16 白名單：今日建議、我的食物分頁本身、engine 不能讀組合，管理區可以");
 
 console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
 process.exit(failures === 0 ? 0 : 1);

@@ -1,0 +1,445 @@
+{
+  "format": "lighten2-backup",
+  "schema_version": 3,
+  "exported_at": "2026-09-29T12:00:00.000Z",
+  "app_version": "smoke",
+  "manifest": {
+    "user_profile": 1,
+    "weight_log": 1,
+    "daily_log": 3,
+    "exercise_log": 1,
+    "custom_foods": 2,
+    "recipe_feedback": 7,
+    "settings": 3,
+    "saved_meals": 2
+  },
+  "sections": {
+    "system": {
+      "user_profile": {
+        "age": 35,
+        "gender": "男",
+        "height_cm": 175,
+        "weight_kg": 80,
+        "body_fat_pct": null,
+        "activity_mode": "輕度",
+        "diet_restriction": "一般",
+        "low_carb": false,
+        "oil_habit": "normal",
+        "allergens": [],
+        "meal_prefs": {
+          "breakfast": "convenience",
+          "lunch": "convenience",
+          "afternoon_tea": "off",
+          "dinner": "cook_full",
+          "snack": "off"
+        },
+        "goal_mode": "減脂",
+        "enabled_slots": {
+          "breakfast": true,
+          "lunch": true,
+          "afternoon_tea": false,
+          "dinner": true,
+          "snack": false
+        },
+        "disliked_ingredients": [
+          {
+            "type": "protein",
+            "key": "chicken_breast",
+            "label": "雞胸肉"
+          }
+        ]
+      },
+      "recipe_feedback": [
+        {
+          "id": "conv_bx05+conv_sl04+conv_dr01",
+          "value": {
+            "recipe_template_id": "conv_bx05+conv_sl04+conv_dr01",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "conv_bx08+conv_sl04+conv_dr01",
+          "value": {
+            "recipe_template_id": "conv_bx08+conv_sl04+conv_dr01",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "conv_bx08+conv_sl04+conv_dr03",
+          "value": {
+            "recipe_template_id": "conv_bx08+conv_sl04+conv_dr03",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "conv_bx10+conv_sl02+conv_dr03",
+          "value": {
+            "recipe_template_id": "conv_bx10+conv_sl02+conv_dr03",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "conv_bx10+conv_sl04+conv_dr03",
+          "value": {
+            "recipe_template_id": "conv_bx10+conv_sl04+conv_dr03",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "conv_bx13+conv_sl02+conv_dr01",
+          "value": {
+            "recipe_template_id": "conv_bx13+conv_sl02+conv_dr01",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        },
+        {
+          "id": "protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry",
+          "value": {
+            "recipe_template_id": "protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry",
+            "shown_count": 1,
+            "last_shown_date": "2026-10-01"
+          }
+        }
+      ],
+      "settings": [
+        {
+          "id": "hidden_catalog_uids",
+          "value": [
+            "tw_dr05",
+            "conv_bx04"
+          ]
+        },
+        {
+          "id": "picker_last_meal_type",
+          "value": {
+            "lunch": "convenience",
+            "dinner": "cook_full",
+            "breakfast": "cook_full"
+          }
+        },
+        {
+          "id": "tdee_state",
+          "value": {
+            "version": 1,
+            "offset_kcal": 0,
+            "prev_offset_kcal": 0,
+            "effective_date": null,
+            "last_adjusted_date": null,
+            "last_evaluated_date": "2026-10-01",
+            "goal_mode": "cut",
+            "mode_since_date": null,
+            "pending": null,
+            "dismissed_until": null,
+            "announce_until": null,
+            "last_result": {
+              "date": "2026-10-01",
+              "status": "insufficient",
+              "slope_kg_per_week": null,
+              "ewma_latest_kg": 79.5,
+              "n_weighins": 1,
+              "note": ""
+            },
+            "history": []
+          }
+        }
+      ]
+    },
+    "logs": {
+      "weight_log": [
+        {
+          "log_date": "2026-10-01",
+          "weight_kg": 79.5
+        }
+      ],
+      "daily_log": [
+        {
+          "log_date": "2026-10-01",
+          "slot": "breakfast",
+          "meal_type": "cook_full",
+          "source": "manual",
+          "name": "早餐碗＋無糖豆漿＋燕麥片",
+          "content": {
+            "meal_type": "cook_full",
+            "archetype_id": "bowl_oat",
+            "method_id": "method_no_cook",
+            "components": [
+              {
+                "kind": "ingredient",
+                "axis": "protein",
+                "ref": "soy_milk"
+              },
+              {
+                "kind": "ingredient",
+                "axis": "staple",
+                "ref": "oats",
+                "is_primary": true,
+                "scale": 1
+              }
+            ],
+            "implicit": {
+              "oil_g": 0,
+              "seasoning": null
+            }
+          },
+          "totals": {
+            "kcal": 267.5,
+            "protein_g": 15.6,
+            "carb_g": 29.3,
+            "fat_g": 9.5,
+            "fiber_g": 8.1,
+            "sat_fat_g": 1.9,
+            "sodium_mg": 7.8,
+            "partial": []
+          },
+          "created_at": "2026-10-01T04:53:24.818Z",
+          "id": "log_mup26nyq_oc5k1c"
+        },
+        {
+          "log_date": "2026-09-20",
+          "slot": "lunch",
+          "meal_type": "convenience",
+          "source": "manual",
+          "name": "全家 健身G肉餐盒（健身工廠聯名） ×2",
+          "content": {
+            "meal_type": "convenience",
+            "archetype_id": null,
+            "method_id": null,
+            "components": [
+              {
+                "kind": "product",
+                "role": "main",
+                "ref": "conv_bx01",
+                "qty": 2,
+                "snapshot": {
+                  "name": "全家 健身G肉餐盒（健身工廠聯名）",
+                  "kcal": 481,
+                  "protein_g": 30,
+                  "carb_g": 66.6,
+                  "fat_g": 10.3,
+                  "fiber_g": 4.75,
+                  "sat_fat_g": null,
+                  "sodium_mg": null
+                }
+              }
+            ],
+            "implicit": null
+          },
+          "totals": {
+            "kcal": 962,
+            "protein_g": 60,
+            "carb_g": 133.2,
+            "fat_g": 20.6,
+            "fiber_g": 9.5,
+            "sat_fat_g": null,
+            "sodium_mg": null,
+            "partial": []
+          },
+          "created_at": "2026-10-01T04:53:27.929Z",
+          "id": "log_mup26qd5_1l0b8q"
+        },
+        {
+          "log_date": "2026-09-21",
+          "slot": "dinner",
+          "meal_type": "cook_quick",
+          "source": "manual",
+          "name": "白飯 160g＋火腿 22.5g",
+          "content": {
+            "meal_type": "cook_quick",
+            "archetype_id": null,
+            "method_id": null,
+            "components": [
+              {
+                "kind": "food",
+                "ref": "fx_cooked_rice",
+                "qty": 4,
+                "snapshot": {
+                  "name": "白飯",
+                  "amount": 40,
+                  "unit": "g",
+                  "kcal": 73.3,
+                  "protein_g": 1.2,
+                  "carb_g": 16.4,
+                  "fat_g": 0.1,
+                  "fiber_g": 0.2,
+                  "sat_fat_g": 0,
+                  "sodium_mg": 0.8
+                }
+              },
+              {
+                "kind": "food",
+                "ref": "fx_ham",
+                "qty": 0.5,
+                "snapshot": {
+                  "name": "火腿",
+                  "amount": 45,
+                  "unit": "g",
+                  "kcal": 66,
+                  "protein_g": 7.4,
+                  "carb_g": 4.1,
+                  "fat_g": 2.2,
+                  "fiber_g": null,
+                  "sat_fat_g": 0.8,
+                  "sodium_mg": 452.6
+                }
+              }
+            ],
+            "implicit": {
+              "oil_g": 0,
+              "seasoning": null
+            }
+          },
+          "totals": {
+            "kcal": 326.2,
+            "protein_g": 8.5,
+            "carb_g": 67.6,
+            "fat_g": 1.5,
+            "fiber_g": null,
+            "sat_fat_g": 0.4,
+            "sodium_mg": 229.5,
+            "partial": []
+          },
+          "created_at": "2026-10-01T04:53:27.929Z",
+          "id": "log_mup26qd5_u9bz48"
+        }
+      ],
+      "exercise_log": [
+        {
+          "log_date": "2026-10-01",
+          "activity_type": "散步",
+          "duration_min": 30,
+          "intensity": "低",
+          "id": "ex_mup26psv_uc8779"
+        }
+      ]
+    },
+    "custom_foods": [
+      {
+        "archived": false,
+        "created_at": "2026-10-01T04:53:27.927Z",
+        "name": "拿鐵咖啡（無糖，大杯約400ml）",
+        "channel": "delivery",
+        "role": "drink",
+        "valid_slots": [
+          "breakfast",
+          "afternoon_tea"
+        ],
+        "kcal": 171.8,
+        "protein_g": 11.9,
+        "carb_g": 13.5,
+        "fat_g": 7.8,
+        "fiber_g": 0,
+        "sat_fat_g": 5.3,
+        "sodium_mg": 113.1,
+        "vendor": null,
+        "category": "飲料",
+        "note": null,
+        "allergen_tags": [
+          "乳製品"
+        ],
+        "vegan": false,
+        "lacto_ovo": true,
+        "copied_from": "tw_dr05",
+        "id": "custom_mup26qd3_6le7ls",
+        "updated_at": "2026-10-01T04:53:27.927Z"
+      },
+      {
+        "archived": false,
+        "created_at": "2026-10-01T04:53:27.928Z",
+        "name": "即食舒肥雞胸肉（單包）",
+        "channel": "convenience",
+        "role": "main",
+        "valid_slots": [
+          "breakfast",
+          "lunch",
+          "dinner",
+          "snack"
+        ],
+        "kcal": 120,
+        "protein_g": 23,
+        "carb_g": 0,
+        "fat_g": 2.8,
+        "fiber_g": 0,
+        "sat_fat_g": null,
+        "sodium_mg": null,
+        "vendor": null,
+        "category": "蛋白質單品",
+        "note": "舒肥雞胸肉",
+        "allergen_tags": null,
+        "vegan": false,
+        "lacto_ovo": false,
+        "copied_from": "conv_bx04",
+        "id": "custom_mup26qd4_119g4s",
+        "updated_at": "2026-10-01T04:53:27.928Z"
+      }
+    ],
+    "saved_meals": [
+      {
+        "archived": false,
+        "name": "即食舒肥雞胸肉（單包）＋全脂奶（自己倒）",
+        "content": {
+          "meal_type": "convenience",
+          "archetype_id": null,
+          "method_id": null,
+          "components": [
+            {
+              "kind": "product",
+              "ref": "conv_bx04",
+              "qty": 1
+            },
+            {
+              "kind": "food",
+              "ref": "fx_whole_milk",
+              "qty": 1
+            }
+          ],
+          "implicit": null
+        },
+        "id": "saved_mup26orb_7uysis",
+        "created_at": "2026-10-01T04:53:25.847Z",
+        "updated_at": "2026-10-01T04:53:25.847Z"
+      },
+      {
+        "archived": false,
+        "name": "推薦晚餐",
+        "content": {
+          "meal_type": "cook_full",
+          "archetype_id": "protein_stir_fry",
+          "method_id": "method_stir_fry",
+          "components": [
+            {
+              "kind": "ingredient",
+              "axis": "protein",
+              "ref": "edamame"
+            },
+            {
+              "kind": "ingredient",
+              "axis": "staple",
+              "ref": "brown_rice_cooked",
+              "is_primary": true
+            },
+            {
+              "kind": "ingredient",
+              "axis": "vegetable",
+              "ref": "wood_ear"
+            },
+            {
+              "kind": "ingredient",
+              "axis": "seasoning",
+              "ref": "kimchi"
+            }
+          ],
+          "implicit": null
+        },
+        "id": "saved_mup26p8i_v0isiq",
+        "created_at": "2026-10-01T04:53:26.466Z",
+        "updated_at": "2026-10-01T04:53:26.948Z"
+      }
+    ]
+  }
+}

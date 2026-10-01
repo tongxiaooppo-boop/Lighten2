@@ -278,7 +278,7 @@ function applySaved(rec) {
   }
   if (d.drink) { ensureListed("drinks", d.drink); m.drinkUid = d.drink.uid; }
   Object.assign(m.qtyByUid, d.qtyByUid);
-  const skipped = r.blocked.map(function (b) { return "「" + b.name + "」" + b.reason; })
+  const skipped = r.blocked.map(function (b) { return "「" + b.name + "」" + b.reason.replace(/。$/, ""); })
     .concat(r.gone.map(function (g) { return "「" + g.name + "」已不提供"; }));
   m.savedNotice = (m.editing ? "編輯「" : "已帶入「") + rec.name + "」" +
     (skipped.length ? "，有 " + skipped.length + " 項" + (m.editing ? "不會存進組合" : "沒有帶入") + "：" + skipped.join("、") + "。" : "。") +
@@ -625,6 +625,7 @@ export function renderMealPicker() {
 export function addEstimate(size, name) {
   mealPicker.tabs.delivery.estimates.push({ size: size, name: name && name.trim() ? name.trim() : "" });
   renderPanel();
+  renderDrinks(); // 有估算時「存成組合」不能勾（decisions #124）
   updateSummary();
 }
 
@@ -819,6 +820,7 @@ function onProductExtrasClick(e) {
   }
   if ((el = at("[data-estimate-remove]"))) {
     m.tabs.delivery.estimates.splice(parseInt(el.getAttribute("data-estimate-remove"), 10), 1);
+    renderDrinks();
   } else if (at("[data-quick-add-open]")) {
     m.quickAdd = { tab: m.tab, values: emptyQuickAdd(m.slot) };
     m.quickAddMessage = null;
@@ -851,13 +853,21 @@ function onProductExtrasClick(e) {
   return true;
 }
 
+// 點組合卡片：帶入（只認還能用的；快照工具也直接呼叫）。回傳有沒有帶入
+export function loadSavedMeal(id) {
+  const m = mealPicker;
+  const card = m.savedCards.filter(function (c) { return c.id === id; })[0];
+  const rec = m.savedRecords.filter(function (r) { return r.id === id; })[0];
+  if (!card || !card.usable || !rec) return false;
+  applySaved(rec);
+  renderMealPicker();
+  return true;
+}
+
 function onPanelClick(e) {
   const savedCard = e.target.closest("[data-saved-id]");
   if (savedCard) {
-    const rec = savedCard.disabled ? null : mealPicker.savedRecords.filter(function (r) { return r.id === savedCard.getAttribute("data-saved-id"); })[0];
-    if (rec) {
-      applySaved(rec);
-      renderMealPicker();
+    if (!savedCard.disabled && loadSavedMeal(savedCard.getAttribute("data-saved-id"))) {
       const body = $("#meal-picker-body");
       if (body) body.scrollTop = 0;
     }

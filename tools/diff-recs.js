@@ -74,8 +74,10 @@ function normTotals(t) {
 // MealContent 規範化：型態、餐型/烹調法、每個元件（食材 axis:ref*縮放、商品 ref×數量、估算 名稱@熱量）、隱含成分
 function normContent(c) {
   const comps = c.components.map((x) => {
-    if (x.kind === "ingredient") return x.axis + ":" + x.ref + (x.scale != null ? "*" + n(x.scale) : "");
+    if (x.kind === "ingredient") return x.axis + ":" + x.ref + (x.scale != null ? "*" + n(x.scale) : "") + (x.is_primary && x.scale == null ? "(primary)" : "");
+    if (x.kind === "product" && !x.snapshot) return x.ref + "x" + x.qty;
     if (x.kind === "product") return x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal);
+    if (x.kind === "food" && !x.snapshot) return "food:" + x.ref + "x" + x.qty;
     if (x.kind === "food") return "food:" + x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal) + "/" + n(x.snapshot.amount) + x.snapshot.unit;
     return "estimate:" + x.name + "@" + n(x.snapshot.kcal);
   });
@@ -83,6 +85,11 @@ function normContent(c) {
 }
 
 function normWrite(w) {
+  // 我的組合：名稱、封存、內容（只有 ref 與份量）
+  if (w.op === "addSavedMeal" || w.op === "updateSavedMeal") {
+    const r = w.record;
+    return w.op + " " + r.id + " " + JSON.stringify(r.name) + (r.archived ? " archived" : "") + " content=" + normContent(r.content);
+  }
   if (w.op === "addDailyLog") {
     const e = w.entry;
     return "addDailyLog " + e.slot + " " + JSON.stringify(e.name) + " " + normTotals(e.totals) +
@@ -713,6 +720,104 @@ async function snapPicker() {
     emit("picker", k, normTotals(A.pickerFoods([F("fx_ham", 1), F("fx_taro", 1)])));
     uiLines(k);
     await foodSubmit(k);
+  }
+
+  // 我的組合（工作線 C，計畫 docs/review/2026-10-01-C-實作計畫.md 第 4 節）：組合列、帶入、存成組合、編輯模式、今日建議的「存成組合」
+  const COPY_E = Object.assign({}, CUSTOM_BASE, { id: "custom_e", name: "我的雞腿便當", kcal: 750, protein_g: 35, role: "main", channel: "delivery", allergen_tags: [], copied_from: "tw_ln02" });
+  const SAVED_AT = (d) => "2026-09-" + d + "T04:00:00.000Z";
+  const SAVED = [
+    { id: "saved_s1", name: "超商早午餐", archived: false, created_at: SAVED_AT("20"), updated_at: SAVED_AT("20"), content: {
+      meal_type: "convenience", archetype_id: null, method_id: null, implicit: null,
+      components: [{ kind: "product", ref: "conv_bx01", qty: 1 }, { kind: "food", ref: "fx_whole_milk", qty: 2 }, { kind: "product", ref: "tw_dr05", qty: 1 }] } },
+    { id: "saved_s2", name: "便當＋半份排骨", archived: false, created_at: SAVED_AT("21"), updated_at: SAVED_AT("21"), content: {
+      meal_type: "delivery", archetype_id: null, method_id: null, implicit: null,
+      components: [{ kind: "product", ref: "tw_ln02", qty: 1 }, { kind: "product", ref: "tw_ln01", qty: 0.5 }] } },
+    { id: "saved_s3", name: "牛腱快炒", archived: false, created_at: SAVED_AT("22"), updated_at: SAVED_AT("22"), content: {
+      meal_type: "cook_full", archetype_id: "protein_stir_fry", method_id: "method_stir_fry", implicit: { oil_g: 10, seasoning: "light" },
+      components: [{ kind: "ingredient", axis: "protein", ref: "beef_shank" }, { kind: "ingredient", axis: "protein", ref: "gone_ing" },
+        { kind: "ingredient", axis: "staple", ref: "cauliflower_rice", is_primary: true }, { kind: "ingredient", axis: "vegetable", ref: "broccoli" },
+        { kind: "food", ref: "fx_cooked_rice", qty: 2 }] } },
+    { id: "saved_s4", name: "已刪除的組合", archived: true, created_at: SAVED_AT("23"), updated_at: SAVED_AT("23"), content: {
+      meal_type: "convenience", archetype_id: null, method_id: null, implicit: null, components: [{ kind: "product", ref: "conv_bx01", qty: 1 }] } },
+  ];
+  const savedDb = (profile) => A.setDb({ profile: profile || P.M, dailyLogs: [], customFoods: CUSTOM_FOODS.concat([COPY_E]), savedMeals: SAVED,
+    settings: { hidden_catalog_uids: ["tw_ln02"] }, tdeeState: tdeeState({ goal_mode: null }) });
+  const savedWrites = (k) => A.takeWrites().forEach((w, i) => emit("picker", k + "/write" + i, normWrite(w)));
+  for (const slot of ["lunch", "afternoon_tea", "dinner"]) {
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpen(slot);
+    emit("picker", "saved/open/" + slot, stable(A.pickerSavedCards()));
+    A.takeDom();
+    for (const id of ["saved_s1", "saved_s2", "saved_s3"]) {
+      env.setNow(NOW_DAY);
+      savedDb();
+      await A.pickerOpen(slot);
+      A.takeDom();
+      const k = "saved/load/" + id + "/" + slot;
+      emit("picker", k, String(A.pickerLoadSaved(id)) + " " + stable(A.pickerState()));
+      uiLines(k);
+    }
+  }
+  {
+    // 帶入時目前分頁已有選取：取代；其他分頁的選取保留
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpen("lunch");
+    A.pickerTab("delivery");
+    A.pickerSelectItems(["custom_a"]);
+    A.pickerTab("convenience");
+    A.pickerSelectItems(["conv_bx03"]);
+    A.takeDom();
+    emit("picker", "saved/load/replace", String(A.pickerLoadSaved("saved_s1")) + " " + stable(A.pickerState()));
+    uiLines("saved/load/replace");
+    // 入口 1：勾存成組合（名稱跟著選取）送出 → 紀錄與組合
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpen("lunch");
+    A.pickerTab("convenience");
+    A.pickerSelectItems(["conv_bx01", "tw_dr05"]);
+    A.pickerFoods([{ uid: "fx_whole_milk", qty: 2 }]);
+    A.pickerSaveAs(null);
+    A.takeDom();
+    await A.pickerSubmit();
+    savedWrites("saved/submit+save");
+    A.takeAlerts().forEach((m, i) => emit("picker", "saved/submit+save/alert" + i, m));
+    emit("picker", "saved/submit+save/lastPicked", stable(A.pickerLastPicked()));
+    A.takeDom(); A.takeEngineIO();
+    // 入口 1：有估算時不能勾（勾了也只記紀錄）
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpen("lunch");
+    A.pickerEstimate("M", "聚餐");
+    A.pickerSaveAs("聚餐組合");
+    A.takeDom();
+    await A.pickerSubmit();
+    savedWrites("saved/submit+estimate");
+    A.takeDom(); A.takeEngineIO();
+    // 編輯模式：沒有時段、不寫紀錄與 picker_last_meal_type；改單品份量存回
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpenEdit("saved_s1");
+    emit("picker", "saved/edit/open", stable(A.pickerState()));
+    A.takeDom();
+    A.pickerFoods([{ uid: "fx_whole_milk", qty: 3 }]);
+    uiLines("saved/edit/changed");
+    await A.pickerSubmit();
+    savedWrites("saved/edit/submit");
+    emit("picker", "saved/edit/lastPicked", stable(A.pickerLastPicked()));
+    A.takeDom(); A.takeEngineIO();
+    // 今日建議的「存成組合」（審核 M1：自己選的紀錄，按鈕的正面快照）
+    env.setNow(NOW_DAY);
+    savedDb();
+    await A.pickerOpen("lunch");
+    A.pickerTab("convenience");
+    A.pickerSelectItems(["conv_bx01"]);
+    await A.pickerSubmit();
+    A.takeWrites(); A.takeDom(); A.takeEngineIO();
+    await A.todayPage();
+    A.takeDom().forEach((line) => { if (line.indexOf("#rec-lunch ") === 0) emit("ui", "saved/today-entry2", line); });
+    A.takeWrites(); A.takeEngineIO();
   }
 }
 

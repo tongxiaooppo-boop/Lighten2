@@ -34,8 +34,10 @@ async function shot(name, scrollTo) {
     const small = [...document.querySelectorAll("button, select, input:not([type=checkbox]):not([type=radio]):not([type=hidden])")]
       .filter((el) => visible(el) && el.getBoundingClientRect().height < 44)
       .map((el) => (el.id ? "#" + el.id : el.className ? "." + String(el.className).split(" ")[0] : el.tagName.toLowerCase()) + "(" + Math.round(el.getBoundingClientRect().height) + "px)");
+    // 勾選框的觸控區是包住它的整個標籤（「存成組合」，工作線 C），量標籤的高度
+    const hitBox = (el) => (el.type === "checkbox" && el.closest("label") ? el.closest("label") : el);
     const smallInPicker = [...document.querySelectorAll("#meal-picker-overlay button, #meal-picker-overlay summary, #meal-picker-overlay input:not([type=hidden])")]
-      .filter((el) => visible(el) && el.getBoundingClientRect().height < 44)
+      .filter((el) => visible(el) && hitBox(el).getBoundingClientRect().height < 44)
       .map((el) => (el.id ? "#" + el.id : el.className ? "." + String(el.className).split(" ")[0] : el.tagName.toLowerCase()) + "(" + Math.round(el.getBoundingClientRect().height) + "px)");
     return { scrollW: document.documentElement.scrollWidth, W: W, overflow: overflow, imgs: imgs, small: [...new Set(small)], smallInPicker: [...new Set(smallInPicker)] };
   })()`);
@@ -571,6 +573,7 @@ async function run() {
   const pv = await js(text("#backup-preview"));
   check(pv.indexOf("飲食紀錄") !== -1 && pv.indexOf("體重紀錄") !== -1 && pv.indexOf("不是同步") !== -1, "5-4 預覽缺筆數對照或「不是同步」說明：" + pv.slice(0, 200));
   check(pv.indexOf("之後新增的紀錄，還原後不會保留") !== -1, "5-4 目前有匯出之後新記的一餐，預覽沒有提示");
+  check(pv.indexOf("我的組合") !== -1, "5-4 預覽沒有「我的組合」一列（工作線 C）");
   check(!/kcal|分鐘/.test(pv), "5-4 預覽出現熱量或運動內容（只能有筆數與日期，章程 C4.12）");
   check(await js(`document.querySelector('#backup-preview [data-backup-restore]').disabled`), "5-4 目前有資料時，還沒先匯出就能按「還原」");
   await shot("資料備份-預覽", "#backup-preview");
@@ -1216,6 +1219,99 @@ async function run() {
   await stepFoodBtn("fx_orange", 1, 6);
   check((await pickedFoodText("fx_orange")).indexOf("4 份＝可食部分 520g（4個，購買量約 680g）") !== -1, "9-6 柳丁 4 份的說明不對：" + (await pickedFoodText("fx_orange")));
   check((await submitAndUndo("lunch", "9-6")) === "柳丁 520g", "9-6 柳丁的紀錄名稱不是「柳丁 520g」");
+
+
+  // ---------- 10. 我的組合（工作線 C，計畫 docs/review/2026-10-01-C-實作計畫.md 第 4 節、第 8 節） ----------
+  console.log("[10. 我的組合]");
+  await tab("today");
+  for (const s of ["lunch", "dinner"]) {
+    if (await js(`!!document.querySelector("#rec-${s} .rec-undo-btn")`)) {
+      await click(`#rec-${s} .rec-undo-btn`);
+      await until(`!!document.querySelector("#rec-${s} .rec-pick-btn")`, "10 開頭撤銷" + s + "沒有回到推薦");
+    }
+  }
+  const savedNames = () => js(`[...document.querySelectorAll('#foods-saved .saved-item-name')].map((e) => e.textContent).join("|")`);
+  // 10-1 入口 1：還沒有組合時選擇器沒有組合列；選主餐＋單品，勾「存成組合」→ 名稱預填品名（不寫量）→ 送出
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel .saved-row')`)), "10-1 還沒有組合時選擇器出現組合列");
+  const main10 = (await passUids("main"))[0];
+  await click(`#meal-picker-panel .item-card[data-uid=${main10}]`);
+  await click(`#meal-picker-drinks [data-food-uid=fx_whole_milk]`);
+  await click(`#meal-picker-drinks [data-save-as]`);
+  const name10 = await js(`document.getElementById('meal-picker-save-name').value`);
+  check(/全脂奶（自己倒）$/.test(name10) && !/ml|g$/.test(name10), "10-1 預設名稱不是只寫品名：" + name10);
+  await shot("組合-存成組合", "#meal-picker-drinks .save-as");
+  await click("#meal-picker-submit");
+  await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "10-1 勾存成組合送出後午餐沒有記錄");
+  await click(`#rec-lunch .rec-undo-btn`);
+  await until(`!!document.querySelector('#rec-lunch .rec-pick-btn')`, "10-1 撤銷後午餐沒有回到推薦");
+  // 10-2 帶入：晚餐打開，最上面一列有組合（型態、熱量）；點了切到超商、帶入兩件；360 寬不讓整頁橫捲
+  await openPicker("dinner");
+  await until(`!!document.querySelector('#meal-picker-panel .saved-card')`, "10-2 選擇器最上面沒有組合卡片");
+  const card10 = await js(`document.querySelector('#meal-picker-panel .saved-card').innerText.replace(/\\s+/g, " ")`);
+  check(card10.indexOf("超商 · 約") !== -1 && /kcal/.test(card10), "10-2 組合卡片沒有型態或熱量：" + card10);
+  await shot("組合-選擇器組合列", "#meal-picker-panel");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("組合-選擇器組合列-360寬", "#meal-picker-panel");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await click(`#meal-picker-panel .saved-card`);
+  check((await currentTab()) === "convenience" && (await js(text("#meal-picker-summary"))).indexOf("已選 2 件") === 0 && !!(await js(`document.getElementById('food-sel-fx_whole_milk')`)),
+    "10-2 帶入後不是超商分頁、已選 2 件與全脂奶：" + (await js(text("#meal-picker-summary"))));
+  check((await js(text("#meal-picker-panel"))).indexOf("已帶入「" + name10 + "」") !== -1, "10-2 帶入後沒有說明");
+  await shot("組合-帶入", "#meal-picker-panel");
+  await closePicker();
+  // 10-3 外食加了估算時「存成組合」不能勾
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await click(`#meal-picker-panel [data-estimate-size=M]`);
+  check(await js(`document.querySelector('#meal-picker-drinks [data-save-as]').disabled`) && (await js(text("#meal-picker-drinks"))).indexOf("估算的一餐不能存成組合") !== -1, "10-3 有估算時「存成組合」沒有停用或沒有說明");
+  await closePicker();
+  // 10-4 入口 2：記推薦的午餐 → 卡片「存成組合」→ 名稱欄預填 → 存
+  await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "10-4 午餐沒有推薦可以記");
+  await click(`#rec-lunch .rec-log-btn`);
+  await until(`!!document.querySelector('#rec-lunch [data-save-log-id]')`, "10-4 已記錄的午餐沒有「存成組合」");
+  await click(`#rec-lunch [data-save-log-id]`);
+  await until(`!!document.getElementById('rec-save-name') && document.getElementById('rec-save-name').value !== ''`, "10-4 名稱沒有預填");
+  await shot("組合-今日建議存成組合", "#rec-lunch");
+  await click(`#rec-lunch [data-save-confirm]`);
+  await until(`${text("#rec-lunch")}.indexOf("已存成組合") !== -1`, "10-4 沒有存成組合");
+  await click(`#rec-lunch .rec-undo-btn`);
+  await until(`!!document.querySelector('#rec-lunch .rec-pick-btn')`, "10-4 撤銷後午餐沒有回到推薦");
+  // 10-5 管理區塊：最上方收著「我的組合（2）」；改名；編輯內容（編輯模式）存回；刪除與復原；已刪除還原
+  await tab("foods");
+  await until(`(document.querySelector('#foods-saved summary') || {}).textContent === "我的組合（2）"`, "10-5 我的食物沒有「我的組合（2）」區塊");
+  check((await js(`document.querySelector('#foods-saved summary').textContent`)) === "我的組合（2）" && !(await js(`document.querySelector('#foods-saved details').open`)),
+    "10-5 區塊不是收著的「我的組合（2）」");
+  check(await js(`(() => { const a = document.getElementById('foods-saved').getBoundingClientRect().top, b = document.getElementById('foods-subtabs').getBoundingClientRect().top; return a < b; })()`), "10-5 管理區塊不在子分頁上面");
+  await click(`#foods-saved details[data-saved-section=main] > summary`);
+  await click(`#foods-saved [data-saved-rename]`);
+  await js(`(() => { const el = document.getElementById('saved-rename-input'); el.value = '平日午餐'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await click(`#foods-saved [data-saved-rename-save]`);
+  await until(`${text("#foods-saved")}.indexOf("已改名為「平日午餐」") !== -1`, "10-5 改名沒有完成");
+  await shot("組合-管理區塊", "#foods-saved");
+  await click(`#foods-saved [data-saved-edit]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "10-5 編輯內容沒有打開選擇器");
+  check((await js(text("#meal-picker-title"))) === "編輯組合：平日午餐" && (await js(text("#meal-picker-submit"))) === "存回組合" &&
+    (await js(text("#meal-picker-gap"))).indexOf("編輯組合不計算時段的配額") !== -1 && !(await js(`!!document.querySelector('.saved-row, .save-as')`)),
+    "10-5 編輯模式的標題、送出鈕、配額說明不對，或還有組合列、存成組合");
+  await shot("組合-編輯模式", "#meal-picker-panel");
+  await click(`#meal-picker-drinks [data-food-step=fx_whole_milk][data-dir="1"]`);
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#foods-saved")}.indexOf("已存回「平日午餐」") !== -1`, "10-5 存回組合沒有完成");
+  await click(`#foods-saved [data-saved-archive]`);
+  await until(`${text("#foods-saved")}.indexOf("已刪除「平日午餐」") !== -1`, "10-5 刪除沒有提示");
+  await shot("組合-刪除復原", "#foods-saved");
+  await click(`#foods-saved .dislike-notice [data-saved-restore]`);
+  await until(`${text("#foods-saved")}.indexOf("已還原「平日午餐」") !== -1`, "10-5 復原沒有完成");
+  check((await savedNames()).split("|").length === 2, "10-5 復原後不是 2 筆：" + (await savedNames()));
+  // 10-6 搜尋組合名稱 → 結果標「我的組合」，點了捲到管理區塊那一筆
+  await js(`(() => { const el = document.getElementById('foods-search'); el.value = '平日'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await until(`!!document.querySelector('#foods-body [data-saved-goto]')`, "10-6 搜尋沒有組合結果");
+  check((await js(text("#foods-body"))).indexOf("我的組合") !== -1 && (await js(text("#foods-body"))).indexOf("沒有符合") === -1, "10-6 組合結果沒有標「我的組合」或多了「沒有符合」");
+  await click(`#foods-body [data-saved-goto]`);
+  await until(`(() => { const r = document.querySelector('#foods-saved .saved-item'); if (!r) return false; const b = r.getBoundingClientRect(); return b.top >= 0 && b.bottom <= window.innerHeight; })()`, "10-6 點組合結果沒有捲到管理區塊");
+  await js(`(() => { const el = document.getElementById('foods-search'); el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
