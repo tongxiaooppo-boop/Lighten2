@@ -2166,6 +2166,42 @@ picker/quickadd/M/lunch/convenience/vegan-conflict/dom01	#meal-picker-gap html="
 picker/quickadd/M/lunch/convenience/vegan-conflict/dom02	#meal-picker-hint hidden
 picker/quickadd/M/lunch/convenience/vegan-conflict/dom04	#meal-picker-submit (untouched)
 picker/quickadd/M/lunch/convenience/vegan-conflict/dom05	#meal-picker-summary html="已選 1 件 · 約 300 kcal · 蛋白質 — · 碳水 — · 脂肪 — · 纖維 — · 鈉 無資料"
+picker/foods/convenience/lunch/only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 39g</p><p>纖維缺口約 11.2g</p>"
+picker/foods/convenience/lunch/only/dom02	#meal-picker-hint hidden
+picker/foods/convenience/lunch/only/dom04	#meal-picker-submit (untouched)
+picker/foods/convenience/lunch/only/dom05	#meal-picker-summary html="已選 1 件 · 約 303 kcal · 蛋白質 15g · 碳水 23g · 脂肪 17g · 纖維 0g · 鈉 約 180 mg"
+picker/foods/delivery/dinner/only/dom01	#meal-picker-gap html="<p>蛋白質缺口約 52.5g</p><p>纖維缺口約 9.5g</p>"
+picker/foods/delivery/dinner/only/dom02	#meal-picker-hint hidden
+picker/foods/delivery/dinner/only/dom04	#meal-picker-submit (untouched)
+picker/foods/delivery/dinner/only/dom05	#meal-picker-summary html="已選 1 件 · 約 89 kcal · 蛋白質 2g · 碳水 23g · 脂肪 0g · 纖維 2g · 鈉 約 0 mg"
+picker/foods/cook/breakfast/only/dom02	#meal-picker-gap html="<p>蛋白質缺口約 31.2g</p><p>纖維缺口約 6.7g</p>"
+picker/foods/cook/breakfast/only/dom03	#meal-picker-hint hidden
+picker/foods/cook/breakfast/only/dom05	#meal-picker-submit (untouched)
+picker/foods/cook/breakfast/only/dom06	#meal-picker-summary html="已選 1 件 · 約 293 kcal · 蛋白質 5g · 碳水 66g · 脂肪 0g · 纖維 1g · 鈉 約 3 mg"
+picker/foods/cook/lunch/compose+food/dom03	#meal-picker-gap html="<p>這組合約 761 kcal，這個時段配額約 711 kcal（+50），仍可送出。</p><p>蛋白質缺口約 8.2g</p><p>纖維缺口約 4g</p>"
+picker/foods/cook/lunch/compose+food/dom04	#meal-picker-hint hidden text="請先選餐型"
+picker/foods/cook/lunch/compose+food/dom06	#meal-picker-submit (untouched)
+picker/foods/cook/lunch/compose+food/dom07	#meal-picker-summary html="已配好 · 約 761 kcal（含用油約 10g） · 蛋白質 46g · 碳水 77g · 脂肪 30g · 纖維 7g · 鈉 約 921 mg（部分品項無資料）"
+picker/foods/cook/lunch/half+food/dom03	#meal-picker-gap html="<p>蛋白質缺口約 52.8g</p><p>纖維缺口約 11g</p>"
+picker/foods/cook/lunch/half+food/dom04	#meal-picker-hint text="請選蛋白質（只記單品可以再點一次「炒類」取消餐型）"
+picker/foods/cook/lunch/half+food/dom06	#meal-picker-submit disabled
+picker/foods/cook/lunch/half+food/dom07	#meal-picker-summary html="還沒配好 · 約 73 kcal · 蛋白質 1g · 碳水 16g · 脂肪 0g · 纖維 0g · 鈉 約 1 mg"
+picker/foods/cook/dinner/drink-only/dom03	#meal-picker-gap html="<p>蛋白質缺口約 48g</p><p>纖維缺口約 10.2g</p>"
+picker/foods/cook/dinner/drink-only/dom04	#meal-picker-hint hidden text="請先選餐型"
+picker/foods/cook/dinner/drink-only/dom06	#meal-picker-submit (untouched)
+picker/foods/cook/dinner/drink-only/dom07	#meal-picker-summary html="已選 1 件 · 約 135 kcal · 蛋白質 6g · 碳水 19g · 脂肪 4g · 纖維 1g · 鈉 無資料"
+picker/foods/limit/four/dom01	#meal-picker-gap html="<p>蛋白質缺口約 36.9g</p><p>纖維：無資料</p>"
+picker/foods/limit/four/dom02	#meal-picker-hint hidden
+picker/foods/limit/four/dom04	#meal-picker-submit (untouched)
+picker/foods/limit/four/dom05	#meal-picker-summary html="已選 4 件 · 約 351 kcal · 蛋白質 17g · 碳水 47g · 脂肪 11g · 纖維 — · 鈉 約 543 mg"
+picker/foods/limit/qty12+0.5/dom01	#meal-picker-gap html="<p>這組合約 909 kcal，這個時段配額約 711 kcal（+198），仍可送出。</p><p>蛋白質缺口約 39.1g</p><p>纖維缺口約 8.2g</p>"
+picker/foods/limit/qty12+0.5/dom02	#meal-picker-hint hidden
+picker/foods/limit/qty12+0.5/dom04	#meal-picker-submit (untouched)
+picker/foods/limit/qty12+0.5/dom05	#meal-picker-summary html="已選 2 件 · 約 909 kcal · 蛋白質 15g · 碳水 205g · 脂肪 1g · 纖維 3g · 鈉 約 10 mg"
+picker/foods/nullfiber/dom02	#meal-picker-gap html="<p>蛋白質缺口約 45.2g</p><p>纖維：無資料</p>"
+picker/foods/nullfiber/dom03	#meal-picker-hint hidden
+picker/foods/nullfiber/dom05	#meal-picker-submit (untouched)
+picker/foods/nullfiber/dom06	#meal-picker-summary html="已選 2 件 · 約 136 kcal · 蛋白質 9g · 碳水 19g · 脂肪 3g · 纖維 — · 鈉 約 455 mg"
 week/none/dom00	#week-cal-summary text="本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）"
 week/none/dom01	#week-days html="<div class=\"week-day-item\"><span class=\"week-day-label\">週一 09/21</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週二 09/22</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div><div class=\"week-day-item\"><span class=\"week-day-label\">週三 09/23</span><span class=\"week-day-value week-day-empty\">尚無紀錄</span></div>"
 week/none/dom02	#week-fiber text="膳食纖維：—"

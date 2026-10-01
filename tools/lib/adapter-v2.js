@@ -171,7 +171,13 @@ module.exports = async function createV2Adapter(ROOT) {
         // 畫面放到最下方「你標了不吃」組的（engine splitDisliked，依原因代碼；工作線 D 切片 2 計畫 S10）
         disliked: engPicker.splitDisliked(t.items, (it) => (t.codes || {})[it.uid]).disliked.map((it) => it.uid),
       });
-      return { tab: mp.tab, convenience: split(mp.tabs.convenience), delivery: split(mp.tabs.delivery), drinks: split(mp.drinks), catalog: mp.catalog };
+      // 單品（工作線 D 切片 7，審核 S6）：被擋的 uid:灰字（不含標了不吃的）與標了不吃的
+      const f = mp.foods;
+      const foods = {
+        blocked: f.items.filter((it) => f.labels[it.uid] && f.codes[it.uid] !== "disliked").map((it) => it.uid + ":" + f.labels[it.uid]),
+        disliked: f.items.filter((it) => f.codes[it.uid] === "disliked").map((it) => it.uid),
+      };
+      return { tab: mp.tab, convenience: split(mp.tabs.convenience), delivery: split(mp.tabs.delivery), drinks: split(mp.drinks), foods: foods, catalog: mp.catalog };
     },
     pickerTab(tab) { picker.selectTab(tab); },
     // 目前分頁可選的品項＋可選的飲料
@@ -231,6 +237,22 @@ module.exports = async function createV2Adapter(ROOT) {
       mp.qtyByUid[uid] = q;
       picker.renderMealPicker();
       return picker.currentTotals();
+    },
+    // 單品（工作線 D 切片 7）：直接設已選的單品 [{ uid, qty }]，回傳摘要用的合計
+    pickerFoods(sel) {
+      const mp = picker.mealPicker;
+      mp.foodSel = sel.map((x) => ({ uid: x.uid, qty: x.qty }));
+      picker.renderMealPicker();
+      return picker.currentTotals();
+    },
+    pickerFoodSel: () => picker.mealPicker.foodSel.map((x) => ({ uid: x.uid, qty: x.qty })),
+    // 點一張單品卡片（同 index.js onFoodClick：第 5 項 alert、再點已選的不新增）
+    pickerAddFood(uid) {
+      const mp = picker.mealPicker;
+      const r = engPicker.addFood(mp.foodSel, uid);
+      if (r.problem) { alert(r.problem); return; }
+      mp.foodSel = r.sel;
+      picker.renderMealPicker();
     },
     pickerSubmit: () => picker.onMealSubmit(),
     pickerLastPicked: () => clone(globalThis.__fakeDbState.settings.picker_last_meal_type) || null,

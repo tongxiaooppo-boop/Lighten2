@@ -91,6 +91,44 @@ async function run() {
   await js(`document.getElementById('meal-picker-submit').click()`);
   await until(`${text("#rec-breakfast")}.indexOf("已記錄") !== -1`, "自煮送出後早餐沒有變成已記錄");
 
+  console.log("[單品（真的 IndexedDB，工作線 D 切片 7）]");
+  const dailyLogs = async () => JSON.parse(await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => {
+    const q = r.result.transaction('daily_log').objectStore('daily_log').getAll(); q.onsuccess = () => res(JSON.stringify(q.result)); }; })`));
+  // 外食分頁：全脂奶 1.5 份（熱量用 engine 算出來比，不寫死，審核 S9）
+  await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "午餐自己選沒有打開（單品）");
+  await js(`document.querySelector('#meal-picker-tabs [data-tab=delivery]').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-food-uid=fx_whole_milk]').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-food-step=fx_whole_milk][data-dir="1"]').click()`);
+  const milkKcal = await js(`(async () => { const mc = await import('./js/engine/meal-content.js'); const c = await (await import('./js/data/catalog.js')).loadCatalog();
+    return Math.round(mc.contentTotals(mc.buildDraftContent({ kind: 'products', meal_type: 'delivery', items: [], estimates: [], foods: [{ item: c.foodTree.byId.fx_whole_milk, qty: 1.5 }] }), c).kcal); })()`);
+  await until(`${text("#meal-picker-summary")}.indexOf("已選 1 件 · 約 ${milkKcal} kcal") !== -1 && !document.getElementById('meal-picker-submit').disabled`, "全脂奶 1.5 份的摘要不是約 " + milkKcal + " kcal 或不能送出");
+  await js(`document.getElementById('meal-picker-submit').click()`);
+  await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "單品送出後午餐沒有變成已記錄");
+  const milkLog = (await dailyLogs()).find((l) => l.slot === "lunch");
+  const mc0 = milkLog && milkLog.content.components[0];
+  check(!!milkLog && milkLog.meal_type === "delivery" && milkLog.name === "全脂奶（自己倒） 360ml" && milkLog.content.components.length === 1 &&
+    mc0.kind === "food" && mc0.ref === "fx_whole_milk" && mc0.qty === 1.5 && mc0.snapshot.amount === 240 && mc0.snapshot.unit === "ml" && milkLog.content.implicit === null,
+    "單品紀錄寫進資料庫的內容不對：" + JSON.stringify(milkLog));
+  await js(`document.querySelector('#rec-lunch .rec-undo-btn').click()`);
+  await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "撤銷單品紀錄後午餐沒有回到推薦");
+  // 自煮分頁不選餐型，搜尋白飯加點單品 → 可以送出，implicit 恰好 0 與 null
+  await js(`document.querySelector('#rec-dinner .rec-pick-btn').click()`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "晚餐自己選沒有打開（單品）");
+  await js(`document.querySelector('#meal-picker-tabs [data-tab=cook]').click()`);
+  check(await js(`document.getElementById('meal-picker-submit').disabled`), "自煮分頁什麼都沒選就能送出");
+  await js(`(() => { const el = document.getElementById('meal-picker-food-search'); el.value = '白飯'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await until(`!!document.querySelector('#meal-picker-food-results [data-food-uid=fx_cooked_rice]')`, "搜尋白飯沒有結果");
+  await js(`document.querySelector('#meal-picker-food-results [data-food-uid=fx_cooked_rice]').click()`);
+  await until(`!document.getElementById('meal-picker-submit').disabled`, "自煮分頁只選單品不能送出");
+  await js(`document.getElementById('meal-picker-submit').click()`);
+  await until(`${text("#rec-dinner")}.indexOf("已記錄") !== -1`, "自煮只記單品送出後晚餐沒有變成已記錄");
+  const riceLog = (await dailyLogs()).find((l) => l.slot === "dinner");
+  check(!!riceLog && (riceLog.meal_type === "cook_full" || riceLog.meal_type === "cook_quick") && riceLog.content.archetype_id === null && riceLog.content.method_id === null &&
+    JSON.stringify(riceLog.content.implicit) === '{"oil_g":0,"seasoning":null}' && riceLog.name === "白飯 40g", "自煮只記單品的紀錄不對：" + JSON.stringify(riceLog));
+  await js(`document.querySelector('#rec-dinner .rec-undo-btn').click()`);
+  await until(`!!document.querySelector('#rec-dinner .rec-log-btn')`, "撤銷自煮單品紀錄後晚餐沒有回到推薦");
+
   console.log("[本週、運動、體重]");
   await js(`document.querySelector('.tab-btn[data-tab=week]').click()`);
   await until(`${text("#week-days")}.indexOf("kcal") !== -1`, "本週總覽沒有今天的熱量");
@@ -183,7 +221,13 @@ async function run() {
       const p = c.productsByUid['conv_bx01'];
       const content = mc.buildDraftContent({ kind: 'products', meal_type: 'convenience', items: [p], estimates: [], drink: null, qtyByUid: { conv_bx01: 2 } });
       await m.addDailyLog(mc.buildLogEntry({ date: '2026-09-20', slot: 'lunch', source: 'manual', name: mc.draftLogName({ kind: 'products', items: [p], estimates: [], drink: null, qtyByUid: { conv_bx01: 2 } }),
-        content: content, totals: mc.contentTotals(content, c), createdAt: new Date().toISOString() })); })()`);
+        content: content, totals: mc.contentTotals(content, c), createdAt: new Date().toISOString() }));
+      // 工作線 D 切片 7：一筆只有單品的自煮紀錄（不撤銷），備份來回要帶著它
+      const fd = { kind: 'cook', meal_type: 'cook_quick', archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1,
+        foods: [{ item: c.foodTree.byId.fx_cooked_rice, qty: 4 }, { item: c.foodTree.byId.fx_ham, qty: 0.5 }] };
+      const fc = mc.buildDraftContent(fd, { oilHabit: 'normal' });
+      await m.addDailyLog(mc.buildLogEntry({ date: '2026-09-21', slot: 'dinner', source: 'manual', name: mc.draftLogName(fd),
+        content: fc, totals: mc.contentTotals(fc, c), createdAt: new Date().toISOString() })); })()`);
     const hiddenNow = await js(`(async () => { const m = ${DBM}; return await m.getHiddenCatalogUids(); })()`);
     check(hiddenNow.indexOf("tw_dr05") !== -1 && hiddenNow.indexOf("conv_bx04") !== -1, "隱藏清單沒有 tw_dr05 與複製後自動隱藏的 conv_bx04：" + JSON.stringify(hiddenNow));
   }
@@ -199,6 +243,7 @@ async function run() {
     fsm.writeFileSync(process.env.SMOKE_FREEZE_BACKUP, JSON.stringify(Object.assign({ format: obj.format, schema_version: obj.schema_version, exported_at: "2026-09-29T12:00:00.000Z", app_version: "smoke" }, obj), null, 2) + String.fromCharCode(10));
     console.log("  已凍結 " + process.env.SMOKE_FREEZE_BACKUP);
   }
+  check(JSON.parse(exported).sections.logs.daily_log.some((l) => l.content.components.some((x) => x.kind === "food")), "備份沒有帶到單品紀錄");
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
   // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）
