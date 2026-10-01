@@ -808,6 +808,8 @@ async function main() {
   console.log("[單品]");
   checkSingleFoods(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), candidatePool);
+  checkSingleFoodsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
 
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
@@ -1629,6 +1631,99 @@ function checkSingleFoods(catalog, candidatePool) {
   });
   const foodOnly = cont("cook", [F("chicken_breast", 4), F("fx_cooked_rice", 4)]);
   check(same(rec([foodOnly]), rec([])) && same(rec([cont("convenience", [F("chicken_breast", 4)])]), rec([])), "今天記了單品（雞胸）時推薦要逐字不變");
+}
+
+// 工作線 D 切片 7：daily_log 的 food 元件驗證與備份（計畫第 4 節「db 與備份」、8.3 S7）
+function checkSingleFoodsDb(catalog) {
+  const mc = M.mc, db = M.db;
+  const b = catalog.foodTree.byId;
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  const errOf = (entry) => { try { db.validateDailyLog(entry); return null; } catch (e) { return e.message; } };
+  const entryOf = (draft, name) => {
+    const content = mc.buildDraftContent(draft, { oilHabit: "normal" });
+    return mc.buildLogEntry({ date: "2026-10-01", slot: "lunch", source: "manual", name: name || mc.draftLogName(draft), content: content,
+      totals: mc.contentTotals(content, catalog), createdAt: "2026-10-01T04:00:00.000Z" });
+  };
+  const cookBase = { kind: "cook", archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1 };
+  const prodBase = (tab) => ({ kind: "products", meal_type: tab, items: [], estimates: [] });
+
+  // 1. 333 個分層品項 × qty 0.5／1／12 建成紀錄，全部通過驗證
+  let bad = 0;
+  catalog.foodTree.items.forEach((it) => [0.5, 1, 12].forEach((q) => {
+    if (errOf(entryOf(Object.assign(prodBase("convenience"), { foods: [{ item: it, qty: q }] }))) !== null) bad++;
+  }));
+  check(bad === 0, "每個分層品項建成的單品紀錄都要通過寫入驗證（失敗 " + bad + " 筆）");
+  // 三種型態只有單品
+  const rice = { item: b.fx_cooked_rice, qty: 4 };
+  const ok = {
+    convenience: entryOf(Object.assign(prodBase("convenience"), { foods: [rice] })),
+    delivery: entryOf(Object.assign(prodBase("delivery"), { foods: [rice, { item: b.fx_banana, qty: 1.5 }] })),
+    cook_quick: entryOf(Object.assign({}, cookBase, { meal_type: "cook_quick", foods: [rice] })),
+    cook_full: entryOf(Object.assign({}, cookBase, { meal_type: "cook_full", foods: [rice] })),
+  };
+  Object.keys(ok).forEach((k) => check(errOf(ok[k]) === null, "只有單品的紀錄（" + k + "）被擋下：" + errOf(ok[k])));
+  check(errOf(entryOf(Object.assign({}, cookBase, { meal_type: "cook_full", drink: catalog.productsByUid.tw_dr05 }))) === null, "自煮只有飲料的紀錄要通過（S3）");
+
+  // 2. 壞的 food 元件：訊息指到欄位
+  const good = ok.convenience;
+  const withFood = (patch, snapPatch) => {
+    const e = clone(good);
+    const c = e.content.components[0];
+    Object.assign(c, patch);
+    if (snapPatch) Object.keys(snapPatch).forEach((k) => { if (snapPatch[k] === undefined) delete c.snapshot[k]; else c.snapshot[k] = snapPatch[k]; });
+    if (patch && "ref" in patch && patch.ref === undefined) delete c.ref;
+    if (patch && "snapshot" in patch && patch.snapshot === undefined) delete c.snapshot;
+    return e;
+  };
+  const AT = "content\\.components\\[0\\]";
+  const broken = [
+    ["沒有 ref", withFood({ ref: undefined }), AT + "\\.ref"],
+    ["ref 空字串", withFood({ ref: "" }), AT + "\\.ref"],
+    ...[0, 0.25, 12.5, 13, "2", null].map((q) => ["qty " + JSON.stringify(q), withFood({ qty: q }), AT + "\\.qty"]),
+    ["沒有 snapshot", withFood({ snapshot: undefined }), AT + "\\.snapshot"],
+    ["snapshot 沒有 name", withFood({}, { name: undefined }), AT + "\\.snapshot\\.name"],
+    ["snapshot 沒有 kcal", withFood({}, { kcal: undefined }), AT + "\\.snapshot"],
+    ["snapshot 沒有 amount", withFood({}, { amount: undefined }), AT + "\\.snapshot\\.amount"],
+    ["snapshot amount 0", withFood({}, { amount: 0 }), AT + "\\.snapshot\\.amount"],
+    ["snapshot 沒有 unit", withFood({}, { unit: undefined }), AT + "\\.snapshot\\.unit"],
+    ["snapshot unit oz", withFood({}, { unit: "oz" }), AT + "\\.snapshot\\.unit"],
+    ["snapshot 營養欄位是字串", withFood({}, { protein_g: "3" }), AT + "\\.snapshot\\.protein_g"],
+    ["snapshot 少了纖維欄位（要寫 null）", withFood({}, { fiber_g: undefined }), AT + "\\.snapshot\\.fiber_g"],
+    ["snapshot 少了鈉欄位", withFood({}, { sodium_mg: undefined }), AT + "\\.snapshot\\.sodium_mg"],
+    ["snapshot partial 不是陣列", withFood({}, { partial: "sat_fat_g" }), AT + "\\.snapshot\\.partial"],
+  ];
+  broken.forEach((x) => check(new RegExp(x[2]).test(errOf(x[1]) || ""), "單品元件 " + x[0] + " 沒有被擋下或訊息不對：" + errOf(x[1])));
+  check(errOf(withFood({}, { partial: ["sat_fat_g"] })) === null && errOf(withFood({}, { fiber_g: null })) === null, "snapshot 的 partial 陣列、營養欄位 null 要接受");
+
+  // 3. 自煮沒有食材：餐型、烹調法是 null，implicit 恰好 0 與 null（decisions #123）
+  const cookPatch = (patch) => { const e = clone(ok.cook_quick); Object.assign(e.content, patch); return e; };
+  [["用油 5", { implicit: { oil_g: 5, seasoning: null } }], ["調味 light", { implicit: { oil_g: 0, seasoning: "light" } }],
+    ["有餐型", { archetype_id: "protein_stir_fry" }], ["有烹調法", { method_id: "method_stir_fry" }],
+    ["implicit 多一個欄位", { implicit: { oil_g: 0, seasoning: null, x: 1 } }], ["implicit 是 null", { implicit: null }],
+  ].forEach((x) => check(/content\.(implicit|archetype_id)/.test(errOf(cookPatch(x[1])) || ""), "自煮沒有食材但" + x[0] + "要擋下：" + errOf(cookPatch(x[1]))));
+  check(errOf(cookPatch({})) === null, "自煮沒有食材、implicit 恰好 0 與 null 要通過");
+  const conv = clone(good);
+  conv.content.implicit = { oil_g: 0, seasoning: null };
+  check(/content\.implicit/.test(errOf(conv) || ""), "超商只有單品帶 implicit 要擋下");
+
+  // 4. 備份：v2 加一筆單品紀錄照樣能還原，不升版（Q2）
+  const fixtureV2 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v2.json"), "utf8"));
+  check(db.BACKUP_SCHEMA_VERSION === 2, "切片 7 不升備份版本");
+  const withLog = (log) => {
+    const f = clone(fixtureV2);
+    const logs = f.sections.logs.daily_log;
+    logs.push(Object.assign(clone(log), { id: "log_slice7_" + logs.length }));
+    f.manifest.daily_log = logs.length;
+    return f;
+  };
+  const fv = withLog(ok.cook_full);
+  check(db.validateBackup(db.migrateBackup(fv)).length === 0, "v2 備份加一筆單品紀錄不能還原：" + db.validateBackup(db.migrateBackup(fv)).slice(0, 2).join("；"));
+  check(JSON.stringify(db.migrateBackup(fv)) === JSON.stringify(fv), "migrateBackup 不能改含單品的 v2 備份");
+  check(db.summarizeBackup(fv).daily_log.count === db.summarizeBackup(fixtureV2).daily_log.count + 1, "summarizeBackup 單品紀錄的筆數");
+  const badQty = clone(ok.convenience);
+  badQty.content.components[0].qty = 13;
+  const n = fixtureV2.sections.logs.daily_log.length + 1;
+  check(db.validateBackup(db.migrateBackup(withLog(badQty))).some((x) => new RegExp("飲食紀錄第 " + n + " 筆.*qty").test(x)), "單品 qty 13 的備份要擋下並指出第 " + n + " 筆");
 }
 
 main().catch((err) => {
