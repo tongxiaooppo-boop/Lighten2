@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.className += ' js';</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>輕盈計畫 使用說明</title>
@@ -115,6 +116,32 @@ table.t th { background: var(--note-bg); }
 @media (min-width: 640px) {
   .pairs { grid-template-columns: 1fr 1fr; }
 }
+
+.tabbar { display: grid; grid-template-columns: repeat(5, 1fr); gap: .3rem; padding: .5rem 0; border-bottom: 1px solid #EFE3D2; margin: 10px 0 0; }
+.tabbar button {
+  min-width: 0; min-height: 44px; padding: .4rem .1rem; font-size: .78rem; line-height: 1.2; text-align: center; white-space: nowrap;
+  border: 1px solid #EFE3D2; border-radius: 10px; background: #fff; color: #8A7A63; font-family: inherit; cursor: pointer;
+}
+.tabbar button.is-active { background: #C1652F; border-color: #C1652F; color: #fff; }
+.toplinks { display: none; gap: .5rem; margin: 10px 0 0; flex-wrap: wrap; }
+.js .toplinks { display: flex; }
+.toplinks a { font-size: .88rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 .8em; text-decoration: none; background: #fff; color: var(--ink-soft); }
+.toplinks a.is-active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-deep); }
+.subbar { display: flex; flex-wrap: wrap; gap: .4rem; margin: .6rem 0 .4rem; }
+.subbar button {
+  flex: 1 1 auto; min-height: 44px; padding: 0 .7rem; font-size: .95rem; font-family: inherit;
+  border: 1px solid #EFE3D2; border-radius: 10px; background: #fff; color: #5A4C3A; cursor: pointer;
+}
+.subbar button.selected { border-color: #C1652F; background: #FBF0E6; color: #3A2E22; font-weight: 600; }
+.tabbar, .subbar { display: none; }
+.js .tabbar { display: grid; }
+.js .subbar { display: flex; }
+.js .pane, .js .subpane { display: none; }
+.js .pane.active, .js .subpane.active { display: block; }
+.pane > h2:first-child { margin-top: 1.2rem; }
+.subpane { border-top: 1px dashed var(--line); margin-top: .4rem; }
+html:not(.js) .subpane { margin-top: 1.4rem; }
+.common { margin-top: 1.6rem; border-top: 2px solid var(--line); }
 </style>
 </head>
 <body>
@@ -122,41 +149,20 @@ table.t th { background: var(--note-bg); }
 
 <header class="top">
   <h1>輕盈計畫　使用說明</h1>
-  <p>照 App 現在實際的樣子寫。按鈕與提示文字用「」括起來，跟畫面上的字一樣。</p>
+  <p>照 App 現在實際的樣子寫。按鈕與提示文字用「」括起來，跟畫面上的字一樣。分頁和 App 一樣，可以一邊開 App 一邊對照。</p>
 </header>
 
-<nav class="toc" aria-label="目錄">
-  <b>目錄（點了跳到那一段）</b>
-  <ol>
-    <li><a href="#s-start">先看這裡：App 怎麼用</a></li>
-    <li><a href="#s-profile">基本資料</a></li>
-    <li><a href="#s-today">今日建議</a></li>
-    <li><a href="#s-pick">「自己選」詳細說明</a>
-      <ol>
-        <li><a href="#p-open">打開時看到什麼、停在哪一頁</a></li>
-        <li><a href="#p-store">超商與外食分頁</a></li>
-        <li><a href="#p-qty">份量晶片、「不吃」、「複製成我的版本」</a></li>
-        <li><a href="#p-limit">每個角色最多選幾個</a></li>
-        <li><a href="#p-estimate">外食的「找不到？直接估算」</a></li>
-        <li><a href="#p-quick">「＋新增到我的品項」與「補填」</a></li>
-        <li><a href="#p-drinks">共用步驟：加飲品・水果</a></li>
-        <li><a href="#p-foods">共用步驟：加點單品</a></li>
-        <li><a href="#p-cook">自煮分頁</a></li>
-        <li><a href="#p-summary">畫面底部的摘要與提示怎麼讀</a></li>
-        <li><a href="#p-switch">切分頁、取消、記下這餐</a></li>
-        <li><a href="#p-saved">我的組合</a></li>
-      </ol>
-    </li>
-    <li><a href="#s-foods">我的食物</a></li>
-    <li><a href="#s-week">本週總覽</a></li>
-    <li><a href="#s-exercise">運動紀錄</a></li>
-    <li><a href="#s-backup">資料備份（在基本資料分頁最下面）</a></li>
-    <li><a href="#s-cheat">看到這些字是什麼意思（速查）</a></li>
-  </ol>
-</nav>
-
-<!-- ============================================================ -->
-<h2 id="s-start">先看這裡：App 怎麼用</h2>
+<div class="toplinks"><a href="#start" data-pane="start">先看這裡</a><a href="#cheat" data-pane="cheat">看到這些字是什麼意思（速查）</a></div>
+<nav class="tabbar" aria-label="說明的分頁（照 App 的順序）"><button type="button" data-pane="profile">基本資料</button><button type="button" data-pane="today">今日建議</button><button type="button" data-pane="foods">我的食物</button><button type="button" data-pane="week">本週總覽</button><button type="button" data-pane="exercise">運動紀錄</button></nav>
+<section class="pane" id="pane-start"><h2 id="s-start">先看這裡：App 怎麼用</h2>
+<div class="callout"><p class="t">這份說明的分頁</p>
+<ul>
+<li><a href="#profile">基本資料</a>（含最下面的 <a href="#profile-backup">資料備份</a>）</li>
+<li><a href="#today">今日建議</a>：建議卡，以及「自己選」視窗的 <a href="#today-open">開啟畫面</a>、<a href="#today-store">超商</a>、<a href="#today-delivery">外食</a>、<a href="#today-cook">自煮</a>、<a href="#today-shared">加飲品・單品</a>、<a href="#today-summary">底部與送出</a>、<a href="#today-saved">我的組合</a></li>
+<li><a href="#foods">我的食物</a>：搜尋、我的組合、子分頁 <a href="#foods-store">超商</a>／<a href="#foods-delivery">外食</a>／<a href="#foods-cook">自煮</a>／<a href="#foods-drinks">飲品・水果</a>、你標了不吃的全部</li>
+<li><a href="#week">本週總覽</a>、<a href="#exercise">運動紀錄</a></li>
+<li><a href="#cheat">速查：看到這些字是什麼意思</a></li>
+</ul></div>
 
 <p>上方有五個分頁：<span class="btn">基本資料</span> <span class="btn">今日建議</span> <span class="btn">我的食物</span> <span class="btn">本週總覽</span> <span class="btn">運動紀錄</span>。</p>
 
@@ -178,8 +184,9 @@ table.t th { background: var(--note-bg); }
   </ul>
 </div>
 
-<!-- ============================================================ -->
-<h2 id="s-profile">基本資料</h2>
+
+</section>
+<section class="pane" id="pane-profile"><h2 id="s-profile">基本資料</h2>
 
 <p><b>這一頁是做什麼的：</b>告訴 App 你的身體數據、飲食限制和作息，它才算得出每天的熱量與營養目標，並決定建議與「自己選」裡哪些東西可以出現。</p>
 
@@ -234,11 +241,43 @@ table.t th { background: var(--note-bg); }
   <li>今日建議上方如果出現「基本資料有一項目標調整建議待你確認」，點它會跳到這裡。</li>
 </ul>
 
-<p>「資料備份」也在這一頁最下面，見〈<a href="#s-backup">資料備份</a>〉。</p>
-<a class="back" href="#s-start">↑ 回目錄</a>
+<p>「資料備份」也在這一頁最下面，見〈<a href="#profile-backup">資料備份</a>〉。</p>
 
-<!-- ============================================================ -->
-<h2 id="s-today">今日建議</h2>
+
+
+
+<h2 id="s-backup">資料備份（在基本資料分頁最下面）</h2>
+
+<p>資料只存在這台裝置的瀏覽器裡。換手機、清除瀏覽器資料、或想保險一點之前，先匯出備份。備份包含：基本資料、飲食紀錄、體重紀錄、運動紀錄、我的品項、我的組合，以及不吃清單、設定等。</p>
+
+<h3>匯出</h3>
+<ol class="steps">
+  <li>按「匯出備份」。</li>
+  <li>會下載一個檔案，名稱像 lighten2-backup-今天日期.json（iPhone 會跳出分享／存到「檔案」；Android 在「下載」）。</li>
+  <li>下方寫「已下載 …（飲食紀錄 N 筆、體重紀錄 N 筆、我的品項 N 筆、我的組合 N 筆）。」</li>
+</ol>
+<p>建議用 Safari 或 Chrome 開；LINE 等 App 內建的瀏覽器常常下載失敗。如果看到「這份備份目前無法還原：…」，資料沒有損失，但這份檔案不要依賴，請告訴開發者。</p>
+
+<h3>還原</h3>
+<ol class="steps">
+  <li>按「從備份還原」，選剛才的檔案。</li>
+  <li>出現預覽表格：基本資料／飲食紀錄／體重紀錄／運動紀錄／我的品項／我的組合，每列左邊是備份檔裡的筆數與最後日期，右邊是這台目前的。只顯示筆數與日期，不顯示內容。</li>
+  <li>下面的說明要看：「目前有 M/D 匯出這份備份之後新增的紀錄，還原後不會保留。」「還原會取代這台裝置上的所有資料，不是同步。」</li>
+  <li>如果目前這台已經有資料，「還原」是淡色的。要先按「先匯出目前的資料」（會再下載一個檔案），或勾「目前的資料不需要保留」，才能按。</li>
+  <li>按「還原」：頁面重新載入，資料就是備份當時的樣子，備份之後記的都不見。按「取消」就關掉預覽、資料不變。</li>
+</ol>
+<p>選到不是備份的檔案（照片、文字檔）會顯示「這個檔案不能還原：…」，沒有「還原」按鈕。</p>
+
+
+
+</section>
+<section class="pane" id="pane-today">
+<h2>今日建議</h2>
+<div class="subbar" role="tablist" aria-label="今日建議與自己選的分頁">
+  <button type="button" data-sub="today-main">建議卡</button><button type="button" data-sub="today-open">開啟畫面</button><button type="button" data-sub="today-store">超商</button><button type="button" data-sub="today-delivery">外食</button><button type="button" data-sub="today-cook">自煮</button><button type="button" data-sub="today-shared">加飲品・單品</button><button type="button" data-sub="today-summary">底部與送出</button><button type="button" data-sub="today-saved">我的組合</button>
+</div>
+<p class="small">上面這排：「建議卡」是今日建議頁本身；其餘對照「自己選」視窗：超商｜外食｜自煮是視窗最上面的三個分頁；「加飲品・單品」是三個分頁共用的兩個步驟；「底部與送出」是視窗最下面固定的摘要與按鈕；「我的組合」是最上面那一列與最下面的「存成組合」。</p>
+<div class="subpane" id="sub-today-main">
 
 <p><b>這一頁是做什麼的：</b>看今天還剩多少熱量與營養可以吃，每個時段給一張建議卡；吃了就記下來。這是每天最常用的一頁。</p>
 <p>還沒填基本資料時會寫「請先到「基本資料」分頁填寫並按「計算」後，再回來看今日建議。」</p>
@@ -273,7 +312,7 @@ table.t th { background: var(--note-bg); }
       <li>「順便不要：」後面的小標籤（例如某個食材或品項名稱）：按了就把它標成不吃，之後推薦與「自己選」都不再出現它。上方會寫「已標不吃「…」，可以在「我的食物」取消。」</li>
       <li>「倒讚」：這個時段換一個建議。</li>
       <li>「記錄這餐」：照建議的內容記下來。</li>
-      <li>「自己選」：自己挑要吃什麼，見〈<a href="#s-pick">「自己選」詳細說明</a>〉。</li>
+      <li>「自己選」：自己挑要吃什麼，見〈<a href="#today-open">「自己選」詳細說明</a>〉。</li>
     </ul>
   </dd>
   <dt>已記錄</dt>
@@ -293,10 +332,11 @@ table.t th { background: var(--note-bg); }
 <p><b>不喜歡這個建議：</b>按「倒讚」換一個；只是不想要其中某個食材，按「順便不要」下的那個標籤。</p>
 <p><b>自己決定吃什麼：</b>按「自己選」（下面整章在講）。</p>
 <p><b>想把剛記的這一餐存起來以後一鍵再用：</b>已記錄的卡片上按「存成組合」→ 名稱欄（預填品名，可以改）→「存」，寫「已存成組合「…」，在「自己選」最上面。」</p>
-<a class="back" href="#s-start">↑ 回目錄</a>
 
-<!-- ============================================================ -->
-<h2 id="s-pick">「自己選」詳細說明</h2>
+
+
+</div>
+<div class="subpane" id="sub-today-open"><h3 id="s-pick">「自己選」詳細說明</h3>
 
 <p>在「今日建議」任何一個時段卡上按「自己選」，會跳出一個視窗「自己選這一餐：午餐」（時段名稱依你按的那張卡）。你可以從超商、外食、自煮三種來源挑，再補上飲品、水果或單品，最後按「記下這餐」。</p>
 
@@ -310,7 +350,7 @@ table.t th { background: var(--note-bg); }
   <p>步驟編號是連續的：超商與外食是「1. 選品項」「2. 加飲品・水果（選填）」「3. 加點單品（選填）」；自煮的編號在後面〈自煮分頁〉說明。</p>
 </div>
 
-<!-- ---------------------------------------------------- -->
+
 <h3 id="p-open">打開時看到什麼、停在哪一頁</h3>
 <p>打開時停在哪個分頁，依序看：</p>
 <ol>
@@ -325,7 +365,10 @@ table.t th { background: var(--note-bg); }
   <figcaption>圖 1：超商分頁。選了一個主餐後，清單上方多出「已選（可以改份量）」；最下面是摘要與缺口提示。圖裡的數字是測試資料。</figcaption>
 </figure>
 
-<!-- ---------------------------------------------------- -->
+
+</div>
+<div class="subpane" id="sub-today-store">
+<p class="callout">超商分頁的做法，<b>外食分頁也一樣</b>（品項怎麼分組、灰色原因、份量晶片、數量上限、新增品項都相同）。外食多了「找不到？直接估算」，在「外食」子分頁。</p>
 <h3 id="p-store">超商與外食分頁</h3>
 
 <h4>品項怎麼分組</h4>
@@ -339,7 +382,7 @@ table.t th { background: var(--note-bg); }
 </ul>
 
 <h4>點卡片＝選取，再點一次＝取消</h4>
-<p>可以多選，但每個角色有上限，見〈<a href="#p-limit">每個角色最多選幾個</a>〉。選了之後，這個品項會出現在清單最上面的「已選（可以改份量）」段。</p>
+<p>可以多選，但每個角色有上限，見〈<a href="#today-store">每個角色最多選幾個</a>〉。選了之後，這個品項會出現在清單最上面的「已選（可以改份量）」段。</p>
 
 <h4>灰色的項目與原因</h4>
 <p>被你的設定擋住的品項會灰掉、不能點，卡片上寫原因：</p>
@@ -369,7 +412,7 @@ table.t th { background: var(--note-bg); }
 <h4>「你標了不吃」那一組</h4>
 <p>標了不吃的內建品項不會留在原位，而是移到分頁<b>最下面</b>收起來的「你標了不吃（N）」。裡面的卡片灰掉不能點，旁邊有「取消不吃」，按了就回原位、可以選。</p>
 
-<!-- ---------------------------------------------------- -->
+
 <h3 id="p-qty">份量晶片、已選段的「不吃」「複製成我的版本」</h3>
 <p>選了超商或外食的品項後，清單上方「已選（可以改份量）」每個品項一行：</p>
 <ul>
@@ -390,7 +433,7 @@ table.t th { background: var(--note-bg); }
 </ul>
 <p>現成飲料選中後，它的份量晶片出現在「加飲品・水果」步驟裡、那一杯的下面，用法一樣。（單品不用晶片，用步進器，見〈加點單品〉。）</p>
 
-<!-- ---------------------------------------------------- -->
+
 <h3 id="p-limit">每個角色最多選幾個</h3>
 <p>為了避免記出不合理的一餐，每個角色（品項右上的分類：主餐、配菜、點心、飲料）有數量上限，只算<b>目前這個分頁</b>選的東西和那一杯現成飲料：</p>
 <table class="t">
@@ -408,28 +451,7 @@ table.t th { background: var(--note-bg); }
   <li><b>不要求一定要有主餐</b>：只選一杯拿鐵、只選一個點心也能記成一餐。至少要選一樣東西，否則「記下這餐」按不下去，上面寫「請至少選一個品項。」</li>
 </ul>
 
-<!-- ---------------------------------------------------- -->
-<h3 id="p-estimate">外食的「找不到？直接估算」</h3>
-<p>只在「外食」分頁最上面。用在聚餐、喜宴、或清單裡找不到的外食：</p>
-<ol class="steps">
-  <li>名稱欄可以填（選填，例如「喜宴」）。</li>
-  <li>按大小：「S 小份」約 400 kcal、「M 一般」約 700 kcal、「L 大餐」約 1200 kcal。</li>
-  <li>下面出現一個已加入的標籤，例如「喜宴（L，約 1200 kcal）×」。可以加好幾筆；點那個標籤（尾巴的「×」）就拿掉。</li>
-</ol>
-<ul>
-  <li>估算只存在這一餐，不會變成品項。沒填名稱，紀錄就寫「外食估算」。</li>
-  <li>估算沒有蛋白質、纖維等資料，所以摘要的這幾格是「—」，缺口說明會寫「蛋白質：無資料」「纖維：無資料」。這是「不知道」，不是 0。</li>
-  <li>估算不會檢查你的過敏原或飲食設定（它是你自己宣告吃了什麼）。</li>
-  <li>熱量超過這個時段配額時，會寫「這餐約 N kcal，這個時段配額約 N kcal（+N），先記下來，其他餐會自動調整。」記了之後，後面時段的建議熱量會跟著重新分配。</li>
-  <li>有估算的這一餐<b>不能存成組合</b>。</li>
-</ul>
 
-<figure>
-  <img src="使用說明-圖/03-28.png" alt="外食分頁的直接估算，已加入一筆喜宴 L" loading="lazy" />
-  <figcaption>圖 3：外食分頁的「找不到？直接估算」。下方摘要與缺口說明的數字是測試資料。</figcaption>
-</figure>
-
-<!-- ---------------------------------------------------- -->
 <h3 id="p-quick">「＋新增到我的品項」快速新增與「補填」</h3>
 <p>清單裡沒有你吃的東西，又想記得準一點：在超商或外食分頁<b>最下面</b>按「＋新增到我的超商品項」（外食分頁則是「…外食品項」）。新增在哪一個分頁，就屬於那個分頁的來源。</p>
 
@@ -460,73 +482,33 @@ table.t th { background: var(--note-bg); }
 </ol>
 <p class="small">寫了「含過敏原」的品項沒有「補填」——它本來就含你要避開的東西。只有「成分未確認」「飲食限制未確認」這類可以補。</p>
 
-<!-- ---------------------------------------------------- -->
-<h3 id="p-drinks">共用步驟：加飲品・水果</h3>
-<p>三個分頁都有這一步（超商、外食是步驟 2；自煮排在自煮步驟後面）。可以選一杯現成飲料，也可以加家裡的飲品（自己倒的牛奶、豆漿…）和水果。內容由上到下：</p>
-<ol>
-  <li><b>已選框</b>：這一步裡你加的家裡飲品、水果會列在最上面，每一筆有名稱、步進器和「移除」。</li>
-  <li><b>現成飲料</b>：第一張是「不加」（預設選中），其他是超商、手搖飲、豆漿、咖啡等「一杯」的東西，卡片有「約 N kcal」。<b>一次只能選一杯</b>，點別杯會換掉，點「不加」＝取消。選中後，那一杯下面出現份量晶片（半份／1 份／×1.5／×2）。灰掉的（被過敏原等擋住）排在最後。</li>
-  <li><b>家裡的飲品</b>：例如「全脂奶（自己倒）」，按量算，用步進器。</li>
-  <li><b>水果（N）</b>：預設收著。點開先看到大類（柑橘類、蘋果類…），再點開才看到每種水果。用步進器。</li>
-  <li><b>你標了不吃（N）</b>：這一步最下面收著的一組，現成飲料、家裡的飲品、水果標了不吃的都放在這裡，各有「取消不吃」。</li>
-</ol>
-<p>家裡的飲品和水果用<b>步進器</b>（跟「加點單品」一模一樣，下一段詳細說明）：</p>
-<ul>
-  <li>點卡片＝加進來，一開始 1 份；卡片上標「已選 · 1 份」。</li>
-  <li>「−」「＋」每按一下增減 0.5 份，範圍 0.5 份到 12 份；到 0.5 份時「−」按不下去，到 12 份時「＋」按不下去。</li>
-  <li>「移除」直接拿掉，沒有確認視窗。</li>
-</ul>
-<p>份量說明（步進器下面那行小字）怎麼讀，見下一段〈加點單品〉。</p>
-<p class="small">現成飲料不是單品：它不用步進器，用份量晶片，而且算在「飲料最多 1 杯」的名額裡。家裡的飲品和水果是單品，算在「單品最多 4 項」的名額裡。</p>
 
-<!-- ---------------------------------------------------- -->
-<h3 id="p-foods">共用步驟：加點單品</h3>
-<p>用來直接記「某樣食物吃了多少」，例如一碗白飯、一份雞胸肉、一杯牛奶、一個水果。資料來自食物代換表（把食物分成幾大類、每一類的「1 份」營養量固定，是營養師常用的換算方式），所以可以記到半份的精細程度。</p>
-
+</div>
+<div class="subpane" id="sub-today-delivery">
+<p class="callout">外食分頁跟超商分頁的操作一樣：<b>品項分組、灰色原因、「你標了不吃」、份量晶片與「不吃」「複製成我的版本」、每個角色的數量上限、「＋新增到我的外食品項」與「補填」</b>都請看「超商」子分頁。差別是：清單內容換成台式外食（便當、麵食…，在前）和連鎖健康餐盒（在後），並且最上方多了「找不到？直接估算」。</p>
+<h3 id="p-estimate">外食的「找不到？直接估算」</h3>
+<p>只在「外食」分頁最上面。用在聚餐、喜宴、或清單裡找不到的外食：</p>
 <ol class="steps">
-  <li>最上面一行小字：「單品不含烹調用油；有用油可以加油脂類。」意思是煮東西用的油不會自己算進去，要的話自己再加一筆油脂。</li>
-  <li>搜尋框「搜尋單品（名稱或別名）」：打字就即時出結果。找不到會寫「找不到「…」。」搜尋也找得到水果和飲品，這些會多標「在飲品・水果」。清空就回到分類。</li>
-  <li>分類：乳品類、豆魚蛋肉類、全穀雜糧類、蔬菜類、油脂與堅果種子類（水果在上面一步），每個類別後面標筆數、<b>預設收著</b>。點開大類看到子類（例如豆魚蛋肉類有水產、家畜、家禽、蛋…），子類也是收著，再點開才看到品項。</li>
-  <li>每張卡片：名稱，下面一行「代換表 1 份 · 生重 30g · 約 N kcal」。有些食物對不到代換表，會寫「內建一餐 · 熟重 150g · 約 N kcal」（意思見下面）。灰掉的寫原因（「含過敏原」「成分未確認」「不符合你的飲食設定」「飲食限制未確認」「你標了不吃」）。</li>
-  <li>點卡片加進來：已選框長出一列，名稱、「−」份數「＋」、「移除」，下面一行份量說明。</li>
-  <li>再點一次已經選了的卡片：<b>不會多加一筆</b>，份數也不變，畫面捲到它的步進器。</li>
+  <li>名稱欄可以填（選填，例如「喜宴」）。</li>
+  <li>按大小：「S 小份」約 400 kcal、「M 一般」約 700 kcal、「L 大餐」約 1200 kcal。</li>
+  <li>下面出現一個已加入的標籤，例如「喜宴（L，約 1200 kcal）×」。可以加好幾筆；點那個標籤（尾巴的「×」）就拿掉。</li>
 </ol>
+<ul>
+  <li>估算只存在這一餐，不會變成品項。沒填名稱，紀錄就寫「外食估算」。</li>
+  <li>估算沒有蛋白質、纖維等資料，所以摘要的這幾格是「—」，缺口說明會寫「蛋白質：無資料」「纖維：無資料」。這是「不知道」，不是 0。</li>
+  <li>估算不會檢查你的過敏原或飲食設定（它是你自己宣告吃了什麼）。</li>
+  <li>熱量超過這個時段配額時，會寫「這餐約 N kcal，這個時段配額約 N kcal（+N），先記下來，其他餐會自動調整。」記了之後，後面時段的建議熱量會跟著重新分配。</li>
+  <li>有估算的這一餐<b>不能存成組合</b>。</li>
+</ul>
 
 <figure>
-  <img src="使用說明-圖/07-68.png" alt="加點單品，白飯加到 4 份，旁邊寫 4 份等於熟重 160g（1碗）" loading="lazy" />
-  <figcaption>圖 4：「加點單品」。搜尋「白飯」，加到 4 份後，步進器下面寫「4 份＝熟重 160g（1碗）」，下方摘要跟著算。圖裡的數字是測試資料。</figcaption>
+  <img src="使用說明-圖/03-28.png" alt="外食分頁的直接估算，已加入一筆喜宴 L" loading="lazy" />
+  <figcaption>圖 3：外食分頁的「找不到？直接估算」。下方摘要與缺口說明的數字是測試資料。</figcaption>
 </figure>
 
-<h4>最多 4 項</h4>
-<p>一餐的單品（含家裡的飲品、水果）合計最多 <b>4 項</b>。要加第 5 項時跳出「單品最多選 4 項。」，那一項不會加進去。單品不佔主餐、配菜、飲料的名額，也不影響你在哪個分頁（記錄的型態看你停在超商、外食還是自煮）。</p>
-<p>單品卡片上<b>沒有</b>「不吃」按鈕；要標單品不吃，到「我的食物」去標，標了之後單品會移到這一步最下面的「你標了不吃」。</p>
 
-<h4>份量說明文字怎麼讀</h4>
-<p>步進器下面那行小字，格式是「N 份＝（狀態）量（家用量）」。例子：</p>
-<div class="pairs">
-  <div class="pair"><span class="k">「1 份＝240ml（1杯）」</span>液體寫毫升，不加狀態詞；括號是家用量。</div>
-  <div class="pair"><span class="k">「4 份＝熟重 160g（1碗）」</span>「熟重」是煮熟後的重量；4 份是 1 碗。</div>
-  <div class="pair"><span class="k">「0.5 份＝熟重 20g」</span>半碗的幾分之幾不好讀時，只寫克數、不寫家用量。</div>
-  <div class="pair"><span class="k">「4 份＝可食部分 520g（4個，購買量約 680g）」</span>水果、油脂的生品寫「可食部分」：去掉皮、核之後真正吃進去的重量；「購買量」是買回來還帶皮核時大約多重。</div>
-  <div class="pair"><span class="k">「1 份＝內建一餐 熟重 150g」</span>這個食物對不到代換表的「1 份」，所以 1 份就是今日建議裡「一餐」用的量。份數大於 1 時會寫「4 份＝…（1 份是內建一餐 …）」。</div>
 </div>
-<ul>
-  <li><b>生重</b>：還沒煮的重量。<b>熟重</b>：煮好的重量。<b>乾重</b>、<b>濕重</b>：乾的／泡水或含水的狀態。同一種食物生重和熟重差很多，記的時候看清楚這個字。</li>
-  <li>家用量（碗、杯、個、片…）會跟著份數一起乘；乘出來湊不成好讀的數字（例如八分之一碗），就不寫家用量，只寫克數或毫升。</li>
-  <li>「1 份」是代換表固定的營養量，<b>不是</b>一般的「一份」。看克數比看「份」可靠。</li>
-</ul>
-
-<h4>紀錄名稱怎麼寫</h4>
-<p>按「記下這餐」後，那一餐的名稱會自動組出來，用「＋」連起來：</p>
-<ul>
-  <li>超商／外食品項：名稱（有改份量就帶「×2」或「（半份）」），再接直接估算的名稱，再接單品，最後是現成飲料。</li>
-  <li>單品寫「量」不寫份數，例如「全脂奶（自己倒） 480ml＋白飯 160g」。生的在量前面加「生」，例如「雞胸肉 生 120g」；乾的加「乾」；熟食、液體不加；水果寫可食部分，不加「生」，例如「柳丁 520g」。</li>
-  <li>單品照你點的順序排，在現成飲料前面。</li>
-  <li>自煮：餐型名稱＋食材（蛋白質、主食、蔬菜、醬料的順序）＋單品＋飲料。</li>
-</ul>
-
-<!-- ---------------------------------------------------- -->
-<h3 id="p-cook">自煮分頁</h3>
+<div class="subpane" id="sub-today-cook"><h3 id="p-cook">自煮分頁</h3>
 <p>用食材自己組一餐：先選難度、選「餐型」，再依序選食材、烹調法、用油、份量。選項會即時灰掉不合適的，並寫原因。</p>
 
 <h4>步驟 1：快煮或開伙</h4>
@@ -613,8 +595,77 @@ table.t th { background: var(--note-bg); }
   <li>「未含沙拉醬」（溫沙拉才有）表示<b>沙拉醬的熱量、鈉沒有算進去</b>，因為不知道你淋多少。實際吃了醬的話，熱量會比摘要高。換成別的餐型就沒有這句。</li>
 </ul>
 
-<!-- ---------------------------------------------------- -->
-<h3 id="p-summary">畫面底部的摘要與提示怎麼讀</h3>
+
+</div>
+<div class="subpane" id="sub-today-shared">
+<p class="callout">這兩個步驟在超商、外食、自煮三個分頁都有，內容相同、選的東西三頁共用。</p>
+<h3 id="p-drinks">共用步驟：加飲品・水果</h3>
+<p>三個分頁都有這一步（超商、外食是步驟 2；自煮排在自煮步驟後面）。可以選一杯現成飲料，也可以加家裡的飲品（自己倒的牛奶、豆漿…）和水果。內容由上到下：</p>
+<ol>
+  <li><b>已選框</b>：這一步裡你加的家裡飲品、水果會列在最上面，每一筆有名稱、步進器和「移除」。</li>
+  <li><b>現成飲料</b>：第一張是「不加」（預設選中），其他是超商、手搖飲、豆漿、咖啡等「一杯」的東西，卡片有「約 N kcal」。<b>一次只能選一杯</b>，點別杯會換掉，點「不加」＝取消。選中後，那一杯下面出現份量晶片（半份／1 份／×1.5／×2）。灰掉的（被過敏原等擋住）排在最後。</li>
+  <li><b>家裡的飲品</b>：例如「全脂奶（自己倒）」，按量算，用步進器。</li>
+  <li><b>水果（N）</b>：預設收著。點開先看到大類（柑橘類、蘋果類…），再點開才看到每種水果。用步進器。</li>
+  <li><b>你標了不吃（N）</b>：這一步最下面收著的一組，現成飲料、家裡的飲品、水果標了不吃的都放在這裡，各有「取消不吃」。</li>
+</ol>
+<p>家裡的飲品和水果用<b>步進器</b>（跟「加點單品」一模一樣，下一段詳細說明）：</p>
+<ul>
+  <li>點卡片＝加進來，一開始 1 份；卡片上標「已選 · 1 份」。</li>
+  <li>「−」「＋」每按一下增減 0.5 份，範圍 0.5 份到 12 份；到 0.5 份時「−」按不下去，到 12 份時「＋」按不下去。</li>
+  <li>「移除」直接拿掉，沒有確認視窗。</li>
+</ul>
+<p>份量說明（步進器下面那行小字）怎麼讀，見下一段〈加點單品〉。</p>
+<p class="small">現成飲料不是單品：它不用步進器，用份量晶片，而且算在「飲料最多 1 杯」的名額裡。家裡的飲品和水果是單品，算在「單品最多 4 項」的名額裡。</p>
+
+
+<h3 id="p-foods">共用步驟：加點單品</h3>
+<p>用來直接記「某樣食物吃了多少」，例如一碗白飯、一份雞胸肉、一杯牛奶、一個水果。資料來自食物代換表（把食物分成幾大類、每一類的「1 份」營養量固定，是營養師常用的換算方式），所以可以記到半份的精細程度。</p>
+
+<ol class="steps">
+  <li>最上面一行小字：「單品不含烹調用油；有用油可以加油脂類。」意思是煮東西用的油不會自己算進去，要的話自己再加一筆油脂。</li>
+  <li>搜尋框「搜尋單品（名稱或別名）」：打字就即時出結果。找不到會寫「找不到「…」。」搜尋也找得到水果和飲品，這些會多標「在飲品・水果」。清空就回到分類。</li>
+  <li>分類：乳品類、豆魚蛋肉類、全穀雜糧類、蔬菜類、油脂與堅果種子類（水果在上面一步），每個類別後面標筆數、<b>預設收著</b>。點開大類看到子類（例如豆魚蛋肉類有水產、家畜、家禽、蛋…），子類也是收著，再點開才看到品項。</li>
+  <li>每張卡片：名稱，下面一行「代換表 1 份 · 生重 30g · 約 N kcal」。有些食物對不到代換表，會寫「內建一餐 · 熟重 150g · 約 N kcal」（意思見下面）。灰掉的寫原因（「含過敏原」「成分未確認」「不符合你的飲食設定」「飲食限制未確認」「你標了不吃」）。</li>
+  <li>點卡片加進來：已選框長出一列，名稱、「−」份數「＋」、「移除」，下面一行份量說明。</li>
+  <li>再點一次已經選了的卡片：<b>不會多加一筆</b>，份數也不變，畫面捲到它的步進器。</li>
+</ol>
+
+<figure>
+  <img src="使用說明-圖/07-68.png" alt="加點單品，白飯加到 4 份，旁邊寫 4 份等於熟重 160g（1碗）" loading="lazy" />
+  <figcaption>圖 4：「加點單品」。搜尋「白飯」，加到 4 份後，步進器下面寫「4 份＝熟重 160g（1碗）」，下方摘要跟著算。圖裡的數字是測試資料。</figcaption>
+</figure>
+
+<h4>最多 4 項</h4>
+<p>一餐的單品（含家裡的飲品、水果）合計最多 <b>4 項</b>。要加第 5 項時跳出「單品最多選 4 項。」，那一項不會加進去。單品不佔主餐、配菜、飲料的名額，也不影響你在哪個分頁（記錄的型態看你停在超商、外食還是自煮）。</p>
+<p>單品卡片上<b>沒有</b>「不吃」按鈕；要標單品不吃，到「我的食物」去標，標了之後單品會移到這一步最下面的「你標了不吃」。</p>
+
+<h4>份量說明文字怎麼讀</h4>
+<p>步進器下面那行小字，格式是「N 份＝（狀態）量（家用量）」。例子：</p>
+<div class="pairs">
+  <div class="pair"><span class="k">「1 份＝240ml（1杯）」</span>液體寫毫升，不加狀態詞；括號是家用量。</div>
+  <div class="pair"><span class="k">「4 份＝熟重 160g（1碗）」</span>「熟重」是煮熟後的重量；4 份是 1 碗。</div>
+  <div class="pair"><span class="k">「0.5 份＝熟重 20g」</span>半碗的幾分之幾不好讀時，只寫克數、不寫家用量。</div>
+  <div class="pair"><span class="k">「4 份＝可食部分 520g（4個，購買量約 680g）」</span>水果、油脂的生品寫「可食部分」：去掉皮、核之後真正吃進去的重量；「購買量」是買回來還帶皮核時大約多重。</div>
+  <div class="pair"><span class="k">「1 份＝內建一餐 熟重 150g」</span>這個食物對不到代換表的「1 份」，所以 1 份就是今日建議裡「一餐」用的量。份數大於 1 時會寫「4 份＝…（1 份是內建一餐 …）」。</div>
+</div>
+<ul>
+  <li><b>生重</b>：還沒煮的重量。<b>熟重</b>：煮好的重量。<b>乾重</b>、<b>濕重</b>：乾的／泡水或含水的狀態。同一種食物生重和熟重差很多，記的時候看清楚這個字。</li>
+  <li>家用量（碗、杯、個、片…）會跟著份數一起乘；乘出來湊不成好讀的數字（例如八分之一碗），就不寫家用量，只寫克數或毫升。</li>
+  <li>「1 份」是代換表固定的營養量，<b>不是</b>一般的「一份」。看克數比看「份」可靠。</li>
+</ul>
+
+<h4>紀錄名稱怎麼寫</h4>
+<p>按「記下這餐」後，那一餐的名稱會自動組出來，用「＋」連起來：</p>
+<ul>
+  <li>超商／外食品項：名稱（有改份量就帶「×2」或「（半份）」），再接直接估算的名稱，再接單品，最後是現成飲料。</li>
+  <li>單品寫「量」不寫份數，例如「全脂奶（自己倒） 480ml＋白飯 160g」。生的在量前面加「生」，例如「雞胸肉 生 120g」；乾的加「乾」；熟食、液體不加；水果寫可食部分，不加「生」，例如「柳丁 520g」。</li>
+  <li>單品照你點的順序排，在現成飲料前面。</li>
+  <li>自煮：餐型名稱＋食材（蛋白質、主食、蔬菜、醬料的順序）＋單品＋飲料。</li>
+</ul>
+
+
+</div>
+<div class="subpane" id="sub-today-summary"><h3 id="p-summary">畫面底部的摘要與提示怎麼讀</h3>
 <p>視窗最下面固定三塊，會隨你每次選取更新：</p>
 
 <h4>1. 提示一行（有問題才出現）</h4>
@@ -644,7 +695,7 @@ table.t th { background: var(--note-bg); }
   <dd>只出現在編輯組合時（見〈我的組合〉）。</dd>
 </dl>
 
-<!-- ---------------------------------------------------- -->
+
 <h3 id="p-switch">切分頁、取消、記下這餐</h3>
 
 <h4>切分頁時，其他分頁的選取怎麼辦</h4>
@@ -663,8 +714,9 @@ table.t th { background: var(--note-bg); }
   <li>在視窗裡做的「不吃」「新增品項」「複製成我的版本」是立刻存起來的，取消也不會復原；今日建議會因為「不吃」馬上重新整理。</li>
 </ul>
 
-<!-- ---------------------------------------------------- -->
-<h3 id="p-saved">我的組合</h3>
+
+</div>
+<div class="subpane" id="sub-today-saved"><h3 id="p-saved">我的組合</h3>
 <p>常吃的一餐（例如「平日午餐：健身餐盒＋全脂奶」）存成組合，下次在「自己選」最上面點一下，就把整餐帶進來，不用重選。組合只存「選了哪些東西、份量多少」；熱量與營養每次都用目前的資料重算。今日建議的推薦不會用到組合。</p>
 
 <h4>存成組合：兩個入口</h4>
@@ -724,9 +776,12 @@ table.t th { background: var(--note-bg); }
   <img src="使用說明-圖/10-80.png" alt="我的食物最上方的我的組合管理區塊，有改名編輯內容刪除" loading="lazy" />
   <figcaption>圖 10：「我的食物」裡的「我的組合」管理區塊：每筆有「改名」「編輯內容」「刪除」。</figcaption>
 </figure>
-<a class="back" href="#s-start">↑ 回目錄</a>
 
-<!-- ============================================================ -->
+
+
+</div>
+</section>
+<section class="pane" id="pane-foods">
 <h2 id="s-foods">我的食物</h2>
 
 <p><b>這一頁是做什麼的：</b>把 App 內建的食物和你自己新增的都攤開，讓你看營養與出處、標「不吃」、複製成自己的版本、管理自己新增的品項與組合。這裡不記錄飲食，記錄在「今日建議」。</p>
@@ -741,17 +796,6 @@ table.t th { background: var(--note-bg); }
   <li><b>最下面「你標了不吃的全部（N）」</b>（有標才出現）。</li>
 </ol>
 
-<h3>四個子分頁</h3>
-<dl class="msgs">
-  <dt>超商、外食</dt>
-  <dd>內建品項，分法跟「自己選」一樣（主餐／配菜／點心，再依分類）。每一列：名稱、「約 N kcal」（外食如果是用區間的中間值，後面會寫「（區間 a–b kcal）」）。被過敏原或飲食設定擋住的灰掉，並寫原因。
-    <br>往下依序是：「我的品項（N）」（你新增的，最新的在前）、「你標了不吃」、「已隱藏」、「已封存」。有東西才顯示該組，都收著。最下面有「＋新增到我的超商品項」（或外食）。</dd>
-  <dt>自煮</dt>
-  <dd>食物代換表裡的食材（水果除外，水果在「飲品・水果」）：乳品類、豆魚蛋肉類、全穀雜糧類、蔬菜類、油脂與堅果種子類，標題後面有筆數，都收著；點開大類裡面還有子類（「筍與莖菜」標「本 App 自己的分組」），也收著，再點開才是品項。
-    每一列：名稱、「代換表 1 份 · 生重 30g · 約 N kcal」（對不到代換表的內建食材寫「內建一餐 · 熟重 150g」）。打開過的類別，切子分頁、搜尋再清空後會維持打開。這個子分頁沒有「我的品項」，也不能新增。</dd>
-  <dt>飲品・水果</dt>
-  <dd>依序：「現成飲料」→「家裡的飲品」→「水果」（收著）→「我的品項」→「你標了不吃」→「已隱藏」→「已封存」。這裡新增的品項角色預設是「飲料」。</dd>
-</dl>
 
 <h3>搜尋</h3>
 <ul>
@@ -760,7 +804,24 @@ table.t th { background: var(--note-bg); }
   <li>清空搜尋框回到原本的子分頁。找不到寫「沒有符合「…」的食物。」</li>
 </ul>
 
-<h3>點一列看明細</h3>
+
+<h3>我的組合（N）</h3>
+<p>搜尋框下面那一行收著的「我的組合（N）」，點開可以改名、編輯內容、刪除與復原。完整說明在「今日建議」分頁的 <a href="#today-saved">「自己選」→ 我的組合</a>。</p>
+<h3>四個子分頁（點下面的分頁鈕對照）</h3>
+<div class="subbar" role="tablist" aria-label="我的食物的子分頁">
+  <button type="button" data-sub="foods-store">超商</button><button type="button" data-sub="foods-delivery">外食</button><button type="button" data-sub="foods-cook">自煮</button><button type="button" data-sub="foods-drinks">飲品・水果</button>
+</div>
+<div class="subpane" id="sub-foods-store"><h4>超商</h4><p>內建品項，分法跟「自己選」一樣（主餐／配菜／點心，再依分類）。每一列：名稱、「約 N kcal」（外食如果是用區間的中間值，後面會寫「（區間 a–b kcal）」）。被過敏原或飲食設定擋住的灰掉，並寫原因。
+    <br>往下依序是：「我的品項（N）」（你新增的，最新的在前）、「你標了不吃」、「已隱藏」、「已封存」。有東西才顯示該組，都收著。最下面有「＋新增到我的超商品項」（或外食）。</p></div>
+<div class="subpane" id="sub-foods-delivery"><h4>外食</h4><p>外食子分頁和超商一樣的做法，內容換成外食品項（外食還有連鎖健康餐盒）：</p><p>內建品項，分法跟「自己選」一樣（主餐／配菜／點心，再依分類）。每一列：名稱、「約 N kcal」（外食如果是用區間的中間值，後面會寫「（區間 a–b kcal）」）。被過敏原或飲食設定擋住的灰掉，並寫原因。
+    <br>往下依序是：「我的品項（N）」（你新增的，最新的在前）、「你標了不吃」、「已隱藏」、「已封存」。有東西才顯示該組，都收著。最下面有「＋新增到我的超商品項」（或外食）。</p></div>
+<div class="subpane" id="sub-foods-cook"><h4>自煮</h4><p>食物代換表裡的食材（水果除外，水果在「飲品・水果」）：乳品類、豆魚蛋肉類、全穀雜糧類、蔬菜類、油脂與堅果種子類，標題後面有筆數，都收著；點開大類裡面還有子類（「筍與莖菜」標「本 App 自己的分組」），也收著，再點開才是品項。
+    每一列：名稱、「代換表 1 份 · 生重 30g · 約 N kcal」（對不到代換表的內建食材寫「內建一餐 · 熟重 150g」）。打開過的類別，切子分頁、搜尋再清空後會維持打開。這個子分頁沒有「我的品項」，也不能新增。</p></div>
+<div class="subpane" id="sub-foods-drinks"><h4>飲品・水果</h4><p>依序：「現成飲料」→「家裡的飲品」→「水果」（收著）→「我的品項」→「你標了不吃」→「已隱藏」→「已封存」。這裡新增的品項角色預設是「飲料」。</p></div>
+<div class="common">
+<h3>每個子分頁都有的操作</h3>
+<p class="small">下面這幾段，在上面任何一個子分頁都一樣。</p>
+<h4>點一列看明細</h4>
 <p>點一列展開明細，再點一次收起來；<b>一次只開一筆</b>，被擋的也可以點開看原因。明細內容：</p>
 <ul>
   <li>「一份：」熱量；蛋白質、碳水、脂肪、纖維；飽和脂肪與「鈉 約 N mg（參考 2400 mg）」（2400 只是參考線，沒有顏色與警告）；沒資料的寫「無資料」。</li>
@@ -771,7 +832,8 @@ table.t th { background: var(--note-bg); }
   <li>按鈕列：「不吃」／「取消不吃」；現成品項（超商、外食、飲料）還有「複製成我的版本」（被擋的也可以複製）。</li>
 </ul>
 
-<h3>標「不吃」</h3>
+
+<h4>標「不吃」</h4>
 <ol class="steps">
   <li>點開品項，按「不吃」。</li>
   <li>它移到子分頁最下面收起來的「你標了不吃」，畫面自動捲到那裡；上方寫「已標不吃「…」。」後接一句說明：一般品項寫「推薦與「自己選」都不會再選它」，單品類寫「只擋這一項，不影響推薦裡的其他食物」。</li>
@@ -783,7 +845,8 @@ table.t th { background: var(--note-bg); }
   <li>「你標了不吃的全部（N）」：列出所有標過不吃的，各有「取消不吃」。已經下架、查不到的寫「（已不提供）」，按鈕改成「移除」。各子分頁的「你標了不吃」只算那個分類，所以筆數可能比「全部」少。</li>
 </ul>
 
-<h3>我的品項（你自己新增的）</h3>
+
+<h4>我的品項（你自己新增的）</h4>
 <ul>
   <li><b>新增</b>：子分頁最下面「＋新增到我的…品項」。表單比「自己選」裡的快速新增完整：名稱、熱量、「在哪裡買」（超商／外食）、「角色」、「適合的時段」（至少勾一個）、「過敏原」、「更多（選填）」。存成功寫「已新增「…」。」如果角色讓它屬於別的子分頁，會告訴你「它在「…」的我的品項」。</li>
   <li><b>複製成我的版本</b>：在內建品項明細按。存完<b>原品項會被隱藏</b>，上方寫「已複製成我的版本「…」。原本的內建品項已隱藏，可以在「已隱藏」取消。」複製來的品項列上寫「從內建複製」，點開明細有「內建目前的數值」，方便對照；內建已經下架的話寫「內建已不提供這個品項。」</li>
@@ -792,10 +855,13 @@ table.t th { background: var(--note-bg); }
   <li><b>已隱藏</b>：複製後被隱藏的內建品項在這裡，按「取消隱藏」放回來；如果你還有複製品，會寫「你有一筆從它複製的我的品項「…」。」</li>
   <li>狀態只用灰色文字表示（「成分未確認」「含過敏原」「不符合你的飲食設定」「飲食限制未確認」），不上色。</li>
 </ul>
-<a class="back" href="#s-start">↑ 回目錄</a>
 
-<!-- ============================================================ -->
-<h2 id="s-week">本週總覽</h2>
+
+
+
+</div>
+</section>
+<section class="pane" id="pane-week"><h2 id="s-week">本週總覽</h2>
 
 <p><b>這一頁是做什麼的：</b>看這一週整體吃得怎麼樣。刻意只給「週平均有沒有在目標內」的中性說明，不逐天打分數。</p>
 
@@ -818,10 +884,11 @@ table.t th { background: var(--note-bg); }
   <p>週平均只算「完整記錄的日子」：<b>當天所有開啟的時段都有記錄才算，而且今天不算</b>（今天還沒過完）。還沒有這樣的日子時，摘要寫「本週還沒有完整記錄的日子（當天所有開啟時段都有記錄才算，今天不算）」。</p>
   <p>蛋白質、纖維的平均只算「有這項資料」的完整記錄日；有些日子因為品項沒有資料沒算進去時，後面會註明，例如「（4 天有資料）」。整週都沒有資料寫「—（完整記錄日的紀錄都沒有這項資料）」。吃了熱量只知道、沒有纖維資料的東西（例如部分加工肉品），就會這樣。</p>
 </div>
-<a class="back" href="#s-start">↑ 回目錄</a>
 
-<!-- ============================================================ -->
-<h2 id="s-exercise">運動紀錄</h2>
+
+
+</section>
+<section class="pane" id="pane-exercise"><h2 id="s-exercise">運動紀錄</h2>
 
 <p><b>這一頁是做什麼的：</b>記你做了什麼運動、多久、強不強。<b>只記項目、時長、強度，不換算熱量</b>，也不影響今日建議的飲食熱量；整頁看不到任何飲食數字。</p>
 
@@ -847,34 +914,11 @@ table.t th { background: var(--note-bg); }
   <li>填時長（分鐘），按「記錄」。歷史紀錄多一筆，本週活動量更新。</li>
 </ol>
 <p class="small">目前歷史紀錄上沒有編輯或刪除的按鈕。</p>
-<a class="back" href="#s-start">↑ 回目錄</a>
 
-<!-- ============================================================ -->
-<h2 id="s-backup">資料備份（在基本資料分頁最下面）</h2>
 
-<p>資料只存在這台裝置的瀏覽器裡。換手機、清除瀏覽器資料、或想保險一點之前，先匯出備份。備份包含：基本資料、飲食紀錄、體重紀錄、運動紀錄、我的品項、我的組合，以及不吃清單、設定等。</p>
 
-<h3>匯出</h3>
-<ol class="steps">
-  <li>按「匯出備份」。</li>
-  <li>會下載一個檔案，名稱像 lighten2-backup-今天日期.json（iPhone 會跳出分享／存到「檔案」；Android 在「下載」）。</li>
-  <li>下方寫「已下載 …（飲食紀錄 N 筆、體重紀錄 N 筆、我的品項 N 筆、我的組合 N 筆）。」</li>
-</ol>
-<p>建議用 Safari 或 Chrome 開；LINE 等 App 內建的瀏覽器常常下載失敗。如果看到「這份備份目前無法還原：…」，資料沒有損失，但這份檔案不要依賴，請告訴開發者。</p>
-
-<h3>還原</h3>
-<ol class="steps">
-  <li>按「從備份還原」，選剛才的檔案。</li>
-  <li>出現預覽表格：基本資料／飲食紀錄／體重紀錄／運動紀錄／我的品項／我的組合，每列左邊是備份檔裡的筆數與最後日期，右邊是這台目前的。只顯示筆數與日期，不顯示內容。</li>
-  <li>下面的說明要看：「目前有 M/D 匯出這份備份之後新增的紀錄，還原後不會保留。」「還原會取代這台裝置上的所有資料，不是同步。」</li>
-  <li>如果目前這台已經有資料，「還原」是淡色的。要先按「先匯出目前的資料」（會再下載一個檔案），或勾「目前的資料不需要保留」，才能按。</li>
-  <li>按「還原」：頁面重新載入，資料就是備份當時的樣子，備份之後記的都不見。按「取消」就關掉預覽、資料不變。</li>
-</ol>
-<p>選到不是備份的檔案（照片、文字檔）會顯示「這個檔案不能還原：…」，沒有「還原」按鈕。</p>
-<a class="back" href="#s-start">↑ 回目錄</a>
-
-<!-- ============================================================ -->
-<h2 id="s-cheat">看到這些字是什麼意思（速查）</h2>
+</section>
+<section class="pane" id="pane-cheat"><h2 id="s-cheat">看到這些字是什麼意思（速查）</h2>
 
 <h3>灰掉的品項上的字</h3>
 <dl class="msgs">
@@ -921,9 +965,53 @@ table.t th { background: var(--note-bg); }
   <dt>「今天這個來源沒有合適的選擇，已改為一般推薦」</dt><dd>你設的來源偏好今天找不到合適的，改用一般挑法。</dd>
 </dl>
 
+</section>
 <hr />
 <p class="small">這份說明跟著 App 目前的版本寫。如果畫面上的字和這裡不一樣，以畫面為準，並請告訴開發者更新這份說明。</p>
 
+
 </div>
+<script>
+(function () {
+  var DEF_SUB = { today: "main", foods: "store" };
+  var panes = document.querySelectorAll(".pane");
+  var subpanes = document.querySelectorAll(".subpane");
+  function show(hash) {
+    var h = (hash || "").replace(/^#/, "");
+    var parts = h.split("-");
+    var main = parts[0] || "start";
+    if (!document.getElementById("pane-" + main)) { main = "start"; parts = ["start"]; }
+    var sub = parts.length > 1 ? parts.slice(1).join("-") : null;
+    var key = null;
+    if (DEF_SUB[main]) {
+      if (!sub || !document.getElementById("sub-" + main + "-" + sub)) sub = DEF_SUB[main];
+      key = main + "-" + sub;
+    }
+    Array.prototype.forEach.call(panes, function (p) { p.classList.toggle("active", p.id === "pane-" + main); });
+    Array.prototype.forEach.call(subpanes, function (p) { p.classList.toggle("active", p.id === "sub-" + key); });
+    Array.prototype.forEach.call(document.querySelectorAll(".tabbar button"), function (b) { b.classList.toggle("is-active", b.getAttribute("data-pane") === main); });
+    Array.prototype.forEach.call(document.querySelectorAll(".toplinks a"), function (a) { a.classList.toggle("is-active", a.getAttribute("data-pane") === main); });
+    Array.prototype.forEach.call(document.querySelectorAll(".subbar button"), function (b) { b.classList.toggle("selected", b.getAttribute("data-sub") === key); });
+    return main + (sub && DEF_SUB[main] ? "-" + sub : "") + (main === "profile" && sub === "backup" ? "-backup" : "");
+  }
+  function go(hash, scroll) {
+    var shown = show(hash);
+    if (scroll === "top") window.scrollTo(0, 0);
+    if (hash === "#profile-backup") { var el = document.getElementById("s-backup"); if (el) el.scrollIntoView(); }
+    return shown;
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest ? e.target.closest("[data-pane],[data-sub],a[href^='#']") : null;
+    if (!t) return;
+    var target = t.getAttribute("data-sub") ? "#" + t.getAttribute("data-sub") : t.getAttribute("data-pane") ? "#" + t.getAttribute("data-pane") : t.getAttribute("href");
+    if (t.tagName === "A" && !/^#(start|cheat|profile|today|foods|week|exercise)/.test(target)) return;
+    e.preventDefault();
+    try { history.replaceState(null, "", target); } catch (err) { location.hash = target; }
+    go(target, t.getAttribute("data-pane") || t.tagName === "A" ? "top" : null);
+  });
+  window.addEventListener("hashchange", function () { go(location.hash, "top"); });
+  go(location.hash, null);
+})();
+</script>
 </body>
 </html>
