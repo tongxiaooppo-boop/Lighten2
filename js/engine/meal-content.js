@@ -16,6 +16,7 @@ import {
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
 } from "../core/config.js";
 import { SLOT_LABELS } from "../core/slots.js";
+import { passesHardFilters, ingredientFilterResult } from "./filters.js";
 import { round1, isNum } from "../core/num.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
@@ -605,14 +606,18 @@ export function buildDraftContent(draft, opts) {
 
 const _ingredientIndex = new WeakMap();
 
-function ingredientById(catalog, id) {
+function ingredientIndex(catalog) {
   let idx = _ingredientIndex.get(catalog);
   if (!idx) {
     idx = {};
     catalog.ingredients.forEach(function (it) { idx[it.id] = it; });
     _ingredientIndex.set(catalog, idx);
   }
-  const it = idx[id];
+  return idx;
+}
+
+function ingredientById(catalog, id) {
+  const it = ingredientIndex(catalog)[id];
   if (!it) throw new Error("[meal-content.js] 找不到食材：" + id);
   return it;
 }
@@ -706,4 +711,214 @@ export function builtinCurrentValues(copiedFrom, productsByUid) {
   const out = { name: p.name, allergen_tags: Array.isArray(p.allergen_tags) ? p.allergen_tags.slice() : [UNVERIFIED_ALLERGEN] };
   BUILTIN_VALUE_KEYS.forEach(function (k) { out[k] = p[k] != null ? p[k] : null; });
   return out;
+}
+
+// ---------- 我的組合（saved_meals，PRD 11、12.6；decisions #124、#125） ----------
+// 組合是單餐範本：只存 ref 與份量，營養、角色每次從 catalog 與我的品項讀。推薦、統計、hero 不讀（章程 C4.16）。
+// ctx = { hidden: 隱藏的內建品項 uid, customs: 轉好的我的品項（含已封存的）, slot: 時段或 null, profile }。
+// 切片 8、9 再往 ctx 加我的食材、我的料理、衛福部查詢檔（不改簽名）。
+
+function isCookType(t) {
+  return t === "cook_quick" || t === "cook_full";
+}
+
+// 紀錄或草稿的 MealContent → 組合的內容（PRD 11.1）：去掉快照、角色、縮放倍數；估算不能存（呼叫端先擋）。
+// keepImplicit：使用者在選擇器裡改過用油／調味才保留，否則 null（引用時套用當下的預設）
+export function toSavedContent(content, opts) {
+  const comps = content.components.map(function (c) {
+    if (c.kind === "ingredient") {
+      const o = { kind: "ingredient", axis: c.axis, ref: c.ref };
+      if (c.is_primary === true) o.is_primary = true;
+      return o;
+    }
+    if (c.kind === "product" || c.kind === "food") return { kind: c.kind, ref: c.ref, qty: c.qty != null ? c.qty : 1 };
+    throw new Error("[meal-content.js] 我的組合不能含「" + c.kind + "」元件");
+  });
+  const imp = opts && opts.keepImplicit && content.implicit ? { oil_g: content.implicit.oil_g, seasoning: content.implicit.seasoning } : null;
+  return {
+    meal_type: content.meal_type, archetype_id: content.archetype_id || null, method_id: content.method_id || null,
+    components: comps, implicit: imp,
+  };
+}
+
+function customsByUid(ctx) {
+  const out = {};
+  ((ctx && ctx.customs) || []).forEach(function (c) { out[c.uid] = c; });
+  return out;
+}
+
+function treeById(catalog) {
+  return (catalog.foodTree && catalog.foodTree.byId) || {};
+}
+
+// 規則 1–2（PRD 11.3）：查不到、已封存 → 丟；隱藏的內建品項有未封存的複製版本 → 換成它，否則丟。建立與引用共用。
+// 回傳 { content, dropped: [{ kind, ref, name }] }（name 查得到就用現在的名稱，查不到用 ref）
+export function remapSavedRefs(content, catalog, ctx) {
+  const hidden = (ctx && ctx.hidden) || [];
+  const customs = (ctx && ctx.customs) || [];
+  const own = customsByUid(ctx);
+  const ingIdx = ingredientIndex(catalog);
+  const tree = treeById(catalog);
+  const comps = [];
+  const dropped = [];
+  const drop = function (c, name) { dropped.push({ kind: c.kind, ref: c.ref, name: name || c.ref }); };
+  content.components.forEach(function (c) {
+    if (c.kind === "ingredient") { if (ingIdx[c.ref]) comps.push(c); else drop(c); return; }
+    if (c.kind === "food") { if (tree[c.ref]) comps.push(c); else drop(c); return; }
+    if (c.kind !== "product") { drop(c); return; }
+    const builtin = catalog.productsByUid[c.ref];
+    if (builtin) {
+      if (hidden.indexOf(c.ref) === -1) { comps.push(c); return; }
+      const copy = customs.filter(function (x) { return !x.archived && x.copied_from === c.ref; })[0];
+      if (copy) comps.push(Object.assign({}, c, { ref: copy.uid })); else drop(c, builtin.name);
+      return;
+    }
+    const mine = own[c.ref];
+    if (mine && !mine.archived) comps.push(c); else drop(c, mine ? mine.name : null);
+  });
+  return { content: Object.assign({}, content, { components: comps }), dropped: dropped };
+}
+
+const SAVED_AXIS_MAX = { protein: COMPOSE_MAX.protein, vegetable: COMPOSE_MAX.vegetable, staple: 1, seasoning: 1 };
+
+// 解析一個組合（PRD 11.3，所有引用都經過這裡）。saved：組合紀錄或它的 content。
+// 回傳 { meal_type, archetype, method, implicit, available: [{ component, item }], blocked: [{ component, name, reason }], gone: [{ kind, ref, name }], notes }
+// 規則 3 硬性過濾；規則 4 只在有食材時依目前骨架重驗（烹調法不是元件，失效時 method 為 null＋notes；快煮難度不在這裡擋）；
+// 規則 5 角色依 catalog 當下的 role 與 ctx.slot（null＝主餐 2），單品比 FOOD_MAX_PER_MEAL；都依 components 順序擋後者。
+export function resolveSavedMeal(saved, catalog, ctx) {
+  const content = saved && saved.content ? saved.content : saved;
+  const r = remapSavedRefs(content, catalog, ctx);
+  const profile = (ctx && ctx.profile) || {};
+  const slot = ctx && ctx.slot !== undefined ? ctx.slot : null;
+  const ingIdx = ingredientIndex(catalog);
+  const own = customsByUid(ctx);
+  const tree = treeById(catalog);
+  const cook = isCookType(content.meal_type);
+  const comps = r.content.components;
+  const hasIngredient = comps.some(function (c) { return c.kind === "ingredient"; });
+  const notes = [];
+  let archetype = null;
+  let method = null;
+  if (cook && hasIngredient) {
+    archetype = catalog.archetypes.filter(function (a) { return a.id === content.archetype_id; })[0] || null;
+    method = content.method_id ? ingIdx[content.method_id] || null : null;
+    if (archetype && method && (archetype.methods || []).indexOf(method.id) === -1) {
+      notes.push("烹調法「" + method.name + "」目前不在這個餐型，請重選");
+      method = null;
+    } else if (archetype && content.method_id && !method) {
+      notes.push("原本的烹調法已不提供，請重選");
+    }
+  }
+  const available = [];
+  const blocked = [];
+  const block = function (c, item, reason) { blocked.push({ component: c, name: item ? item.name : c.ref, reason: reason }); };
+  const axisCount = {};
+  const roleItems = [];
+  let foods = 0;
+  comps.forEach(function (c) {
+    if (c.kind === "ingredient") {
+      const it = ingIdx[c.ref];
+      if (!cook) { block(c, it, "這個型態不能放自煮的食材"); return; }
+      if (!archetype) { block(c, it, "這個餐型已不提供"); return; }
+      const f = ingredientFilterResult(it, c.axis, profile);
+      if (!f.ok) { block(c, it, f.reason); return; }
+      if (((archetype[c.axis] && archetype[c.axis].allow) || []).indexOf(c.ref) === -1) { block(c, it, "這個餐型目前不提供這個食材"); return; }
+      const max = SAVED_AXIS_MAX[c.axis] || 1;
+      if ((axisCount[c.axis] || 0) >= max) { block(c, it, AXIS_LABELS[c.axis] + "最多選 " + max + " 個"); return; }
+      if (noCookViolation(method, [it])) { block(c, it, "免開火不能搭配需要加熱的食材"); return; }
+      axisCount[c.axis] = (axisCount[c.axis] || 0) + 1;
+      available.push({ component: c, item: it });
+      return;
+    }
+    if (c.kind === "food") {
+      const it = tree[c.ref];
+      const f = passesHardFilters(it, profile);
+      if (!f.ok) { block(c, it, f.reason); return; }
+      if (foods >= FOOD_MAX_PER_MEAL) { block(c, it, foodLimitProblem(foods + 1)); return; }
+      foods++;
+      available.push({ component: c, item: it });
+      return;
+    }
+    const p = catalog.productsByUid[c.ref] || own[c.ref];
+    if (cook && p.role !== "drink") { block(c, p, "自煮的一餐只能帶飲料"); return; }
+    const f = passesHardFilters(p, profile);
+    if (!f.ok) { block(c, p, f.reason); return; }
+    if (!canAddManualItem(roleItems, p, slot)) { block(c, p, manualSelectionProblem(roleItems.concat([p]), slot)); return; }
+    roleItems.push(p);
+    available.push({ component: c, item: p });
+  });
+  return {
+    meal_type: content.meal_type, archetype: archetype, method: method,
+    implicit: content.implicit ? { oil_g: content.implicit.oil_g, seasoning: content.implicit.seasoning } : null,
+    available: available, blocked: blocked, gone: r.dropped, notes: notes,
+  };
+}
+
+// 解析結果 → buildDraftContent 吃的草稿（選擇器帶入與日期切換的預選共用；只放可用元件）。
+// 自煮的食材是 catalog.ingredients 裡的同一批物件（選擇器的 catalog.proteins 等清單也是，自煮分頁以物件比對選取）；
+// 主要槽位從 1 倍開始（decisions #124），is_primary 不用，由 composePrimary 重算
+export function savedMealDraft(resolved) {
+  const cook = isCookType(resolved.meal_type);
+  const d = { kind: cook ? "cook" : "products", meal_type: resolved.meal_type, items: [], estimates: [], drink: null, qtyByUid: {}, foods: [] };
+  if (cook) {
+    Object.assign(d, {
+      archetype: resolved.archetype, proteins: [], staple: null, vegetables: [], seasoning: null, method: resolved.method, primaryScale: 1,
+      implicitOverride: resolved.implicit ? { oil_g: resolved.implicit.oil_g, seasoning: resolved.implicit.seasoning } : {},
+    });
+  }
+  resolved.available.forEach(function (a) {
+    const c = a.component;
+    if (c.kind === "ingredient") {
+      if (c.axis === "protein") d.proteins.push(a.item);
+      else if (c.axis === "vegetable") d.vegetables.push(a.item);
+      else d[c.axis] = a.item;
+    } else if (c.kind === "food") {
+      d.foods.push({ item: a.item, qty: c.qty });
+    } else {
+      if (a.item.role === "drink") d.drink = a.item; else d.items.push(a.item);
+      if (c.qty !== 1) d.qtyByUid[a.item.uid] = c.qty;
+    }
+  });
+  return d;
+}
+
+// 組合卡片的熱量＝帶入後選擇器摘要的合計（主要槽位 1 倍，decisions #124）
+export function savedMealTotals(resolved, catalog, oilHabit) {
+  return contentTotals(buildDraftContent(savedMealDraft(resolved), { oilHabit: oilHabit }), catalog);
+}
+
+// 預設名稱與卡片的內容小字：品名以「＋」串接、不寫量（decisions #124）。自煮＝餐型名＋食材名；查不到的略過（章程 B9）
+export function savedMealDefaultName(content, catalog, ctx) {
+  const ingIdx = ingredientIndex(catalog);
+  const own = customsByUid(ctx);
+  const tree = treeById(catalog);
+  const names = [];
+  if (isCookType(content.meal_type) && content.archetype_id) {
+    const a = catalog.archetypes.filter(function (x) { return x.id === content.archetype_id; })[0];
+    if (a && content.components.some(function (c) { return c.kind === "ingredient"; })) names.push(a.name);
+  }
+  content.components.forEach(function (c) {
+    const it = c.kind === "ingredient" ? ingIdx[c.ref] : c.kind === "food" ? tree[c.ref] : catalog.productsByUid[c.ref] || own[c.ref];
+    if (it) names.push(it.name);
+  });
+  return names.join("＋");
+}
+
+// 存檔前的語意驗證（入口 1、入口 2、編輯模式共用；ctx.slot 用 null）：有被擋、已不提供，或沒有可用元件時回原因清單，否則 null
+export function savedMealProblem(resolved) {
+  const lines = resolved.blocked.map(function (b) { return "「" + b.name + "」：" + b.reason; })
+    .concat(resolved.gone.map(function (g) { return "「" + g.name + "」：已不提供"; }))
+    .concat(resolved.notes);
+  if (resolved.available.length === 0) lines.unshift("沒有可以存的品項。");
+  return lines.length > 0 ? lines : null;
+}
+
+// 卡片上的一行（PRD 11.3）：「有 N 項目前不能用：原因、原因」；全部能用回 null
+export function savedMealUnavailableLine(resolved) {
+  const n = resolved.blocked.length + resolved.gone.length;
+  if (n === 0) return null;
+  const reasons = [];
+  resolved.blocked.forEach(function (b) { if (reasons.indexOf(b.reason) === -1) reasons.push(b.reason); });
+  if (resolved.gone.length > 0) reasons.push("已不提供");
+  return "有 " + n + " 項目前不能用：" + reasons.join("、");
 }

@@ -4,7 +4,7 @@
 
 import { escapeHtml } from "../../core/html.js";
 import { COMPOSE_MAX } from "../../core/config.js";
-import { passesHardFilters } from "../../engine/filters.js";
+import { ingredientFilterResult } from "../../engine/filters.js";
 import { composeOptionProblem, composePrimary, archetypeHasStaple, oilOptions, composeImplicit } from "../../engine/meal-content.js";
 
 export const TIER_LABELS = { cook_quick: "快煮（簡單料理）", cook_full: "開伙" };
@@ -21,11 +21,9 @@ export function archetypeOptions(catalog, axis, archetype) {
   return pickIds(list, (archetype[axis] && archetype[axis].allow) || []);
 }
 
-// 把單一食材包成跟推薦的自組食譜一樣的形狀再過硬性過濾，讓「不吃食材」清單能正確命中
+// 單一食材的硬性過濾在 engine（我的組合的解析也用，章程 C2）
 function hardFilterReason(item, axis, profile) {
-  const wrapper = { is_composed: true, allergen_tags: item.allergen_tags || [], diet_tag_sets: [item.diet_tags || []] };
-  wrapper[{ protein: "protein_id", staple: "staple_id", vegetable: "vegetable_id", seasoning: "sauce_id" }[axis]] = item.id;
-  const r = passesHardFilters(wrapper, profile);
+  const r = ingredientFilterResult(item, axis, profile);
   return r.ok ? null : r.reason;
 }
 

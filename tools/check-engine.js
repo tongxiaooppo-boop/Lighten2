@@ -811,6 +811,11 @@ async function main() {
   checkSingleFoodsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
 
+  // ---------- 12. 我的組合（工作線 C） ----------
+  console.log("[我的組合]");
+  checkSavedMeals(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
 }
@@ -1724,6 +1729,138 @@ function checkSingleFoodsDb(catalog) {
   badQty.content.components[0].qty = 13;
   const n = fixtureV2.sections.logs.daily_log.length + 1;
   check(db.validateBackup(db.migrateBackup(withLog(badQty))).some((x) => new RegExp("飲食紀錄第 " + n + " 筆.*qty").test(x)), "單品 qty 13 的備份要擋下並指出第 " + n + " 筆");
+}
+
+// 工作線 C：我的組合的 engine（計畫 docs/review/2026-10-01-C-實作計畫.md 第 4 節、第 8 節）
+function checkSavedMeals(catalog) {
+  const mc = M.mc, cfg = M.config, flt = M.filters;
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const throwsOf = (fn) => { try { fn(); return null; } catch (e) { return String(e && e.message); } };
+  const ing = (id) => catalog.ingredients.find((x) => x.id === id);
+  const arch = (id) => catalog.archetypes.find((a) => a.id === id);
+  const P = catalog.products;
+  const tree = catalog.foodTree.byId;
+  const byRole = (role, ok) => P.filter((p) => p.role === role && (!ok || ok(p)));
+  const clean = (p) => (p.allergen_tags || []).indexOf("未確認") === -1;
+  const mains = byRole("main").slice(0, 3); // profile 沒設過敏原，未確認的照樣可用
+  const drink = catalog.productsByUid.tw_dr05;
+  const ctx0 = { hidden: [], customs: [], slot: null, profile: {} };
+
+  // 1. 主餐上限：null＝沒有時段（2）；undefined 照舊（1）
+  check(cfg.manualRoleMax("main", null) === 2 && cfg.manualRoleMax("main", undefined) === 1 && cfg.manualRoleMax("side", null) === 1, "manualRoleMax 的 null／undefined");
+  check(mc.manualSelectionProblem(mains.slice(0, 2), null) === null && /最多選 2 個/.test(mc.manualSelectionProblem(mains, null) || ""), "沒有時段時主餐上限 2");
+
+  // 2. 單一食材的硬性過濾（從 cook-tab 搬來）：不吃食材比得中 id
+  const breast = ing("chicken_breast");
+  check(!flt.ingredientFilterResult(breast, "protein", { disliked_ingredients: [{ type: "protein", key: "chicken_breast", label: "雞胸" }] }).ok, "ingredientFilterResult 標雞胸不吃要擋");
+  check(flt.ingredientFilterResult(breast, "protein", {}).ok && flt.passesHardFilters(breast, { disliked_ingredients: [{ type: "protein", key: "chicken_breast", label: "雞胸" }] }).ok === true, "ingredientFilterResult 沒設定要通過（直接丟食材進 passesHardFilters 比不中不吃，所以要包裝）");
+
+  // 3. toSavedContent
+  const prodDraft = { kind: "products", meal_type: "convenience", items: mains.slice(0, 2), estimates: [], drink: drink, qtyByUid: { [mains[0].uid]: 2 },
+    foods: [{ item: tree.fx_cooked_rice, qty: 4 }] };
+  const prodContent = mc.buildDraftContent(prodDraft, { oilHabit: "normal" });
+  const before = JSON.stringify(prodContent);
+  const sp = mc.toSavedContent(prodContent, { keepImplicit: false });
+  check(JSON.stringify(prodContent) === before, "toSavedContent 改到了輸入");
+  check(same(sp, { meal_type: "convenience", archetype_id: null, method_id: null, components: [
+    { kind: "product", ref: mains[0].uid, qty: 2 }, { kind: "product", ref: mains[1].uid, qty: 1 }, { kind: "food", ref: "fx_cooked_rice", qty: 4 },
+    { kind: "product", ref: "tw_dr05", qty: 1 }], implicit: null }), "toSavedContent 商品＋單品＋飲料：" + JSON.stringify(sp));
+  const stir = arch("protein_stir_fry");
+  const cookDraft = { kind: "cook", meal_type: "cook_full", archetype: stir, proteins: [ing(stir.protein.allow[0])], staple: ing(stir.staple.allow[0]),
+    vegetables: [ing(stir.vegetable.allow[0])], seasoning: null, method: ing("method_stir_fry"), primaryScale: 1.3, implicitOverride: { oil_g: 10 },
+    drink: drink, foods: [{ item: tree.fx_whole_milk, qty: 2 }] };
+  const cookContent = mc.buildDraftContent(cookDraft, { oilHabit: "normal" });
+  const sc = mc.toSavedContent(cookContent, { keepImplicit: true });
+  check(sc.archetype_id === stir.id && sc.method_id === "method_stir_fry" && same(sc.implicit, cookContent.implicit) && sc.implicit.oil_g === 10, "toSavedContent keepImplicit 保留用油與餐型");
+  check(sc.components.every((c) => !("scale" in c) && !("snapshot" in c) && !("role" in c)) && sc.components.filter((c) => c.is_primary === true).length === 1 &&
+    sc.components.every((c) => Object.keys(c).every((k) => c[k] !== undefined)), "toSavedContent 不留縮放、快照、角色，沒有 undefined 鍵");
+  check(mc.toSavedContent(cookContent, { keepImplicit: false }).implicit === null && mc.toSavedContent(cookContent).implicit === null, "toSavedContent keepImplicit false／缺 → implicit null");
+  check(/estimate/.test(throwsOf(() => mc.toSavedContent(mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "S" }] }), { keepImplicit: false })) || ""), "toSavedContent 含估算要丟錯");
+
+  // 4. remapSavedRefs（規則 1–2）
+  const hiddenP = mains[0];
+  const copy = { uid: "custom_copy", name: "我的版本", role: "main", channel: "convenience", archived: false, copied_from: hiddenP.uid, allergen_tags: [], diet_tags: [], kcal: 400 };
+  const archivedOwn = { uid: "custom_old", name: "舊品項", role: "side", channel: "convenience", archived: true, allergen_tags: [], diet_tags: [], kcal: 100 };
+  const S = (comps, mt, extra) => Object.assign({ meal_type: mt || "convenience", archetype_id: null, method_id: null, components: comps, implicit: null }, extra || {});
+  const pc = (ref, qty) => ({ kind: "product", ref: ref, qty: qty || 1 });
+  let r = mc.remapSavedRefs(S([pc(hiddenP.uid, 2), pc("nope_x"), pc("custom_old"), { kind: "food", ref: "fx_gone" }, { kind: "ingredient", axis: "protein", ref: "gone_ing" }]), catalog,
+    { hidden: [hiddenP.uid], customs: [copy, archivedOwn] });
+  check(same(r.content.components, [{ kind: "product", ref: "custom_copy", qty: 2 }]), "remapSavedRefs 隱藏且有複製版本要換成它（份量保留）：" + JSON.stringify(r.content.components));
+  check(r.dropped.map((d) => d.ref).join() === "nope_x,custom_old,fx_gone,gone_ing" && r.dropped[1].name === "舊品項", "remapSavedRefs 查不到、已封存、分層下架、食材下架要丟：" + JSON.stringify(r.dropped));
+  r = mc.remapSavedRefs(S([pc(hiddenP.uid)]), catalog, { hidden: [hiddenP.uid], customs: [Object.assign({}, copy, { archived: true })] });
+  check(r.content.components.length === 0 && r.dropped[0].name === hiddenP.name, "remapSavedRefs 複製版本已封存時要丟，名稱用內建的");
+
+  // 5. resolveSavedMeal（規則 3–6）
+  const res = (content, ctx, cat) => mc.resolveSavedMeal({ content: content }, cat || catalog, Object.assign({}, ctx0, ctx));
+  const egg = P.find((p) => p.role === "main" && (p.allergen_tags || []).indexOf("蛋") !== -1);
+  const cleanMain = byRole("main", clean).find((p) => p.uid !== egg.uid);
+  let x = res(S([pc(egg.uid), pc(cleanMain.uid)]), { profile: { allergens: ["蛋"] } });
+  check(x.blocked.length === 1 && x.blocked[0].component.ref === egg.uid && x.available.length === 1, "resolveSavedMeal 過敏原要擋該元件");
+  const cookSaved = mc.toSavedContent(cookContent, { keepImplicit: false });
+  x = res(cookSaved, { profile: { disliked_ingredients: [{ type: "protein", key: cookDraft.proteins[0].id, label: "x" }] } });
+  check(x.blocked.length === 1 && x.blocked[0].component.ref === cookDraft.proteins[0].id && /不吃/.test(x.blocked[0].reason), "resolveSavedMeal 不吃的食材要擋：" + JSON.stringify(x.blocked));
+  x = res(Object.assign({}, cookSaved, { archetype_id: "gone_arch" }));
+  check(x.archetype === null && x.blocked.filter((b) => b.reason === "這個餐型已不提供").length === 3 && x.available.length === 2, "骨架已刪除：自煮元件全被擋、飲料與單品照樣可用");
+  const notAllowed = catalog.proteins.find((p) => stir.protein.allow.indexOf(p.id) === -1);
+  x = res(S([{ kind: "ingredient", axis: "protein", ref: notAllowed.id }].concat(cookSaved.components), "cook_full", { archetype_id: stir.id, method_id: "method_stir_fry" }));
+  check(x.blocked.length === 1 && x.blocked[0].reason === "這個餐型目前不提供這個食材", "食材不在 allow 要擋");
+  const p3 = stir.protein.allow.slice(0, 3).map((id) => ({ kind: "ingredient", axis: "protein", ref: id }));
+  x = res(S(p3, "cook_full", { archetype_id: stir.id, method_id: "method_stir_fry" }));
+  check(stir.protein.allow.length >= 3 && x.blocked.length === 1 && x.blocked[0].component.ref === stir.protein.allow[2] && /最多選 2 個/.test(x.blocked[0].reason), "軸上限依順序擋後者");
+  // 免開火：假骨架（真資料的免開火骨架食材都不需加熱）
+  const hot = catalog.proteins.find((p) => p.requires_cooking);
+  const cold = catalog.proteins.find((p) => !p.requires_cooking);
+  const fakeArch = { id: "fake_nocook", name: "假骨架", protein: { allow: [cold.id, hot.id] }, staple: { allow: [] }, vegetable: { allow: [] }, seasoning: { allow: [] },
+    methods: ["method_no_cook", "method_pan_fry"], seasoned: false, valid_slots: ["lunch"] };
+  const fakeCat = Object.assign({}, catalog, { archetypes: catalog.archetypes.concat([fakeArch]) });
+  x = res(S([{ kind: "ingredient", axis: "protein", ref: cold.id }, { kind: "ingredient", axis: "protein", ref: hot.id }], "cook_quick", { archetype_id: "fake_nocook", method_id: "method_no_cook" }), {}, fakeCat);
+  check(x.method && x.method.id === "method_no_cook" && x.blocked.length === 1 && x.blocked[0].component.ref === hot.id && x.blocked[0].reason === "免開火不能搭配需要加熱的食材", "免開火擋需要加熱的食材、烹調法保留");
+  x = res(Object.assign({}, cookSaved, { method_id: "method_no_cook" }));
+  check(x.method === null && x.notes.length === 1 && /烹調法/.test(x.notes[0]) && x.blocked.length === 0, "烹調法不在骨架：method null＋說明，不算被擋");
+  // 快煮難度不在解析時擋；valid_slots 不擋
+  const red = catalog.proteins.find((p) => stir.protein.allow.indexOf(p.id) !== -1 && !cfg.isQuickTier(cfg.tierRank(p.prep_tier)));
+  if (red) {
+    x = res(S([{ kind: "ingredient", axis: "protein", ref: red.id }], "cook_quick", { archetype_id: stir.id, method_id: "method_stir_fry" }));
+    check(x.blocked.length === 0 && x.available.length === 1, "快煮難度不在解析時擋（Q2）");
+  }
+  const lunchOnly = P.find((p) => p.role === "main" && p.valid_slots.indexOf("afternoon_tea") === -1);
+  x = res(S([pc(lunchOnly.uid)]), { slot: "afternoon_tea" });
+  check(x.available.length === 1, "valid_slots 不擋帶入（規則 6）");
+  // 角色依順序擋後者；主餐上限依 slot
+  const three = S(mains.map((p) => pc(p.uid)).concat([pc("tw_dr05"), pc("tw_dr05")]));
+  x = res(three, { slot: null });
+  check(x.blocked.map((b) => b.component.ref).join() === mains[2].uid + ",tw_dr05" && x.available.length === 3, "沒有時段：第 3 個主餐、第 2 杯飲料被擋：" + JSON.stringify(x.blocked.map((b) => b.reason)));
+  x = res(three, { slot: "afternoon_tea" });
+  check(x.blocked.filter((b) => /主餐最多選 1 個/.test(b.reason)).length === 2, "下午茶：第 2、3 個主餐被擋（解析與送出一致）");
+  // 單品：第 5 項被擋；只有單品的自煮略過規則 4
+  const five = ["fx_cooked_rice", "fx_banana", "fx_whole_milk", "fx_soft_tofu", "fx_skim_milk"].map((id) => ({ kind: "food", ref: id, qty: 1 }));
+  x = res(S(five, "cook_quick"));
+  check(x.available.length === 4 && x.blocked.length === 1 && x.blocked[0].component.ref === "fx_skim_milk" && x.archetype === null, "第 5 項單品被擋、只有單品的自煮不看餐型");
+  x = res(S([pc(mains[0].uid)], "cook_full"));
+  check(x.blocked.length === 1 && x.available.length === 0, "自煮組合裡的非飲料商品要擋");
+
+  // 6. savedMealDraft、savedMealTotals、來回
+  const rp = res(mc.toSavedContent(prodContent, { keepImplicit: false }), { slot: "lunch" });
+  const dp = mc.savedMealDraft(rp);
+  check(dp.kind === "products" && dp.items.map((p) => p.uid).join() === mains.slice(0, 2).map((p) => p.uid).join() && dp.drink === drink &&
+    same(dp.qtyByUid, { [mains[0].uid]: 2 }) && dp.foods.length === 1 && dp.foods[0].item === tree.fx_cooked_rice && dp.foods[0].qty === 4, "savedMealDraft 商品組合");
+  check(same(mc.toSavedContent(mc.buildDraftContent(dp, { oilHabit: "normal" }), { keepImplicit: false }), mc.toSavedContent(prodContent, { keepImplicit: false })), "商品組合來回不變");
+  const rc = res(mc.toSavedContent(cookContent, { keepImplicit: true }));
+  const dc = mc.savedMealDraft(rc);
+  check(dc.kind === "cook" && dc.archetype === stir && catalog.proteins.indexOf(dc.proteins[0]) !== -1 && catalog.staples.indexOf(dc.staple) !== -1 &&
+    dc.primaryScale === 1 && same(dc.implicitOverride, cookContent.implicit) && dc.drink === drink && dc.foods[0].qty === 2, "savedMealDraft 自煮組合（同一批食材物件、1 倍、用油覆寫）");
+  check(same(mc.toSavedContent(mc.buildDraftContent(dc, { oilHabit: "normal" }), { keepImplicit: true }), mc.toSavedContent(cookContent, { keepImplicit: true })), "自煮組合來回不變");
+  const t1 = mc.savedMealTotals(rc, catalog, "normal");
+  check(same(t1, mc.contentTotals(mc.buildDraftContent(Object.assign({}, cookDraft, { primaryScale: 1 }), { oilHabit: "normal" }), catalog)), "savedMealTotals＝帶入後 1 倍的合計");
+  check(mc.savedMealTotals(res(S([pc("nope_x")])), catalog, "normal").kcal === 0, "全部已不提供時 savedMealTotals 不丟錯（章程 B9）");
+
+  // 7. 名稱與說明
+  check(mc.savedMealDefaultName(mc.toSavedContent(prodContent), catalog, ctx0) === [mains[0].name, mains[1].name, "白飯", drink.name].join("＋"), "預設名稱只寫品名、不寫量");
+  check(mc.savedMealDefaultName(sc, catalog, ctx0) === [stir.name].concat(mc.draftIngredients(cookDraft).map((i) => i.name), ["全脂奶（自己倒）", drink.name]).join("＋") , "自煮預設名稱：餐型＋食材＋品項（照元件順序）");
+  check(mc.savedMealDefaultName(S([pc("nope_x"), pc("custom_copy")]), catalog, { customs: [copy] }) === "我的版本", "預設名稱略過查不到的、認得我的品項");
+  x = res(three, { slot: null });
+  check(/^有 2 項目前不能用：/.test(mc.savedMealUnavailableLine(x)) && mc.savedMealUnavailableLine(res(S([pc(mains[0].uid)]))) === null, "savedMealUnavailableLine");
+  check(mc.savedMealProblem(res(S([pc(mains[0].uid)]))) === null && mc.savedMealProblem(x).length === 2 && mc.savedMealProblem(res(S([pc("nope_x")])))[0] === "沒有可以存的品項。", "savedMealProblem");
 }
 
 main().catch((err) => {

@@ -29,7 +29,11 @@ export const MANUAL_ROLE_MAX = { main: 1, side: 1, drink: 1, snack: 1 };
 // 主餐上限依時段（decisions #41）：「雞胸＋蒸地瓜」這類兩個主餐的一餐要能記；沒列的時段用 MANUAL_ROLE_MAX
 export const MANUAL_MAIN_MAX_BY_SLOT = { breakfast: 2, lunch: 2, dinner: 2 };
 
+// 沒有時段（slot === null：我的組合的解析、存檔前驗證與編輯模式）時主餐上限 2（decisions #63、#125）
+export const SAVED_MEAL_MAIN_MAX = 2;
+
 export function manualRoleMax(role, slot) {
+  if (role === "main" && slot === null) return SAVED_MEAL_MAIN_MAX;
   if (role === "main" && MANUAL_MAIN_MAX_BY_SLOT.hasOwnProperty(slot)) return MANUAL_MAIN_MAX_BY_SLOT[slot];
   return MANUAL_ROLE_MAX[role] || 1;
 }
