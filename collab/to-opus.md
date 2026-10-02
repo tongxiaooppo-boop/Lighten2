@@ -3,16 +3,16 @@
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
 **2026-10-02 最新（先讀）**：
-- 已 commit、**未推送**：`f9200bf` 8a 衛福部查詢檔（`data/tfda_lookup.json`、`tools/build-tfda-lookup.js`、`data/reference/tfda_tags.json`／`tfda_groups.json`）；`1286f63` 查詢檔缺值補 0；`8f11984` 8b 計畫第三版。decisions #134（使用者：分類篩選、顯示位置、衛福部／自填標示、生熟固定、說法統一）、#135（8a 技術）、#136（使用者：克數記法全部單品、一份留空＋參考、衛福部過敏原不能改）、#137（補 0）；#138 留給 8b 技術定案。
+- 已推送：`f9200bf` 8a 衛福部查詢檔（`data/tfda_lookup.json`、`tools/build-tfda-lookup.js`、`data/reference/tfda_tags.json`／`tfda_groups.json`）；`1286f63` 查詢檔缺值補 0；`8f11984` 8b 計畫第三版。decisions #134（使用者：分類篩選、顯示位置、衛福部／自填標示、生熟固定、說法統一）、#135（8a 技術）、#136（使用者：克數記法全部單品、一份留空＋參考、衛福部過敏原不能改）、#137（補 0）；#138 留給 8b 技術定案。
 - **8b 計畫** [docs/review/2026-10-02-D8b-實作計畫.md](../docs/review/2026-10-02-D8b-實作計畫.md)：兩輪審核逐字 `collab/opus-review-log/2026-10-02-d8b-plan-review.md`；**第 8、9 節為準**。拆 8b-1（db、engine 克數記法、份／克切換、說法統一 → 使用者手機測一次）與 8b-2（新增食材、自填、我的食材組）。
-- **8b-1 已完成（commit ①–⑥：`docs PRD #138`、`34e6cc7` db、`621f2b2` engine、`9cf017e` 說法統一、`8f9618d` 份／克切換＋saved-ctx、`eb9493c` tools）**：check-engine 43k、smoke 51、walkthrough 489 全過，截圖看過（含 360 寬）；快照只新增 amount/mixed 7 行。手機腳本短清單第 10 項＝這次要測的。使用說明交 Sonnet 改（說法＋份／克），Opus 驗收後 commit。**推送前先問使用者。**
+- **8b-1 已完成（commit ①–⑥：`docs PRD #138`、`34e6cc7` db、`621f2b2` engine、`9cf017e` 說法統一、`8f9618d` 份／克切換＋saved-ctx、`eb9493c` tools）**：check-engine 43k、smoke 51、walkthrough 489 全過，截圖看過（含 360 寬）；快照只新增 amount/mixed 7 行。手機腳本短清單第 10 項＝這次要測的。使用說明交 Sonnet 改（說法＋份／克），Opus 驗收後 commit（已完成、已推送）。
 - **8b-1 使用者 2026-10-02 手機測過**（短清單第 10 項）。
 - **8b-2 已完成並推送（`c55107d` ui＋engine＋查詢檔熟樣品規則 #139、`9400add` tools、`421f517` 使用說明；2026-10-02 推送）**：check-engine 43432、check-arch 33141、smoke 54（含查詢檔載入失敗→重試、移除→復原、同樣品不能加兩次）、walkthrough 521（第 12 節我的食材，截圖看過含 360 寬），快照逐字不變。手機腳本短清單第 11 項＝這次要測的（第 53–59 行）。使用說明已更新。**使用者 2026-10-02 手機測過短清單第 11 項。**
   - 實作時的發現：衛福部熟的魚、蛋原本被標「照現狀」→ decisions #139 改成品名有烹調法的新鮮食材算熟；walkthrough 的 8-5 偶發失敗是「我的食物」重讀前就點了舊畫面 → refreshFoods 期間 #foods-body 標 data-loading，foodsSub 等它消失。
   - 已知、刻意：自填表單的數字欄只有 placeholder（填了以後看不到欄位名稱），跟我的品項表單一致；使用者覺得難懂再改。
 - **接下來的順序（使用者定，不變）**：日期切換與預約（#118、#129；克數記法的元件形狀 `{ ref, qty | amount }` 預約沿用）→ 擴充餐型 → 切片 9 我的料理（料理引用衛福部食材用 id 反推整合編號讀查詢檔，PRD 12.4 已寫）→ 切片 10 沖泡 → 採買清單。
 - 使用者說週額度剩 29%：查詢、整理、使用說明這類小工作交 Sonnet。
-- 使用說明 `docs/使用說明.html` 要跟著說法統一與我的食材改（交 Sonnet，Opus 360 寬驗收）。
+- 使用說明 `docs/使用說明.html` 已跟著說法統一與我的食材改好（`421f517`）；之後功能改了照樣交 Sonnet、Opus 360 寬驗收。
 
 **2026-10-01 收工時的狀態（舊）**
 
@@ -63,12 +63,12 @@
 |---|---|
 | `node tools/check-data.js` | 食物資料（章程 B12）；`--list` 列出待查證的 estimate／label_unsourced 欄位 |
 | `node tools/build-ingredients.js` | 由 `data/reference/` 重算食材 per_100g（`--dry` 只列差異） |
-| `node tools/check-engine.js` | 引擎斷言（約 43369 項，台灣時區跑；切片 7 起有「單品」、工作線 C 起有「我的組合」、切片 5 起有「常吃」一節） |
+| `node tools/check-engine.js` | 引擎斷言（約 43432 項，台灣時區跑；切片 7 起有「單品」、工作線 C 起有「我的組合」、切片 5 起有「常吃」一節） |
 | `node tools/check-arch.js` | 章程 C1/C2/C4 的架構規則 |
 | `node tools/diff-recs.js` | 快照逐字比對；`--update` 重錄、`--full` 看全部差異 |
 | `node tools/stamp-version.js` | **改了 js/、css/、data/ 就要跑，再 `git add index.html`** |
 | `node tools/smoke-browser.mjs` | 無頭 Edge 實際操作 App（約 30 秒；Phase 驗收時跑；B-3 起含備份還原與全有全無，B-1a 起含複製全有全無、隱藏推薦品項；切片 7 起含單品寫入與備份來回；工作線 C 起含資料庫 v1→v2 升級、組合全有全無；切片 5 起含常吃互斥、全有全無、複製轉移，50 項；`SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v4.json` 重凍目前版本的 fixture）。**沙箱擋外網時 Google Fonts 會報 console 錯誤（ERR_SSL_PROTOCOL_ERROR），那一項失敗是環境問題** |
-| `node tools/mobile-walkthrough.mjs` | 手機實機腳本自動版：模擬手機照腳本操作＋每步截圖（約 2.5 分鐘，477 項；第 5 節資料備份、第 6–7 節我的品項、第 8 節我的食物、第 9 節單品、第 10 節我的組合、第 11 節常吃）。**動到畫面流程、Phase 驗收時必跑，截圖要逐張看過**，再請使用者跑腳本開頭的「使用者短清單」（章程 C6.5） |
+| `node tools/mobile-walkthrough.mjs` | 手機實機腳本自動版：模擬手機照腳本操作＋每步截圖（約 2.5 分鐘，521 項；第 5 節資料備份、第 6–7 節我的品項、第 8 節我的食物、第 9 節單品、第 10 節我的組合、第 11 節常吃、第 12 節我的食材）。**動到畫面流程、Phase 驗收時必跑，截圖要逐張看過**，再請使用者跑腳本開頭的「使用者短清單」（章程 C6.5） |
 
 - pre-commit hook 約 8 秒。禁止 `--no-verify`。
 - 推送前要先問使用者。2026-09-29 已推送，CI（check）通過。
@@ -144,7 +144,7 @@
 
 ## 5. 工作方式
 
-- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #133）。先改 PRD、記 decisions，再改程式（A1）。
+- 權威規格 `docs/PRD.md`；章程 `docs/CHARTER.md`；決策 `docs/decisions.md`（到 #139）。先改 PRD、記 decisions，再改程式（A1）。
 - 重大設計、偏離 PRD 的格式、改推薦演算法、改骨架：新開 Opus agent 獨立審核，**問答逐字存 `collab/opus-review-log/`**。
 - 使用者習慣：問題附建議，常回「照建議」；只把產品決定交給使用者。可以直接 commit 到 master，訊息結尾 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`。
 - 資料改動：每個 commit 附差異報告；能證明「只是重構」的，用腳本比對舊快照（例：id 改名後把舊快照套同一份改名對照再逐字比）。
