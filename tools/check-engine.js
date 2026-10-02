@@ -2270,6 +2270,48 @@ function checkSavedMealsDb(catalog) {
   check(Array.isArray(up5.sections.meal_plan) && up5.sections.meal_plan.length === 0 && up5.manifest.meal_plan === 0, "舊備份升級補空的預約");
   const badPlan = clone(v6); badPlan.sections.meal_plan[0].id = "2026-10-04|dinner";
   check(db.validateBackup(badPlan).some((x) => /預約第 1 筆/.test(x)), "壞的預約要指出「預約第 1 筆」");
+  // ---- 日期切換：引擎（toPlanContent、resolvePlan、planPseudoLog、planToday 收預約） ----
+  console.log("[日期切換：引擎]");
+  const pctx = { hidden: [], customs: [], customIngredients: [], profile: {} };
+  const estDraft = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "L", name: "喜宴" }], drink: null, qtyByUid: {}, foods: [] });
+  const estPc = mc.toPlanContent(estDraft, { keepImplicit: false });
+  check(estPc.components[0].kind === "estimate" && estPc.components[0].snapshot.kcal === 1200 && !errOf(() => db.validateMealPlan(plan(estPc))), "toPlanContent 保留估算與快照：" + errOf(() => db.validateMealPlan(plan(estPc))));
+  const cookDraft = (scale) => mc.buildDraftContent({ kind: "cook", meal_type: "cook_full", archetype: stir, proteins: [ing(stir.protein.allow[0])], staple: ing(stir.staple.allow[0]),
+    vegetables: [], seasoning: null, method: ing("method_stir_fry"), primaryScale: scale, implicitOverride: {} });
+  const cook15 = mc.toPlanContent(cookDraft(1.5), { keepImplicit: false }), cook1 = mc.toPlanContent(cookDraft(1), { keepImplicit: false });
+  check(cook15.components.some((c) => c.is_primary && c.scale === 1.5) && !cook1.components.some((c) => "scale" in c) && !errOf(() => db.validateMealPlan(plan(cook15))),
+    "toPlanContent 主要槽位存使用者選的倍數（1 倍不存）");
+  check(JSON.stringify(mc.toPlanContent(mc.buildDraftContent({ kind: "products", meal_type: "convenience", items: [main], estimates: [], drink: catalog.productsByUid.tw_dr05,
+    qtyByUid: { [main.uid]: 2 }, foods: [{ item: tree.fx_cooked_rice, qty: 4 }] }), { keepImplicit: false })) === JSON.stringify(prod), "toPlanContent 沒有估算與倍數時跟 toSavedContent 相同");
+  const rp = (content, slot, ctxPatch) => mc.resolvePlan(plan(content, { slot: slot || "lunch", id: "2026-10-04|" + (slot || "lunch") }), catalog, Object.assign({}, pctx, ctxPatch || {}), "normal");
+  const rSkip = rp(skipPlan), rEst = rp(estPc), rProd = rp(prod), r15 = rp(cook15), r1 = rp(cook1);
+  check(rSkip.status === "skip" && rSkip.totals.kcal === 0 && rEst.status === "ok" && rEst.totals.kcal === 1200 && rProd.status === "ok" &&
+    rProd.totals.kcal === mc.savedMealTotals(mc.resolveSavedMeal(prod, catalog, Object.assign({}, pctx, { slot: "lunch" })), catalog, "normal").kcal,
+    "resolvePlan：預約不吃 0、估算 1200、現成照組合合計");
+  check(r15.status === "ok" && r1.status === "ok" && r15.totals.kcal > r1.totals.kcal, "resolvePlan：自煮照使用者選的倍數（1.5 倍比 1 倍多）：" + (r15.totals && r15.totals.kcal) + " vs " + (r1.totals && r1.totals.kcal));
+  const mainProd = catalog.productsByUid[prod.components.find((c) => c.kind === "product" && catalog.productsByUid[c.ref].role !== "drink").ref];
+  const rHidden = rp(prod, "lunch", { hidden: [mainProd.uid] });
+  check(rHidden.status === "invalid" && rHidden.totals === null, "resolvePlan：有元件已不提供＝整筆失效");
+  const pseudo = mc.planPseudoLog(plan(prod), rProd), pseudoSkip = mc.planPseudoLog(plan(skipPlan, { slot: "dinner", id: "2026-10-04|dinner" }), rSkip);
+  check(pseudo.planned === true && pseudo.slot === "lunch" && pseudo.totals.kcal === rProd.totals.kcal && pseudoSkip.skip === true && pseudoSkip.totals.kcal === 0 &&
+    mc.planPseudoLog(plan(prod), rHidden) === null, "planPseudoLog：有效的變暫時紀錄、失效的不算");
+  check(!errOf(() => db.validateDailyLog(mc.skippedLogEntry("2026-10-02", "lunch", T0))), "skippedLogEntry 要通過寫入驗證");
+  const pool8 = M.pool.buildCandidatePool(catalog);
+  const prof8 = { age: 35, gender: "男", height_cm: 175, weight_kg: 80, activity_mode: "輕度", goal_mode: "減脂", meal_prefs: null, enabled_slots: null, diet_restriction: "一般", allergens: [], disliked_ingredients: [] };
+  const tg8 = M.nutrition.calculateTargets(prof8);
+  const pt = (plans, logs) => M.today.planToday({ profile: prof8, targets: tg8, todayLogs: logs || [], weekLogs: logs || [], feedbackMap: {}, pool: pool8, today: "2026-10-04",
+    nowMs: new Date(2026, 9, 4, 6, 0).getTime(), todayPlans: plans });
+  const base8 = M.today.planToday({ profile: prof8, targets: tg8, todayLogs: [], weekLogs: [], feedbackMap: {}, pool: pool8, today: "2026-10-04", nowMs: new Date(2026, 9, 4, 6, 0).getTime() });
+  check(JSON.stringify(pt([])) === JSON.stringify(base8) && JSON.stringify(pt(undefined)) === JSON.stringify(base8), "planToday 沒有預約時跟日期切換之前相同");
+  const estPseudo = mc.planPseudoLog(plan(estPc, { slot: "dinner", id: "2026-10-04|dinner" }), rEst);
+  const withEst = pt([estPseudo]);
+  check(withEst.skipSlots.dinner === true && !withEst.recs.dinner && Math.abs(withEst.remainingBudget.remainingKcal - Math.max(0, base8.remainingBudget.remainingKcal - 1200)) < 0.2 &&
+    withEst.plannedKcal === 1200 && withEst.plannedSlots.dinner === estPseudo && !withEst.logsBySlot.dinner, "planToday：晚餐預約 1200 扣預算、晚餐不推薦、不算紀錄");
+  const withSkip = pt([pseudoSkip]);
+  check(withSkip.skipSlots.dinner === true && withSkip.remainingBudget.remainingKcal === base8.remainingBudget.remainingKcal &&
+    withSkip.remainingBudget.perSlotSuggestion.lunch > base8.remainingBudget.perSlotSuggestion.lunch, "planToday：預約不吃晚餐，配額分給其他餐");
+  const realDinner = Object.assign(clone(skipLog), { log_date: "2026-10-04", slot: "dinner", id: "log_d" });
+  check(M.today.effectiveTodayLogs([realDinner], [estPseudo]).length === 1 && pt([estPseudo], [realDinner]).plannedKcal === undefined, "已有紀錄的時段，預約不算（紀錄優先）");
   const newer = clone(v3); newer.schema_version = db.BACKUP_SCHEMA_VERSION + 1;
   check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "比目前新一版的檔案要擋（較新的版本）");
 }

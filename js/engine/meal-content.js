@@ -796,6 +796,7 @@ export function remapSavedRefs(content, catalog, ctx) {
   const dropped = [];
   const drop = function (c, name) { dropped.push({ kind: c.kind, ref: c.ref, name: name || c.ref }); };
   content.components.forEach(function (c) {
+    if (c.kind === "estimate") { comps.push(c); return; } // 只有預約會有（自帶快照，不查資料）
     if (c.kind === "ingredient") { if (ingIdx[c.ref]) comps.push(c); else drop(c); return; }
     if (c.kind === "food") {
       if (tree[c.ref]) { comps.push(c); return; }
@@ -892,6 +893,7 @@ export function resolveSavedMeal(saved, catalog, ctx) {
       available.push({ component: c, item: it });
       return;
     }
+    if (c.kind === "estimate") { available.push({ component: c, item: null }); return; } // 預約的估算（喜宴、聚餐）：沒有成分可查
     const p = catalog.productsByUid[c.ref] || own[c.ref];
     if (cook && p.role !== "drink") { block(c, p, "自煮的一餐只能帶飲料"); return; }
     const f = passesHardFilters(p, profile);
@@ -915,7 +917,7 @@ export function savedMealDraft(resolved) {
   const d = { kind: cook ? "cook" : "products", meal_type: resolved.meal_type, items: [], estimates: [], drink: null, qtyByUid: {}, foods: [] };
   if (cook) {
     Object.assign(d, {
-      archetype: resolved.archetype, proteins: [], staple: null, vegetables: [], seasoning: null, method: resolved.method, primaryScale: 1,
+      archetype: resolved.archetype, proteins: [], staple: null, vegetables: [], seasoning: null, method: resolved.method, primaryScale: chosenPrimaryScale(resolved),
       implicitOverride: resolved.implicit ? { oil_g: resolved.implicit.oil_g, seasoning: resolved.implicit.seasoning } : {},
     });
   }
@@ -927,12 +929,77 @@ export function savedMealDraft(resolved) {
       else d[c.axis] = a.item;
     } else if (c.kind === "food") {
       d.foods.push(c.amount != null ? { item: a.item, amount: c.amount } : { item: a.item, qty: c.qty });
+    } else if (c.kind === "estimate") {
+      d.estimates.push({ size: c.size, name: c.name });
     } else {
       if (a.item.role === "drink") d.drink = a.item; else d.items.push(a.item);
       if (c.qty !== 1) d.qtyByUid[a.item.uid] = c.qty;
     }
   });
   return d;
+}
+
+// 預約的主要槽位倍數：使用者選的（存在主要槽位的元件上）；組合沒有這個欄位，一律 1 倍
+function chosenPrimaryScale(resolved) {
+  const hit = resolved.available.filter(function (a) {
+    return a.component.kind === "ingredient" && a.component.is_primary === true && isNum(a.component.scale);
+  })[0];
+  return hit ? hit.component.scale : 1;
+}
+
+// ---------- 預約（meal_plan，PRD 第 1、3 節；decisions #140–#142） ----------
+
+// 「這餐不吃」的預約內容
+export const PLAN_SKIP_CONTENT = { skip: true, meal_type: null, archetype_id: null, method_id: null, implicit: null, components: [] };
+
+export function isSkipPlan(content) {
+  return !!(content && content.skip === true);
+}
+
+// 選擇器的草稿內容 → 預約的儲存格式：組合的格式（只存 ref 與份量）＋估算帶快照＋主要槽位存使用者選的倍數（不是 1 才存）
+export function toPlanContent(content, opts) {
+  const rest = content.components.filter(function (c) { return c.kind !== "estimate"; });
+  const base = toSavedContent(Object.assign({}, content, { components: rest }), opts);
+  let i = 0;
+  const comps = content.components.map(function (c) {
+    if (c.kind === "estimate") return { kind: "estimate", name: c.name, size: c.size != null ? c.size : null, snapshot: Object.assign({}, c.snapshot) };
+    const o = base.components[i++];
+    if (o.kind === "ingredient" && o.is_primary === true && isNum(c.scale) && c.scale !== 1) o.scale = c.scale;
+    return o;
+  });
+  return Object.assign(base, { components: comps });
+}
+
+// 解析一筆預約（ctx 同 resolveSavedMeal，ctx.slot 用預約的時段）。
+// 回傳 { status: "skip" | "ok" | "invalid", resolved, totals }：任何元件被擋或已不提供＝整筆失效（不扣預算、該時段改推薦，設計草案第 9 節 M9）
+export function resolvePlan(plan, catalog, ctx, oilHabit) {
+  if (isSkipPlan(plan.content)) return { status: "skip", resolved: null, totals: zeroTotals() };
+  const resolved = resolveSavedMeal(plan.content, catalog, Object.assign({}, ctx, { slot: plan.slot }));
+  if (resolved.blocked.length > 0 || resolved.gone.length > 0 || resolved.notes.length > 0 || resolved.available.length === 0) {
+    return { status: "invalid", resolved: resolved, totals: null };
+  }
+  return { status: "ok", resolved: resolved, totals: savedMealTotals(resolved, catalog, oilHabit) };
+}
+
+function zeroTotals() {
+  return { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: 0, partial: [] };
+}
+
+// 今天沒有紀錄的時段的有效預約 → 暫時紀錄（只給預算、推薦、全天缺口用；不寫資料庫、不進統計，章程 C4.10）
+export function planPseudoLog(plan, result) {
+  if (!result || result.status === "invalid") return null;
+  const content = result.status === "skip" ? { meal_type: null, archetype_id: null, method_id: null, components: [], implicit: null }
+    : buildDraftContent(savedMealDraft(result.resolved));
+  return { log_date: plan.date, slot: plan.slot, content: content, totals: result.totals, planned: true, skip: result.status === "skip" };
+}
+
+// 「這餐沒吃」紀錄（source skipped，decisions #140⑥）
+export function skippedLogEntry(date, slot, createdAt) {
+  return {
+    log_date: date, slot: slot, meal_type: null, source: "skipped", name: "這餐沒吃",
+    content: { meal_type: null, archetype_id: null, method_id: null, components: [], implicit: null },
+    totals: zeroTotals(), created_at: createdAt,
+  };
 }
 
 // 組合卡片的熱量＝帶入後選擇器摘要的合計（主要槽位 1 倍，decisions #124）
