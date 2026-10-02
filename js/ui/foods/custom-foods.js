@@ -75,19 +75,19 @@ export async function saveCustomFoodForm(s) {
 export async function setCustomFoodArchived(s, id, archived) {
   let saved;
   try { saved = await updateCustomFood(id, { archived: archived }); } catch (err) { console.error(err); return "存檔失敗，請重試。"; }
-  let msg = (archived ? "已封存「" : "已還原「") + saved.name + "」。";
+  let msg = (archived ? "已刪除「" : "已還原「") + saved.name + "」。";
   // 封存複製品時，原本的內建品項仍是隱藏的（兩筆都看不到），中性提示（B-1a 計畫 S11）
   if (archived && saved.copied_from && s.hidden.indexOf(saved.copied_from) !== -1) {
     const p = s.catalog.productsByUid[saved.copied_from];
-    if (p) msg += "原本的內建品項「" + p.name + "」仍是隱藏的，可以在「已隱藏」取消。";
+    if (p) msg += "原本的內建品項「" + p.name + "」仍是換成你的版本，要用回內建到「已換成我的版本」按「改回內建」。";
   }
   return msg;
 }
 
 export async function unhideBuiltin(s, uid) {
-  try { await unhideCatalogItem(uid); } catch (err) { console.error(err); return "取消隱藏失敗，請重試。"; }
+  try { await unhideCatalogItem(uid); } catch (err) { console.error(err); return "改回內建失敗，請重試。"; }
   const p = s.catalog.productsByUid[uid];
-  let msg = "已取消隱藏「" + (p ? p.name : uid) + "」。";
+  let msg = "已改回內建「" + (p ? p.name : uid) + "」。";
   const copy = s.records.find(function (r) { return r.copied_from === uid && r.archived !== true; });
   if (copy) msg += "你有一筆從它複製的我的品項「" + copy.name + "」。";
   return msg;

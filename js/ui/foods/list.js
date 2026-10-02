@@ -86,7 +86,7 @@ function customDetailHtml(s, rec) {
     slotsText(item),
     "出處：" + (rec.copied_from ? "從內建複製" : "你填的"),
     res.ok ? null : "以你目前的設定不能選：" + res.reason,
-    rec.archived === true ? "已封存" : null,
+    rec.archived === true ? "已刪除" : null,
   ]);
   // 我的品項有常吃、沒有不吃（PRD 13.3）；封存的不能標常吃（不出現在選擇器）
   let buttons = (rec.archived === true ? "" : favoriteButtonHtml(s, rec.id)) +
@@ -94,7 +94,7 @@ function customDetailHtml(s, rec) {
   if (!res.ok && fillableReason(res.reason)) buttons += '<button type="button" class="secondary-btn" data-cf-fill="' + escapeHtml(rec.id) + '">補填</button>';
   buttons += rec.archived === true
     ? '<button type="button" class="secondary-btn" data-cf-restore="' + escapeHtml(rec.id) + '">還原</button>'
-    : '<button type="button" class="secondary-btn" data-cf-archive="' + escapeHtml(rec.id) + '">封存</button>';
+    : '<button type="button" class="secondary-btn" data-cf-archive="' + escapeHtml(rec.id) + '">刪除</button>';
   const editing = s.editing && (s.editing.mode === "edit" || s.editing.mode === "fill") && s.editing.id === rec.id;
   return '<div class="food-detail">' + linesHtml(lines) + customFoodCompareHtml(s, rec) + (rec.archived === true ? "" : favoriteNoteHtml()) +
     '<div class="backup-actions">' + buttons + "</div>" + (editing ? customFoodEditFormHtml(s) : "") + "</div>";
@@ -181,15 +181,15 @@ export function foodsSubtabHtml(s) {
   }, disliked.some(function (it) { return it.uid === s.openUid; }));
 
   const hidden = hiddenEntries(s.hidden, s.catalog.productsByUid).filter(function (e) { return foodsWhereOf(s.catalog.productsByUid[e.uid]) === sub; });
-  html += detailsGroup(s, sub + ":hidden", "已隱藏", hidden.length, function () {
+  html += detailsGroup(s, sub + ":hidden", "已換成我的版本", hidden.length, function () {
     return hidden.map(function (e) {
       return '<div class="food-row"><div class="food-row-main"><span class="food-name">' + escapeHtml(e.name) + "</span></div>" +
-        '<div class="backup-actions"><button type="button" class="secondary-btn" data-cf-unhide="' + escapeHtml(e.uid) + '">取消隱藏</button></div></div>';
+        '<div class="backup-actions"><button type="button" class="secondary-btn" data-cf-unhide="' + escapeHtml(e.uid) + '">改回內建</button></div></div>';
     }).join("");
   }, false);
 
   const archived = recordsOfSubtab(s, sub, true);
-  html += detailsGroup(s, sub + ":archived", "已封存", archived.length, function () { return archived.map(function (r) { return customRow(s, r); }).join(""); },
+  html += detailsGroup(s, sub + ":archived", "已刪除", archived.length, function () { return archived.map(function (r) { return customRow(s, r); }).join(""); },
     archived.some(function (r) { return r.id === s.openUid; }));
 
   return html + dislikedAllHtml(s);
@@ -202,7 +202,7 @@ function searchEntries(s) {
   const fav = foodsFavSet(s);
   const out = [];
   s.catalog.products.forEach(function (p) {
-    const status = [s.hidden.indexOf(p.uid) !== -1 ? "已隱藏" : null, fav[p.uid] ? "常吃" : null, keys.indexOf(p.uid) !== -1 ? "你標了不吃" : null].filter(Boolean);
+    const status = [s.hidden.indexOf(p.uid) !== -1 ? "已換成我的版本" : null, fav[p.uid] ? "常吃" : null, keys.indexOf(p.uid) !== -1 ? "你標了不吃" : null].filter(Boolean);
     const sub = foodsWhereOf(p);
     out.push({ uid: p.uid, name: p.name, sub: sub, rank: 0, where: FOODS_SUBTAB_LABELS[sub] + " · " + (p.category || "其他"), status: status, item: p });
   });
@@ -211,7 +211,7 @@ function searchEntries(s) {
   });
   customFoodsNewestFirst(s.records).forEach(function (r) {
     const sub = foodsWhereOf(fromCustomFood(r));
-    out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已封存"] : fav[r.id] ? ["常吃"] : [], rec: r });
+    out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已刪除"] : fav[r.id] ? ["常吃"] : [], rec: r });
   });
   return out.map(function (e, i) { return Object.assign(e, { seq: i }); }).sort(function (a, b) {
     return FOODS_SUBTABS.indexOf(a.sub) - FOODS_SUBTABS.indexOf(b.sub) || a.rank - b.rank || a.seq - b.seq;

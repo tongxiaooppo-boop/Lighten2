@@ -138,7 +138,7 @@ function savedMessage(s, mode, saved) {
   const head = { add: "已新增「", edit: "已更新「", fill: "已更新「", copy: "已複製成我的版本「" }[mode] + saved.name + "」。";
   const sub = foodsWhereOf(fromCustomFood(saved));
   const where = sub !== s.subtab ? "它在「" + FOODS_SUBTAB_LABELS[sub] + "」的我的品項。" : "";
-  return head + where + (mode === "copy" ? "原本的內建品項已隱藏，可以在「已隱藏」取消。" : "");
+  return head + where + (mode === "copy" ? "原本的內建品項已換成你的版本，可以在「已換成我的版本」改回內建。" : "");
 }
 
 async function onSave() {
