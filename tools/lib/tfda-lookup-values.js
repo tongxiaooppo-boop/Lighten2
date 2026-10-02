@@ -33,6 +33,16 @@ function isDrink(r, group, rules) {
   return false;
 }
 
+// 狀態：樣品狀態推得出的照它；推不出、但新鮮食材的品名寫了烹調法的（鯖魚(煮)、台灣鯛魚片(清蒸)、炒蛋）算熟（decisions #139）；
+// 其餘照現狀（加工品、醬料、即食品，吃多少秤多少）
+const FRESH_CATEGORIES = ["肉類", "魚貝類", "蛋類", "蔬菜類", "菇類", "藻類", "澱粉類", "穀物類", "豆類"];
+const COOKED_NAME = /[（(][^）)]*(?<!未)(煮|炒|烤|炸|煎|蒸|燙|滷|燉)[^）)]*[）)]|^(炒|煎|烤|炸|滷|水煮|清蒸)/;
+function stateOf(r) {
+  const st = sampleState(r);
+  if (st) return st;
+  return FRESH_CATEGORIES.indexOf(r["食品分類"]) !== -1 && COOKED_NAME.test(r["樣品名稱"]) ? "cooked" : "as_is";
+}
+
 function splitAliases(s) {
   return (s || "").split(/[,，、]/).map((x) => x.trim()).filter(Boolean);
 }
@@ -63,7 +73,7 @@ function buildTfdaLookup(ctx) {
     const zero = autoZeroFill(r);
     return {
       id: id, name: r["樣品名稱"], aliases: splitAliases(r["俗名"]), category: r["食品分類"], desc: r["內容物描述"] || "",
-      group: group, drink: isDrink(r, group, ctx.groups), state: sampleState(r) || "as_is",
+      group: group, drink: isDrink(r, group, ctx.groups), state: stateOf(r),
       per_100g: computePer100g({ source: { type: "tfda", ref: id }, field_sources: fieldSourcesOf(zero) }, { tfda: ctx.tfdaById, usda: {} }),
       zero_filled: Object.keys(zero),
       allergen_tags: t.allergen_tags, vegan: t.vegan, lacto_ovo: t.lacto_ovo,

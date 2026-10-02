@@ -84,13 +84,13 @@ export function customFoodNotes(values, profile) {
   return [p.blocked ? "以你目前的設定，這樣存會不能選：" + p.blocked : null, p.conflict].filter(Boolean);
 }
 
-function chips(attr, options, isSelected) {
+export function chips(attr, options, isSelected) {
   return '<div class="compose-options">' + options.map(function (o) {
     return '<button type="button" class="compose-option' + (isSelected(o[0]) ? " selected" : "") + '" ' + attr + '="' + escapeHtml(o[0]) + '">' + escapeHtml(o[1]) + "</button>";
   }).join("") + "</div>";
 }
 
-function row(label, inner) {
+export function row(label, inner) {
   return '<div class="quick-add-row"><div class="compose-axis-label">' + label + "</div>" + inner + "</div>";
 }
 

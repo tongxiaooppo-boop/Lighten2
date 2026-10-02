@@ -560,8 +560,15 @@ export function isEdiblePortionItem(item) {
 // 記錄名稱的短狀態詞（decisions #122）：生的加「生」（可食部分的水果、油脂不加）、乾的加「乾」，熟食與液體不加
 function foodNameState(item) {
   if (item.serving.unit === "ml") return "";
-  if (item.state === "raw") return isEdiblePortionItem(item) ? "" : "生 ";
+  // 名稱已經寫了（生）的（雞排肉（生）、衛福部的鯖魚(生)）不再重複
+  if (item.state === "raw") return isEdiblePortionItem(item) || /[（(]生[）),，]/.test(item.name) ? "" : "生 ";
   return item.state === "dry" ? "乾 " : "";
+}
+
+// 衛福部查詢檔補 0 的欄位（decisions #137）→ 明細的一句；欄位名稱只在這裡（章程 C4.14）
+const ZERO_FIELD_LABELS = { fiber_g: "纖維", sat_fat_g: "飽和脂肪", sodium_mg: "鈉" };
+export function zeroFilledText(fields) {
+  return fields && fields.length ? "衛福部沒有測" + fields.map(function (f) { return ZERO_FIELD_LABELS[f] || f; }).join("、") + "，依規則視為 0。" : null;
 }
 
 // 實際吃的量：amount（克數記法）或 1 份 × qty

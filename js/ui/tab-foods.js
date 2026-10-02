@@ -5,9 +5,14 @@
 import { escapeHtml } from "../core/html.js";
 import {
   getProfile, getCustomFoods, getHiddenCatalogUids, addDislikedIngredient, removeDislikedIngredient,
-  getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
+  getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom, getCustomIngredients,
 } from "../data/db.js";
-import { loadCatalog, fromCustomFood } from "../data/catalog.js";
+import { loadCatalog, fromCustomFood, loadTfdaLookup } from "../data/catalog.js";
+import { ingredientItem } from "../engine/my-ingredients.js";
+import {
+  ING_FORM_ID, ING_ADD_ID, addResultsHtml, readAddInputs, confirmAdd, openSelfForm, openEditForm, readFormInputs, onFormChipClick, saveIngForm,
+  removeTfda, undoRemoveTfda, setIngArchived, undoBarHtml,
+} from "./foods/ingredients.js";
 import { onCustomFoodFormClick, customFoodNotes } from "./custom-food-form.js";
 import { foodsSubtabHtml, foodsSearchHtml, foodsSubtabsHtml, FOODS_SUBTABS, FOODS_SUBTAB_LABELS } from "./foods/list.js";
 import { foodsWhereOf, dislikedMessage, favoriteMessage } from "../engine/foods.js";
@@ -15,7 +20,7 @@ import { foodsFavSet, NO_PROFILE_NOTE } from "./foods/rows.js";
 import {
   FOODS_FORM_ID, customFoodEditing, syncCustomFoodForm, saveCustomFoodForm, setCustomFoodArchived, unhideBuiltin,
 } from "./foods/custom-foods.js";
-import { refreshSavedMeals, savedSearchHtml, revealSavedMeal, initSavedMeals } from "./foods/saved-meals.js";
+import { refreshSavedMeals, savedSearchHtml, revealSavedMeal, initSavedMeals, savedRefCount } from "./foods/saved-meals.js";
 
 // openSections：可收合的組哪些展開（key 見 rows.js detailsGroup；切子分頁、搜尋後保留，審核 M3）。
 // acted：剛在哪一列標了不吃或取消（明細顯示「也標不吃」「也取消」，decisions #115）；scrollTo：重畫後捲到哪一列
@@ -24,6 +29,8 @@ const foodsState = {
   loaded: false, profile: null, catalog: null, records: [], hidden: [], favorites: [],
   subtab: "convenience", query: "", openUid: null, editing: null, message: "",
   openSections: {}, acted: null, scrollTo: null,
+  // 我的食材（切片 8b-2）：原始紀錄、衛福部查詢檔（懶載）、新增面板、自填／編輯表單、剛移除的（給復原）
+  ingRecords: [], tfdaLookup: null, lookupState: "idle", addIng: null, ingForm: null, removedIng: null,
 };
 
 function foodsEl(id) {
@@ -40,7 +47,18 @@ async function loadFoods() {
   try { s.hidden = await getHiddenCatalogUids(); } catch (err) { console.error(err); s.hidden = []; }
   // 常吃讀不到也不擋（只影響排列）
   try { s.favorites = await getFavoriteRefs(); } catch (err) { console.error(err); s.favorites = []; }
+  try { s.ingRecords = await getCustomIngredients(); } catch (err) { console.error(err); s.ingRecords = []; }
   s.loaded = true;
+  if (s.ingRecords.some(function (r) { return r.source === "tfda"; })) ensureLookup();
+}
+
+// 衛福部查詢檔：用到才載（PRD 12.2），載好重畫；失敗顯示「載入失敗」＋重試（審核 M7）
+function ensureLookup() {
+  const s = foodsState;
+  if (s.tfdaLookup || s.lookupState === "loading") return;
+  s.lookupState = "loading";
+  loadTfdaLookup().then(function (l) { s.tfdaLookup = l; s.lookupState = "ok"; renderFoods(); },
+    function (err) { console.error(err); s.lookupState = "failed"; renderFoods(); });
 }
 
 function renderFoods() {
@@ -52,7 +70,7 @@ function renderFoods() {
   const tabs = foodsEl("foods-subtabs");
   if (tabs) tabs.innerHTML = foodsSubtabsHtml(s);
   const status = foodsEl("foods-status");
-  if (status) status.textContent = s.message;
+  if (status) status.innerHTML = escapeHtml(s.message) + (s.message ? undoBarHtml(s) : "");
   const body = foodsEl("foods-body");
   // 搜尋也搜我的組合（PRD 13.2），結果放在最上面
   const savedHits = s.query.trim() ? savedSearchHtml(s.query) : "";
@@ -72,12 +90,17 @@ function renderFoods() {
 // 品項：現成品項或代換表分層品項（不吃只對這兩種）；常吃另外可以是我的品項
 function itemOf(s, uid) {
   const rec = s.records.filter(function (r) { return r.id === uid; })[0];
-  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || (rec ? fromCustomFood(rec) : null);
+  const ing = s.ingRecords.filter(function (r) { return r.id === uid; })[0];
+  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || (rec ? fromCustomFood(rec) : null) || (ing ? ingredientItem(ing, s.tfdaLookup) || { name: ing.name } : null);
 }
 
+// 重讀期間 #foods-body 標 data-loading（測試等它消失才操作，避免點到重讀前的舊畫面；切片 8b-2）
 export async function refreshFoods() {
+  const body = foodsEl("foods-body");
+  if (body) body.setAttribute("data-loading", "1");
   try { await loadFoods(); renderFoods(); } catch (err) { console.error("載入我的食物失敗", err); }
   await refreshSavedMeals();
+  if (body) body.removeAttribute("data-loading");
 }
 
 // also：明細裡的「也標不吃」「也取消」——不改點開的列、不捲動（decisions #115）
@@ -153,11 +176,75 @@ async function onSave() {
   await loadFoods();
 }
 
+// 我的食材的按鈕（切片 8b-2）：有處理回傳 true
+function onIngredientClick(e) {
+  const s = foodsState;
+  const at = function (sel) { return e.target.closest(sel); };
+  const reload = function (msg) { if (msg != null) s.message = msg; return loadFoods().then(renderFoods); };
+  let el;
+  if (s.addIng) readAddInputs(foodsEl(ING_ADD_ID), s.addIng);
+  if (s.ingForm) readFormInputs(foodsEl(ING_FORM_ID), s.ingForm);
+  if (at("[data-ing-add]")) {
+    s.addIng = { query: "", category: null, picked: null, name: "", amount: "", note: "", error: null };
+    s.ingForm = null; s.message = ""; s.removedIng = null;
+    ensureLookup();
+    renderFoods();
+  } else if (at("[data-ing-add-close]")) {
+    s.addIng = null; renderFoods();
+  } else if (at("[data-ing-retry]")) {
+    s.lookupState = "idle"; ensureLookup(); renderFoods();
+  } else if ((el = at("[data-ing-cat]"))) {
+    const c = el.getAttribute("data-ing-cat");
+    s.addIng.category = s.addIng.category === c ? null : c;
+    renderFoods();
+  } else if ((el = at("[data-ing-pick]"))) {
+    if (el.disabled) return true;
+    const row = s.tfdaLookup.byId[el.getAttribute("data-ing-pick")];
+    Object.assign(s.addIng, { picked: row.id, name: row.name, amount: "", note: "", error: null });
+    renderFoods();
+  } else if (at("[data-ing-unpick]")) {
+    s.addIng.picked = null; s.addIng.error = null; renderFoods();
+  } else if (at("[data-ing-confirm]")) {
+    confirmAdd(s).then(function (rec) {
+      if (!rec) { renderFoods(); return; }
+      s.message = "已加入「" + rec.name + "」。"; s.openUid = rec.id;
+      return reload();
+    });
+  } else if (at("[data-ing-self]")) {
+    openSelfForm(s); s.message = ""; renderFoods();
+  } else if ((el = at("[data-ing-edit]"))) {
+    openEditForm(s, el.getAttribute("data-ing-edit")); s.message = ""; renderFoods();
+  } else if (at("[data-ing-cancel]")) {
+    s.ingForm = null; renderFoods();
+  } else if (at("[data-ing-save]")) {
+    const mode = s.ingForm.mode;
+    saveIngForm(s).then(function (rec) {
+      if (!rec) { renderFoods(); return; }
+      s.message = (mode === "add" ? "已新增「" : "已更新「") + rec.name + "」。"; s.openUid = rec.id;
+      return reload();
+    });
+  } else if (s.ingForm && at("#" + ING_FORM_ID) && onFormChipClick(e.target, s.ingForm)) {
+    s.ingForm.error = null; renderFoods();
+  } else if ((el = at("[data-ing-remove]"))) {
+    const id = el.getAttribute("data-ing-remove");
+    removeTfda(s, id, savedRefCount(id)).then(function (msg) { s.openUid = null; return reload(msg); });
+  } else if (at("[data-ing-undo]")) {
+    undoRemoveTfda(s).then(function (msg) { return reload(msg); });
+  } else if ((el = at("[data-ing-archive]")) || (el = at("[data-ing-restore]"))) {
+    const archive = el.hasAttribute("data-ing-archive");
+    setIngArchived(s, el.getAttribute(archive ? "data-ing-archive" : "data-ing-restore"), archive).then(function (msg) { return reload(msg); });
+  } else {
+    return false;
+  }
+  return true;
+}
+
 function onFoodsClick(e) {
   const s = foodsState;
   const at = function (sel) { return e.target.closest(sel); };
   const done = function () { renderFoods(); };
   let el;
+  if (onIngredientClick(e)) return;
   if ((el = at("[data-saved-goto]"))) {
     revealSavedMeal(el.getAttribute("data-saved-goto"));
   } else if ((el = at("[data-foods-subtab]"))) {
@@ -215,6 +302,13 @@ function onFoodsClick(e) {
 
 function onFoodsInput(e) {
   const s = foodsState;
+  // 新增食材的搜尋：只換結果，不重畫輸入框（不會失去焦點）
+  if (e.target.id === "ing-search" && s.addIng) {
+    s.addIng.query = e.target.value;
+    const res = foodsEl("ing-results");
+    if (res) res.innerHTML = addResultsHtml(s);
+    return;
+  }
   if (e.target.id === "foods-search") {
     s.query = e.target.value;
     s.message = ""; s.acted = null;

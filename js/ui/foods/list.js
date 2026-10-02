@@ -21,6 +21,7 @@ import {
 } from "./rows.js";
 import { splitFavorites } from "../../engine/picker.js";
 import { cookSubtabHtml, drinksTreeHtml, treeItemsOf, treeRow, treeDetailHtml, treeSearchEntries, treeFavorites, treeFavoriteEntry } from "./tree.js";
+import { drinksIngredientsHtml, ingredientFavorites, ingredientSearchEntries, ingredientDetailHtml } from "./ingredients.js";
 
 export const FOODS_SUBTABS = ["convenience", "delivery", "cook", "drinks"];
 export const FOODS_SUBTAB_LABELS = { convenience: "超商", delivery: "外食", cook: "自煮", drinks: "飲品・水果" };
@@ -163,10 +164,11 @@ export function foodsSubtabHtml(s) {
   const reasonOf = function (it) { return foodsBlockLabel(it, s.profile || {}); };
   const favs = favSplit.favorites.map(function (it) { return { uid: it.uid, check: it, row: function (reason) { return builtinRow(s, it, reason); } }; })
     .concat((sub === "drinks" ? treeFavorites(s, "drinks") : []).map(function (it) { const e = treeFavoriteEntry(s, it); e.check = it; return e; }))
+    .concat(sub === "drinks" ? ingredientFavorites(s, "drinks") : [])
     .concat(mineAll.filter(function (r) { return fav[r.id]; }).map(function (r) { return { uid: r.id, check: fromCustomFood(r), row: function () { return customRow(s, r); } }; }));
   html += favoritesGroupHtml(favs, function (e) { return reasonOf(e.check); });
   html += builtinGroupsHtml(s, sub, favSplit.rest);
-  if (sub === "drinks") html += drinksTreeHtml(s);
+  if (sub === "drinks") html += drinksTreeHtml(s) + drinksIngredientsHtml(s);
 
   const label = FOODS_SUBTAB_LABELS[sub];
   html += '<section class="foods-group foods-mine"><h4 class="meal-picker-role">我的品項（' + mine.length + "）</h4>" +
@@ -209,6 +211,9 @@ function searchEntries(s) {
   treeSearchEntries(s, FOODS_SUBTAB_LABELS).forEach(function (e) {
     out.push(Object.assign(e, { rank: 1, status: keys.indexOf(e.uid) !== -1 ? ["你標了不吃"] : fav[e.uid] ? ["常吃"] : [] }));
   });
+  ingredientSearchEntries(s, FOODS_SUBTAB_LABELS).forEach(function (e) {
+    out.push(Object.assign(e, { rank: 3, status: e.archived ? ["已刪除"] : fav[e.uid] ? ["常吃"] : [] }));
+  });
   customFoodsNewestFirst(s.records).forEach(function (r) {
     const sub = foodsWhereOf(fromCustomFood(r));
     out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已刪除"] : fav[r.id] ? ["常吃"] : [], rec: r });
@@ -226,7 +231,7 @@ export function foodsSearchHtml(s, otherHits) {
   return '<section class="foods-group">' + hits.map(function (e) {
     const meta = [e.where].concat(e.matchedAlias ? ["別名：" + e.matchedAlias] : [], e.status).join(" · ");
     return foodsRowHtml(s, { uid: e.uid, name: e.name, meta: meta, reason: null,
-      detail: function () { return e.rec ? customDetailHtml(s, e.rec) : e.tree ? treeDetailHtml(s, e.tree) : builtinDetailHtml(s, e.item); } });
+      detail: function () { return e.rec ? customDetailHtml(s, e.rec) : e.ing ? ingredientDetailHtml(s, e.ing) : e.tree ? treeDetailHtml(s, e.tree) : builtinDetailHtml(s, e.item); } });
   }).join("") + "</section>";
 }
 

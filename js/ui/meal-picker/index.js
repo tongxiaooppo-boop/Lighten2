@@ -11,7 +11,7 @@ import { getCustomIngredients,
   getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
   listSavedMeals, addDailyLogWithSavedMeal, updateSavedMeal,
 } from "../../data/db.js";
-import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
+import { loadTfdaLookup, loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
 import {
@@ -25,7 +25,8 @@ import {
   addFood, stepFood, removeFood, setFoodAmount, toggleFoodMode,
 } from "../../engine/picker.js";
 import { savedRowHtml, saveAsHtml } from "./saved-row.js";
-import { foodTreeSections, foodsBlockLabel } from "../../engine/foods.js";
+import { ingredientSections, foodTreeSections, foodsBlockLabel } from "../../engine/foods.js";
+import { ingredientItem } from "../../engine/my-ingredients.js";
 import { productTabHtml, drinkGridHtml, drinkCardHtml, selectedSectionHtml, selectedRowHtml, dislikeNoticeHtml, dislikedGroupHtml } from "./product-tab.js";
 import { drinksFruitStepHtml, addFoodsStepHtml, foodSearchResultsHtml } from "./food-step.js";
 import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml, readCustomFoodInputs, onCustomFoodFormClick } from "../custom-food-form.js";
@@ -89,15 +90,42 @@ function codesFor(items, profile) {
   return out;
 }
 
-// 分層品項（單品）：灰字照「我的食物」的寫法（foodsBlockLabel，decisions #117）
+// 單品：分層品項＋我的食材（切片 8b-2；衛福部來源要查詢檔，還沒載好就先不列）。灰字照「我的食物」的寫法（foodsBlockLabel，decisions #117）
+function myIngredientList() {
+  const m = mealPicker;
+  return (m.customIngredients || []).filter(function (r) { return r.archived !== true; })
+    .map(function (r) { const it = ingredientItem(r, m.tfdaLookup); return it ? Object.assign(it, { aliases: it.tfda ? [it.tfda.name] : [] }) : null; })
+    .filter(Boolean);
+}
+
 function foodListsFor(catalog, profile) {
   const ft = catalog.foodTree || { items: [], byId: {} };
+  const mine = myIngredientList();
+  const items = ft.items.concat(mine);
+  const byId = Object.assign({}, ft.byId || {});
+  mine.forEach(function (it) { byId[it.uid] = it; });
   const labels = {};
-  ft.items.forEach(function (it) {
+  items.forEach(function (it) {
     const label = foodsBlockLabel(it, profile);
     if (label) labels[it.uid] = label;
   });
-  return { items: ft.items, byId: ft.byId || {}, labels: labels, codes: codesFor(ft.items, profile) };
+  return { items: items, byId: byId, labels: labels, codes: codesFor(items, profile), mine: ingredientSections(mine) };
+}
+
+// 有衛福部來源的我的食材時才載查詢檔（PRD 12.2）；選擇器先畫，載好再補我的食材（審核 S5），失敗寫一行
+function ensurePickerLookup() {
+  const m = mealPicker;
+  if (m.tfdaLookup || !(m.customIngredients || []).some(function (r) { return r.source === "tfda"; })) return;
+  m.lookupState = "loading";
+  loadTfdaLookup().then(function (l) {
+    m.tfdaLookup = l; m.lookupState = "ok";
+    m.foods = foodListsFor(m.catalog, m.profile);
+    renderDrinks();
+  }, function (err) {
+    console.error(err);
+    m.lookupState = "failed";
+    renderDrinks();
+  });
 }
 
 // 選擇器 state 的 items、reasons 不動，只在組 HTML 時把標了不吃的分出來（picker 快照不變的前提）
@@ -161,7 +189,7 @@ export async function openMealPicker(slotArg, opts) {
   rawCustoms.forEach(function (r) { m.customRecords[r.id] = r; });
   m.customs = customs; m.hiddenUids = hiddenUids.slice(); m.favorites = favorites;
   // 我的食材（切片 8b）：組合解析要帶（審核 M6）；查詢檔在 8b-2 有衛福部來源時才載
-  m.customIngredients = customIngredients; m.tfdaLookup = null;
+  m.customIngredients = customIngredients; m.tfdaLookup = null; m.lookupState = "idle";
   m.editForm = null; m.notice = null; m.drinkNotice = null;
   m.dislikedChanged = false; // 不吃清單在選擇器裡改過：關閉時今日建議要重算（計畫 S7）
   ["convenience", "delivery"].forEach(function (t) {
@@ -174,6 +202,7 @@ export async function openMealPicker(slotArg, opts) {
   m.foods = foodListsFor(catalog, profile);
   m.foodSections = { cook: foodTreeSections(catalog.foodTree, "cook"), drinks: foodTreeSections(catalog.foodTree, "drinks") };
   m.foodSel = []; m.foodOpen = {}; m.foodQuery = "";
+  ensurePickerLookup();
   m.quickAdd = null;
   m.quickAddMessage = null;
   // 沒存過的時段用預設偏好（跟推薦、基本資料表單顯示的一樣）；不合法的值（含 auto）由 engine 往下找上次送出的型態
@@ -443,7 +472,8 @@ function renderDrinks() {
 
 function foodStepState() {
   const m = mealPicker;
-  return { foods: m.foods, sections: m.foodSections, sel: m.foodSel, open: m.foodOpen, query: m.foodQuery, fav: pickerFavSet() };
+  return { foods: m.foods, sections: Object.assign({ mine: m.foods.mine }, m.foodSections), sel: m.foodSel, open: m.foodOpen, query: m.foodQuery, fav: pickerFavSet(),
+    lookupNote: m.lookupState === "loading" ? "你加的衛福部食材載入中…" : m.lookupState === "failed" ? "衛福部資料載入失敗，你加的衛福部食材這次不能選，請稍後再試。" : null };
 }
 
 // ---------- B-1a：份量、不吃、複製成我的版本、補填 ----------

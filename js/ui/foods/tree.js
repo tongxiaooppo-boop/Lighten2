@@ -13,6 +13,10 @@ import {
   foodsFavSet, favoritesGroupHtml, favoriteButtonHtml,
 } from "./rows.js";
 import { dislikedAllHtml } from "./disliked.js";
+import {
+  myIngredientSections, mineInMajorHtml, otherIngredientsHtml, archivedIngredientsHtml, ingredientFavorites, addButtonHtml, addPanelHtml,
+  ingFormHtml, lookupNoteHtml,
+} from "./ingredients.js";
 
 const HIGH_CALCIUM = "高鈣深色蔬菜";
 
@@ -64,22 +68,25 @@ export function treeFavoriteEntry(s, it) {
   return { uid: it.uid, row: function (reason) { return treeRow(s, it, reason); }, tree: it };
 }
 
-// 一個大類：可收合（預設收合），裡面每個子類也可收合；乳品類沒有子類只有一層（審核 S3）。筆數不含標了不吃與常吃的
-function majorHtml(s, prefix, group) {
+// 一個大類：可收合（預設收合），裡面每個子類也可收合；乳品類沒有子類只有一層（審核 S3）。筆數不含標了不吃與常吃的。
+// mine：這個大類的我的食材（切片 8b-2，decisions #134：跟代換表一起顯示），放在最後一組「我的食材」
+function majorHtml(s, prefix, group, mine) {
   const keep = treeListed(s);
+  const my = (mine || []).filter(keep);
   const subs = group.subgroups.map(function (sg) { return Object.assign({}, sg, { items: sg.items.filter(keep) }); })
     .filter(function (sg) { return sg.items.length > 0; });
-  const count = subs.reduce(function (n, sg) { return n + sg.items.length; }, 0);
+  const count = subs.reduce(function (n, sg) { return n + sg.items.length; }, 0) + my.length;
   const holds = function (items) { return items.some(function (it) { return it.uid === s.openUid; }); };
   const key = prefix + ":" + group.code;
+  const mineHtml = function () { return my.length ? mineInMajorHtml(s, key, my) : ""; };
   return detailsGroup(s, key, group.name, count, function () {
-    if (subs.length === 1 && subs[0].code === null) return rowsHtml(s, subs[0].items);
+    if (subs.length === 1 && subs[0].code === null) return rowsHtml(s, subs[0].items) + mineHtml();
     return subs.map(function (sg) {
       const title = sg.name + (sg.app_defined ? "（本 App 自己的分組）" : "");
       const soyNote = group.code === "protein" && sg.code === "soy" ? '<p class="meal-picker-note">無糖豆漿在「飲品・水果」。</p>' : "";
       return detailsGroup(s, key + ":" + sg.code, title, sg.items.length, function () { return soyNote + rowsHtml(s, sg.items); }, holds(sg.items), "foods-minor", true);
-    }).join("");
-  }, subs.some(function (sg) { return holds(sg.items); }), "foods-major", true);
+    }).join("") + mineHtml();
+  }, subs.some(function (sg) { return holds(sg.items); }) || holds(my), "foods-major", true);
 }
 
 // 子分頁裡的分層品項（標不吃分組、灰字筆數用）
@@ -100,19 +107,22 @@ function blockedNote(n) {
   return n > 0 ? '<p class="meal-picker-note">灰色的 ' + n + " 項因你的過敏原／飲食設定不能選，點開可以看原因。</p>" : "";
 }
 
-// 自煮子分頁（PRD 13.3、計畫第 20 項）：常吃 → 六大類（水果除外）→ 你標了不吃 → 不吃的全部清單。
-// 沒有我的品項、新增、已隱藏、已封存（我的食材、我的料理在切片 8、9，不放空殼，decisions #94、#97）
+// 自煮子分頁（PRD 13.3、13.8）：＋新增食材 → 常吃 → 六大類（水果除外，各大類最後是我的食材）→ 其他食材 → 你標了不吃 → 已刪除的食材 → 不吃的全部清單。
 export function cookSubtabHtml(s) {
   const all = treeItemsOf(s, "cook");
   const disliked = all.filter(function (it) { return codeOf(s, it) === "disliked"; });
   const blocked = all.filter(function (it) { const c = codeOf(s, it); return c && c !== "disliked"; }).length;
-  const favs = treeFavorites(s, "cook").map(function (it) { return treeFavoriteEntry(s, it); });
-  return blockedNote(blocked) +
+  const favs = treeFavorites(s, "cook").map(function (it) { return treeFavoriteEntry(s, it); }).concat(ingredientFavorites(s, "cook"));
+  const mine = myIngredientSections(s);
+  const top = addButtonHtml(s) + addPanelHtml(s) + (s.ingForm && s.ingForm.mode === "add" ? ingFormHtml(s) : "") + (s.addIng ? "" : lookupNoteHtml(s));
+  return '<div class="foods-ing-top">' + top + "</div>" + blockedNote(blocked) +
     favoritesGroupHtml(favs, function (e) { return foodsBlockLabel(e.tree, s.profile || {}); }) +
-    foodTreeSections(s.catalog.foodTree, "cook").map(function (g) { return majorHtml(s, "cook", g); }).join("") +
+    foodTreeSections(s.catalog.foodTree, "cook").map(function (g) { return majorHtml(s, "cook", g, mine.cook[g.code]); }).join("") +
+    otherIngredientsHtml(s) +
     detailsGroup(s, "cook:disliked", "你標了不吃", disliked.length, function () {
       return disliked.map(function (it) { return treeRow(s, it, "你標了不吃"); }).join("");
     }, disliked.some(function (it) { return it.uid === s.openUid; })) +
+    archivedIngredientsHtml(s) +
     dislikedAllHtml(s);
 }
 

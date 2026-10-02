@@ -86,14 +86,25 @@ function foldHtml(st, key, title, items, inner, cls) {
 }
 
 // 一個大類：只有一個沒有代碼的子類（乳品類）直接放品項；否則子類再收合一層
+// 這個大類的我的食材（切片 8b-2，decisions #134：跟代換表一起顯示，放在最後一組）
+function mineOf(st, code) {
+  return (st.sections.mine && st.sections.mine.cook[code]) || [];
+}
+
+function mineFoldHtml(st, key, items) {
+  return foldHtml(st, key + ":mine", "我的食材", items, function () { return gridHtml(st, items); }, "foods-minor");
+}
+
 function foodMajorHtml(st, prefix, g) {
   const all = [];
   g.subgroups.forEach(function (s) { Array.prototype.push.apply(all, s.items); });
-  return foldHtml(st, prefix + g.code, g.name, all, function () {
-    if (g.subgroups.length === 1 && g.subgroups[0].code === null) return gridHtml(st, g.subgroups[0].items);
+  const mine = prefix === "cook:" ? mineOf(st, g.code) : [];
+  return foldHtml(st, prefix + g.code, g.name, all.concat(mine), function () {
+    const tail = mine.length ? mineFoldHtml(st, prefix + g.code, mine) : "";
+    if (g.subgroups.length === 1 && g.subgroups[0].code === null) return gridHtml(st, g.subgroups[0].items) + tail;
     return g.subgroups.map(function (s) {
       return foldHtml(st, prefix + g.code + ":" + s.code, s.name, s.items, function () { return gridHtml(st, s.items); }, "foods-minor");
-    }).join("");
+    }).join("") + tail;
   }, "foods-major");
 }
 
@@ -156,11 +167,14 @@ export function drinksFruitStepHtml(st, stepNo, drinkGridHtml, drinkExtraHtml, d
   const d = st.sections.drinks;
   const fruitItems = [];
   if (d.fruit) d.fruit.subgroups.forEach(function (s) { Array.prototype.push.apply(fruitItems, s.items); });
+  const mineDrinks = (st.sections.mine && st.sections.mine.drinks) || [];
+  Array.prototype.push.apply(fruitItems, mineDrinks);
   let html = '<div class="meal-picker-step-label">' + stepNo + ". 加飲品・水果（選填）</div>" + selectedBoxHtml(st, "drinks") +
     favoriteGroupHtml(st, favDrinks, drinkCard, favoriteFoods(st, d.homeDrinks.concat(fruitItems))) +
     '<h4 class="meal-picker-role">現成飲料</h4>' + drinkGridHtml + (drinkExtraHtml || "");
   if (countShown(st, d.homeDrinks) > 0) html += '<h4 class="meal-picker-role">家裡的飲品</h4>' + gridHtml(st, d.homeDrinks);
   if (d.fruit) html += foodMajorHtml(st, "fruit:", d.fruit);
+  if (countShown(st, mineDrinks) > 0) html += '<h4 class="meal-picker-role">我的食材</h4>' + gridHtml(st, mineDrinks);
   return html + dislikedFoldHtml(st, dislikedDrinks || [], dislikedOf(st, d.homeDrinks.concat(fruitItems)));
 }
 
@@ -179,11 +193,20 @@ export function foodSearchResultsHtml(st) {
 export function addFoodsStepHtml(st, stepNo) {
   const cookItems = [];
   st.sections.cook.forEach(function (g) { g.subgroups.forEach(function (s) { Array.prototype.push.apply(cookItems, s.items); }); });
+  const mine = st.sections.mine || { cook: {}, other: [], drinks: [] };
+  Object.keys(mine.cook).forEach(function (k) { Array.prototype.push.apply(cookItems, mine.cook[k]); });
+  mine.other.forEach(function (o) { Array.prototype.push.apply(cookItems, o.items); });
+  const otherAll = [];
+  mine.other.forEach(function (o) { Array.prototype.push.apply(otherAll, o.items); });
+  const otherHtml = foldHtml(st, "cook:other", "其他食材", otherAll, function () {
+    return mine.other.map(function (o) { return foldHtml(st, "cook:other:" + o.name, o.name, o.items, function () { return gridHtml(st, o.items); }, "foods-minor"); }).join("");
+  }, "foods-major");
   return '<div class="meal-picker-step-label">' + stepNo + ". 加點單品（選填）</div>" +
-    '<p class="meal-picker-note">單品不含烹調用油；有用油可以加油脂類。</p>' + selectedBoxHtml(st, "cook") +
+    '<p class="meal-picker-note">單品不含烹調用油；有用油可以加油脂類。</p>' +
+    (st.lookupNote ? '<p class="meal-picker-note">' + escapeHtml(st.lookupNote) + "</p>" : "") + selectedBoxHtml(st, "cook") +
     favoriteGroupHtml(st, [], null, favoriteFoods(st, cookItems)) +
     '<input type="search" class="foods-search" id="meal-picker-food-search" placeholder="搜尋單品（名稱或別名）" value="' + escapeHtml(st.query || "") + '">' +
     '<div id="meal-picker-food-results">' + foodSearchResultsHtml(st) + "</div>" +
-    st.sections.cook.map(function (g) { return foodMajorHtml(st, "cook:", g); }).join("") +
+    st.sections.cook.map(function (g) { return foodMajorHtml(st, "cook:", g); }).join("") + otherHtml +
     dislikedFoldHtml(st, [], dislikedOf(st, cookItems));
 }
