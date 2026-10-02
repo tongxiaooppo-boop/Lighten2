@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-02：切片 8b-1 完成待推送與手機測；下一步 8b-2）
+# 給接手的 Opus：Lighten2 交接（2026-10-02：切片 8 我的食材完成，8b-1 已推送且手機測過，8b-2 待推送與手機測）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -6,7 +6,11 @@
 - 已 commit、**未推送**：`f9200bf` 8a 衛福部查詢檔（`data/tfda_lookup.json`、`tools/build-tfda-lookup.js`、`data/reference/tfda_tags.json`／`tfda_groups.json`）；`1286f63` 查詢檔缺值補 0；`8f11984` 8b 計畫第三版。decisions #134（使用者：分類篩選、顯示位置、衛福部／自填標示、生熟固定、說法統一）、#135（8a 技術）、#136（使用者：克數記法全部單品、一份留空＋參考、衛福部過敏原不能改）、#137（補 0）；#138 留給 8b 技術定案。
 - **8b 計畫** [docs/review/2026-10-02-D8b-實作計畫.md](../docs/review/2026-10-02-D8b-實作計畫.md)：兩輪審核逐字 `collab/opus-review-log/2026-10-02-d8b-plan-review.md`；**第 8、9 節為準**。拆 8b-1（db、engine 克數記法、份／克切換、說法統一 → 使用者手機測一次）與 8b-2（新增食材、自填、我的食材組）。
 - **8b-1 已完成（commit ①–⑥：`docs PRD #138`、`34e6cc7` db、`621f2b2` engine、`9cf017e` 說法統一、`8f9618d` 份／克切換＋saved-ctx、`eb9493c` tools）**：check-engine 43k、smoke 51、walkthrough 489 全過，截圖看過（含 360 寬）；快照只新增 amount/mixed 7 行。手機腳本短清單第 10 項＝這次要測的。使用說明交 Sonnet 改（說法＋份／克），Opus 驗收後 commit。**推送前先問使用者。**
-- **8b-2 下一步**（計畫第 2.1-E、第 8、9 節）：新增食材畫面（搜尋 1887 筆＋衛福部分類晶片、確認表單、參考句 N2：衛福部分類×狀態×液體→代表分層品項 id）、自填表單（default_amount、液體 ml）、我的食物與選擇器的「我的食材」組（ingredientSections；foodTreeSections 只收代換表，S-c）、衛福部不吃＝removeTfdaIngredient＋復原 restoreTfdaIngredient、自填刪除／還原、查詢檔懶載（選擇器先畫再補，S5；失敗可重試）、移除訊息提組合引用數（saved-meals.js 匯出計數，N3）、check-engine／smoke／walkthrough／手機腳本／使用說明。engine 的 ingredientItem、isMyIngredient、catalog.loadTfdaLookup、db 函式都已經有了。
+- **8b-1 使用者 2026-10-02 手機測過**（短清單第 10 項）。
+- **8b-2 已完成（`c55107d` ui＋engine＋查詢檔熟樣品規則 #139、`9400add` tools）**：check-engine 43432、check-arch 33141、smoke 54（含查詢檔載入失敗→重試、移除→復原、同樣品不能加兩次）、walkthrough 521（第 12 節我的食材，截圖看過含 360 寬），快照逐字不變。手機腳本短清單第 11 項＝這次要測的（第 53–59 行）。使用說明「我的食材」交 Sonnet，Opus 驗收後 commit。**推送前先問使用者。**
+  - 實作時的發現：衛福部熟的魚、蛋原本被標「照現狀」→ decisions #139 改成品名有烹調法的新鮮食材算熟；walkthrough 的 8-5 偶發失敗是「我的食物」重讀前就點了舊畫面 → refreshFoods 期間 #foods-body 標 data-loading，foodsSub 等它消失。
+  - 已知、刻意：自填表單的數字欄只有 placeholder（填了以後看不到欄位名稱），跟我的品項表單一致；使用者覺得難懂再改。
+- **接下來的順序（使用者定，不變）**：日期切換與預約（#118、#129；克數記法的元件形狀 `{ ref, qty | amount }` 預約沿用）→ 擴充餐型 → 切片 9 我的料理（料理引用衛福部食材用 id 反推整合編號讀查詢檔，PRD 12.4 已寫）→ 切片 10 沖泡 → 採買清單。
 - 使用者說週額度剩 29%：查詢、整理、使用說明這類小工作交 Sonnet。
 - 使用說明 `docs/使用說明.html` 要跟著說法統一與我的食材改（交 Sonnet，Opus 360 寬驗收）。
 
