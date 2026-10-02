@@ -1,6 +1,6 @@
 // 輕盈計畫 — 今日建議頂部彙總卡：接下來幾餐的建議熱量、今天已攝取的蛋白質/纖維、近7天平均、體重趨勢校正提示。
 
-import { SLOTS, isSlotEnabled } from "../core/slots.js";
+import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { shortDate } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
 import { $, sodiumText, satFatText } from "./dom.js";
@@ -9,7 +9,15 @@ import { todayIntake, recsKcalTotal, sumDisplayLogTotals } from "../engine/meal-
 import { loadTdeeState, getCalibratedTargets } from "./calibration.js";
 import { activateTab } from "./tabs.js";
 
-export async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs, today) {
+// planned：今天的有效預約 { kcal, slots: { slot: 暫時紀錄 } } 或 null；plannedShown：上次有沒有顯示「已排」那一行
+// （沒有預約也沒顯示過就不碰那個元素，快照的 domNN 才不會位移）。主數字一律是「目標 − 已記錄」（設計草案第 9 節 M7）
+// 切到未來日子時不准再打開彙總卡（今天那次的 renderHero 是非同步的，可能在切換之後才跑完）
+let suppressed = false;
+export function setHeroSuppressed(v) {
+  suppressed = !!v;
+}
+
+export async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, plannedShown) {
   const hero = $("#today-hero");
   if (!hero) return;
   const eaten = todayIntake(todayLogs);
@@ -30,13 +38,24 @@ export async function renderHero(remainingBudget, targets, todayLogs, recentLogs
   const subEl = $("#today-hero-kcal-sub");
   if (subEl) {
     if (!allLogged && recs) {
-      const cardTotal = Math.round(recsKcalTotal(recs, SLOTS));
+      const cardTotal = Math.round(recsKcalTotal(recs, SLOTS) + (planned ? planned.kcal : 0));
       if (cardTotal > 0) {
         const diff = cardTotal - Math.round(remainingBudget.remainingKcal);
         $("#today-hero-kcal-sub-value").textContent = cardTotal + (Math.abs(diff) >= 20 ? "（" + (diff > 0 ? "+" : "") + Math.round(diff) + "）" : "");
         subEl.hidden = false;
       } else { subEl.hidden = true; }
     } else { subEl.hidden = true; }
+  }
+
+  if (planned || plannedShown) {
+    const plannedEl = $("#today-hero-planned");
+    if (plannedEl) {
+      plannedEl.textContent = planned ? "已排：" + SLOTS.filter(function (s) { return planned.slots[s]; }).map(function (s) {
+        const p = planned.slots[s];
+        return p.skip ? SLOT_LABELS[s] + "不吃" : SLOT_LABELS[s] + " 約 " + Math.round(p.totals.kcal) + " kcal";
+      }).join("、") : "";
+      plannedEl.hidden = !planned;
+    }
   }
 
   // 營養素明細（<details> 展開區塊）
@@ -98,5 +117,5 @@ export async function renderHero(remainingBudget, targets, todayLogs, recentLogs
     }
   }
 
-  hero.hidden = false;
+  if (!suppressed) hero.hidden = false;
 }

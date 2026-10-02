@@ -32,3 +32,8 @@ export function mondayOf(dateStr) {
 export function shortDate(dateStr) {
   return dateStr ? dateStr.slice(5).replace("-", "/") : "";
 }
+
+// 「週六」這類短字（日期切換的圓點）
+export function weekdayLabel(dateStr) {
+  return "週" + "日一二三四五六".charAt(new Date(dateStr + "T00:00:00").getDay());
+}
