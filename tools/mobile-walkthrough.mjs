@@ -777,25 +777,25 @@ async function run() {
   await tab("foods");
   await until(`!!(${foodRow("巷口新開的便當")}) && (${foodRow("巷口新開的便當")}).innerText.indexOf("成分未確認") === -1`, "7-2 取消過敏原後狀態沒有更新");
 
-  // 7-3 封存複製品 → 移到「已封存」、提示原品項仍隱藏；還原
+  // 7-3 刪除複製品 → 移到「已刪除」、提示原品項仍隱藏；還原
   await openFood(builtinName);
   await inFoodRow(builtinName, "[data-cf-archive]");
-  await until(`${text("#foods-status")}.indexOf("仍是隱藏的") !== -1 && [...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已封存") === 0)`, "7-3 封存複製品後沒有「已封存」組或沒有「仍是隱藏的」提示");
+  await until(`${text("#foods-status")}.indexOf("仍是換成你的版本") !== -1 && [...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已刪除") === 0)`, "7-3 刪除複製品後沒有「已刪除」組或沒有「仍是換成你的版本」提示");
   await openFolded();
-  // 複製品跟被隱藏的原品項同名：只在「已封存」組裡找
-  const archivedRow = `[...[...document.querySelectorAll('#foods-body details.foods-folded')].find((d) => d.querySelector('summary').innerText.indexOf("已封存") === 0).querySelectorAll('.food-row')].find((r) => r.querySelector('.food-name').textContent === ${JSON.stringify(builtinName)})`;
+  // 複製品跟被隱藏的原品項同名：只在「已刪除」組裡找
+  const archivedRow = `[...[...document.querySelectorAll('#foods-body details.foods-folded')].find((d) => d.querySelector('summary').innerText.indexOf("已刪除") === 0).querySelectorAll('.food-row')].find((r) => r.querySelector('.food-name').textContent === ${JSON.stringify(builtinName)})`;
   await js(`(() => { const r = ${archivedRow}; if (!r.querySelector('[data-cf-restore]')) r.querySelector('.food-row-main').click(); })()`);
-  await until(`!!(${archivedRow}).querySelector('[data-cf-restore]')`, "7-3 已封存的複製品明細沒有「還原」");
+  await until(`!!(${archivedRow}).querySelector('[data-cf-restore]')`, "7-3 已刪除的複製品明細沒有「還原」");
   await js(`(${archivedRow}).querySelector('[data-cf-restore]').click()`);
-  await until(`${text("#foods-status")}.indexOf("已還原") !== -1 && ![...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已封存") === 0)`, "7-3 還原後沒有回到清單");
+  await until(`${text("#foods-status")}.indexOf("已還原") !== -1 && ![...document.querySelectorAll('#foods-body details.foods-folded > summary')].some((s) => s.innerText.indexOf("已刪除") === 0)`, "7-3 還原後沒有回到清單");
 
-  // 7-4 已隱藏的內建品項：取消隱藏，有複製品時提示
+  // 7-4 已換成我的版本的內建品項：改回內建，有複製品時提示
   await openFolded();
-  check(!!(await js(`!!(${foodRow(builtinName)}) && [...document.querySelectorAll('#foods-body details.foods-folded')].some((d) => d.querySelector('summary').innerText.indexOf("已隱藏") === 0 && d.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1)`)), "7-4 「已隱藏」組沒有列出複製時自動隱藏的原品項");
-  await shot("我的食物-已隱藏", "#foods-body details.foods-folded");
-  await js(`(() => { const d = [...document.querySelectorAll('#foods-body details.foods-folded')].find((x) => x.querySelector('summary').innerText.indexOf("已隱藏") === 0);
+  check(!!(await js(`!!(${foodRow(builtinName)}) && [...document.querySelectorAll('#foods-body details.foods-folded')].some((d) => d.querySelector('summary').innerText.indexOf("已換成我的版本") === 0 && d.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1)`)), "7-4 「已換成我的版本」組沒有列出複製時自動隱藏的原品項");
+  await shot("我的食物-已換成我的版本", "#foods-body details.foods-folded");
+  await js(`(() => { const d = [...document.querySelectorAll('#foods-body details.foods-folded')].find((x) => x.querySelector('summary').innerText.indexOf("已換成我的版本") === 0);
     const b = [...d.querySelectorAll('.food-row')].find((r) => r.innerText.indexOf(${JSON.stringify(builtinName)}) !== -1).querySelector('[data-cf-unhide]'); b.click(); })()`);
-  await until(`${text("#foods-status")}.indexOf("你有一筆從它複製的我的品項") !== -1`, "7-4 取消隱藏時沒有提示有複製品");
+  await until(`${text("#foods-status")}.indexOf("你有一筆從它複製的我的品項") !== -1`, "7-4 改回內建時沒有提示有複製品");
 
   // 7-5 搜尋：我的品項與內建都找得到，結果標子分頁
   await foodsSearch("三明治");
