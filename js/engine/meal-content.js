@@ -18,6 +18,7 @@ import {
 import { SLOT_LABELS } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
 import { round1, isNum } from "../core/num.js";
+import { ingredientItem } from "./my-ingredients.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
 const CONTRIB_FIELDS = ["kcal"].concat(NUTRIENT_FIELDS);
@@ -542,7 +543,9 @@ export function estimateComponent(size, name) {
 
 // ---------- 單品（food 元件，PRD 13.4） ----------
 // 品項形狀：{ uid, name, group?, state?, serving: { amount, unit: "g"|"ml" }, per_serving: { kcal, …七個欄位 } }。
-// 分層品項（catalog.foodTree.items）本來就是這個形狀；切片 8 的我的食材由 engine 轉成同一形狀。
+// 分層品項（catalog.foodTree.items）本來就是這個形狀；我的食材由 my-ingredients.js 的 ingredientItem 轉成同一形狀
+// （沒設一份的 serving.amount 與 per_serving 是 null，快照改用每 100g／100ml）。
+// 量有兩種記法（decisions #136、#138）：qty（份數）或 amount（實際 g/ml，整數），元件恰好有一個。
 
 // 份數 × 1 份的量（g 或 ml），進位到 0.1；記錄名稱與步進器旁的文字共用（PRD 13.4，章程 C2）
 export function foodAmount(item, qty) {
@@ -561,33 +564,44 @@ function foodNameState(item) {
   return item.state === "dry" ? "乾 " : "";
 }
 
-// 「雞胸肉 生 120g」「白飯 160g」「全脂奶（自己倒） 480ml」
-export function foodLogName(item, qty) {
-  return item.name + " " + foodNameState(item) + foodAmount(item, qty) + (item.serving.unit === "ml" ? "ml" : "g");
+// 實際吃的量：amount（克數記法）或 1 份 × qty
+export function foodEatenAmount(item, qty, amount) {
+  return amount != null ? amount : foodAmount(item, qty);
 }
 
-// 單品元件：快照是 1 份的量與營養（不乘份數，合計時才乘 qty）
-export function foodComponent(item, qty) {
-  const ps = item.per_serving || {};
+// 「雞胸肉 生 120g」「白飯 160g」「全脂奶（自己倒） 480ml」：兩種記法同一格式
+export function foodLogName(item, qty, amount) {
+  return item.name + " " + foodNameState(item) + foodEatenAmount(item, qty, amount) + (item.serving.unit === "ml" ? "ml" : "g");
+}
+
+// 單品元件：快照是 1 份的量與營養（不乘份數，合計時才乘 qty 或 amount ÷ 快照的量）；沒設一份的我的食材快照是每 100g／100ml（審核 S3）
+export function foodComponent(item, qty, amount) {
+  const per100 = item.serving.amount == null;
+  const ps = (per100 ? item.per_100g : item.per_serving) || {};
   const orNull = function (v) { return v != null ? v : null; };
-  return {
-    kind: "food", ref: item.uid, qty: qty,
-    snapshot: {
-      name: item.name, amount: item.serving.amount, unit: item.serving.unit, kcal: ps.kcal,
-      protein_g: orNull(ps.protein_g), carb_g: orNull(ps.carb_g), fat_g: orNull(ps.fat_g), fiber_g: orNull(ps.fiber_g),
-      sat_fat_g: orNull(ps.sat_fat_g), sodium_mg: orNull(ps.sodium_mg),
-    },
+  const c = { kind: "food", ref: item.uid };
+  if (amount != null) c.amount = amount; else c.qty = qty;
+  c.snapshot = {
+    name: item.name, amount: per100 ? 100 : item.serving.amount, unit: item.serving.unit, kcal: ps.kcal,
+    protein_g: orNull(ps.protein_g), carb_g: orNull(ps.carb_g), fat_g: orNull(ps.fat_g), fiber_g: orNull(ps.fiber_g),
+    sat_fat_g: orNull(ps.sat_fat_g), sodium_mg: orNull(ps.sodium_mg),
   };
+  return c;
+}
+
+// 元件的倍數：商品與份數記法是 qty，克數記法是 amount ÷ 快照的量
+function componentFactor(c) {
+  return c.kind === "food" && c.amount != null ? c.amount / c.snapshot.amount : c.qty;
 }
 
 // 選擇器的草稿 → MealContent（摘要與送出共用，看到的＝存下的）。
 // draft.kind："products"（超商/外食分頁：items、estimates [{ size, name }]、drink）或 "cook"（自煮草稿，見 composeProblem）。
-// draft.foods（選填）：[{ item, qty }] 單品，三個分頁共用；元件順序：（食材｜品項）→ 估算 → 單品 → 飲料。
+// draft.foods（選填）：[{ item, qty } | { item, amount }] 單品，三個分頁共用；元件順序：（食材｜品項）→ 估算 → 單品 → 飲料。
 // draft.meal_type：分頁值或自煮子切換值，飲料與單品不影響（decisions #47、#83）。opts.oilHabit：基本資料的用油習慣。
 // 自煮沒有食材（只有單品或飲料）時，餐型、烹調法是 null，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123）。
 export function buildDraftContent(draft, opts) {
   const drink = draft.drink ? [productComponent(draft.drink, draftQty(draft, draft.drink.uid))] : [];
-  const foods = (draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty); });
+  const foods = (draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty, f.amount); });
   if (draft.kind === "cook") {
     const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
     if (content.components.length === 0) {
@@ -634,7 +648,7 @@ export function contentTotals(content, catalog) {
       const serving = it.serving_g != null ? it.serving_g : 100;
       ingredientParts.push(ingredientContribution(it, serving * (c.is_primary ? (c.scale || 1) : 1)));
     } else {
-      productParts.push(productPart(c.snapshot, c.qty));
+      productParts.push(productPart(c.snapshot, componentFactor(c)));
     }
   });
   // 隱含成分只跟著食材（decisions #123）：只有單品、飲料的自煮一餐不加，跟同樣內容的超商紀錄合計相同
@@ -676,7 +690,7 @@ export function draftLogName(d) {
     const q = draftQty(d, p.uid);
     return p.name + (q === 0.5 ? "（半份）" : q !== 1 ? " " + qtyLabel(q) : "");
   };
-  const tail = (d.foods || []).map(function (f) { return foodLogName(f.item, f.qty); }).concat(d.drink ? [withQty(d.drink)] : []);
+  const tail = (d.foods || []).map(function (f) { return foodLogName(f.item, f.qty, f.amount); }).concat(d.drink ? [withQty(d.drink)] : []);
   if (d.kind === "cook") {
     return (d.archetype ? [d.archetype.name] : []).concat(draftIngredients(d).map(function (it) { return it.name; }), tail).join("＋");
   }
@@ -731,7 +745,9 @@ export function toSavedContent(content, opts) {
       if (c.is_primary === true) o.is_primary = true;
       return o;
     }
-    if (c.kind === "product" || c.kind === "food") return { kind: c.kind, ref: c.ref, qty: c.qty != null ? c.qty : 1 };
+    if (c.kind === "product") return { kind: c.kind, ref: c.ref, qty: c.qty != null ? c.qty : 1 };
+    // 單品原樣帶 qty 或 amount，不補預設（審核 M3）
+    if (c.kind === "food") return c.amount != null ? { kind: "food", ref: c.ref, amount: c.amount } : { kind: "food", ref: c.ref, qty: c.qty };
     throw new Error("[meal-content.js] 我的組合不能含「" + c.kind + "」元件");
   });
   const imp = opts && opts.keepImplicit && content.implicit ? { oil_g: content.implicit.oil_g, seasoning: content.implicit.seasoning } : null;
@@ -751,6 +767,16 @@ function treeById(catalog) {
   return (catalog.foodTree && catalog.foodTree.byId) || {};
 }
 
+// 我的食材的紀錄（ctx.customIngredients：custom_ingredients 原始紀錄，含已刪除的自填）。
+// fail-closed（審核 M6）：遇到 cing_ 的 ref 而 ctx 沒帶我的食材，丟錯，不能當成查不到丟掉（會讓組合悄悄掉品項）
+function myIngredientRec(ctx, ref) {
+  if (!ctx || !Array.isArray(ctx.customIngredients)) throw new Error("[meal-content.js] 解析含我的食材的組合要傳 ctx.customIngredients（" + ref + "）");
+  return ctx.customIngredients.filter(function (r) { return r.id === ref; })[0] || null;
+}
+function isMyIngredientRef(ref) {
+  return typeof ref === "string" && ref.indexOf("cing_") === 0;
+}
+
 // 規則 1–2（PRD 11.3）：查不到、已封存 → 丟；隱藏的內建品項有未封存的複製版本 → 換成它，否則丟。建立與引用共用。
 // 回傳 { content, dropped: [{ kind, ref, name }] }（name 查得到就用現在的名稱，查不到用 ref）
 export function remapSavedRefs(content, catalog, ctx) {
@@ -764,7 +790,14 @@ export function remapSavedRefs(content, catalog, ctx) {
   const drop = function (c, name) { dropped.push({ kind: c.kind, ref: c.ref, name: name || c.ref }); };
   content.components.forEach(function (c) {
     if (c.kind === "ingredient") { if (ingIdx[c.ref]) comps.push(c); else drop(c); return; }
-    if (c.kind === "food") { if (tree[c.ref]) comps.push(c); else drop(c); return; }
+    if (c.kind === "food") {
+      if (tree[c.ref]) { comps.push(c); return; }
+      if (!isMyIngredientRef(c.ref)) { drop(c); return; }
+      const rec = myIngredientRec(ctx, c.ref);
+      // 衛福部來源被移除（不吃）＝紀錄不在；自填已刪除＝archived（再加回／還原就恢復）
+      if (rec && rec.archived !== true) comps.push(c); else drop(c, rec ? rec.name : null);
+      return;
+    }
     if (c.kind !== "product") { drop(c); return; }
     const builtin = catalog.productsByUid[c.ref];
     if (builtin) {
@@ -836,7 +869,15 @@ export function resolveSavedMeal(saved, catalog, ctx) {
       return;
     }
     if (c.kind === "food") {
-      const it = tree[c.ref];
+      let it = tree[c.ref];
+      if (!it) {
+        const rec = myIngredientRec(ctx, c.ref);
+        if (rec.source === "tfda" && !(ctx.tfdaLookup && ctx.tfdaLookup.byId)) { block(c, rec, "衛福部資料載入失敗，請稍後再試"); return; }
+        it = ingredientItem(rec, ctx.tfdaLookup);
+        if (!it) { block(c, rec, "衛福部資料已不提供"); return; }
+      }
+      // 份數記法但那項我的食材沒有設一份：擋下，不自動換成克數（審核 M5）
+      if (c.amount == null && it.serving.amount == null) { block(c, it, "沒有設一份，請改用克數"); return; }
       const f = passesHardFilters(it, profile);
       if (!f.ok) { block(c, it, f.reason); return; }
       if (foods >= FOOD_MAX_PER_MEAL) { block(c, it, foodLimitProblem(foods + 1)); return; }
@@ -878,7 +919,7 @@ export function savedMealDraft(resolved) {
       else if (c.axis === "vegetable") d.vegetables.push(a.item);
       else d[c.axis] = a.item;
     } else if (c.kind === "food") {
-      d.foods.push({ item: a.item, qty: c.qty });
+      d.foods.push(c.amount != null ? { item: a.item, amount: c.amount } : { item: a.item, qty: c.qty });
     } else {
       if (a.item.role === "drink") d.drink = a.item; else d.items.push(a.item);
       if (c.qty !== 1) d.qtyByUid[a.item.uid] = c.qty;
@@ -903,7 +944,8 @@ export function savedMealDefaultName(content, catalog, ctx) {
     if (a && content.components.some(function (c) { return c.kind === "ingredient"; })) names.push(a.name);
   }
   content.components.forEach(function (c) {
-    const it = c.kind === "ingredient" ? ingIdx[c.ref] : c.kind === "food" ? tree[c.ref] : catalog.productsByUid[c.ref] || own[c.ref];
+    const it = c.kind === "ingredient" ? ingIdx[c.ref] : c.kind === "food" ? (tree[c.ref] || (isMyIngredientRef(c.ref) ? myIngredientRec(ctx, c.ref) : null))
+      : catalog.productsByUid[c.ref] || own[c.ref];
     if (it) names.push(it.name);
   });
   return names.join("＋");

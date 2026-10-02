@@ -4,6 +4,7 @@
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
 import { quickAddProblem } from "./picker.js";
 import { foodAmount, isEdiblePortionItem } from "./meal-content.js";
+import { isMyIngredient } from "./my-ingredients.js";
 import { round1 } from "../core/num.js";
 
 // 不吃的全部清單（PRD 13.2）：依 key 去重（保留第一筆），key 依序查內建品項 uid、內建食材 id、分層品項 id；
@@ -87,7 +88,8 @@ export function sourceClassGroups(item) {
 const FOOD_FIELD_LABELS = { "kcal": "熱量", "protein_g": "蛋白質", "carb_g": "碳水", "fat_g": "脂肪", "fiber_g": "纖維", "sat_fat_g": "飽和脂肪", "sodium_mg": "鈉" }; // 只給出處說明用欄位名稱（不讀數值，C4.14）
 const COLLATOR = new Intl.Collator("zh-Hant");
 
-// 分層品項才有 group（現成品項、我的品項沒有），不用「沒有 role」反推（審核 S8）
+// 單品（分層品項與我的食材）才有 group（現成品項、我的品項沒有），不用「沒有 role」反推（審核 S8）；
+// 我的食材另用 isMyIngredient 分（切片 8b 審核 N1）
 export function isFoodTreeItem(item) {
   return !!(item && typeof item.group === "string");
 }
@@ -215,6 +217,11 @@ function scaleDisplay(display, qty) {
   return display.replace(/(\d+(?:\.\d+)?)g$/, function (_, n) { return round1(Number(n) * qty) + "g"; });
 }
 
+// 克數記法的已選框文字（decisions #136）：「生重 120g」「240ml」，必寫狀態詞（同步進器）
+export function foodAmountModeText(item, amount) {
+  return amountText(item, amount);
+}
+
 // 步進器旁的文字：克數或毫升為主、必寫狀態詞，家用量與 display 放括號（份數 1 原樣）。
 // 「4 份＝熟重 160g（1碗）」「4 份＝可食部分 520g（4個，購買量約 680g）」「1 份＝內建一餐 熟重 150g」
 export function foodQtyText(item, qty) {
@@ -291,8 +298,8 @@ export function foodsBlockLabel(item, profile) {
     const mine = normalizeAllergens((profile || {}).allergens).list;
     return tags.some(function (t) { return mine.indexOf(t) !== -1; }) ? "含過敏原" : "成分未確認";
   }
-  // 只有分層品項的素食欄位是人工確認過的（審核 S4）；現成品項、我的品項沒宣告不等於不符合
-  if (res.code === "diet") return isFoodTreeItem(item) && tags.indexOf("未確認") === -1 ? "不符合你的飲食設定" : "飲食限制未確認";
+  // 只有分層品項與衛福部來源的我的食材（8a 人工標註）的素食欄位是確認過的（審核 S4、切片 8b N1）；現成品項、我的品項、自填食材沒宣告不等於不符合
+  if (res.code === "diet") return isFoodTreeItem(item) && item.origin !== "user" && tags.indexOf("未確認") === -1 ? "不符合你的飲食設定" : "飲食限制未確認";
   return "你標了不吃";
 }
 
@@ -323,7 +330,7 @@ export function sameSampleEntries(uid, catalog, disliked) {
 export function dislikedMessage(item, on, wasFavorite) {
   if (!on) return "已取消不吃「" + item.name + "」。";
   const tail = wasFavorite ? "原本標的常吃已取消。" : "";
-  if (isFoodTreeItem(item) && !item.builtin) return "已標不吃「" + item.name + "」。只擋這一項，不影響推薦裡的其他食物。" + tail;
+  if (isFoodTreeItem(item) && !isMyIngredient(item) && !item.builtin) return "已標不吃「" + item.name + "」。只擋這一項，不影響推薦裡的其他食物。" + tail;
   return "已標不吃「" + item.name + "」。推薦與「自己選」都不會再選它。" + tail;
 }
 

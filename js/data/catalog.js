@@ -183,3 +183,25 @@ export function loadCatalog() {
   }
   return _catalog;
 }
+
+// ---------- 衛福部全表查詢檔（PRD 12.2、decisions #135、#138） ----------
+// 不併進 loadCatalog（約 100KB gzip，大部分時候用不到）：用到衛福部來源的我的食材時才載，整個 app 共用一份；
+// 失敗清掉快取，下次（重試）重新載（審核 M7）。失敗是錯誤狀態，不是查不到（PRD 12.2）。
+export function normalizeTfdaLookup(raw) {
+  const items = (raw && raw.items) || [];
+  const byId = {};
+  items.forEach(function (it) { byId[it.id] = it; });
+  return { version: raw ? raw.version : null, items: items, byId: byId };
+}
+
+let _tfdaLookup = null;
+
+export function loadTfdaLookup() {
+  if (!_tfdaLookup) {
+    _tfdaLookup = fetchJson("data/tfda_lookup.json").then(normalizeTfdaLookup).catch(function (err) {
+      _tfdaLookup = null;
+      throw err;
+    });
+  }
+  return _tfdaLookup;
+}

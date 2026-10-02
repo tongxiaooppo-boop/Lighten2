@@ -77,6 +77,8 @@ function normContent(c) {
     if (x.kind === "ingredient") return x.axis + ":" + x.ref + (x.scale != null ? "*" + n(x.scale) : "") + (x.is_primary && x.scale == null ? "(primary)" : "");
     if (x.kind === "product" && !x.snapshot) return x.ref + "x" + x.qty;
     if (x.kind === "product") return x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal);
+    // 克數記法（切片 8b）：food:ref=N<unit>，@kcal 先 round1（我的食材的 1 份不進位，審核 S-d）
+    if (x.kind === "food" && x.amount != null) return "food:" + x.ref + "=" + x.amount + (x.snapshot ? x.snapshot.unit + "@" + n(Math.round(x.snapshot.kcal * 10) / 10) + "/" + n(x.snapshot.amount) : "");
     if (x.kind === "food" && !x.snapshot) return "food:" + x.ref + "x" + x.qty;
     if (x.kind === "food") return "food:" + x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal) + "/" + n(x.snapshot.amount) + x.snapshot.unit;
     return "estimate:" + x.name + "@" + n(x.snapshot.kcal);
