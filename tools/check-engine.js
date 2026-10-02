@@ -928,6 +928,32 @@ function checkMyIngredients(catalog) {
     "衛福部食材說「不符合」、自填說「未確認」");
   check(fd.foodsWhereOf(egg) === "cook" && fd.foodsWhereOf(milk) === "drinks", "我的食材的子分頁：液體在飲品・水果");
   check(!/只擋這一項/.test(fd.dislikedMessage(egg, true)), "dislikedMessage 不把我的食材當分層");
+
+  // 6. 新增食材（8b-2）：搜尋、分類、參考句、自填換算、分組、名稱
+  const s1 = mi.tfdaSearch(lookup, "鯖魚", null, ["J0414701"]);
+  check(s1.items.length > 5 && s1.items.every((x) => x.row.listed && /鯖魚/.test(x.row.name + x.row.aliases.join())) && s1.items.find((x) => x.row.id === "J0414701").added &&
+    !s1.items.find((x) => x.row.id === "J0414808").added, "tfdaSearch：鯖魚只列 listed、已加入的標出來");
+  check(mi.tfdaSearch(lookup, "", null, []).items.length === 0 && mi.tfdaSearch(lookup, "雞胸肉", null, []).items.every((x) => x.row.listed), "tfdaSearch：空字串不列、代換表已用的不列");
+  const s2 = mi.tfdaSearch(lookup, "", "加工調理食品及其他類", []);
+  check(s2.items.length === mi.TFDA_SEARCH_LIMIT && s2.more > 0 && s2.items.every((x) => x.row.category === "加工調理食品及其他類"), "tfdaSearch：分類篩選、上限 100＋還有幾筆");
+  const cats = mi.tfdaCategories(lookup);
+  check(cats.length === 18 && cats.reduce((n, c) => n + c.count, 0) === 1887, "tfdaCategories：18 類、共 1887 筆");
+  const p100 = mi.per100FromServing({ kcal: 76, protein_g: 6.8, carb_g: null, fat_g: "", fiber_g: 0, sat_fat_g: null, sodium_mg: 240 }, 40);
+  check(p100.kcal === 190 && p100.protein_g === 17 && p100.carb_g === null && p100.fat_g === null && p100.fiber_g === 0 && p100.sodium_mg === 600, "per100FromServing：每份 40g 換每 100g：" + JSON.stringify(p100));
+  check(fd.AMOUNT_HINT_REFS.every((h) => b[h[3]] && !b[h[3]].serving.builtin_meal), "參考句的代表品項都在代換表、不是內建一餐");
+  check(fd.defaultAmountHint(lookup.byId.J0414701, catalog.foodTree) === "參考：代換表 1 份「虱目魚」是生重 35g" && fd.defaultAmountHint(lookup.byId.J0414808, catalog.foodTree) === null &&
+    fd.defaultAmountHint(lookup.byId.C0500101, catalog.foodTree) === null, "參考句：生魚有、熟魚沒有、歸到全穀雜糧的栗子沒有（N2）");
+  const eggHints = lookup.items.filter((x) => x.listed && x.category === "蛋類").map((x) => fd.defaultAmountHint(x, catalog.foodTree));
+  check(eggHints.every((h) => h === "參考：代換表 1 份「雞蛋」是生重 55g"), "參考句：蛋類一律用雞蛋 55g");
+  const secs = fd.ingredientSections([egg, milk, tofu, mi.ingredientItem(tfdaRec("R0100101"), lookup)]);
+  const uids = [].concat(...Object.values(secs.cook)).concat(...secs.other.map((o) => o.items), secs.drinks).map((x) => x.uid);
+  check(secs.cook.protein.length === 2 && secs.drinks[0] === milk && secs.other[0].name === "加工調理食品及其他類" && new Set(uids).size === uids.length && uids.length === 4,
+    "ingredientSections：大類、其他依衛福部分類、液體在飲品，每個只出現一次（S-c）");
+  check(fd.ingredientMeta(egg) === "衛福部 · 每 100g 約 " + Math.round(egg.per_100g.kcal) + " kcal" && fd.ingredientMeta(tofu) === "自填 · 1 份 40g · 約 76 kcal", "ingredientMeta");
+  check(/已從我的食材移除「茶葉蛋」/.test(fd.ingredientRemovedMessage("茶葉蛋", 0)) && /2 個組合會顯示已不提供/.test(fd.ingredientRemovedMessage("茶葉蛋", 2)), "移除訊息提組合（S9）");
+  const mackerel = mi.ingredientItem(tfdaRec("J0414701"), lookup);
+  check(mc.foodLogName(mackerel, null, 150) === "鯖魚(生) 150g" && mc.foodLogName(b.fx_chicken_steak_raw, 4).indexOf("雞排肉（生） 生") === -1, "名稱已寫（生）的不再重複「生」");
+  check(lookup.byId.J0414808.state === "cooked" && lookup.byId.K0150201.state === "cooked" && lookup.byId.R0100101.state === "as_is", "新鮮食材品名寫烹調法的算熟（decisions #139）");
 }
 
 async function checkFavorites(catalog) {

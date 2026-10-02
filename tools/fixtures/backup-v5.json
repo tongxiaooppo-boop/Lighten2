@@ -12,7 +12,7 @@
     "recipe_feedback": 7,
     "settings": 4,
     "saved_meals": 2,
-    "custom_ingredients": 0
+    "custom_ingredients": 1
   },
   "sections": {
     "system": {
@@ -112,7 +112,7 @@
         {
           "id": "favorite_refs",
           "value": [
-            "custom_muqfvfer_kq0gku",
+            "custom_muqgrqki_jepyvu",
             "fx_rice"
           ]
         },
@@ -206,8 +206,8 @@
             "sodium_mg": 7.8,
             "partial": []
           },
-          "created_at": "2026-10-02T04:04:17.830Z",
-          "id": "log_muqfvcpy_2qosgl"
+          "created_at": "2026-10-02T04:29:25.275Z",
+          "id": "log_muqgrnvf_x0by5o"
         },
         {
           "log_date": "2026-09-20",
@@ -249,8 +249,8 @@
             "sodium_mg": null,
             "partial": []
           },
-          "created_at": "2026-10-02T04:04:21.289Z",
-          "id": "log_muqfvfe1_yv4ckt"
+          "created_at": "2026-10-02T04:29:28.745Z",
+          "id": "log_muqgrqjt_674iof"
         },
         {
           "log_date": "2026-09-21",
@@ -313,8 +313,8 @@
             "sodium_mg": 229.5,
             "partial": []
           },
-          "created_at": "2026-10-02T04:04:21.290Z",
-          "id": "log_muqfvfe2_pf5sz8"
+          "created_at": "2026-10-02T04:29:28.746Z",
+          "id": "log_muqgrqju_kuomib"
         }
       ],
       "exercise_log": [
@@ -323,14 +323,14 @@
           "activity_type": "散步",
           "duration_min": 30,
           "intensity": "低",
-          "id": "ex_muqfvev4_7ct0j1"
+          "id": "ex_muqgrq57_sp1j7q"
         }
       ]
     },
     "custom_foods": [
       {
         "archived": false,
-        "created_at": "2026-10-02T04:04:21.288Z",
+        "created_at": "2026-10-02T04:29:28.735Z",
         "name": "拿鐵咖啡（無糖，大杯約400ml）",
         "channel": "delivery",
         "role": "drink",
@@ -354,12 +354,12 @@
         "vegan": false,
         "lacto_ovo": true,
         "copied_from": "tw_dr05",
-        "id": "custom_muqfvfe0_5kxg5b",
-        "updated_at": "2026-10-02T04:04:21.288Z"
+        "id": "custom_muqgrqjj_epd5z9",
+        "updated_at": "2026-10-02T04:29:28.735Z"
       },
       {
         "archived": false,
-        "created_at": "2026-10-02T04:04:21.289Z",
+        "created_at": "2026-10-02T04:29:28.742Z",
         "name": "即食舒肥雞胸肉（單包）",
         "channel": "convenience",
         "role": "main",
@@ -383,12 +383,12 @@
         "vegan": false,
         "lacto_ovo": false,
         "copied_from": "conv_bx04",
-        "id": "custom_muqfvfe1_wj44iu",
-        "updated_at": "2026-10-02T04:04:21.289Z"
+        "id": "custom_muqgrqjq_mkysqy",
+        "updated_at": "2026-10-02T04:29:28.742Z"
       },
       {
         "archived": false,
-        "created_at": "2026-10-02T04:04:21.315Z",
+        "created_at": "2026-10-02T04:29:28.770Z",
         "name": "全家 烤多蛋白餐盒／烤蛋白餐盒",
         "channel": "convenience",
         "role": "main",
@@ -410,8 +410,8 @@
         "vegan": false,
         "lacto_ovo": false,
         "copied_from": "conv_bx02",
-        "id": "custom_muqfvfer_kq0gku",
-        "updated_at": "2026-10-02T04:04:21.315Z"
+        "id": "custom_muqgrqki_jepyvu",
+        "updated_at": "2026-10-02T04:29:28.770Z"
       }
     ],
     "saved_meals": [
@@ -436,9 +436,9 @@
           ],
           "implicit": null
         },
-        "id": "saved_muqfvdv9_y5o7qt",
-        "created_at": "2026-10-02T04:04:19.317Z",
-        "updated_at": "2026-10-02T04:04:19.317Z"
+        "id": "saved_muqgrozd_345ep4",
+        "created_at": "2026-10-02T04:29:26.713Z",
+        "updated_at": "2026-10-02T04:29:26.713Z"
       },
       {
         "archived": false,
@@ -472,11 +472,23 @@
           ],
           "implicit": null
         },
-        "id": "saved_muqfve8g_q7sj4g",
-        "created_at": "2026-10-02T04:04:19.792Z",
-        "updated_at": "2026-10-02T04:04:20.353Z"
+        "id": "saved_muqgrpgo_vraeq5",
+        "created_at": "2026-10-02T04:29:27.336Z",
+        "updated_at": "2026-10-02T04:29:27.952Z"
       }
     ],
-    "custom_ingredients": []
+    "custom_ingredients": [
+      {
+        "note": null,
+        "source": "tfda",
+        "tfda_id": "K0112102",
+        "tfda_version": "2025-update1",
+        "name": "家裡的茶葉蛋",
+        "default_amount": 55,
+        "id": "cing_k0112102",
+        "created_at": "2026-10-02T04:29:29.291Z",
+        "updated_at": "2026-10-02T04:29:29.409Z"
+      }
+    ]
   }
 }
