@@ -27,7 +27,7 @@ const SAVED_MEAL_READERS = ["listSavedMeals", "getSavedMeal", "exportAllData"];
 const SAVED_MEAL_READER_FILES = [
   /^js\/ui\/meal-picker\//,        // 選擇器（Phase 0）
   /^js\/ui\/foods\/saved-meals\.js$/, // 組合管理區（平行工作線 C；放在「我的食物」，PRD 13.2）
-  // 今日建議日期切換的預選編輯（decisions #118、#119；取代餐點日曆週格子）：檔案做的時候再加，tab-today.js 本身不可以
+  // 今日建議日期切換的預選編輯（decisions #118、#119；取代餐點日曆週格子）：只走選擇器（上一行），tab-today.js 本身不可以
   /^js\/ui\/backup\.js$/,          // 備份匯出匯入（平行工作線 B-3）
   /^js\/data\/db\.js$/,
 ];
@@ -35,6 +35,13 @@ const SAVED_MEAL_READER_FILES = [
 // 讀取運動紀錄（包括整批匯出）只允許運動分頁、db.js 與備份匯出匯入（C4.12，decisions #72）
 const EXERCISE_READERS = ["getExerciseLogs", "exportAllData"];
 const EXERCISE_FILES = [/^js\/ui\/tab-exercise\.js$/, /^js\/data\/db\.js$/, /^js\/ui\/backup\.js$/];
+
+// 預約（meal_plan）的讀取只允許今日建議的預約模組與 db.js（章程 C4.10：只有 daily_log 進統計與校正；設計草案第 9 節 S2）
+const MEAL_PLAN_READERS = ["getMealPlans"];
+const MEAL_PLAN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/data\/db\.js$/];
+// 昨天最後顯示的推薦只給今日建議與昨天的餐（不能長成隱性偏好，同 C4.15 的理由；S1）
+const LAST_SHOWN_READERS = ["getLastShownRecs"];
+const LAST_SHOWN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/ui\/tab-today\.js$/, /^js\/data\/db\.js$/];
 
 // picker_last_meal_type 只允許出現在 db.js 與「自己選」選擇器（C4.15）
 const PICKER_LAST_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//];
@@ -45,7 +52,8 @@ const FAVORITE_READER_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//, /
 const FAVORITE_PARAM_ENGINE_FILES = [/^js\/engine\/picker\.js$/];
 
 // ui/ 禁用字（C4.13 不評判）
-const BANNED_WORDS = ["遵循率", "偏離計畫", "未完成", "連續達成", "達成天數", "照計畫天數", "外食比較多", "多自己煮", "吃太多", "爆卡", "罪惡"];
+const BANNED_WORDS = ["遵循率", "偏離計畫", "未完成", "連續達成", "達成天數", "照計畫天數", "外食比較多", "多自己煮", "吃太多", "爆卡", "罪惡",
+  "漏記", "忘了記", "沒記到", "還沒記"]; // 後四個：昨天的餐（PRD 6.1、設計草案 S5）
 
 // 營養欄位（C4.11：ui/ 不得自己加總）
 const NUTRIENT = "(kcal|protein_g|carb_g|fat_g|fiber_g|sat_fat_g|sodium_mg)";
@@ -297,6 +305,8 @@ function restrictNames(names, allowFiles, label) {
   }
 }
 restrictNames(EXERCISE_READERS, EXERCISE_FILES, "只有運動分頁、db.js 與備份匯出匯入可以讀運動紀錄");
+restrictNames(MEAL_PLAN_READERS, MEAL_PLAN_FILES, "預約只給今日建議的預約模組讀，不進統計與校正（C4.10）");
+restrictNames(LAST_SHOWN_READERS, LAST_SHOWN_FILES, "昨天最後顯示的推薦只給今日建議與昨天的餐");
 for (const f of files.filter((x) => x.layer === "engine")) check(!/exercise/i.test(f.code), f.rel + " engine 出現 exercise（運動與飲食脫鉤）");
 
 console.log("[不評判的禁用字 C4.13]");
