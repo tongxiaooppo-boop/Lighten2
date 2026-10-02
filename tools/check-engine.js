@@ -1952,7 +1952,7 @@ function checkSingleFoodsDb(catalog) {
   // 單品本身不升版；v2→v3（工作線 C）只多了空的 saved_meals 區塊與版本號
   const mfv = db.migrateBackup(fv);
   const strip = clone(mfv);
-  delete strip.sections.saved_meals; delete strip.manifest.saved_meals; delete strip.sections.custom_ingredients; delete strip.manifest.custom_ingredients; strip.schema_version = fv.schema_version;
+  delete strip.sections.saved_meals; delete strip.manifest.saved_meals; delete strip.sections.custom_ingredients; delete strip.manifest.custom_ingredients; delete strip.sections.meal_plan; delete strip.manifest.meal_plan; strip.schema_version = fv.schema_version;
   check(JSON.stringify(strip) === JSON.stringify(fv) && mfv.sections.saved_meals.length === 0 && mfv.manifest.saved_meals === 0, "v2 升級後除了空的 saved_meals 與版本號，其他（含單品紀錄）要原樣");
   check(db.summarizeBackup(fv).daily_log.count === db.summarizeBackup(fixtureV2).daily_log.count + 1, "summarizeBackup 單品紀錄的筆數");
   const badQty = clone(ok.convenience);
@@ -2156,7 +2156,7 @@ function checkSavedMealsDb(catalog) {
   check(/content/.test(errOf(() => db.applySavedMealPatch(old, { content: Object.assign({}, prod, { components: [] }) }, later)) || ""), "applySavedMealPatch 壞內容要擋");
 
   // 備份 v3（切片 5 起目前版本是 v4，v3 的檔案照樣升級後讀得了）
-  check(db.BACKUP_SCHEMA_VERSION === 5 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v5 與 saved_meals 區塊");
+  check(db.BACKUP_SCHEMA_VERSION === 6 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v6 與 saved_meals 區塊");
   ["backup-v1.json", "backup-v2.json"].forEach((f) => {
     const m = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", f), "utf8")));
     check(m.schema_version === db.BACKUP_SCHEMA_VERSION && Array.isArray(m.sections.saved_meals) && m.sections.saved_meals.length === 0 && m.manifest.saved_meals === 0 &&
@@ -2182,11 +2182,11 @@ function checkSavedMealsDb(catalog) {
   check(db.BACKUP_SECTIONS.custom_ingredients.join() === "custom_ingredients" && db.STORE_NAMES.indexOf("custom_ingredients") !== -1, "備份 v5 有 custom_ingredients 區塊");
   const fixtureV4 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v4.json"), "utf8"));
   const up5 = db.migrateBackup(fixtureV4);
-  check(up5.schema_version === 5 && Array.isArray(up5.sections.custom_ingredients) && up5.sections.custom_ingredients.length === 0 && up5.manifest.custom_ingredients === 0 &&
+  check(up5.schema_version === db.BACKUP_SCHEMA_VERSION && Array.isArray(up5.sections.custom_ingredients) && up5.sections.custom_ingredients.length === 0 && up5.manifest.custom_ingredients === 0 &&
     db.validateBackup(up5).length === 0, "v4 升到 v5 補空的我的食材並且讀得了");
   const fixtureV5 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v5.json"), "utf8"));
-  check(fixtureV5.schema_version === 5 && Array.isArray(fixtureV5.sections.custom_ingredients) && db.validateBackup(fixtureV5).length === 0,
-    "凍結的 backup-v5.json（smoke 真的匯出）要能還原：" + db.validateBackup(fixtureV5).slice(0, 2).join("；"));
+  check(fixtureV5.schema_version === 5 && Array.isArray(fixtureV5.sections.custom_ingredients) && db.validateBackup(db.migrateBackup(fixtureV5)).length === 0,
+    "凍結的 backup-v5.json（smoke 真的匯出）要能還原：" + db.validateBackup(db.migrateBackup(fixtureV5)).slice(0, 2).join("；"));
   const T0 = "2026-10-02T00:00:00.000Z";
   const tfdaIng ={ id: "cing_k0112102", source: "tfda", tfda_id: "K0112102", tfda_version: "2025-update1", name: "茶葉蛋", default_amount: null, note: null, created_at: T0, updated_at: T0 };
   const userIng = { id: "cing_u_abc", source: "user", name: "某牌豆干", group: "protein", drink: false, state: "as_is",
@@ -2225,6 +2225,51 @@ function checkSavedMealsDb(catalog) {
   check(!errOf(() => db.validateSavedMeal(smFood)), "組合的單品可以是 amount：" + errOf(() => db.validateSavedMeal(smFood)));
   smFood.content.components[si].qty = 1;
   check(/qty\/amount/.test(errOf(() => db.validateSavedMeal(smFood)) || ""), "組合的單品 qty 與 amount 不能同時有");
+  // ---- 日期切換（decisions #140–#142）：skipped 紀錄、寫入日期、預約、昨天的推薦、備份 v6 ----
+  console.log("[日期切換：資料]");
+  const zeroT = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: 0, partial: [] };
+  const skipLog = { log_date: "2026-10-02", slot: "breakfast", meal_type: null, source: "skipped", name: "這餐沒吃",
+    content: { meal_type: null, archetype_id: null, method_id: null, components: [], implicit: null }, totals: clone(zeroT), created_at: T0 };
+  check(!errOf(() => db.validateDailyLog(skipLog)), "skipped 紀錄要過：" + errOf(() => db.validateDailyLog(skipLog)));
+  const skipBad = (f) => { const l = clone(skipLog); f(l); return errOf(() => db.validateDailyLog(l)) || ""; };
+  check(/content/.test(skipBad((l) => { l.content.components = [{ kind: "estimate", name: "x", snapshot: { kcal: 1 } }]; })) &&
+    /totals/.test(skipBad((l) => { l.totals.kcal = 100; })) && /totals/.test(skipBad((l) => { l.totals.partial = ["protein_g"]; })) &&
+    /meal_type/.test(skipBad((l) => { l.meal_type = "delivery"; })) && /content/.test(skipBad((l) => { l.content.note = "x"; })), "skipped：有元件、熱量不是 0、有型態都要擋");
+  check(/meal_type/.test(skipBad((l) => { l.source = "manual"; })) && /content\.components/.test(skipBad((l) => { l.source = "manual"; l.meal_type = "delivery"; l.content.meal_type = "delivery"; })),
+    "不是 skipped 的紀錄照舊要有型態與至少 1 個元件");
+  check(db.logDateProblem({ log_date: "2026-10-03" }, { today: "2026-10-02" }) && db.logDateProblem({ log_date: "2026-09-24" }, { today: "2026-10-02", minDate: "2026-09-25" }) &&
+    db.logDateProblem({ log_date: "2026-09-25" }, { today: "2026-10-02", minDate: "2026-09-25" }) === null && db.logDateProblem({ log_date: "2020-01-01" }) === null,
+    "addDailyLog 的日期範圍：不能未來、不早於 minDate，沒給就不檢查");
+  check(!errOf(() => db.validateDailyLog(Object.assign(clone(skipLog), { log_date: "2020-01-01" }))), "validateDailyLog 不檢查日期範圍（還原舊備份）");
+  const plan = (content, extra) => Object.assign({ id: "2026-10-04|lunch", date: "2026-10-04", slot: "lunch", name: "測試預約", content: content, created_at: T0, updated_at: T0 }, extra || {});
+  const estPlan = { meal_type: "delivery", archetype_id: null, method_id: null, implicit: null,
+    components: [{ kind: "estimate", name: "喜宴", size: "L", snapshot: { kcal: 1200, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null } }] };
+  const skipPlan = { skip: true, meal_type: null, archetype_id: null, method_id: null, implicit: null, components: [] };
+  check(!errOf(() => db.validateMealPlan(plan(prod))) && !errOf(() => db.validateMealPlan(plan(cook))) && !errOf(() => db.validateMealPlan(plan(estPlan))) && !errOf(() => db.validateMealPlan(plan(skipPlan))),
+    "預約：現成、自煮、估算、預約不吃都要過：" + [prod, cook, estPlan, skipPlan].map((c) => errOf(() => db.validateMealPlan(plan(c)))).filter(Boolean).join("；"));
+  const pi = cook.components.findIndex((c) => c.kind === "ingredient" && c.is_primary === true);
+  const ni = cook.components.findIndex((c) => c.kind === "ingredient" && c.is_primary !== true);
+  const scaled = clone(cook); if (pi >= 0) scaled.components[pi].scale = 1.5;
+  const scaledBad = clone(cook); if (ni >= 0) scaledBad.components[ni].scale = 1.5;
+  check(pi >= 0 && ni >= 0 && !errOf(() => db.validateMealPlan(plan(scaled))) && /scale/.test(errOf(() => db.validateMealPlan(plan(scaledBad))) || "") &&
+    /scale/.test(errOf(() => db.validateSavedMeal(rec(scaled))) || ""), "預約：主要槽位可以存使用者選的 scale（組合照舊不行）");
+  check(/kind/.test(errOf(() => db.validateSavedMeal(rec(estPlan))) || "") && /skip|components/.test(errOf(() => db.validateSavedMeal(rec(skipPlan))) || ""), "組合照舊不收估算與預約不吃");
+  check(/id/.test(errOf(() => db.validateMealPlan(plan(prod, { id: "2026-10-04|dinner" }))) || "") &&
+    /skip/.test(errOf(() => db.validateMealPlan(plan(Object.assign(clone(skipPlan), { components: estPlan.components })))) || "") &&
+    /skip/.test(errOf(() => db.validateMealPlan(plan(Object.assign(clone(prod), { skip: false })))) || "") &&
+    /size/.test(errOf(() => db.validateMealPlan(plan({ meal_type: "delivery", archetype_id: null, method_id: null, implicit: null, components: [Object.assign(clone(estPlan.components[0]), { size: "XL" })] }))) || ""),
+    "預約：id 要等於日期|時段、預約不吃不能有元件、skip 只能是 true、估算大小只能 S/M/L/null");
+  const lsr = { date: "2026-10-02", slots: { lunch: { name: "雞胸便當", content: prod, totals: { kcal: 620 } } } };
+  check(!errOf(() => db.validateSetting("last_shown_recs", lsr)) && errOf(() => db.validateSetting("last_shown_recs", { date: "2026-10-02", slots: { brunch: lsr.slots.lunch } })) &&
+    errOf(() => db.validateSetting("last_shown_recs", { date: "x", slots: {} })), "last_shown_recs：時段名稱與日期要對");
+  const v6 = clone(v5); v6.sections.meal_plan = [plan(prod), plan(skipPlan, { id: "2026-10-05|breakfast", date: "2026-10-05", slot: "breakfast" })]; v6.manifest.meal_plan = 2;
+  v6.sections.logs.daily_log.push(Object.assign(clone(skipLog), { id: "log_skip1" })); v6.manifest.daily_log += 1;
+  v6.sections.system.settings.push({ id: "last_shown_recs", value: lsr }); v6.manifest.settings += 1;
+  check(db.validateBackup(v6).length === 0, "含預約、skipped、昨天推薦的 v6 備份要能還原：" + db.validateBackup(v6).slice(0, 2).join("；"));
+  check(db.summarizeBackup(v6).meal_plan.count === 2 && db.summarizeBackup(v6).meal_plan.last_date === "2026-10-05" && db.summarizeBackup(v6).meal_plan.label === "預約", "summarizeBackup 預約筆數與日期");
+  check(Array.isArray(up5.sections.meal_plan) && up5.sections.meal_plan.length === 0 && up5.manifest.meal_plan === 0, "舊備份升級補空的預約");
+  const badPlan = clone(v6); badPlan.sections.meal_plan[0].id = "2026-10-04|dinner";
+  check(db.validateBackup(badPlan).some((x) => /預約第 1 筆/.test(x)), "壞的預約要指出「預約第 1 筆」");
   const newer = clone(v3); newer.schema_version = db.BACKUP_SCHEMA_VERSION + 1;
   check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "比目前新一版的檔案要擋（較新的版本）");
 }

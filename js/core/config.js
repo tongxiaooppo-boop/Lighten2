@@ -10,7 +10,11 @@ export const ALLERGEN_OPTIONS = ["甲殼類", "軟體動物", "魚", "蛋", "乳
 export const UNVERIFIED_ALLERGEN = "未確認";
 
 // daily_log.source
-export const LOG_SOURCES = ["rec_accepted", "manual", "from_plan", "backfill"];
+// from_plan：預約「記下」；backfill：補記與昨天的 S/M/L；skipped：「這餐沒吃」（0 大卡，decisions #140⑥）
+export const LOG_SOURCES = ["rec_accepted", "manual", "from_plan", "backfill", "skipped"];
+
+// 補記過去的一餐最多回推幾天（不含今天，decisions #120）
+export const BACKFILL_DAYS = 7;
 
 // 自組食譜只有主要槽位縮放，範圍約半份到兩份（章程 C4.6）
 export const PRIMARY_SLOT_SCALE_RANGE = { min: 0.5, max: 2.0 };
@@ -97,3 +101,11 @@ export function isQuickTier(rank) {
 
 // 「找不到？直接估算」的 S/M/L 熱量（沿用 v1 美饗日曆的大餐份量估算；Phase 0 的估算卡片使用，PRD 第 9 節）
 export const ESTIMATE_SIZE_KCAL = { S: 400, M: 700, L: 1200 };
+
+// 「昨天的餐」回想估算的 S/M/L（decisions #142④）：依時段分三組；選擇器的估算卡仍用上面那組（日後統一）
+export const ESTIMATE_RECALL_KCAL = {
+  breakfast: { S: 300, M: 500, L: 800 },
+  main: { S: 400, M: 700, L: 1200 },
+  light: { S: 150, M: 300, L: 500 },
+};
+export const ESTIMATE_RECALL_GROUP = { breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };
