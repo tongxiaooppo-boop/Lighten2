@@ -87,7 +87,8 @@ const foodRow = (name) => `[...document.querySelectorAll('#foods-body .food-row'
 const foodRowText = (name) => js(`(() => { const r = ${foodRow(name)}; return r ? r.innerText : null; })()`);
 const inFoodRow = (name, sel) => js(`(() => { const r = ${foodRow(name)}; const b = r && r.querySelector(${JSON.stringify(sel)}); if (!b) throw new Error("「" + ${JSON.stringify(name)} + "」找不到 " + ${JSON.stringify(sel)}); b.scrollIntoView({ block: "center" }); b.click(); })()`);
 const openFood = (name) => inFoodRow(name, ".food-row-main");
-const foodsSub = (t) => click(`[data-foods-subtab=${t}]`);
+// 我的食物重讀完才點子分頁（#foods-body 的 data-loading，切片 8b-2；之前 8-5 偶發點到舊畫面）
+const foodsSub = async (t) => { await until(`!document.querySelector("#foods-body[data-loading]")`, "我的食物沒有載完"); await click(`[data-foods-subtab=${t}]`); };
 const foodsSearch = (q) => js(`(() => { const el = document.getElementById('foods-search'); el.value = ${JSON.stringify(q)}; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
 const openFolded = () => js(`document.querySelectorAll('#foods-body details').forEach((d) => { d.open = true; })`);
 // 代換表分層（工作線 D 切片 4）：點 summary 展開大類、子類（不直接設 open，審核 M3），等內容畫出來
@@ -1442,6 +1443,97 @@ async function run() {
     await shot("常吃-自煮蛋白質", "#meal-picker-panel .compose-step");
     await closePicker();
   } else fail("11-6 晚餐沒有能選的蛋白質至少 2 個的餐型（測試前提不成立）");
+
+  // ---------- 12. 我的食材（工作線 D 切片 8b-2，計畫 docs/review/2026-10-02-D8b-實作計畫.md） ----------
+  console.log("[12. 我的食材]");
+  await tab("foods");
+  await foodsSub("cook");
+  // 12-1 ＋新增食材 → 搜尋鯖魚 → 熟的樣品寫「熟」→ 點「鯖魚(煮)」→ 確認表單（一份空白、參考句不給熟魚）→ 加入
+  await click(`[data-ing-add]`);
+  await until(`!!document.getElementById('ing-search') && document.querySelectorAll('[data-ing-cat]').length >= 15`, "12-1 新增食材面板沒有搜尋框或分類晶片");
+  await shot("我的食材-新增面板", "#foods-add-ing");
+  const ingSearch = (q) => js(`(() => { const el = document.getElementById('ing-search'); el.value = ${JSON.stringify(q)}; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+  await ingSearch("鯖魚");
+  await until(`!!document.querySelector('[data-ing-pick=J0414808]')`, "12-1 搜尋鯖魚沒有「鯖魚(煮)」");
+  check((await js(`document.querySelector('[data-ing-pick=J0414808]').innerText`)).indexOf("魚貝類 · 熟") !== -1, "12-1 鯖魚(煮)沒有標「熟」");
+  await click(`[data-ing-pick=J0414701]`);
+  await until(`!!document.querySelector('[data-ing-confirm]')`, "12-1 點鯖魚(生)沒有出現確認表單");
+  const confirmText = await js(`document.querySelector('.ing-confirm').innerText`);
+  check(confirmText.indexOf("參考：代換表 1 份「虱目魚」是生重 35g") !== -1 && confirmText.indexOf("這是生的樣品") !== -1 && confirmText.indexOf("衛福部標註") !== -1,
+    "12-1 生鯖魚的確認表單缺參考句、生的說明或衛福部標註：" + confirmText);
+  await shot("我的食材-確認加入", ".ing-confirm");
+  await click(`[data-ing-confirm]`);
+  await until(`${text("#foods-status")}.indexOf("已加入「鯖魚(生)」") !== -1`, "12-1 加入後沒有「已加入」");
+  check(!!(await js(`!!(${foodRow("鯖魚(生)")})`)), "12-1 加入後豆魚蛋肉類裡沒有鯖魚(生)");
+  const fishText = await foodRowText("鯖魚(生)");
+  check(fishText.indexOf("衛福部 · 每 100g") !== -1 && fishText.indexOf("沒有設一份") !== -1 && fishText.indexOf("衛福部 J0414701") !== -1, "12-1 鯖魚明細不對：" + fishText);
+  await shot("我的食材-明細", ".food-row:has(.food-detail)");
+  // 12-2 分類晶片：加工調理食品 → 點第一筆、一份填 300 → 在「其他食材」
+  await click(`[data-ing-add]`);
+  await until(`!!document.querySelector('[data-ing-cat="加工調理食品及其他類"]')`, "12-2 沒有加工調理的分類晶片");
+  await click(`[data-ing-cat="加工調理食品及其他類"]`);
+  await until(`!!document.querySelector('[data-ing-pick=R0100101]')`, "12-2 分類晶片沒有列出廣東粥");
+  check((await js(`document.querySelector('[data-ing-pick=J0414701]')`)) === null, "12-2 選了分類還列出別類的");
+  await click(`[data-ing-pick=R0100101]`);
+  await js(`(() => { const el = document.querySelector('[data-ing-add-field=amount]'); el.value = '300'; })()`);
+  await click(`[data-ing-confirm]`);
+  await until(`${text("#foods-status")}.indexOf("已加入「廣東粥」") !== -1`, "12-2 廣東粥沒有加入");
+  await openFolded();
+  check(!!(await js(`[...document.querySelectorAll('#foods-body details[data-foods-section="cook:other"] .food-name')].some((n) => n.textContent === "廣東粥")`)), "12-2 廣東粥不在「其他食材」");
+  // 12-3 不吃＝移除 → 復原
+  await openFolded();
+  await openFood("鯖魚(生)");
+  await until(`!!(${foodRow("鯖魚(生)")}).querySelector("[data-ing-remove]")`, "12-3 鯖魚明細沒有「不吃」");
+  await inFoodRow("鯖魚(生)", "[data-ing-remove]");
+  await until(`${text("#foods-status")}.indexOf("已從我的食材移除「鯖魚(生)」") !== -1 && !!document.querySelector('[data-ing-undo]')`, "12-3 不吃後沒有移除訊息或「復原」");
+  check(!(await js(`!!(${foodRow("鯖魚(生)")})`)), "12-3 移除後鯖魚還在");
+  await click(`[data-ing-undo]`);
+  await until(`${text("#foods-status")}.indexOf("已復原「鯖魚(生)」") !== -1`, "12-3 復原沒有成功");
+  // 12-4 自填：每份 40g 熱量 76 → 每 100g 190；一份 40；刪除 → 已刪除的食材 → 還原
+  await click(`[data-ing-add]`);
+  await until(`!!document.querySelector('[data-ing-self]')`, "12-4 沒有「自己填」");
+  await click(`[data-ing-self]`);
+  await until(`!!document.getElementById('foods-ing-form')`, "12-4 沒有自填表單");
+  await click(`[data-ing-basis=serving]`);
+  await js(`(() => { const f = document.getElementById('foods-ing-form'); const set = (sel, v) => { f.querySelector(sel).value = v; };
+    set('[data-ing=name]', '某牌豆干'); set('[data-ing=servingAmount]', '40'); set('[data-ing=kcal]', '76'); set('[data-ing=amount]', '40'); })()`);
+  await click(`[data-ing-state=as_is]`);
+  await shot("我的食材-自填表單", "#foods-ing-form");
+  await click(`[data-ing-save]`);
+  await until(`${text("#foods-status")}.indexOf("已新增「某牌豆干」") !== -1`, "12-4 自填沒有存成功：" + (await js(text("#foods-body"))).slice(0, 200));
+  const tofuRec = await js(`(async () => { const m = ${DBW}; return (await m.getCustomIngredients()).find((r) => r.name === '某牌豆干'); })()`);
+  check(tofuRec && tofuRec.per_100g.kcal === 190 && tofuRec.default_amount === 40 && /^cing_u_/.test(tofuRec.id), "12-4 自填的每 100g 換算或 id 不對：" + JSON.stringify(tofuRec));
+  await inFoodRow("某牌豆干", "[data-ing-archive]");
+  await until(`${text("#foods-status")}.indexOf("已刪除「某牌豆干」") !== -1`, "12-4 刪除沒有訊息");
+  await openFolded();
+  await js(`(() => { const r = ${foodRow("某牌豆干")}; if (!r.querySelector("[data-ing-restore]")) r.querySelector(".food-row-main").click(); })()`);
+  await inFoodRow("某牌豆干", "[data-ing-restore]");
+  await until(`${text("#foods-status")}.indexOf("已還原「某牌豆干」") !== -1`, "12-4 還原沒有成功");
+  // 12-5 選擇器：鯖魚沒有一份 → 只有克、預設 100；豆干有一份 → 份／克；送出名稱
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await until(`(() => { const el = document.getElementById('meal-picker-food-search'); return !!el; })()`, "12-5 選擇器沒有單品搜尋");
+  await pickFood("cing_j0414701", "鯖魚");
+  check((await pickedFoodText("cing_j0414701")).indexOf("生重 100g") !== -1 && !(await js(`!!document.querySelector('#food-sel-cing_j0414701 [data-food-mode]')`)),
+    "12-5 沒設一份的鯖魚不是只有克、預設 100：" + (await pickedFoodText("cing_j0414701")));
+  await js(`(() => { const el = document.querySelector('#food-sel-cing_j0414701 .food-amount-input'); el.value = '150'; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await until(`(document.getElementById('food-sel-cing_j0414701') || {}).innerText.indexOf("生重 150g") !== -1`, "12-5 鯖魚改 150 沒生效");
+  await pickFood(tofuRec.id, "豆干");
+  check(!!(await js(`!!document.querySelector('#food-sel-${tofuRec.id} [data-food-mode]')`)) && (await pickedFoodText(tofuRec.id)).indexOf("1 份＝") !== -1, "12-5 有一份的豆干沒有份／克切換");
+  await shot("我的食材-選擇器", "#food-sel-cing_j0414701");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("我的食材-選擇器-360寬", "#food-sel-cing_j0414701");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  check((await submitAndUndo("dinner", "12-5")) === "鯖魚(生) 150g＋某牌豆干 40g", "12-5 紀錄名稱不是「鯖魚(生) 150g＋某牌豆干 40g」");
+  // 12-6 360 寬：新增面板的分類晶片不讓整頁橫移
+  await tab("foods");
+  await foodsSub("cook");
+  await click(`[data-ing-add]`);
+  await until(`document.querySelectorAll('[data-ing-cat]').length >= 15`, "12-6 再開新增面板沒有晶片");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("我的食材-新增面板-360寬", "#foods-add-ing");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await click(`[data-ing-add-close]`);
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();

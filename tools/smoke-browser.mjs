@@ -391,6 +391,34 @@ async function run() {
     await js(`document.getElementById('meal-picker-cancel').click()`);
   }
 
+  console.log("[我的食材（真的 IndexedDB，工作線 D 切片 8b-2）]");
+  {
+    const DBI = `(await import('./js/data/db.js'))`;
+    // 查詢檔載入失敗 → 「載入失敗」＋重試；重試成功（失敗不快取，審核 M7）
+    await js(`document.querySelector('.tab-btn[data-tab=foods]').click()`);
+    await until(`!!document.querySelector('[data-foods-subtab=cook]') && !document.querySelector('#foods-body[data-loading]')`, "我的食物沒有載完（我的食材）");
+    await js(`document.querySelector('[data-foods-subtab=cook]').click()`);
+    await js(`(() => { window.__realFetch = window.fetch; window.fetch = (u, o) => String(u).indexOf('tfda_lookup') !== -1 ? Promise.reject(new Error('offline')) : window.__realFetch(u, o); })()`);
+    await js(`document.querySelector('[data-ing-add]').click()`);
+    await until(`${text("#foods-body")}.indexOf("衛福部資料載入失敗") !== -1 && !!document.querySelector('[data-ing-retry]')`, "查詢檔載入失敗時沒有「載入失敗」與重試");
+    await js(`(() => { window.fetch = window.__realFetch; document.querySelector('[data-ing-retry]').click(); })()`);
+    await until(`document.querySelectorAll('[data-ing-cat]').length === 18`, "重試後沒有載到查詢檔（18 個分類）");
+    // 加入衛福部食材（UI）→ 常吃 → 不吃＝移除（同一個 transaction 移出常吃）→ 復原（名稱與一份原樣）
+    await js(`(() => { const el = document.getElementById('ing-search'); el.value = '茶葉蛋'; el.dispatchEvent(new Event('input', { bubbles: true })); })()`);
+    await until(`!!document.querySelector('[data-ing-pick=K0112102]')`, "搜尋茶葉蛋沒有 K0112102");
+    await js(`document.querySelector('[data-ing-pick=K0112102]').click()`);
+    await js(`(() => { document.querySelector('[data-ing-add-field=name]').value = '家裡的茶葉蛋'; document.querySelector('[data-ing-add-field=amount]').value = '55'; document.querySelector('[data-ing-confirm]').click(); })()`);
+    await until(`${text("#foods-status")}.indexOf("已加入「家裡的茶葉蛋」") !== -1`, "茶葉蛋沒有加入");
+    await js(`(async () => { const m = ${DBI}; await m.addFavoriteRef('cing_k0112102'); })()`);
+    const removed = JSON.parse(await js(`(async () => { const m = ${DBI}; const old = await m.removeTfdaIngredient('cing_k0112102');
+      return JSON.stringify({ old: old, fav: await m.getFavoriteRefs(), left: (await m.getCustomIngredients()).length }); })()`));
+    check(removed.old.name === "家裡的茶葉蛋" && removed.fav.indexOf("cing_k0112102") === -1 && removed.left === 0, "移除衛福部食材沒有同時移出常吃：" + JSON.stringify(removed));
+    const back = JSON.parse(await js(`(async () => { const m = ${DBI}; await m.restoreTfdaIngredient(${JSON.stringify(removed.old)}); return JSON.stringify(await m.getCustomIngredients()); })()`));
+    check(back.length === 1 && back[0].name === "家裡的茶葉蛋" && back[0].default_amount === 55 && back[0].created_at === removed.old.created_at, "復原沒有原樣放回：" + JSON.stringify(back));
+    check(/ConstraintError|已存在|Key already exists/i.test(await js(`(async () => { const m = ${DBI}; try { await m.addCustomIngredient({ source: 'tfda', tfda_id: 'K0112102', tfda_version: '2025-update1', name: 'x', default_amount: null }); return 'ok'; } catch (e) { return String(e.name + ' ' + e.message); } })()`)),
+      "同一個衛福部樣品可以加兩次");
+  }
+
   console.log("[備份與還原（真的 IndexedDB）]");
   // import('./js/data/db.js') 經過 import map，跟 App 是同一個模組實體（PRD 11.6、B-3 計畫第 4 節 9–11）
   const DB = `(await import('./js/data/db.js'))`;
@@ -430,7 +458,8 @@ async function run() {
   check((await js(`indexedDB.databases().then((d) => d.map((x) => x.name).join(','))`)) === "lighten2", "IndexedDB 不是只有 lighten2");
   const lsKeys = await js(`Object.keys(localStorage)`);
   check(lsKeys.every((k) => k.indexOf("lighten2.") === 0), "localStorage 有沒加 lighten2. 前綴的 key：" + lsKeys.join(","));
-  H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
+  // 我的食材一節故意讓查詢檔載入失敗（審核 M7），那個錯誤不算
+  H.consoleErrors().filter((e) => !/Error: offline[\s\S]*loadTfdaLookup/.test(JSON.stringify(e.params))).forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }
 
