@@ -8,6 +8,7 @@ const fs = require("fs");
 const path = require("path");
 const { loadReferences, computePer100g, FIELDS, DERIVED_REF } = require("./lib/ingredient-values");
 const FT = require("./lib/food-tree-values");
+const TL = require("./lib/tfda-lookup-values");
 const { exchangeNames, loadExchange } = FT;
 
 const ROOT = path.join(__dirname, "..");
@@ -78,6 +79,8 @@ function tfdaSampleText(refs, code) {
   const r = code ? refs.tfda[code] : null;
   return r ? (r["樣品名稱"] || "") + " " + (r["內容物描述"] || "") : "";
 }
+// 芒果與同義字（章程 B6.1、decisions #88）；「檸檬果乾」的「檬果」不是芒果（衛福部標註審查第 4 點）
+const MANGO_WORDS = /芒果|(?<!檸)檬果|樣仔/;
 const hasTagOrUnverified = (tags, tag) => (tags || []).some((t) => t === tag || t === UNVERIFIED);
 
 // 章程 B6.2 延伸到樣品描述（decisions #101）：衛福部樣品含燕麥、麥片的，要標麩質或未確認
@@ -91,7 +94,17 @@ const SAMPLE_ALLERGEN_WORDS = [
   ["蛋", /(?<!分離|大豆|植物|乳清)蛋(?!白質|黃果)/], ["乳製品", /乳(?!化)|奶|起司/],
   ["魚", /(?<!章|魷|墨|鮑)魚/], ["甲殼類", /蝦|蟹/], ["芝麻", /芝麻/], ["花生", /花生/],
 ];
-const SAMPLE_WORD_EXCEPTIONS = { M1100101: ["黃豆"] };
+const SAMPLE_WORD_EXCEPTIONS = {
+  M1100101: ["黃豆"], M1100301: ["黃豆"],  // 高度提煉大豆油（decisions #89）
+  // 衛福部查詢檔（decisions #134）：關鍵字誤中
+  J3100401: ["甲殼類"],  // 蝦夷海扇蛤是扇貝（軟體動物），「蝦夷」是地名
+  P0300201: ["乳製品"],  // 低鈉鹽的乳酸鈣是礦物鹽
+  P0400101: ["麩質"],    // 味精 L-麩酸鈉是胺基酸鹽
+  R1500101: ["乳製品"],  // 燕麥奶是植物飲，「奶」只是名稱
+  R8100501: ["麩質"],    // 糙米麩是米糠，不是小麥麩
+  // 品種名（不是成分）
+  B0400201: ["乳製品"], D0801101: ["蛋"], D1100204: ["乳製品"], D4700101: ["乳製品"], E5300101: ["乳製品"],
+};
 function sampleAllergenGaps(tags, text, code) {
   const skip = SAMPLE_WORD_EXCEPTIONS[code] || [];
   return SAMPLE_ALLERGEN_WORDS
@@ -308,7 +321,7 @@ function checkFoodTree(ctx, fileText, frozen, catalogUids) {
     if (it.vegan && !it.lacto_ovo) err(w + "：全素一定也是蛋奶素");
     checkDietTags(w, it);
     const words = [it.name].concat(it.aliases).join(" ");
-    if (/芒果|檬果/.test(words) && !hasTagOrUnverified(it.allergen_tags, "芒果")) err(w + "：名稱或別名有芒果，芒果要標芒果或未確認（章程 B6.1）");
+    if (MANGO_WORDS.test(words) && !hasTagOrUnverified(it.allergen_tags, "芒果")) err(w + "：名稱或別名有芒果，芒果要標芒果或未確認（章程 B6.1）");
     const text = tfdaSampleText(ctx.refs, it.tfda_id);
     if ((/燕麥/.test(it.name) || oatsInSampleProblem([], text)) && !hasTagOrUnverified(it.allergen_tags, "麩質")) err(w + "：燕麥、麥片要標麩質或未確認（章程 B6.2）");
     if (it.composite && it.allergen_tags.indexOf(UNVERIFIED) === -1) {
@@ -329,6 +342,33 @@ function checkFoodTree(ctx, fileText, frozen, catalogUids) {
     list.slice(1).forEach((x) => {
       if (!sameTags(list[0].t, x.t)) err("同一個衛福部樣品 " + code + " 的標註不同：" + list[0].who + " 跟 " + x.who + "（章程 B6.9）");
     });
+  });
+}
+
+// ---------- 衛福部全表查詢檔（PRD 12.2、13.8，章程 B10、B12，decisions #131、#134） ----------
+// ctx＝loadTfdaLookupContext；fileText＝data/tfda_lookup.json 原文。標註只查搜尋列出的（分層已用的照分層的檢查）
+const TFDA_GROUPS = ["dairy", "protein", "grain", "vegetable", "fruit", "fat", "other"];
+function checkTfdaLookup(ctx, fileText) {
+  let built;
+  try { built = TL.buildTfdaLookup(ctx); } catch (e) { err("衛福部查詢檔產生失敗：" + e.message); return; }
+  built.problems.forEach((m) => err("data/reference/tfda_tags.json：" + m));
+  if (fileText !== null && TL.stringifyTfdaLookup(built.lookup) !== fileText) err("data/tfda_lookup.json 跟重算結果不同（不手改，跑 node tools/build-tfda-lookup.js）");
+  built.lookup.items.forEach((it) => {
+    const w = "衛福部 " + it.id + " " + it.name;
+    if (TFDA_GROUPS.indexOf(it.group) === -1) err(w + "：group 不合法（" + it.group + "）");
+    if (FT.STATES.indexOf(it.state) === -1) err(w + "：state 不合法（" + it.state + "）");
+    if (!it.listed) return;
+    checkAllergenTags(w, it.allergen_tags, false);
+    if (typeof it.vegan !== "boolean" || typeof it.lacto_ovo !== "boolean") err(w + "：vegan、lacto_ovo 要是 true/false");
+    if (it.vegan && !it.lacto_ovo) err(w + "：全素一定也是蛋奶素");
+    // 章程 B6.8 的硬規則；不跑名稱有肉字的啟發式（雞腿菇、鴨蛋、羊乳逐筆看過，查詢檔沒有 note 可寫依據）
+    if (it.vegan) it.allergen_tags.filter((t) => NOT_VEGAN.indexOf(t) !== -1).forEach((t) => err(w + "：標全素卻含「" + t + "」（章程 B6.8）"));
+    if (it.lacto_ovo) it.allergen_tags.filter((t) => NOT_LACTO_OVO.indexOf(t) !== -1).forEach((t) => err(w + "：標蛋奶素卻含「" + t + "」（章程 B6.8）"));
+    if ((it.vegan || it.lacto_ovo) && it.composite) err(w + "：過敏原未確認就不能標素（章程 B6.8）");
+    if (MANGO_WORDS.test([it.name].concat(it.aliases).join(" ")) && !hasTagOrUnverified(it.allergen_tags, "芒果")) err(w + "：名稱或俗名有芒果，芒果要標芒果或未確認（章程 B6.1）");
+    if (oatsInSampleProblem(it.allergen_tags, it.name + " " + it.desc)) err(w + "：燕麥、麥片要標麩質或未確認（章程 B6.2）");
+    const gaps = sampleAllergenGaps(it.allergen_tags, it.name + " " + it.desc, it.id);
+    if (gaps.length) err(w + "：名稱或描述提到「" + gaps.join("、") + "」，要標出來或未確認（章程 B6.2）");
   });
 }
 
@@ -522,7 +562,7 @@ function checkIngredients(list, refs) {
     const gaps = sampleAllergenGaps(ing.allergen_tags, sampleText, code);
     if (gaps.length) warn(w + "：衛福部樣品 " + code + " 的名稱或描述提到「" + gaps.join("、") + "」，標註沒有也沒有未確認（章程 B6.2，請確認）");
     // 芒果是過敏原標示項目（章程 B6.1、decisions #88）
-    if (/芒果|檬果/.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
+    if (MANGO_WORDS.test(ing.name) && !(ing.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
 
     // 複合料理（章程 B6.3）：醬料要標 composite；不含未確認時要有列出成分的 TFDA 樣品
     if (ing.axis === "seasoning") {
@@ -592,7 +632,7 @@ function checkProducts(products, frozen, refs) {
     // 燕麥屬含麩質穀物（章程 B6.2）
     if (/燕麥/.test(p.name) && !(p.allergen_tags || []).some((t) => t === "麩質" || t === UNVERIFIED)) err(w + "：燕麥要標麩質（章程 B6.2）");
     // 芒果是過敏原標示項目（章程 B6.1、decisions #88）
-    if (/芒果|檬果/.test(p.name) && !(p.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
+    if (MANGO_WORDS.test(p.name) && !(p.allergen_tags || []).some((t) => t === "芒果" || t === UNVERIFIED)) err(w + "：芒果要標芒果或未確認（章程 B6.1）");
     if (!p.source || PRODUCT_SOURCES.indexOf(p.source.type) === -1) err(w + "：source.type 不合法（" + (p.source && p.source.type) + "）");
     Object.keys(p.field_sources || {}).forEach((k) => {
       const f = p.field_sources[k];
@@ -773,6 +813,12 @@ function checkToolRules(refs) {
   }
   if (reports(/素食依據/, product({ name: "牛蒡絲", allergen_tags: [], vegan: true, lacto_ovo: true }))) err("工具自我檢查：牛蒡標全素卻被當成肉類");
   selfTestFoodTree(refs, reports);
+  // 芒果同義字（衛福部標註審查第 4 點）與衛福部查詢檔
+  if (MANGO_WORDS.test("檸檬果乾")) err("工具自我檢查：檸檬果乾被當成芒果");
+  if (!MANGO_WORDS.test("樣仔青") || !MANGO_WORDS.test("檬果乾")) err("工具自我檢查：芒果同義字沒認出來");
+  const lctx = TL.loadTfdaLookupContext(readJson);
+  lctx.tags = Object.assign({}, lctx.tags, { items: lctx.tags.items.map((t) => t.key === "K0200101" ? Object.assign({}, t, { vegan: true }) : t) });
+  if (!reports(/K0200101.*全素/, () => checkTfdaLookup(lctx, null))) err("工具自我檢查：鴨蛋標全素卻沒擋");
   // T13：id 全資料庫唯一
   if (!reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["超商", "egg"]]))) err("工具自我檢查：食材與超商 id 重複卻沒報錯");
   if (reports(/重複/, () => checkUniqueIds([["食材", "egg"], ["台式", "tw_egg"]]))) err("工具自我檢查：不同 id 卻報重複");
@@ -812,6 +858,10 @@ function main() {
   const treeText = fs.existsSync(path.join(ROOT, "data", "food_tree.json")) ? fs.readFileSync(path.join(ROOT, "data", "food_tree.json"), "utf8") : "";
   const catalogUids = readJson("convenience_items.json").map((p) => p.id).concat(readJson("taiwan_items.json").map((p) => "tw_" + p.id));
   checkFoodTree(treeCtx, treeText, readJson("reference/food_tree_ids_frozen.json"), catalogUids);
+
+  console.log("[衛福部查詢檔]");
+  const lookupFile = path.join(ROOT, "data", "tfda_lookup.json");
+  checkTfdaLookup(TL.loadTfdaLookupContext(readJson), fs.existsSync(lookupFile) ? fs.readFileSync(lookupFile, "utf8") : "");
 
   // 食材 id 跟現成品項 uid（台式加 tw_）不得重複
   checkUniqueIds(ingredients.map((it) => ["食材", it.id])
