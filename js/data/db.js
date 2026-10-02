@@ -10,8 +10,8 @@ import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
 
 const DB_NAME = "lighten2";
-// v2（工作線 C）：saved_meals；v3（工作線 D 切片 8b）：custom_ingredients。部署後不能退回較小的版本（已升級的瀏覽器會打不開，decisions #125）
-const DB_VERSION = 3;
+// v2（工作線 C）：saved_meals；v3（工作線 D 切片 8b）：custom_ingredients；v4（日期切換）：meal_plan。部署後不能退回較小的版本（已升級的瀏覽器會打不開，decisions #125）
+const DB_VERSION = 4;
 const SETTING_PREFIX = "lighten2.";
 const PROFILE_KEY = "primary";
 
@@ -25,6 +25,7 @@ const STORE = {
   settings: "settings",              // key = "lighten2." + 名稱
   savedMeals: "saved_meals",         // keyPath id（我的組合，PRD 11）
   customIngredients: "custom_ingredients", // keyPath id（我的食材，PRD 12.4）
+  mealPlan: "meal_plan",             // keyPath id ＝ "YYYY-MM-DD|slot"（預約，PRD 第 1 節 L2；只有 daily_log 進統計，章程 C4.10）
 };
 
 // 備份檔的格式版本（PRD 11.6）：新增 store、新增 settings key、改變區塊結構就 +1，並在 tools/fixtures/ 凍結一份新版 fixture。
@@ -33,7 +34,8 @@ const STORE = {
 // v3（工作線 C）：多了 saved_meals；舊檔沒有這個區塊，升級時補成空的，同樣不放步驟。
 // v4（工作線 D 切片 5）：settings 多了 favorite_refs（常吃）；舊檔只是沒有這個 key，不放步驟。
 // v5（工作線 D 切片 8b）：多了 custom_ingredients；單品元件可以是 amount；舊檔沒有這個區塊，升級時補成空的，不放步驟。
-export const BACKUP_SCHEMA_VERSION = 5;
+// v6（日期切換）：多了 meal_plan、settings 的 last_shown_recs、daily_log 的 skipped 紀錄；舊檔補空的，不放步驟。
+export const BACKUP_SCHEMA_VERSION = 6;
 const BACKUP_FORMAT = "lighten2-backup";
 
 // 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
@@ -47,12 +49,13 @@ export const BACKUP_SECTIONS = {
   custom_foods: ["custom_foods"],
   saved_meals: ["saved_meals"],
   custom_ingredients: ["custom_ingredients"],
+  meal_plan: ["meal_plan"],
 };
 export const STORE_NAMES = Object.values(STORE);
 
 const BACKUP_LABELS = {
   user_profile: "基本資料", settings: "設定", recipe_feedback: "推薦紀錄", daily_log: "飲食紀錄",
-  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項", saved_meals: "我的組合", custom_ingredients: "我的食材",
+  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項", saved_meals: "我的組合", custom_ingredients: "我的食材", meal_plan: "預約",
 };
 
 let _dbPromise = null;
@@ -73,6 +76,9 @@ function upgrade(db, oldVersion) {
   }
   if (oldVersion < 3) {
     db.createObjectStore(STORE.customIngredients, { keyPath: "id" });
+  }
+  if (oldVersion < 4) {
+    db.createObjectStore(STORE.mealPlan, { keyPath: "id" });
   }
 }
 
@@ -247,16 +253,31 @@ function contentProblems(c, mealType) {
   return problems;
 }
 
+// 「這餐沒吃」（source skipped，decisions #140⑥）：沒有型態、沒有元件、營養全 0
+function skippedProblems(entry) {
+  const problems = [];
+  if (entry.meal_type !== null) problems.push("meal_type");
+  const c = entry.content;
+  if (!isPlainObject(c) || c.meal_type !== null || c.archetype_id !== null || c.method_id !== null || c.implicit !== null ||
+      !Array.isArray(c.components) || c.components.length !== 0 || Object.keys(c).length !== 5) problems.push("content");
+  const t = entry.totals;
+  if (isPlainObject(t) && (t.kcal !== 0 || OPTIONAL_NUTRIENTS.some(function (k) { return t[k] !== 0; }) ||
+      !Array.isArray(t.partial) || t.partial.length !== 0)) problems.push("totals");
+  return problems;
+}
+
 export function validateDailyLog(entry) {
   assertRecord(entry, "daily_log");
   const problems = [];
+  const skipped = entry.source === "skipped";
   if (!isDateStr(entry.log_date)) problems.push("log_date");
   if (SLOTS.indexOf(entry.slot) === -1) problems.push("slot");
-  if (MEAL_TYPES.indexOf(entry.meal_type) === -1) problems.push("meal_type");
+  if (!skipped && MEAL_TYPES.indexOf(entry.meal_type) === -1) problems.push("meal_type");
   if (LOG_SOURCES.indexOf(entry.source) === -1) problems.push("source");
   if (typeof entry.name !== "string" || entry.name === "") problems.push("name");
   if (typeof entry.created_at !== "string" || isNaN(Date.parse(entry.created_at))) problems.push("created_at");
-  Array.prototype.push.apply(problems, contentProblems(entry.content, entry.meal_type));
+  if (skipped) Array.prototype.push.apply(problems, skippedProblems(entry));
+  else Array.prototype.push.apply(problems, contentProblems(entry.content, entry.meal_type));
   const t = entry.totals;
   if (!t || typeof t !== "object" || typeof t.kcal !== "number" || !isFinite(t.kcal)) problems.push("totals.kcal");
   else {
@@ -371,8 +392,15 @@ function isPlainObject(v) {
 // 我的組合（PRD 11.1）的結構驗證；語意（角色上限、骨架、免開火）由 ui 在寫入前呼叫 engine（章程 C1）。
 // 元件只存 ref 與份量：ingredient { axis, ref, is_primary? }、product { ref, qty }、food { ref, qty }；
 // 估算與料理不收（料理等 D 切片 9）。時間戳是 ISO 字串。
-function savedContentProblems(c) {
+// plan＝true：預約（meal_plan）的內容，多收三種（設計草案第 9 節 M3、M4）——estimate { kind, name, size, snapshot }、
+// 主要槽位 ingredient 的 scale（使用者選的份量）、預約不吃 { skip: true, components: [] }
+function savedContentProblems(c, plan) {
   const problems = [];
+  if (plan && isPlainObject(c) && c.skip === true) {
+    return c.meal_type === null && c.archetype_id === null && c.method_id === null && c.implicit === null &&
+      Array.isArray(c.components) && c.components.length === 0 && Object.keys(c).length === 6 ? [] : ["content.skip"];
+  }
+  if (plan && isPlainObject(c) && "skip" in c) problems.push("content.skip");
   if (!isPlainObject(c) || !Array.isArray(c.components) || c.components.length === 0) return ["content.components"];
   if (MEAL_TYPES.indexOf(c.meal_type) === -1) problems.push("content.meal_type");
   ["archetype_id", "method_id"].forEach(function (k) {
@@ -388,19 +416,41 @@ function savedContentProblems(c) {
   if (cook && !hasIngredient && (c.archetype_id !== null || c.method_id !== null)) problems.push("content.archetype_id/method_id");
   c.components.forEach(function (comp, i) {
     const at = "content.components[" + i + "]";
+    if (plan && isPlainObject(comp) && comp.kind === "estimate") {
+      if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
+      if (["S", "M", "L", null].indexOf(comp.size) === -1) problems.push(at + ".size");
+      if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
+      if ("ref" in comp) problems.push(at + ".ref");
+      return;
+    }
     if (!isPlainObject(comp) || ["ingredient", "product", "food"].indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
     if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
     if ("snapshot" in comp) problems.push(at + ".snapshot");
     if (comp.kind === "ingredient") {
       if (INGREDIENT_AXES.indexOf(comp.axis) === -1) problems.push(at + ".axis");
       if ("is_primary" in comp && typeof comp.is_primary !== "boolean") problems.push(at + ".is_primary");
-      if ("scale" in comp) problems.push(at + ".scale");
+      if ("scale" in comp && !(plan && comp.is_primary === true && isNum(comp.scale) && comp.scale > 0)) problems.push(at + ".scale");
     } else if (comp.kind === "product") {
       if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty");
       if ("role" in comp) problems.push(at + ".role");
     } else Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
   });
   return problems;
+}
+
+// 預約（PRD 第 1 節 L2）：id 一定是「日期|時段」，一個時段一筆；內容是組合的儲存格式加 plan 的三個例外
+export function validateMealPlan(rec) {
+  assertRecord(rec, "meal_plan");
+  const problems = [];
+  if (!isDateStr(rec.date)) problems.push("date");
+  if (SLOTS.indexOf(rec.slot) === -1) problems.push("slot");
+  if (rec.id !== rec.date + "|" + rec.slot) problems.push("id");
+  if (typeof rec.name !== "string" || rec.name.trim() === "") problems.push("name");
+  ["created_at", "updated_at"].forEach(function (k) {
+    if (typeof rec[k] !== "string" || isNaN(Date.parse(rec[k]))) problems.push(k);
+  });
+  Array.prototype.push.apply(problems, savedContentProblems(rec.content, true));
+  if (problems.length > 0) throw new Error("[db.js] 預約格式不對：" + problems.join("、"));
 }
 
 export function validateSavedMeal(rec) {
@@ -516,7 +566,21 @@ const SETTING_KEYS = {
       return Array.isArray(v) && v.every(function (u, i) { return typeof u === "string" && u !== "" && v.indexOf(u) === i; });
     },
   },
+  // 今天各時段最後顯示的推薦（隔天「昨天的餐」用，decisions #140⑤）：只經 setLastShownRecs／getLastShownRecs；
+  // 淺層驗證，按「吃了」寫 daily_log 時 validateDailyLog 會再擋一次
+  last_shown_recs: {
+    dedicatedOnly: true,
+    validate: lastShownRecsValid,
+  },
 };
+
+function lastShownRecsValid(v) {
+  return isPlainObject(v) && isDateStr(v.date) && isPlainObject(v.slots) && Object.keys(v.slots).every(function (slot) {
+    const r = v.slots[slot];
+    return SLOTS.indexOf(slot) !== -1 && isPlainObject(r) && typeof r.name === "string" && r.name !== "" &&
+      isPlainObject(r.content) && isPlainObject(r.totals) && isNum(r.totals.kcal);
+  });
+}
 export const SETTING_KEY_NAMES = Object.keys(SETTING_KEYS);
 
 function hasOwn(obj, k) {
@@ -651,6 +715,7 @@ export function validateBackup(obj, ctx) { // eslint-disable-line no-unused-vars
         else if (store === STORE.customFoods) validateCustomFood(rec);
         else if (store === STORE.savedMeals) validateSavedMeal(rec);
         else if (store === STORE.customIngredients) validateCustomIngredient(rec);
+        else if (store === STORE.mealPlan) validateMealPlan(rec);
         else throw new Error("沒有驗證器（新增 store 要在 validateBackup 補上）");
       } catch (e) {
         problems.push(at + errText(e));
@@ -685,7 +750,7 @@ export function summarizeBackup(obj) {
     let lastCreatedAt = null;
     list.forEach(function (r) {
       if (!r) return;
-      const d = r.log_date || dateOfIso(r.created_at);
+      const d = r.log_date || (store === STORE.mealPlan ? r.date : null) || dateOfIso(r.created_at);
       if (typeof d === "string" && (lastDate === null || d > lastDate)) lastDate = d;
       if (typeof r.created_at === "string" && (lastCreatedAt === null || r.created_at > lastCreatedAt)) lastCreatedAt = r.created_at;
     });
@@ -1088,8 +1153,23 @@ export async function copyBuiltinToCustom(food) {
 
 // ---------- 6. daily_log（一筆一餐，格式見 PRD 第 3 節） ----------
 
-export async function addDailyLog(entry) {
+// 寫入日期的範圍（設計草案第 9 節 M2）：opts.today 給了就不能寫未來；opts.minDate 給了就不能早於它（補記 7 天，decisions #120）。
+// 只檢查新寫入，不放進 validateDailyLog（還原舊備份不受影響）。
+export function logDateProblem(entry, opts) {
+  const o = opts || {};
+  if (o.today && entry && entry.log_date > o.today) return "不能記錄未來的日期";
+  if (o.minDate && entry && entry.log_date < o.minDate) return "只能補記過去 7 天";
+  return null;
+}
+
+function assertLogDate(entry, opts) {
+  const p = logDateProblem(entry, opts);
+  if (p) throw new Error("[db.js] " + p);
+}
+
+export async function addDailyLog(entry, opts) {
   validateDailyLog(entry);
+  assertLogDate(entry, opts);
   const record = Object.assign({}, entry, { id: entry.id || generateId("log") });
   await withStores([STORE.dailyLog], "readwrite", function (s) {
     return reqPromise(s[STORE.dailyLog].add(record));
@@ -1143,8 +1223,9 @@ export async function updateSavedMeal(id, patch) {
 
 // 入口 1：「自己選」送出時勾了「存成組合」——紀錄與組合同一個 transaction（全有全無，decisions #125）。
 // 兩筆都先驗證過才開 transaction。回傳 { log, saved }
-export async function addDailyLogWithSavedMeal(entry, rec) {
+export async function addDailyLogWithSavedMeal(entry, rec, opts) {
   validateDailyLog(entry);
+  assertLogDate(entry, opts);
   const now = new Date().toISOString();
   const saved = newSavedMealRecord(rec, now);
   const log = Object.assign({}, entry, { id: entry.id || generateId("log") });
@@ -1156,6 +1237,89 @@ export async function addDailyLogWithSavedMeal(entry, rec) {
 
 export function getDailyLogs(dateRange) {
   return getByDate(STORE.dailyLog, dateRange);
+}
+
+// ---------- 6c. meal_plan（預約；讀取只准章程 C4.16 白名單：今日建議的預約模組、選擇器、備份） ----------
+
+// 依日期範圍讀（含兩端）：主鍵是「日期|時段」，所以用主鍵範圍查
+export async function getMealPlans(dateRange) {
+  const r = dateRange || {};
+  const range = r.start && r.end ? IDBKeyRange.bound(r.start, r.end + "|\uffff") :
+    r.start ? IDBKeyRange.lowerBound(r.start) : r.end ? IDBKeyRange.upperBound(r.end + "|\uffff") : null;
+  return withStores([STORE.mealPlan], "readonly", function (s) {
+    return reqPromise(s[STORE.mealPlan].getAll(range));
+  });
+}
+
+// 新的預約補上 id、時間戳（改＝覆蓋同一個時段；created_at 沿用舊的）
+function mealPlanRecord(rec, old, nowIso) {
+  assertRecord(rec, "meal_plan");
+  const record = Object.assign({}, rec, { id: rec.date + "|" + rec.slot, created_at: old ? old.created_at : nowIso, updated_at: nowIso });
+  validateMealPlan(record);
+  return record;
+}
+
+export async function setMealPlan(rec) {
+  const now = new Date().toISOString();
+  mealPlanRecord(rec, null, now); // 先驗證，不合法不開 transaction
+  return withStores([STORE.mealPlan], "readwrite", function (s) {
+    const store = s[STORE.mealPlan];
+    return reqPromise(store.get(rec.date + "|" + rec.slot)).then(function (old) {
+      const record = mealPlanRecord(rec, old, now);
+      return reqPromise(store.put(record)).then(function () { return record; });
+    });
+  });
+}
+
+// 預約模式勾了「存成組合」：預約與組合同一個 transaction（全有全無，decisions #125）
+export async function setMealPlanWithSavedMeal(rec, savedRec) {
+  const now = new Date().toISOString();
+  mealPlanRecord(rec, null, now);
+  const saved = newSavedMealRecord(savedRec, now);
+  return withStores([STORE.mealPlan, STORE.savedMeals], "readwrite", function (s) {
+    const store = s[STORE.mealPlan];
+    return reqPromise(store.get(rec.date + "|" + rec.slot)).then(function (old) {
+      const record = mealPlanRecord(rec, old, now);
+      return Promise.all([reqPromise(store.put(record)), reqPromise(s[STORE.savedMeals].add(saved))]).then(function () {
+        return { plan: record, saved: saved };
+      });
+    });
+  });
+}
+
+export async function deleteMealPlan(id) {
+  if (typeof id !== "string" || id.indexOf("|") === -1) throw new Error("[db.js] deleteMealPlan 需要「日期|時段」");
+  await withStores([STORE.mealPlan], "readwrite", function (s) {
+    return reqPromise(s[STORE.mealPlan].delete(id));
+  });
+}
+
+// 清掉 beforeDate 之前的預約（不含 beforeDate 當天；呼叫端傳昨天，昨天的留給「昨天的餐」）。可以重複執行。
+export async function purgeOldMealPlans(beforeDate) {
+  if (!isDateStr(beforeDate)) throw new Error("[db.js] purgeOldMealPlans 需要日期");
+  await withStores([STORE.mealPlan], "readwrite", function (s) {
+    return reqPromise(s[STORE.mealPlan].delete(IDBKeyRange.upperBound(beforeDate, true)));
+  });
+}
+
+// ---------- 6d. last_shown_recs（只准今日建議與昨天卡片 import） ----------
+
+const LAST_SHOWN_KEY = SETTING_PREFIX + "last_shown_recs";
+
+export async function getLastShownRecs() {
+  const v = await withStores([STORE.settings], "readonly", function (s) {
+    return reqPromise(s[STORE.settings].get(LAST_SHOWN_KEY));
+  });
+  return lastShownRecsValid(v) ? v : null;
+}
+
+// 整份換掉當天（某時段變成已記錄、配額不多時，舊的推薦不殘留）
+export async function setLastShownRecs(date, slots) {
+  const v = { date: date, slots: slots || {} };
+  validateSetting("last_shown_recs", v);
+  await withStores([STORE.settings], "readwrite", function (s) {
+    return reqPromise(s[STORE.settings].put(v, LAST_SHOWN_KEY));
+  });
 }
 
 // 撤銷一餐（原本在 feast.js，PRD 第 9 節）。回傳被刪掉的紀錄，找不到回傳 null。

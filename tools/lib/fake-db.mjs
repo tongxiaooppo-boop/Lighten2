@@ -4,7 +4,8 @@
 
 import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
   addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch,
-  addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef, validateCustomIngredient, applyCustomIngredientPatch } from "../../js/data/db.js";
+  addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef, validateCustomIngredient, applyCustomIngredientPatch,
+  validateMealPlan, logDateProblem } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -226,8 +227,14 @@ export async function updateSavedMeal(id, patch) {
   S().writes.push({ op: "updateSavedMeal", id: id, record: clone(next) });
   return clone(next);
 }
-export async function addDailyLogWithSavedMeal(entry, rec) {
+function assertLogDate(entry, opts) {
+  const p = logDateProblem(entry, opts);
+  if (p) throw new Error("[fake-db] " + p);
+}
+
+export async function addDailyLogWithSavedMeal(entry, rec, opts) {
   validateDailyLog(entry);
+  assertLogDate(entry, opts);
   const saved = newSaved(rec);
   const log = Object.assign({}, clone(entry), { id: entry.id || "log_" + String(++seq).padStart(4, "0") });
   S().dailyLogs.push(log);
@@ -237,8 +244,9 @@ export async function addDailyLogWithSavedMeal(entry, rec) {
   return { log: clone(log), saved: clone(saved) };
 }
 
-export async function addDailyLog(entry) {
+export async function addDailyLog(entry, opts) {
   validateDailyLog(entry);
+  assertLogDate(entry, opts);
   const record = Object.assign({}, clone(entry), { id: entry.id || "log_" + String(++seq).padStart(4, "0") });
   S().dailyLogs.push(record);
   S().writes.push({ op: "addDailyLog", entry: clone(record) });
@@ -253,6 +261,57 @@ export async function undoDailyLog(id) {
   S().dailyLogs = S().dailyLogs.filter((l) => l.id !== id);
   S().writes.push({ op: "removeDailyLog", id: id });
   return clone(entry);
+}
+
+// ---------- 預約與昨天的推薦（日期切換；語意照 db.js，寫入驗證用真的 validateMealPlan） ----------
+const plansOf = () => S().mealPlans || (S().mealPlans = []);
+function planRecord(rec) {
+  const now = new Date().toISOString();
+  const id = rec.date + "|" + rec.slot;
+  const old = plansOf().find((r) => r.id === id);
+  const record = Object.assign({}, clone(rec), { id: id, created_at: old ? old.created_at : now, updated_at: now });
+  validateMealPlan(record);
+  return record;
+}
+function putPlan(record) {
+  S().mealPlans = plansOf().filter((r) => r.id !== record.id).concat([record]);
+}
+export { validateMealPlan };
+export async function getMealPlans(r) {
+  return clone(plansOf().filter((p) => inRange(p.date, r)).sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+}
+export async function setMealPlan(rec) {
+  const record = planRecord(rec);
+  putPlan(record);
+  S().writes.push({ op: "setMealPlan", record: clone(record) });
+  return clone(record);
+}
+export async function setMealPlanWithSavedMeal(rec, savedRec) {
+  const record = planRecord(rec);
+  const saved = newSaved(savedRec);
+  putPlan(record);
+  savedOf().push(saved);
+  S().writes.push({ op: "setMealPlan", record: clone(record) });
+  S().writes.push({ op: "addSavedMeal", record: clone(saved) });
+  return { plan: clone(record), saved: clone(saved) };
+}
+export async function deleteMealPlan(id) {
+  S().mealPlans = plansOf().filter((r) => r.id !== id);
+  S().writes.push({ op: "deleteMealPlan", id: id });
+}
+// 清理不進 writes（設計草案第 9 節 M10）
+export async function purgeOldMealPlans(beforeDate) {
+  S().mealPlans = plansOf().filter((r) => r.date >= beforeDate);
+}
+export async function getLastShownRecs() {
+  const v = S().lastShownRecs;
+  return v ? clone(v) : null;
+}
+export async function setLastShownRecs(date, slots) {
+  const v = { date: date, slots: clone(slots || {}) };
+  validateSetting("last_shown_recs", v);
+  S().lastShownRecs = v;
+  S().writes.push({ op: "setLastShownRecs", value: clone(v) });
 }
 
 export async function addExerciseLog(entry) {
