@@ -2,7 +2,16 @@
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**2026-10-02 晚 日期切換（最新，先讀這段）**：
+**2026-10-02 深夜 隨餐飲料（進行到一半，先讀這段）**：
+- 已完成並推送：飲料依通路分組（#143）、選擇器分類與飲料收合（#144）、飲料調查（Sonnet＋Gemini 比對，Cline 不採用，`collab/proofs/2026-10-02-drink-verdict.md`）。
+- **#145 進行中**：`tools/add-drinks-2026-10.js` 已寫好、**還沒執行**（資料檔沒動）。它會把 23 項加進 `data/convenience_items.json`（conv_dr07–20）與 `data/taiwan_items.json`（dr11–19），衛福部換算的用 `computePer100g` 算，並把舊的 20 種飲料的 category 改成小類。接手步驟：
+  1. `node tools/add-drinks-2026-10.js --dry` 看清單 → 不加 `--dry` 執行 → `node tools/check-data.js`（注意 note 不能出現 AI 字樣、derived 驗算、label 要有 ref）。
+  2. `node tools/diff-recs.js`：pool／matrix／recs 會變（無糖的新飲料進推薦池，有加糖的 is_treat 不進）；做差異報告（哪些情境換了飲料），commit 訊息逐條說明；`--update` 重錄。我的食物的超商／外食分類名稱也會變（ui 快照）。
+  3. 選擇器現成飲料步驟依 category 再分小標題（engine `drinkGroups` 回傳 subgroups，`product-tab.js` drinkGridHtml 畫小標題；小類順序照腳本 CATEGORY 與新品項的順序）。
+  4. stamp-version、smoke、walkthrough（13-9／13-10 飲料分組的斷言可能要跟著改）、看截圖；commit＋push；請使用者手機看超商分頁的飲料小類。
+- 使用者週額度快用完：小工作交 Sonnet；日期切換切片 3（昨天的餐、補記）在下面那段，還沒開始。
+
+**2026-10-02 晚 日期切換**：
 - 依據：decisions #140（方向）、#141（U1–U5）、#142（第一輪審核的使用者決定；**使用者決定改完 PRD 就開工，不做第二輪審核**）。設計草案 [docs/review/2026-10-02-日期切換-設計草案.md](../docs/review/2026-10-02-日期切換-設計草案.md)，**第 9 節為準**（審核 M1–M13、S1–S10 的處理與切片）。審核逐字 `collab/opus-review-log/2026-10-02-date-switch-design-review.md`（一輪）。
 - `dbf157b` 修了 PRD 舊問題：5261fec 用 JS replace 寫入「$ 加反引號」，第 0.1–12 節被重複插入（788→1346 行），已還原。**腳本改文件一律 split/join 或 Python，不用 JS replace。**
 - 切片 0（`d6917b1`，Sonnet 起稿、Opus 驗收）：PRD 1、3、4、5.1、6.1、6.2、7、9、11.3；章程 C1.5、C2、C4.10、C4.15–C4.17。
