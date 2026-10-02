@@ -9,15 +9,18 @@ import { getCustomIngredients,
   getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting,
   getHiddenCatalogUids, copyBuiltinToCustom, updateCustomFood, addDislikedIngredient, removeDislikedIngredient,
   getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
-  listSavedMeals, addDailyLogWithSavedMeal, updateSavedMeal,
+  listSavedMeals, addDailyLogWithSavedMeal, updateSavedMeal, setMealPlan, setMealPlanWithSavedMeal,
 } from "../../data/db.js";
 import { loadTfdaLookup, loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
+import { effectiveTodayLogs } from "../../engine/today.js";
+import { shortDate, weekdayLabel } from "../../core/dates.js";
 import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, oilOptions, draftLogName, copyFromBuiltin,
   resolveSavedMeal, savedMealDraft, savedMealTotals, savedMealDefaultName, savedMealUnavailableLine, toSavedContent, savedMealForSave,
+  toPlanContent,
 } from "../../engine/meal-content.js";
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
@@ -149,8 +152,10 @@ async function readLastPicked() {
   }
 }
 
-// opts：{ onLogged（記錄成功後要做的事，今日建議重新整理）, savedEdit（要編輯的組合紀錄：沒有時段、不寫紀錄，PRD 12.6）, onSaved }；
-// 舊的呼叫方式 openMealPicker(slot, onLogged) 照樣可以用
+// opts：{ onLogged（記錄成功後要做的事，今日建議重新整理）, savedEdit（要編輯的組合紀錄：沒有時段、不寫紀錄，PRD 12.6）, onSaved,
+//         mode（"log" 今天記錄＝預設；"plan" 排預約，日期切換）, date（plan 的日期）, planPreset（改預約時帶入的預約紀錄）,
+//         todayPlans（今天的暫時紀錄：log 模式算這個時段的配額時扣掉其他時段的預約） }；
+// 模式與日期在打開時就定（23:59 打開、00:01 送出也寫同一天，設計草案第 9 節 S7）。舊的呼叫方式 openMealPicker(slot, onLogged) 照樣可以用
 export async function openMealPicker(slotArg, opts) {
   const o = typeof opts === "function" ? { onLogged: opts } : (opts || {});
   const editing = o.savedEdit || null;
@@ -159,8 +164,10 @@ export async function openMealPicker(slotArg, opts) {
   try { profile = await getProfile(); } catch (e) { console.error(e); return; }
   if (!profile) { alert("請先到「基本資料」分頁填寫並按「計算」。"); return; }
   const targets = await getCalibratedTargets(profile);
+  const mode = editing ? "edit" : o.mode === "plan" ? "plan" : "log";
   const today = todayStr();
-  const todayLogs = await getDailyLogs({ start: today, end: today });
+  const day = mode === "plan" && o.date ? o.date : today;
+  const todayLogs = mode === "log" ? effectiveTodayLogs(await getDailyLogs({ start: today, end: today }), o.todayPlans) : [];
   const catalog = await loadCatalog();
   const rawCustoms = await getCustomFoods();
   const customs = rawCustoms.map(fromCustomFood);
@@ -182,6 +189,7 @@ export async function openMealPicker(slotArg, opts) {
   m.slot = slot; m.profile = profile; m.targets = targets; m.todayLogs = todayLogs; m.catalog = catalog;
   m.onLogged = o.onLogged || null; m.lastPicked = lastPicked;
   m.editing = editing; m.onSaved = o.onSaved || null; m.inserted = {}; m.savedNotice = null;
+  m.mode = mode; m.date = day;
   m.saveAs = { on: false, name: "", nameEdited: false };
   m.savedRecords = savedList.filter(function (r) { return !r.archived; });
   // B-1a：隱藏、復原、複製、補填之後要重新分頁，所以留著我的品項（原始紀錄與轉好的品項）與隱藏清單
@@ -217,14 +225,15 @@ export async function openMealPicker(slotArg, opts) {
 
   computeSavedCards();
   if (editing) applySaved(editing);
+  else if (mode === "plan" && o.planPreset) applySaved(o.planPreset);
   // 標題與送出鈕只在打開時寫（render 路徑不寫，快照的 domNN 才不會位移，審核第 4 節）
   const titleEl = $("#meal-picker-title");
   if (titleEl) {
-    titleEl.innerHTML = (editing ? "編輯組合：" : "自己選這一餐：") + '<span id="meal-picker-slot-label">' +
+    titleEl.innerHTML = (editing ? "編輯組合：" : mode === "plan" ? "排進 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : "自己選這一餐：") + '<span id="meal-picker-slot-label">' +
       escapeHtml(editing ? editing.name : SLOT_LABELS[slot] || slot) + "</span>";
   }
   const submitEl = $("#meal-picker-submit");
-  if (submitEl) submitEl.textContent = editing ? "存回組合" : "記下這餐";
+  if (submitEl) submitEl.textContent = editing ? "存回組合" : mode === "plan" ? "排進預約" : "記下這餐";
   renderMealPicker();
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = false;
@@ -314,12 +323,12 @@ function applySaved(rec) {
     m.cook.tier = d.meal_type;
     m.cook.draft = {
       archetype: d.archetype, proteins: d.proteins, staple: d.staple, vegetables: d.vegetables, seasoning: d.seasoning, method: d.method,
-      primaryScale: 1, implicitOverride: d.implicitOverride,
+      primaryScale: d.primaryScale, implicitOverride: d.implicitOverride,
     };
   } else {
     const t = m.tabs[tab];
     t.selected.forEach(function (u) { delete m.qtyByUid[u]; });
-    if (tab === "delivery") t.estimates = [];
+    if (tab === "delivery") t.estimates = d.estimates.slice();
     d.items.forEach(function (it) { ensureListed(tab, it); });
     t.selected = d.items.map(function (it) { return it.uid; });
   }
@@ -807,6 +816,8 @@ export function updateSummary() {
     const lines = [];
     if (m.slot === null) {
       lines.push("編輯組合不計算時段的配額。");
+    } else if (m.mode === "plan") {
+      lines.push("預約不計算配額；到那天，其他餐會照這一餐自動調整。");
     } else if (isCook && d.archetype ? true : pickedCount(d) > 0) {
       const share = slotNutrientShare(m.targets, m.todayLogs, m.profile.enabled_slots, m.slot);
       const gaps = slotGaps(share, totals);
@@ -1087,15 +1098,45 @@ async function saveEditedMeal() {
   if (m.onSaved) await m.onSaved();
 }
 
+// 排預約（日期切換）：草稿 → 預約的儲存格式 → 寫 meal_plan（同一個時段覆蓋）。不寫 daily_log、不寫 picker_last_meal_type（章程 C4.15）
+async function savePlan() {
+  const m = mealPicker;
+  const d = currentDraft();
+  const problem = submitProblem(d);
+  if (problem) { alert(problem); return; }
+  const content = buildDraftContent(d, { oilHabit: m.profile.oil_habit });
+  const rec = { date: m.date, slot: m.slot, name: draftLogName(d), content: toPlanContent(content, { keepImplicit: keepImplicitOf(d) }) };
+  let savedRec = null;
+  if (m.saveAs.on && (d.estimates || []).length === 0) {
+    const name = (m.saveAs.name || "").trim();
+    if (!name) { alert("請填組合名稱。"); return; }
+    const s = savedMealForSave(toSavedContent(content, { keepImplicit: keepImplicitOf(d) }), m.catalog, savedCtx(null));
+    if (s.problems) { alert("不能存成組合：" + s.problems.join("；") + "。取消勾選「存成組合」就只排預約。"); return; }
+    savedRec = { name: name, content: s.content };
+  }
+  try {
+    if (savedRec) await setMealPlanWithSavedMeal(rec, savedRec);
+    else await setMealPlan(rec);
+  } catch (err) {
+    console.error(err);
+    alert("存檔失敗，請重試。");
+    return;
+  }
+  const overlay = $("#meal-picker-overlay");
+  if (overlay) overlay.hidden = true;
+  if (m.onSaved) await m.onSaved();
+}
+
 export async function onMealSubmit() {
   const m = mealPicker;
   if (m.editing) { await saveEditedMeal(); return; }
+  if (m.mode === "plan") { await savePlan(); return; }
   const d = currentDraft();
   const problem = submitProblem(d);
   if (problem) { alert(problem); return; }
   const content = buildDraftContent(d, { oilHabit: m.profile.oil_habit });
   const entry = buildLogEntry({
-    date: todayStr(), slot: m.slot, source: "manual", name: draftLogName(d),
+    date: m.date, slot: m.slot, source: "manual", name: draftLogName(d),
     content: content, totals: contentTotals(content, m.catalog), createdAt: nowIso(),
   });
   const saving = m.saveAs.on && (d.estimates || []).length === 0;
@@ -1108,8 +1149,8 @@ export async function onMealSubmit() {
     savedRec = { name: name, content: s.content };
   }
   try {
-    if (savedRec) await addDailyLogWithSavedMeal(entry, savedRec);
-    else await addDailyLog(entry);
+    if (savedRec) await addDailyLogWithSavedMeal(entry, savedRec, { today: m.date });
+    else await addDailyLog(entry, { today: m.date });
   } catch (err) {
     console.error(err);
     alert(savedRec ? "記錄失敗，請重試。取消勾選「存成組合」就只記這一餐。" : "記錄失敗，請重試。");

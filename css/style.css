@@ -1484,3 +1484,79 @@ div.food-row-main {
 .saved-rename .secondary-btn {
   min-height: 44px;
 }
+
+/* 日期切換（decisions #140）：七個日子一列；360 寬每格約 44px，星期與日期分兩行 */
+.today-dates {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0 0 0.8rem;
+}
+.today-date {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.3rem 0 0.45rem;
+  border: 1px solid #E0D3BF;
+  border-radius: 10px;
+  background: #FFFDF8;
+  color: #3A2E22;
+  font-size: 0.8rem;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.today-date.is-active {
+  background-color: #C1652F;
+  border-color: #C1652F;
+  color: #ffffff;
+}
+.today-date-md {
+  font-size: 0.75rem;
+}
+.today-date-dot {
+  position: absolute;
+  bottom: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.today-date-dot[hidden] {
+  display: none;
+}
+.today-day-summary {
+  margin: 0 0 0.8rem;
+  color: #3A2E22;
+}
+.today-day-summary[hidden] {
+  display: none;
+}
+.rec-plan {
+  margin: 0 0 0.6rem;
+}
+.rec-plan .rec-name {
+  margin-bottom: 0.2rem;
+}
+.rec-plan .secondary-btn,
+.rec-plan .undo-btn {
+  margin: 0.4rem 0.4rem 0 0;
+}
+.rec-plan-invalid {
+  padding-bottom: 0.6rem;
+  border-bottom: 1px dashed #E0D3BF;
+}
+.rec-extra:empty {
+  display: none;
+}
+.rec-extra {
+  margin-top: 0.4rem;
+}
+.rec-body [data-plan-pick],
+.rec-body [data-plan-skip] {
+  margin: 0.4rem 0.4rem 0 0;
+}
+#today-refresh[hidden] {
+  display: none;
+}

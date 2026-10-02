@@ -56,6 +56,8 @@ export function planToday(o) {
   const out = { remainingBudget: remainingBudget, hardConstraints: hardConstraints, skipSlots: skipSlots, logsBySlot: logsBySlot, recs: recs };
   if (plans.length > 0) {
     out.plannedSlots = plannedSlots;
+    // 彙總卡的主數字維持「目標 − 已記錄」（預約不是吃過的，設計草案第 9 節 M7）
+    out.loggedBudget = recalcTodayBudget(o.targets.targetKcal, o.todayLogs, profile.enabled_slots);
     out.plannedKcal = plans.reduce(function (s, p) { return s + (p.totals && isFinite(p.totals.kcal) ? p.totals.kcal : 0); }, 0);
   }
   return out;

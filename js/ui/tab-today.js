@@ -2,7 +2,7 @@
 // 彙總卡在 today-hero.js，「自己選」在 meal-picker/；推薦流程本身是 engine/today.js 的純函式。
 
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
-import { dateAddDays, mondayOf } from "../core/dates.js";
+import { dateAddDays, mondayOf, shortDate, weekdayLabel } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
@@ -11,11 +11,12 @@ import {
 } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { loadSavedMealCtx } from "./saved-ctx.js";
+import { loadDayPlans, pseudoLogsOf, plannedSummary, logPlanEntry, cancelPlan, skipToday, purgePlans, planDatesInRange, setSkipPlan } from "./today-plans.js";
 import { buildCandidatePool } from "../engine/pool.js";
 import { planToday } from "../engine/today.js";
 import { contentFromRec, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
 import { getCalibratedTargets } from "./calibration.js";
-import { renderHero } from "./today-hero.js";
+import { renderHero, setHeroSuppressed } from "./today-hero.js";
 import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
 
@@ -35,6 +36,16 @@ let lastPlan = null;
 // 入口 2「存成組合」（工作線 C；PRD 11.2）：展開中的名稱欄 { logId, name, message, done }；重畫後照舊（審核建議 11）
 let saveForm = null;
 let lastLogsBySlot = {};
+// 日期切換（decisions #140）：選中的日子存成「相對今天的位移」（0＝今天，1–6＝未來），跨日回到今天（設計草案 S7）
+const DAYS_AHEAD = 6;
+let dayOffset = 0;
+let renderedToday = null;
+// 今天的預約（loadDayPlans 的結果）、今天的暫時紀錄（給選擇器算配額）、未來那天的預約
+let todayPlans = {};
+let todayPseudo = [];
+let futurePlans = {};
+let futureShown = false;
+let heroPlannedShown = false;
 
 export function getCurrentRecs() {
   return currentRecs;
@@ -53,6 +64,9 @@ function setStatus(msg) {
 // 撤銷按鈕跟著卡片一起渲染（用 daily_log 的 id），所以任何重新整理都不會把它吃掉。
 // 「存成組合」：含估算的那一餐不提供（PRD 11.2 入口 2）；只在今天的卡片（decisions #124）
 function loggedHtml(logs) {
+  if (logs.length === 1 && logs[0].source === "skipped") {
+    return '<p class="rec-logged-note">這餐沒吃</p><button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(logs[0].id) + '">撤銷</button>';
+  }
   const total = logsKcal(logs);
   const names = logs.map(function (l) { return l.name || "已記錄的餐點"; }).join("、");
   let html = '<p class="rec-logged-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
@@ -156,29 +170,65 @@ function dislikeChipsHtml(rec) {
   return '<div class="dislike-chips"><span class="dislike-chips-label">順便不要：</span>' + chips + "</div>";
 }
 
-function renderRecs(recs, profile, logsBySlot) {
+// 預約卡片（今天）：有效的顯示內容與記下；失效的寫原因，下面照常推薦
+function planCardHtml(entry, slot) {
+  const plan = entry.plan;
+  const st = entry.result.status;
+  const head = st === "skip" ? '<div class="rec-name">這餐不吃（預約）</div>'
+    : '<div class="rec-name">' + escapeHtml(plan.name) + '</div><div class="rec-meta">預約 · 約 ' + Math.round(entry.result.totals.kcal) + " kcal</div>";
+  return '<div class="rec-plan">' + head +
+    '<button type="button" class="secondary-btn" data-plan-log="' + escapeHtml(slot) + '">記下</button>' +
+    '<button type="button" class="secondary-btn" data-plan-edit="' + escapeHtml(slot) + '">改</button>' +
+    '<button type="button" class="undo-btn" data-plan-cancel="' + escapeHtml(plan.id) + '">取消預約</button></div>';
+}
+
+function planInvalidHtml(entry) {
+  return '<div class="rec-plan rec-plan-invalid"><p class="rec-empty">預約「' + escapeHtml(entry.plan.name) + "」" + escapeHtml(entry.unavailable) + "，這餐先照建議。</p>" +
+    '<button type="button" class="secondary-btn" data-plan-edit="' + escapeHtml(entry.plan.slot) + '">改</button>' +
+    '<button type="button" class="undo-btn" data-plan-cancel="' + escapeHtml(entry.plan.id) + '">取消預約</button></div>';
+}
+
+// 配額因預約而變低時的中性句（decisions #142②）：寫哪幾餐排了，不寫「配額不多」
+function plannedLowText(plannedSlots) {
+  const names = SLOTS.filter(function (s) { return plannedSlots[s] && !plannedSlots[s].skip; }).map(function (s) { return SLOT_LABELS[s]; });
+  return names.length ? names.join("、") + "已經排進來了，這餐照平常吃就好" : null;
+}
+
+function renderRecs(recs, profile, logsBySlot, plan) {
+  const plannedSlots = (plan && plan.plannedSlots) || {};
+  const lowText = plannedLowText(plannedSlots);
   SLOTS.forEach(function (slot) {
     const body = $("#rec-" + slot);
+    const extra = $("#rec-extra-" + slot);
+    if (extra) extra.innerHTML = "";
     if (!body) return;
     const isEnabled = !profile || isSlotEnabled(profile.enabled_slots, slot);
-    if (!isEnabled) {
-      body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
-      return;
-    }
     const slotLogs = logsBySlot && logsBySlot[slot];
     if (slotLogs && slotLogs.length > 0) {
       body.innerHTML = loggedHtml(slotLogs);
       return;
     }
+    const entry = todayPlans[slot];
+    if (entry && entry.result.status !== "invalid") {
+      body.innerHTML = planCardHtml(entry, slot);
+      return;
+    }
+    if (!isEnabled) {
+      body.innerHTML = '<p class="rec-empty">已設定不需要這個時段的建議，可到基本資料分頁調整</p>';
+      return;
+    }
+    // 這餐不吃（decisions #141①）：只給開啟中的時段（關掉的時段本來就不算，審核 M13）
+    if (extra) extra.innerHTML = '<button type="button" class="undo-btn rec-skip-btn" data-skip-slot="' + escapeHtml(slot) + '">這餐不吃</button>';
+    const invalidHtml = entry ? planInvalidHtml(entry) : "";
     const rec = recs[slot];
     // 沒有推薦卡片時仍要能「自己選」，不然這個時段無法手動記錄
     if (!rec) {
-      body.innerHTML = '<p class="rec-empty">暫無適合的組合</p>' + pickBtnHtml(slot);
+      body.innerHTML = invalidHtml + '<p class="rec-empty">暫無適合的組合</p>' + pickBtnHtml(slot);
       return;
     }
-    // 依序分配後配額低於門檻（不是「找不到組合」，是「配額被前面時段用完了」）
+    // 依序分配後配額低於門檻（不是「找不到組合」，是「配額被前面時段用完了」）；是預約造成的就換中性句
     if (rec.lowBudget) {
-      body.innerHTML = '<p class="rec-empty">這個時段的配額已經不多了</p>' + pickBtnHtml(slot);
+      body.innerHTML = invalidHtml + '<p class="rec-empty">' + escapeHtml(lowText || "這個時段的配額已經不多了") + "</p>" + pickBtnHtml(slot);
       return;
     }
     const imgSrc = MEAL_DEFAULT_IMAGE[slot];
@@ -191,7 +241,7 @@ function renderRecs(recs, profile, logsBySlot) {
     const contentNote = rec.content_note
       ? '<p class="rec-content-note">' + escapeHtml(rec.content_note) + "</p>"
       : "";
-    body.innerHTML =
+    body.innerHTML = invalidHtml +
       imgHtml +
       fallbackNote +
       '<div class="rec-name">' + escapeHtml(rec.name) + "</div>" +
@@ -209,12 +259,67 @@ function renderRecs(recs, profile, logsBySlot) {
   });
 }
 
+// 日期列：今天＋未來 6 天；有預約的日子加一個小點（中性，不是完成度）
+function renderDateStrip(today, planDates) {
+  const el = $("#today-dates");
+  if (!el) return;
+  let html = "";
+  for (let i = 0; i <= DAYS_AHEAD; i++) {
+    const d = dateAddDays(today, i);
+    html += '<button type="button" class="today-date' + (i === dayOffset ? " is-active" : "") + '" data-day-offset="' + i + '"' +
+      (i === dayOffset ? ' aria-current="date"' : "") + '><span class="today-date-wd">' + (i === 0 ? "今天" : weekdayLabel(d)) + '</span><span class="today-date-md">' + shortDate(d) + "</span>" +
+      '<span class="today-date-dot"' + (planDates[d] ? ' aria-label="有預約"' : " hidden") + "></span></button>";
+  }
+  el.innerHTML = html;
+}
+
+// 未來日子：不跑推薦、不算配額、不顯示目標（PRD 6.2），只顯示預約與已排的合計熱量
+async function renderFutureDay(today, profile) {
+  const date = dateAddDays(today, dayOffset);
+  futurePlans = await loadDayPlans(date, profile.oil_habit || "normal");
+  const hero = $("#today-hero");
+  if (hero) hero.hidden = true;
+  const sum = plannedSummary(futurePlans);
+  const sumEl = $("#today-day-summary");
+  if (sumEl) {
+    sumEl.textContent = weekdayLabel(date) + " " + shortDate(date) + "：" + (sum.count ? "已排 " + sum.count + " 餐，約 " + Math.round(sum.kcal) + " kcal" : "還沒排任何一餐") + "。當天其他餐會照預約自動調整。";
+    sumEl.hidden = false;
+  }
+  futureShown = true;
+  const refresh = $("#today-refresh");
+  if (refresh) refresh.hidden = true; // 未來日子沒有推薦可以重新整理
+  SLOTS.forEach(function (slot) {
+    const body = $("#rec-" + slot);
+    const extra = $("#rec-extra-" + slot);
+    if (extra) extra.innerHTML = "";
+    if (!body) return;
+    const e = futurePlans[slot];
+    const enabled = isSlotEnabled(profile.enabled_slots, slot);
+    let html;
+    if (e) {
+      const head = e.result.status === "skip" ? '<div class="rec-name">這餐不吃（預約）</div>'
+        : e.result.status === "ok" ? '<div class="rec-name">' + escapeHtml(e.plan.name) + '</div><div class="rec-meta">約 ' + Math.round(e.result.totals.kcal) + " kcal</div>"
+          : '<div class="rec-name">' + escapeHtml(e.plan.name) + '</div><p class="rec-empty">' + escapeHtml(e.unavailable) + "</p>";
+      html = '<div class="rec-plan">' + head +
+        (e.result.status === "skip" ? "" : '<button type="button" class="secondary-btn" data-plan-edit="' + escapeHtml(slot) + '">改</button>') +
+        '<button type="button" class="undo-btn" data-plan-cancel="' + escapeHtml(e.plan.id) + '">取消預約</button></div>';
+    } else {
+      html = '<p class="rec-empty">還沒排</p><button type="button" class="secondary-btn" data-plan-pick="' + escapeHtml(slot) + '">自己選</button>' +
+        (enabled ? '<button type="button" class="undo-btn" data-plan-skip="' + escapeHtml(slot) + '">這餐不吃</button>' : "");
+    }
+    body.innerHTML = html;
+  });
+}
+
 function pickBtnHtml(slot) {
   return '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自己選</button>';
 }
 
 export async function buildRecommendation() {
   setStatus("載入中…");
+  const todayNow = todayStr();
+  if (renderedToday !== null && renderedToday !== todayNow) dayOffset = 0; // 跨日（背景放過午夜）回到今天
+  renderedToday = todayNow;
   let profile;
   try {
     profile = await getProfile();
@@ -244,7 +349,19 @@ export async function buildRecommendation() {
     setStatus("計算今日目標失敗，請重新整理頁面。");
     return;
   }
-  const today = todayStr();
+  const today = todayNow;
+  setHeroSuppressed(dayOffset > 0);
+  if (dayOffset > 0) {
+    try {
+      renderDateStrip(today, await planDatesInRange(today, dateAddDays(today, DAYS_AHEAD)));
+      await renderFutureDay(today, profile);
+      setStatus("");
+    } catch (err) {
+      console.error(err);
+      setStatus("讀取預約失敗，請重試。");
+    }
+    return;
+  }
   // 近7天平均不含今天，窗口往前多抓一天。
   const [todayLogs, weekLogs, recentLogs, feedbackMap, catalog] = await Promise.all([
     getDailyLogs({ start: today, end: today }),
@@ -257,19 +374,38 @@ export async function buildRecommendation() {
   // 隱藏清單讀不到不擋推薦（隱藏不是安全規則），當成沒有隱藏
   let hiddenUids = [];
   try { hiddenUids = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
+  // 今天的預約（讀不到不擋推薦，當成沒有預約）
+  let planDates = {};
+  try {
+    todayPlans = await loadDayPlans(today, profile.oil_habit || "normal");
+    planDates = await planDatesInRange(today, dateAddDays(today, DAYS_AHEAD));
+  } catch (err) { console.error(err); todayPlans = {}; }
+  todayPseudo = pseudoLogsOf(todayPlans);
   const plan = planToday({
     profile: profile, targets: targets, todayLogs: todayLogs, weekLogs: weekLogs,
     feedbackMap: feedbackMap, pool: buildCandidatePool(catalog), hiddenUids: hiddenUids, today: today, nowMs: nowMs(),
+    todayPlans: todayPseudo,
   });
   const recs = plan.recs;
   currentRecs = recs;
   lastPlan = { targets: targets, plan: plan };
 
-  renderHero(plan.remainingBudget, targets, todayLogs, recentLogs, profile, recs, today).catch(function (err) { console.error(err); });
+  renderDateStrip(today, planDates);
+  if (futureShown) {
+    const sumEl = $("#today-day-summary");
+    if (sumEl) sumEl.hidden = true;
+    const refresh = $("#today-refresh");
+    if (refresh) refresh.hidden = false;
+    futureShown = false;
+  }
+  // 彙總卡：主數字不扣預約；有預約時多一行「已排」（只在有預約或剛撤掉時才碰這個元素，快照守則）
+  const planned = plan.plannedKcal != null ? { kcal: plan.plannedKcal, slots: plan.plannedSlots } : null;
+  renderHero(plan.loggedBudget || plan.remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, heroPlannedShown).catch(function (err) { console.error(err); });
+  heroPlannedShown = !!planned;
 
   lastLogsBySlot = plan.logsBySlot || {};
   if (saveForm && !findTodayLog(saveForm.logId)) saveForm = null; // 撤銷了就收起來
-  renderRecs(recs, profile, plan.logsBySlot);
+  renderRecs(recs, profile, plan.logsBySlot, plan);
   // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
   const shownIds = Object.keys(recs).map(function (slot) { return recs[slot] && recs[slot].id; }).filter(Boolean);
   if (shownIds.length > 0) markRecipesShown(shownIds, today).catch(function (err) { console.error(err); });
@@ -334,6 +470,66 @@ export async function onDislikeChipClick(chip) {
   setStatus("已標不吃「" + (entry.label || entry.key) + "」，可以在「我的食物」取消。");
 }
 
+async function onPlanLog(slot, btn) {
+  const entry = todayPlans[slot];
+  if (!entry) return;
+  btn.disabled = true;
+  try {
+    const profile = await getProfile();
+    await logPlanEntry(entry, todayStr(), (profile && profile.oil_habit) || "normal");
+    await buildRecommendation();
+  } catch (err) {
+    console.error(err);
+    alert("記錄失敗，請重試。");
+    btn.disabled = false;
+  }
+}
+
+async function onPlanCancel(id, btn) {
+  btn.disabled = true;
+  try {
+    await cancelPlan(id);
+    await buildRecommendation();
+  } catch (err) {
+    console.error(err);
+    alert("取消失敗，請重試。");
+    btn.disabled = false;
+  }
+}
+
+async function onSkipToday(slot, btn) {
+  btn.disabled = true;
+  try {
+    await skipToday(todayStr(), slot);
+    await buildRecommendation();
+  } catch (err) {
+    console.error(err);
+    alert("記錄失敗，請重試。");
+    btn.disabled = false;
+  }
+}
+
+// 未來日子預約「這餐不吃」（decisions #141③）
+async function onPlanSkip(slot, btn) {
+  btn.disabled = true;
+  try {
+    await setSkipPlan(dateAddDays(todayStr(), dayOffset), slot);
+    await buildRecommendation();
+  } catch (err) {
+    console.error(err);
+    alert("存檔失敗，請重試。");
+    btn.disabled = false;
+  }
+}
+
+// 排預約或改預約：選擇器的 plan 模式（日期在打開時定）
+function openPlanPicker(slot) {
+  const date = dateAddDays(todayStr(), dayOffset);
+  const entry = dayOffset === 0 ? todayPlans[slot] : futurePlans[slot];
+  const preset = entry && entry.result.status !== "skip" ? entry.plan : null;
+  openMealPicker(slot, { mode: "plan", date: date, planPreset: preset, onSaved: buildRecommendation });
+}
+
 export function initTodayTab() {
   const refreshBtn = $("#today-refresh");
   if (refreshBtn) {
@@ -342,9 +538,35 @@ export function initTodayTab() {
     });
   }
 
+  const dates = $("#today-dates");
+  if (dates) {
+    dates.addEventListener("click", function (e) {
+      const b = e.target.closest("[data-day-offset]");
+      if (!b) return;
+      dayOffset = Number(b.getAttribute("data-day-offset")) || 0;
+      buildRecommendation();
+    });
+  }
+  // 手機背景放過午夜再打開：日期列與今天要跟著換（設計草案 S7）
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && renderedToday !== null && todayStr() !== renderedToday) buildRecommendation();
+  });
+
   const grid = $("#today-recs");
   if (grid) {
     grid.addEventListener("click", function (e) {
+      const planLog = e.target.closest("[data-plan-log]");
+      if (planLog) { onPlanLog(planLog.getAttribute("data-plan-log"), planLog); return; }
+      const planEdit = e.target.closest("[data-plan-edit]");
+      if (planEdit) { openPlanPicker(planEdit.getAttribute("data-plan-edit")); return; }
+      const planPick = e.target.closest("[data-plan-pick]");
+      if (planPick) { openPlanPicker(planPick.getAttribute("data-plan-pick")); return; }
+      const planCancel = e.target.closest("[data-plan-cancel]");
+      if (planCancel) { onPlanCancel(planCancel.getAttribute("data-plan-cancel"), planCancel); return; }
+      const planSkip = e.target.closest("[data-plan-skip]");
+      if (planSkip) { onPlanSkip(planSkip.getAttribute("data-plan-skip"), planSkip); return; }
+      const skipBtn = e.target.closest("[data-skip-slot]");
+      if (skipBtn) { onSkipToday(skipBtn.getAttribute("data-skip-slot"), skipBtn); return; }
       const dislikeBtn = e.target.closest(".dislike-btn");
       if (dislikeBtn && dislikeBtn.getAttribute("data-id")) {
         onDislikeClick(dislikeBtn.getAttribute("data-id"));
@@ -374,7 +596,7 @@ export function initTodayTab() {
       }
       const pickBtn = e.target.closest(".rec-pick-btn");
       if (pickBtn && pickBtn.getAttribute("data-slot")) {
-        openMealPicker(pickBtn.getAttribute("data-slot"), { onLogged: buildRecommendation });
+        openMealPicker(pickBtn.getAttribute("data-slot"), { onLogged: buildRecommendation, todayPlans: todayPseudo });
         return;
       }
       const chipBtn = e.target.closest(".dislike-chip");
@@ -391,6 +613,7 @@ export function initTodayTab() {
   }
 
   initMealPicker();
+  purgePlans(todayStr());
 
   // 從其他分頁切回來（記錄／改基本資料之後）要重新算，不能停在載入時的畫面。
   document.addEventListener("tab:activated", function (e) {
