@@ -45,3 +45,46 @@ export function ingredientItem(rec, lookup) {
     note: rec.note || null, archived: rec.archived === true, tfda: src.tfda,
   };
 }
+
+// ---------- 新增食材：衛福部搜尋（PRD 13.8、decisions #131、#134） ----------
+
+export const TFDA_SEARCH_LIMIT = 100;
+
+// 只搜 listed（代換表沒用到的 1887 筆）；名稱與俗名包含查詢字；category 是衛福部食品分類（晶片篩選）。
+// 結果照查詢檔原順序（PRD 12.2）；沒有查詢字也沒有分類回空的。addedIds：已加入的衛福部整合編號（標「已加入」）
+export function tfdaSearch(lookup, query, category, addedIds) {
+  const q = String(query || "").trim().toLowerCase();
+  if (!lookup || (!q && !category)) return { items: [], more: 0 };
+  const added = {};
+  (addedIds || []).forEach(function (id) { added[id] = true; });
+  const hit = function (s) { return String(s).toLowerCase().indexOf(q) !== -1; };
+  const hits = lookup.items.filter(function (it) {
+    return it.listed && (!category || it.category === category) && (!q || hit(it.name) || (it.aliases || []).some(hit));
+  });
+  return {
+    items: hits.slice(0, TFDA_SEARCH_LIMIT).map(function (it) { return { row: it, added: !!added[it.id] }; }),
+    more: Math.max(0, hits.length - TFDA_SEARCH_LIMIT),
+  };
+}
+
+// 有 listed 樣品的衛福部分類與筆數，照查詢檔出現的順序
+export function tfdaCategories(lookup) {
+  const out = [];
+  const idx = {};
+  ((lookup && lookup.items) || []).forEach(function (it) {
+    if (!it.listed) return;
+    if (idx[it.category] == null) { idx[it.category] = out.length; out.push({ name: it.category, count: 0 }); }
+    out[idx[it.category]].count++;
+  });
+  return out;
+}
+
+// 自填照包裝填「每份的數字＋每份幾克（ml）」→ 每 100（decisions #64），進位到 0.1；null 照實
+export function per100FromServing(values, amount) {
+  const out = {};
+  NUTRIENTS.forEach(function (k) {
+    const v = values[k];
+    out[k] = v == null || v === "" ? null : Math.round(Number(v) * 100 / amount * 10) / 10;
+  });
+  return out;
+}

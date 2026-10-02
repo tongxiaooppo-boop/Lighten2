@@ -174,3 +174,10 @@ export function initSavedMeals() {
     else if (key === "archived") savedState.archivedOpen = e.target.open;
   }, true);
 }
+
+// 用到某個 ref 的組合數（沒刪除的；我的食材「不吃」＝移除時的提示，切片 8b 審核 S9、N3：組合清單只在這個檔讀）
+export function savedRefCount(ref) {
+  return savedState.records.filter(function (r) {
+    return !r.archived && r.content && r.content.components.some(function (c) { return c.ref === ref; });
+  }).length;
+}

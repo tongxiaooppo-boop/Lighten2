@@ -3,7 +3,7 @@
 
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
 import { quickAddProblem } from "./picker.js";
-import { foodAmount, isEdiblePortionItem } from "./meal-content.js";
+import { foodAmount, isEdiblePortionItem, zeroFilledText } from "./meal-content.js";
 import { isMyIngredient } from "./my-ingredients.js";
 import { round1 } from "../core/num.js";
 
@@ -345,4 +345,98 @@ export function favoriteMessage(item, on, wasDisliked) {
 // 明細寫常吃的作用（decisions #127 ⑥）：切片 5 推薦不讀常吃，一律這一句；切片 6 再依品項能不能進推薦分兩種
 export function favoriteEffectText() {
   return "常吃只影響自己選的排列。";
+}
+
+// ---------- 我的食材（工作線 D 切片 8b；PRD 12.4、13.8，decisions #134、#136、#138） ----------
+
+// 「一份幾克」的參考句（decisions #136 ②、審核 N2）：衛福部分類×狀態×液體 → 代表的代換表品項，數字讀 food_tree（章程 C2）；
+// 代表品項跟這個樣品不同大類（例：堅果類裡的栗子歸全穀雜糧）、水果、其他、自填一律不給
+export const AMOUNT_HINT_REFS = [
+  ["肉類", "raw", false, "chicken_breast"], ["魚貝類", "raw", false, "fx_milkfish"],
+  ["蛋類", "raw", false, "egg"], ["蛋類", "cooked", false, "egg"], ["蛋類", "as_is", false, "egg"],
+  ["豆類", "as_is", true, "soy_milk"], ["穀物類", "raw", false, "fx_rice"], ["澱粉類", "raw", false, "sweet_potato"],
+  ["蔬菜類", "raw", false, "cabbage"], ["菇類", "raw", false, "cabbage"], ["藻類", "raw", false, "cabbage"],
+  ["乳品類", "as_is", true, "fx_whole_milk"], ["油脂類", "as_is", false, "fx_soybean_oil"],
+  ["堅果及種子類", "raw", false, "fx_peanut"], ["堅果及種子類", "cooked", false, "fx_peanut"],
+];
+
+// row：查詢檔的一筆；回「參考：代換表 1 份「雞胸肉」是生重 30g」或 null
+export function defaultAmountHint(row, foodTree) {
+  if (!row) return null;
+  const ref = AMOUNT_HINT_REFS.filter(function (h) { return h[0] === row.category && h[1] === row.state && h[2] === !!row.drink; })[0];
+  const t = ref && foodTree && foodTree.byId ? foodTree.byId[ref[3]] : null;
+  if (!t || t.group !== row.group) return null;
+  return "參考：代換表 1 份「" + t.name + "」是" + amountText(t, t.serving.amount);
+}
+
+function unitWord(item) {
+  return item.serving.unit === "ml" ? "毫升" : "克數";
+}
+
+// 列上的簡寫：「衛福部 · 1 份 生重 40g · 約 N kcal」「自填 · 每 100g 約 N kcal」
+export function ingredientMeta(item) {
+  const head = item.origin === "tfda" ? "衛福部" : "自填";
+  const kcal = function (v) { return v == null ? "熱量無資料" : "約 " + Math.round(v) + " kcal"; };
+  if (item.serving.amount == null) return head + " · 每 100" + item.serving.unit + " " + kcal(item.per_100g.kcal);
+  return head + " · 1 份 " + amountText(item, item.serving.amount) + " · " + kcal(item.per_serving.kcal);
+}
+
+// 明細的份量：「1 份＝你設的 生重 40g」「沒有設一份，記錄時直接輸入克數」
+export function ingredientServingText(item) {
+  return item.serving.amount == null ? "沒有設一份，記錄時直接輸入" + unitWord(item) + "。" : "1 份＝你設的 " + amountText(item, item.serving.amount);
+}
+
+// 明細的出處與說明（中性）：衛福部整合編號與樣品名稱、樣品說明、補 0 的欄位、液體的單位、生的樣品
+export function ingredientSourceLines(item) {
+  if (item.origin !== "tfda") return ["出處：自填" + (item.home_drink ? "（每 100ml）" : "（每 100g）")];
+  const t = item.tfda;
+  return [
+    "出處：衛福部 " + t.id + "「" + t.name + "」（" + t.category + "）",
+    t.desc ? "衛福部樣品說明：" + t.desc : null,
+    zeroFilledText(t.zero_filled),
+    item.home_drink ? "衛福部是每 100g，這裡視為每 100ml。" : null,
+    item.state === "raw" ? "這是生的樣品，克數請用煮之前的重量。" : null,
+  ];
+}
+
+// 我的食材的分組（PRD 13.8、decisions #134）：items 是 ingredientItem 轉好、沒刪除的。
+// cook：代換表大類（水果除外）各一組；other：衛福部分類各一組（自填的歸「自填」）；drinks：液體與水果。組內依名稱
+export function ingredientSections(items) {
+  const sorted = (items || []).slice().sort(compareFoodTreeItems);
+  const cook = {};
+  const otherIdx = {};
+  const other = [];
+  const drinks = [];
+  sorted.forEach(function (it) {
+    if (it.home_drink || it.group === "fruit") { drinks.push(it); return; }
+    if (it.group !== "other") { (cook[it.group] = cook[it.group] || []).push(it); return; }
+    const name = it.tfda ? it.tfda.category : "自填";
+    if (otherIdx[name] == null) { otherIdx[name] = other.length; other.push({ name: name, items: [] }); }
+    other[otherIdx[name]].items.push(it);
+  });
+  return { cook: cook, other: other, drinks: drinks };
+}
+
+// 明細的熱量一行與營養數字（1 份，或沒設一份時每 100），數字進位到 0.1（顯示用，章程 C4.11：ui 不自己算）
+export function ingredientNutrition(item) {
+  const per100 = item.serving.amount == null;
+  const v = per100 ? item.per_100g : item.per_serving;
+  const values = {};
+  Object.keys(v).forEach(function (k) { values[k] = v[k] == null ? null : round1(v[k]); });
+  return {
+    kcalLine: (per100 ? "每 100" + item.serving.unit + " 熱量：" : "1 份熱量：") + (v.kcal == null ? "無資料" : "約 " + Math.round(v.kcal) + " kcal"),
+    values: values,
+  };
+}
+
+// 新增食材的搜尋結果一行：「魚貝類 · 生 · 每 100g 約 N kcal」
+export function tfdaRowMeta(row) {
+  const states = { raw: "生", cooked: "熟", dry: "乾", wet: "濕", as_is: "" };
+  return [row.category, states[row.state] || "", "每 100" + (row.drink ? "ml" : "g") + " 約 " + Math.round(row.per_100g.kcal) + " kcal"].filter(Boolean).join(" · ");
+}
+
+// 衛福部食材「不吃」＝移除的訊息（decisions #134、審核 S9）；savedCount：引用它的組合數
+export function ingredientRemovedMessage(name, savedCount) {
+  return "已從我的食材移除「" + name + "」，可以從「＋新增食材」再加回來。" +
+    (savedCount > 0 ? "用到它的 " + savedCount + " 個組合會顯示已不提供，再加回來就恢復。" : "");
 }
