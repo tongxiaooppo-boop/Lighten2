@@ -1215,6 +1215,29 @@ body {
   font-weight: 600;
   color: #3A2E22;
 }
+/* 切片 8b：份／克切換與克數輸入（decisions #136）；目前的模式用 aria-pressed 標示，不上色 */
+.food-mode {
+  display: inline-flex;
+  gap: 0.2rem;
+}
+.food-mode-btn[aria-pressed="true"] {
+  border-color: #C1652F;
+  background-color: #FBF0E6;
+  cursor: default;
+  opacity: 1;
+}
+.food-amount-input {
+  width: 5.5rem;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+  text-align: right;
+  color: #3A2E22;
+  box-sizing: border-box;
+}
 .food-qty-text {
   margin-top: 0.2rem;
   font-size: 0.85rem;

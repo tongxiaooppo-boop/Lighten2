@@ -3,8 +3,8 @@
 // 這個檔案自己擁有區塊的狀態，畫在 #foods-saved；讀取組合只准這裡與選擇器、備份（章程 C4.16）。
 
 import { escapeHtml } from "../../core/html.js";
-import { getProfile, getCustomFoods, getHiddenCatalogUids, listSavedMeals, updateSavedMeal } from "../../data/db.js";
-import { loadCatalog, fromCustomFood } from "../../data/catalog.js";
+import { listSavedMeals, updateSavedMeal } from "../../data/db.js";
+import { loadSavedMealCtx } from "../saved-ctx.js";
 import { resolveSavedMeal, savedMealTotals, savedMealDefaultName, savedMealUnavailableLine } from "../../engine/meal-content.js";
 import { openMealPicker } from "../meal-picker/index.js";
 import { SAVED_TYPE_LABELS } from "../meal-picker/saved-row.js";
@@ -19,12 +19,10 @@ function savedEl() {
 export async function refreshSavedMeals() {
   const s = savedState;
   try {
-    const r = await Promise.all([listSavedMeals(), loadCatalog(), getCustomFoods(), getProfile()]);
-    let hidden = [];
-    try { hidden = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
-    const catalog = r[1];
-    const ctx = { hidden: hidden, customs: r[2].map(fromCustomFood), slot: null, profile: r[3] || {} };
-    const oilHabit = (r[3] || {}).oil_habit;
+    const r = await Promise.all([listSavedMeals(), loadSavedMealCtx({ slot: null })]);
+    const catalog = r[1].catalog;
+    const ctx = r[1].ctx;
+    const oilHabit = ctx.profile.oil_habit;
     s.records = r[0];
     s.rows = {};
     s.records.forEach(function (rec) {
