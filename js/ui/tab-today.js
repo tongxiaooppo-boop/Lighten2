@@ -7,9 +7,10 @@ import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
   getProfile, addDislikedIngredient, getDailyLogs, addDailyLog, undoDailyLog,
-  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, getCustomFoods, addSavedMeal,
+  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, addSavedMeal,
 } from "../data/db.js";
-import { loadCatalog, fromCustomFood } from "../data/catalog.js";
+import { loadCatalog } from "../data/catalog.js";
+import { loadSavedMealCtx } from "./saved-ctx.js";
 import { buildCandidatePool } from "../engine/pool.js";
 import { planToday } from "../engine/today.js";
 import { contentFromRec, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
@@ -93,12 +94,9 @@ function rerenderLoggedSlot(slot) {
   if (body && logs && logs.length > 0) body.innerHTML = loggedHtml(logs);
 }
 
-async function saveCtx() {
-  const catalog = await loadCatalog();
-  const customs = (await getCustomFoods()).map(fromCustomFood);
-  let hidden = [];
-  try { hidden = await getHiddenCatalogUids(); } catch (err) { console.error(err); }
-  return { catalog: catalog, ctx: { hidden: hidden, customs: customs, slot: null, profile: await getProfile() } };
+// 組合的 ctx 一律從 saved-ctx.js 拿（含我的食材，切片 8b 審核 M6）
+function saveCtx() {
+  return loadSavedMealCtx({ slot: null });
 }
 
 // 點「存成組合」：展開名稱欄，預填品名（只寫品名、不寫量，decisions #124）

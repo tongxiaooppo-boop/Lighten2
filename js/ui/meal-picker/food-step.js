@@ -3,29 +3,43 @@
 // 只被 renderDrinks 呼叫，一次 innerHTML 寫進 #meal-picker-drinks；不碰 DOM（快照的 fake DOM 也會跑這裡，計畫 8.2 M4）。
 
 import { escapeHtml } from "../../core/html.js";
-import { FOOD_QTY_STEP, FOOD_QTY_MAX } from "../../core/config.js";
-import { foodQtyText, foodTreeServingShort, foodsWhereOf, searchFoods } from "../../engine/foods.js";
+import { FOOD_QTY_STEP, FOOD_QTY_MAX, FOOD_AMOUNT_MAX } from "../../core/config.js";
+import { foodQtyText, foodTreeServingShort, foodsWhereOf, searchFoods, foodAmountModeText } from "../../engine/foods.js";
 import { cardHtml, favoriteLinkHtml, favoriteTitleHtml } from "./product-tab.js";
 
-// st：{ foods: { items, byId, labels, codes }, sections: { cook, drinks }, sel: [{ uid, qty }], open: {key: bool}, query, fav: { uid: true } }
+// st：{ foods: { items, byId, labels, codes }, sections: { cook, drinks }, sel: [{ uid, qty } | { uid, amount }], open: {key: bool}, query, fav: { uid: true } }
 // labels：uid → 灰字（foodsBlockLabel）；codes：uid → passesHardFilters 的 code（"disliked" 的移到不吃組）；
 // fav：扣掉不吃之後的常吃（engine effectiveFavorites），常吃的搬到步驟最上面的常吃組（decisions #126 ②）
 
-function qtyOf(st, uid) {
-  const f = st.sel.filter(function (x) { return x.uid === uid; })[0];
-  return f ? f.qty : null;
+function selOf(st, uid) {
+  return st.sel.filter(function (x) { return x.uid === uid; })[0] || null;
+}
+
+function unitOf(item) {
+  return item.serving.unit === "ml" ? "ml" : "g";
+}
+
+// 卡片上的已選量：「已選 · 2 份」「已選 · 120g」
+function selectedText(item, f) {
+  return f.amount != null ? f.amount + unitOf(item) : f.qty + " 份";
+}
+
+// 卡片上的 1 份：「代換表 1 份 · 生重 30g · 約 N kcal」；沒設一份的我的食材寫「每 100g 約 N kcal」（切片 8b）
+function servingLine(item) {
+  if (item.serving.amount == null) return "每 100" + unitOf(item) + " 約 " + Math.round(item.per_100g.kcal) + " kcal";
+  return foodTreeServingShort(item) + " · 約 " + Math.round(item.per_serving.kcal) + " kcal";
 }
 
 // 單品卡片（審核 S5）：名稱＋「代換表 1 份 · 生重 30g · 約 N kcal」；已選的標「已選 · N 份」；被擋的灰、寫原因、不能點
 function foodCardHtml(st, item, where) {
   const reason = st.foods.labels[item.uid] || null;
-  const q = reason ? null : qtyOf(st, item.uid);
+  const q = reason ? null : selOf(st, item.uid);
   const cls = "item-card" + (q != null ? " selected" : "") + (reason ? " is-blocked" : "");
   return '<button type="button" class="' + cls + '" data-food-uid="' + escapeHtml(item.uid) + '"' + (reason ? " disabled" : "") + ">" +
     '<span class="item-card-name">' + escapeHtml(item.name) + "</span>" +
-    '<span class="item-card-kcal">' + escapeHtml(foodTreeServingShort(item) + " · 約 " + Math.round(item.per_serving.kcal) + " kcal") + "</span>" +
+    '<span class="item-card-kcal">' + escapeHtml(servingLine(item)) + "</span>" +
     (where ? '<span class="item-card-kcal">' + escapeHtml(where) + "</span>" : "") +
-    (q != null ? '<span class="item-card-kcal">已選 · ' + q + " 份</span>" : "") +
+    (q != null ? '<span class="item-card-kcal">已選 · ' + escapeHtml(selectedText(item, q)) + "</span>" : "") +
     (reason ? '<span class="item-card-reason">' + escapeHtml(reason) + "</span>" : "") + "</button>";
 }
 
@@ -83,7 +97,30 @@ function foodMajorHtml(st, prefix, g) {
   }, "foods-major");
 }
 
-// 已選框（審核 S4：不用 .meal-picker-step-label，步驟編號檢查才不會讀到它）：名稱、步進器、份量文字、移除
+// 份／克切換（decisions #136）：兩個按鈕，目前的 aria-pressed；沒有 1 份的只有克，不畫切換
+function modeSwitchHtml(uid, item, f) {
+  if (item.serving.amount == null) return "";
+  const unit = item.serving.unit === "ml" ? "毫升" : "克";
+  const btn = function (label, on) {
+    return '<button type="button" class="compose-option food-mode-btn" data-food-mode="' + uid + '" aria-pressed="' + (on ? "true" : "false") + '"' +
+      (on ? " disabled" : "") + ">" + label + "</button>";
+  };
+  return '<span class="food-mode">' + btn("份", f.amount == null) + btn(unit, f.amount != null) + "</span>";
+}
+
+// 份數記法：步進器；克數記法：數字輸入（失焦或 Enter 才寫回，index.js 聽 change）
+function amountControlHtml(uid, item, f) {
+  if (f.amount == null) {
+    return '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="-1" aria-label="少 0.5 份"' + (f.qty <= FOOD_QTY_STEP ? " disabled" : "") + ">−</button>" +
+      '<span class="food-qty">' + f.qty + " 份</span>" +
+      '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="1" aria-label="多 0.5 份"' + (f.qty >= FOOD_QTY_MAX ? " disabled" : "") + ">＋</button>";
+  }
+  const unit = unitOf(item);
+  return '<input type="number" class="food-amount-input" data-food-amount="' + uid + '" inputmode="numeric" min="1" max="' + FOOD_AMOUNT_MAX + '" step="1" value="' + f.amount + '"' +
+    ' aria-label="' + (unit === "ml" ? "毫升" : "克數") + '"><span class="food-qty">' + unit + "</span>";
+}
+
+// 已選框（審核 S4：不用 .meal-picker-step-label，步驟編號檢查才不會讀到它）：名稱、份／克、步進器或克數、份量文字、移除
 function selectedBoxHtml(st, where) {
   const rows = st.sel.map(function (f) { return { f: f, item: st.foods.byId[f.uid] }; })
     .filter(function (x) { return x.item && foodsWhereOf(x.item) === where; });
@@ -91,13 +128,10 @@ function selectedBoxHtml(st, where) {
   return '<div class="meal-picker-selected food-selected"><div class="food-selected-title">已選（可以改份量）</div>' + rows.map(function (x) {
     const uid = escapeHtml(x.f.uid);
     return '<div class="selected-row" id="food-sel-' + uid + '"><div class="selected-name">' + escapeHtml(x.item.name) + "</div>" +
-      '<div class="food-stepper">' +
-      '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="-1" aria-label="少 0.5 份"' + (x.f.qty <= FOOD_QTY_STEP ? " disabled" : "") + ">−</button>" +
-      '<span class="food-qty">' + x.f.qty + " 份</span>" +
-      '<button type="button" class="compose-option food-step-btn" data-food-step="' + uid + '" data-dir="1" aria-label="多 0.5 份"' + (x.f.qty >= FOOD_QTY_MAX ? " disabled" : "") + ">＋</button>" +
+      '<div class="food-stepper">' + modeSwitchHtml(uid, x.item, x.f) + amountControlHtml(uid, x.item, x.f) +
       favoriteLinkHtml(x.f.uid, !!(st.fav && st.fav[x.f.uid])) +
       '<button type="button" class="link-btn" data-food-remove="' + uid + '">移除</button></div>' +
-      '<div class="food-qty-text">' + escapeHtml(foodQtyText(x.item, x.f.qty)) + "</div></div>";
+      '<div class="food-qty-text">' + escapeHtml(x.f.amount != null ? foodAmountModeText(x.item, x.f.amount) : foodQtyText(x.item, x.f.qty)) + "</div></div>";
   }).join("") + "</div>";
 }
 

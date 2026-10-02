@@ -5,7 +5,7 @@
 import { SLOT_LABELS, DEFAULT_MEAL_PREFS } from "../../core/slots.js";
 import { escapeHtml } from "../../core/html.js";
 import { $, sodiumText, notIncludedText } from "../dom.js";
-import {
+import { getCustomIngredients,
   getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting,
   getHiddenCatalogUids, copyBuiltinToCustom, updateCustomFood, addDislikedIngredient, removeDislikedIngredient,
   getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
@@ -22,7 +22,7 @@ import {
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
   effectiveFavorites, splitFavorites, favoriteEntries,
-  addFood, stepFood, removeFood,
+  addFood, stepFood, removeFood, setFoodAmount, toggleFoodMode,
 } from "../../engine/picker.js";
 import { savedRowHtml, saveAsHtml } from "./saved-row.js";
 import { foodTreeSections, foodsBlockLabel } from "../../engine/foods.js";
@@ -136,6 +136,8 @@ export async function openMealPicker(slotArg, opts) {
   const catalog = await loadCatalog();
   const rawCustoms = await getCustomFoods();
   const customs = rawCustoms.map(fromCustomFood);
+  let customIngredients = [];
+  try { customIngredients = await getCustomIngredients(); } catch (err) { console.error(err); }
   const lastPicked = await readLastPicked();
   // 隱藏清單讀不到不擋選擇器（比照 readLastPicked），當成沒有隱藏
   let hiddenUids = [];
@@ -158,6 +160,8 @@ export async function openMealPicker(slotArg, opts) {
   m.customRecords = {};
   rawCustoms.forEach(function (r) { m.customRecords[r.id] = r; });
   m.customs = customs; m.hiddenUids = hiddenUids.slice(); m.favorites = favorites;
+  // 我的食材（切片 8b）：組合解析要帶（審核 M6）；查詢檔在 8b-2 有衛福部來源時才載
+  m.customIngredients = customIngredients; m.tfdaLookup = null;
   m.editForm = null; m.notice = null; m.drinkNotice = null;
   m.dislikedChanged = false; // 不吃清單在選擇器裡改過：關閉時今日建議要重算（計畫 S7）
   ["convenience", "delivery"].forEach(function (t) {
@@ -224,18 +228,19 @@ function selectedDrink() {
   return m.drinkUid ? m.drinks.items.filter(function (d) { return d.uid === m.drinkUid && !m.drinks.reasons[d.uid]; })[0] || null : null;
 }
 
-// 已選的單品（還能選的），照點選順序：[{ item, qty }]
+// 已選的單品（還能選的），照點選順序：[{ item, qty } | { item, amount }]
 function selectedFoods() {
   const m = mealPicker;
   return m.foodSel.filter(function (f) { return m.foods.byId[f.uid] && !m.foods.labels[f.uid]; })
-    .map(function (f) { return { item: m.foods.byId[f.uid], qty: f.qty }; });
+    .map(function (f) { return f.amount != null ? { item: m.foods.byId[f.uid], amount: f.amount } : { item: m.foods.byId[f.uid], qty: f.qty }; });
 }
 
 // ---------- 我的組合（工作線 C；PRD 11.2、11.3、12.6） ----------
 
+// 跟 saved-ctx.js 同一批欄位（含我的食材，切片 8b 審核 M6），取自選擇器打開時讀好的 state
 function savedCtx(slot) {
   const m = mealPicker;
-  return { hidden: m.hiddenUids, customs: m.customs, slot: slot, profile: m.profile };
+  return { hidden: m.hiddenUids, customs: m.customs, slot: slot, profile: m.profile, customIngredients: m.customIngredients, tfdaLookup: m.tfdaLookup };
 }
 
 // 選擇器最上面一列：每個組合用這個時段解析（解析與送出一致，decisions #125），熱量＝帶入後的摘要（decisions #124）
@@ -275,7 +280,7 @@ function applySaved(rec) {
   m.quickAdd = null; m.quickAddMessage = null; m.editForm = null; m.notice = null; m.drinkNotice = null;
   if (m.drinkUid) delete m.qtyByUid[m.drinkUid];
   m.drinkUid = null;
-  m.foodSel = d.foods.map(function (f) { return { uid: f.item.uid, qty: f.qty }; });
+  m.foodSel = d.foods.map(function (f) { return f.amount != null ? { uid: f.item.uid, amount: f.amount } : { uid: f.item.uid, qty: f.qty }; });
   if (tab === "cook") {
     m.cook.tier = d.meal_type;
     m.cook.draft = {
@@ -953,12 +958,18 @@ function onFoodClick(e) {
   let el;
   if ((el = e.target.closest("[data-food-step]"))) {
     if (!el.disabled) m.foodSel = stepFood(m.foodSel, el.getAttribute("data-food-step"), Number(el.getAttribute("data-dir")));
+  } else if ((el = e.target.closest("[data-food-mode]"))) {
+    if (el.disabled) return true;
+    const uid = el.getAttribute("data-food-mode");
+    m.foodSel = toggleFoodMode(m.foodSel, uid, m.foods.byId[uid]);
+  } else if ((el = e.target.closest("[data-food-amount]"))) {
+    return true; // 克數輸入框：點擊不重畫（會失去焦點），改值聽 change
   } else if ((el = e.target.closest("[data-food-remove]"))) {
     m.foodSel = removeFood(m.foodSel, el.getAttribute("data-food-remove"));
   } else if ((el = e.target.closest("[data-food-uid]"))) {
     if (el.disabled) return true;
     const uid = el.getAttribute("data-food-uid");
-    const r = addFood(m.foodSel, uid);
+    const r = addFood(m.foodSel, uid, m.foods.byId[uid]);
     if (r.problem) { alert(r.problem); return true; }
     if (r.existed) {
       // 再點已選的：不新增，捲到它的步進器（PRD 13.4）
@@ -1115,6 +1126,14 @@ export function initMealPicker() {
       mealPicker.foodQuery = e.target.value;
       const res = document.getElementById("meal-picker-food-results");
       if (res) res.innerHTML = foodSearchResultsHtml(foodStepState());
+    });
+    // 單品克數：失焦或 Enter 才寫回並重畫（decisions #136；input 事件不重畫，打字不會失去焦點）
+    drinks.addEventListener("change", function (e) {
+      const uid = e.target && e.target.getAttribute && e.target.getAttribute("data-food-amount");
+      if (!uid) return;
+      mealPicker.foodSel = setFoodAmount(mealPicker.foodSel, uid, e.target.value);
+      renderDrinks();
+      updateSummary();
     });
     // 大類、子類收合：記住展開狀態；收合時沒有內容，打開時重畫補上（toggle 不冒泡，用捕獲階段，比照 tab-foods.js）
     drinks.addEventListener("toggle", function (e) {
