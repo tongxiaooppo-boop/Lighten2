@@ -897,7 +897,7 @@ async function checkFavorites(catalog) {
   // 7. 備份 v4：v3 升上來沒有這個 key 也合法；重複擋下；兩邊都有照樣還原、engine 以不吃為準（審核 S8）
   const v3 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v3.json"), "utf8"));
   const up = db.migrateBackup(v3);
-  check(up.schema_version === 4 && db.validateBackup(up).length === 0 && !up.sections.system.settings.some((x) => x.id === "favorite_refs"), "v3 升到 v4 不需要常吃 key");
+  check(up.schema_version === db.BACKUP_SCHEMA_VERSION && db.validateBackup(up).length === 0 && !up.sections.system.settings.some((x) => x.id === "favorite_refs"), "v3 升到 v4 不需要常吃 key");
   const withFav = clone(up);
   withFav.sections.system.settings.push({ id: "favorite_refs", value: ["fx_rice", "conv_bx04"] });
   withFav.manifest.settings = withFav.sections.system.settings.length;
@@ -1823,7 +1823,7 @@ function checkSingleFoodsDb(catalog) {
   // 單品本身不升版；v2→v3（工作線 C）只多了空的 saved_meals 區塊與版本號
   const mfv = db.migrateBackup(fv);
   const strip = clone(mfv);
-  delete strip.sections.saved_meals; delete strip.manifest.saved_meals; strip.schema_version = fv.schema_version;
+  delete strip.sections.saved_meals; delete strip.manifest.saved_meals; delete strip.sections.custom_ingredients; delete strip.manifest.custom_ingredients; strip.schema_version = fv.schema_version;
   check(JSON.stringify(strip) === JSON.stringify(fv) && mfv.sections.saved_meals.length === 0 && mfv.manifest.saved_meals === 0, "v2 升級後除了空的 saved_meals 與版本號，其他（含單品紀錄）要原樣");
   check(db.summarizeBackup(fv).daily_log.count === db.summarizeBackup(fixtureV2).daily_log.count + 1, "summarizeBackup 單品紀錄的筆數");
   const badQty = clone(ok.convenience);
@@ -2027,7 +2027,7 @@ function checkSavedMealsDb(catalog) {
   check(/content/.test(errOf(() => db.applySavedMealPatch(old, { content: Object.assign({}, prod, { components: [] }) }, later)) || ""), "applySavedMealPatch 壞內容要擋");
 
   // 備份 v3（切片 5 起目前版本是 v4，v3 的檔案照樣升級後讀得了）
-  check(db.BACKUP_SCHEMA_VERSION === 4 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v4 與 saved_meals 區塊");
+  check(db.BACKUP_SCHEMA_VERSION === 5 && db.BACKUP_SECTIONS.saved_meals.join() === "saved_meals" && db.STORE_NAMES.indexOf("saved_meals") !== -1, "備份 v5 與 saved_meals 區塊");
   ["backup-v1.json", "backup-v2.json"].forEach((f) => {
     const m = db.migrateBackup(JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", f), "utf8")));
     check(m.schema_version === db.BACKUP_SCHEMA_VERSION && Array.isArray(m.sections.saved_meals) && m.sections.saved_meals.length === 0 && m.manifest.saved_meals === 0 &&
@@ -2049,6 +2049,50 @@ function checkSavedMealsDb(catalog) {
   check(sm.some((r) => r.content.components.some((c) => c.kind === "food")) && sm.some((r) => r.content.meal_type.indexOf("cook") === 0 && r.content.archetype_id) &&
     fixtureV3.sections.logs.daily_log.some((l) => l.content.components.some((c) => c.kind === "food")), "backup-v3.json 缺含單品的組合、自煮組合或單品紀錄");
   check(sm.every((r) => mc.resolveSavedMeal(r, catalog, { hidden: [], customs: fixtureV3.sections.custom_foods.map(M.catalog.fromCustomFood), slot: null, profile: {} }).available.length > 0), "v3 fixture 的組合解析後要有可用元件");
+  // ---- 切片 8b：我的食材（custom_ingredients）與單品克數記法（decisions #138） ----
+  check(db.BACKUP_SECTIONS.custom_ingredients.join() === "custom_ingredients" && db.STORE_NAMES.indexOf("custom_ingredients") !== -1, "備份 v5 有 custom_ingredients 區塊");
+  const fixtureV4 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v4.json"), "utf8"));
+  const up5 = db.migrateBackup(fixtureV4);
+  check(up5.schema_version === 5 && Array.isArray(up5.sections.custom_ingredients) && up5.sections.custom_ingredients.length === 0 && up5.manifest.custom_ingredients === 0 &&
+    db.validateBackup(up5).length === 0, "v4 升到 v5 補空的我的食材並且讀得了");
+  const T0 = "2026-10-02T00:00:00.000Z";
+  const tfdaIng = { id: "cing_k0112102", source: "tfda", tfda_id: "K0112102", tfda_version: "2025-update1", name: "茶葉蛋", default_amount: null, note: null, created_at: T0, updated_at: T0 };
+  const userIng = { id: "cing_u_abc", source: "user", name: "某牌豆干", group: "protein", drink: false, state: "as_is",
+    per_100g: { kcal: 190, protein_g: 17, carb_g: 5, fat_g: 11, fiber_g: null, sat_fat_g: null, sodium_mg: 600 },
+    default_amount: 40, allergen_tags: null, vegan: false, lacto_ovo: false, note: null, archived: false, created_at: T0, updated_at: T0 };
+  check(!errOf(() => db.validateCustomIngredient(tfdaIng)) && !errOf(() => db.validateCustomIngredient(userIng)), "我的食材：合法的衛福部來源與自填要過");
+  check(!errOf(() => db.validateCustomIngredient(Object.assign({}, tfdaIng, { id: "cing_a05001", tfda_id: "A05001" }))), "我的食材：6 碼的平均值編號要過");
+  check(/id/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, tfdaIng, { id: "cing_abc" }))) || ""), "我的食材：衛福部來源 id 跟整合編號對不上要擋（審核 M9）");
+  check(/tfda_id/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, tfdaIng, { tfda_id: "k0112102" }))) || ""), "我的食材：整合編號格式不對要擋");
+  check(/allergen_tags/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, tfdaIng, { allergen_tags: [] }))) || ""), "我的食材：衛福部來源不能存過敏原（跟著查詢檔）");
+  check(/id/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, userIng, { id: "cing_abc" }))) || ""), "我的食材：自填 id 要 cing_u_ 開頭");
+  check(/default_amount/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, userIng, { default_amount: 0 }))) || "") &&
+    !errOf(() => db.validateCustomIngredient(Object.assign({}, userIng, { default_amount: null }))), "我的食材：一份 null 可以、0 不行");
+  check(/per_100g.kcal/.test(errOf(() => db.validateCustomIngredient(Object.assign({}, userIng, { per_100g: Object.assign({}, userIng.per_100g, { kcal: -1 }) }))) || "") &&
+    !errOf(() => db.validateCustomIngredient(Object.assign({}, userIng, { per_100g: Object.assign({}, userIng.per_100g, { kcal: 0 }) }))), "我的食材：自填熱量可以是 0、不能是負的");
+  check(/只能改/.test(errOf(() => db.applyCustomIngredientPatch(tfdaIng, { state: "raw" }, T0)) || "") &&
+    db.applyCustomIngredientPatch(tfdaIng, { name: "家裡的茶葉蛋", default_amount: 55 }, "2026-10-03T00:00:00.000Z").default_amount === 55, "我的食材：衛福部來源只能改名稱、一份、備註");
+  check(/id/.test(errOf(() => db.applyCustomIngredientPatch(userIng, { id: "cing_u_x" }, T0)) || "") &&
+    db.applyCustomIngredientPatch(userIng, { archived: true }, T0).archived === true, "我的食材：自填不能改 id、可以刪除（archived）");
+  const v5 = clone(up5); v5.sections.custom_ingredients = [tfdaIng, userIng]; v5.manifest.custom_ingredients = 2;
+  check(db.validateBackup(v5).length === 0 && db.summarizeBackup(v5).custom_ingredients.label === "我的食材", "含我的食材的 v5 備份要能還原：" + db.validateBackup(v5).slice(0, 2).join("；"));
+  const badIng = clone(v5); badIng.sections.custom_ingredients[0].id = "cing_zzz";
+  check(db.validateBackup(badIng).some((x) => /我的食材第 1 筆/.test(x)), "壞的我的食材要指出「我的食材第 1 筆」");
+  // 單品的 amount：紀錄與組合都是 qty 或 amount 恰好一個（整數 1–3000）
+  const foodLog = clone(fixtureV3.sections.logs.daily_log.filter((l) => l.content.components.some((c) => c.kind === "food"))[0]);
+  const fi = foodLog.content.components.findIndex((c) => c.kind === "food");
+  const withAmount = (v) => { const l = clone(foodLog); delete l.content.components[fi].qty; l.content.components[fi].amount = v; return l; };
+  check(!errOf(() => db.validateDailyLog(withAmount(120))), "單品紀錄用 amount 要過：" + errOf(() => db.validateDailyLog(withAmount(120))));
+  check([0, 3001, 12.5, "120"].every((v) => /amount/.test(errOf(() => db.validateDailyLog(withAmount(v))) || "")), "單品 amount 要是整數 1–3000");
+  const both = clone(foodLog); both.content.components[fi].amount = 100;
+  const neither = clone(foodLog); delete neither.content.components[fi].qty;
+  check(/qty\/amount/.test(errOf(() => db.validateDailyLog(both)) || "") && /qty\/amount/.test(errOf(() => db.validateDailyLog(neither)) || ""), "單品 qty 與 amount 要恰好一個");
+  const smFood = clone(sm.filter((r) => r.content.components.some((c) => c.kind === "food"))[0]);
+  const si = smFood.content.components.findIndex((c) => c.kind === "food");
+  delete smFood.content.components[si].qty; smFood.content.components[si].amount = 150;
+  check(!errOf(() => db.validateSavedMeal(smFood)), "組合的單品可以是 amount：" + errOf(() => db.validateSavedMeal(smFood)));
+  smFood.content.components[si].qty = 1;
+  check(/qty\/amount/.test(errOf(() => db.validateSavedMeal(smFood)) || ""), "組合的單品 qty 與 amount 不能同時有");
   const newer = clone(v3); newer.schema_version = db.BACKUP_SCHEMA_VERSION + 1;
   check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "比目前新一版的檔案要擋（較新的版本）");
 }

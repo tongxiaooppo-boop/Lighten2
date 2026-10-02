@@ -53,6 +53,15 @@ export function isFoodQty(q) {
   return typeof q === "number" && isFinite(q) && q >= FOOD_QTY_STEP && q <= FOOD_QTY_MAX && Number.isInteger(q / FOOD_QTY_STEP);
 }
 
+// 單品的克數記法（PRD 13.4、decisions #136、#138）：實際吃的 g 或 ml，整數 1–3000；跟 qty 擇一
+export const FOOD_AMOUNT_MAX = 3000;
+export function isFoodAmount(a) {
+  return Number.isInteger(a) && a >= 1 && a <= FOOD_AMOUNT_MAX;
+}
+
+// 我的食材的組（PRD 12.4、decisions #134）：代換表六大類，對不上的是 other
+export const INGREDIENT_GROUPS = ["dairy", "protein", "grain", "vegetable", "fruit", "fat", "other"];
+
 // 自煮分頁的多選上限（PRD 6.3 的軸上限）；主食、醬料、烹調法單選
 export const COMPOSE_MAX = { protein: 2, vegetable: 3 };
 

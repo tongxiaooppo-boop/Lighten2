@@ -4,7 +4,7 @@
 
 import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
   addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch,
-  addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef } from "../../js/data/db.js";
+  addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef, validateCustomIngredient, applyCustomIngredientPatch } from "../../js/data/db.js";
 
 const S = () => globalThis.__fakeDbState;
 const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
@@ -108,6 +108,48 @@ export async function updateCustomFood(id, patch) {
   S().writes.push({ op: "updateCustomFood", id: id, record: clone(next) });
   return clone(next);
 }
+// 我的食材（PRD 12.4、decisions #138；照 db.js 的語意，驗證用真的 db.js）
+export { validateCustomIngredient, applyCustomIngredientPatch };
+const ingList = () => (S().customIngredients = S().customIngredients || []);
+export async function getCustomIngredients() {
+  return clone(ingList().slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)));
+}
+export async function addCustomIngredient(rec) {
+  const now = new Date().toISOString();
+  const base = rec.source === "tfda" ? { id: "cing_" + String(rec.tfda_id || "").toLowerCase() } : { id: "cing_u_" + String(++seq).padStart(4, "0"), archived: false };
+  const record = Object.assign({ note: null }, clone(rec), base, { created_at: now, updated_at: now });
+  validateCustomIngredient(record);
+  if (ingList().some((x) => x.id === record.id)) throw new Error("[fake-db] 我的食材已存在：" + record.id);
+  ingList().push(record);
+  S().writes.push({ op: "addCustomIngredient", record: clone(record) });
+  return clone(record);
+}
+export async function updateCustomIngredient(id, patch) {
+  const i = ingList().findIndex((x) => x.id === id);
+  if (i === -1) throw new Error("[fake-db] 找不到我的食材：" + id);
+  const next = applyCustomIngredientPatch(ingList()[i], patch, new Date().toISOString());
+  ingList()[i] = clone(next);
+  S().writes.push({ op: "updateCustomIngredient", id: id, record: clone(next) });
+  return clone(next);
+}
+export async function removeTfdaIngredient(id) {
+  const i = ingList().findIndex((x) => x.id === id && x.source === "tfda");
+  if (i === -1) throw new Error("[fake-db] 不是衛福部來源的我的食材：" + id);
+  const old = ingList().splice(i, 1)[0];
+  const fav = S().settings.favorite_refs;
+  if (Array.isArray(fav) && fav.indexOf(id) !== -1) S().settings.favorite_refs = removeFavoriteFrom(fav, id);
+  S().writes.push({ op: "removeTfdaIngredient", id: id });
+  return clone(old);
+}
+export async function restoreTfdaIngredient(old) {
+  const record = Object.assign(clone(old), { updated_at: new Date().toISOString() });
+  validateCustomIngredient(record);
+  if (ingList().some((x) => x.id === record.id)) throw new Error("[fake-db] 我的食材已存在：" + record.id);
+  ingList().push(record);
+  S().writes.push({ op: "restoreTfdaIngredient", record: clone(record) });
+  return clone(record);
+}
+
 // 常吃（PRD 13.6；語意用 db.js 同一份純函式；寫入紀錄 { op, favorites, disliked }）
 export { addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef };
 export async function getFavoriteRefs() {
