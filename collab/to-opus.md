@@ -1,4 +1,4 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-02 晚：日期切換與預約 切片 0、1 完成，下一步切片 2 畫面）
+# 給接手的 Opus：Lighten2 交接（2026-10-02 晚：日期切換與預約 切片 0、1、2 完成未推送，下一步使用者手機測短清單第 12 項、再做切片 3）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
@@ -9,8 +9,12 @@
 - 切片 1a（`7b8da4d` db）：`meal_plan`（DB v4、備份 v6；keyPath id＝日期|時段；`validateMealPlan`、`getMealPlans`、`setMealPlan`、`setMealPlanWithSavedMeal`、`deleteMealPlan`、`purgeOldMealPlans`）、`skipped` 紀錄、`last_shown_recs`（`getLastShownRecs`／`setLastShownRecs`）、`addDailyLog(entry, { today, minDate })`（`logDateProblem`）；config `LOG_SOURCES` 加 skipped、`BACKFILL_DAYS`、`ESTIMATE_RECALL_KCAL`／`ESTIMATE_RECALL_GROUP`；fake-db 同步。
 - 切片 1b（`aa4f6ba` engine）：meal-content `toPlanContent`、`resolvePlan`（skip／ok／invalid）、`planPseudoLog`、`skippedLogEntry`、`PLAN_SKIP_CONTENT`／`isSkipPlan`；today `effectiveTodayLogs`、`planToday({ …, todayPlans })` 回傳 `plannedSlots`／`plannedKcal`。check-engine 43460、smoke 54、快照逐字不變。
 - 跟草案的偏離：`plan.txt` 快照沒在切片 1 錄（用 check-engine 斷言代替），切片 2 跟畫面一起錄；v3→v4 升級用既有的 v1→v4 smoke 涵蓋；backup-v6 fixture 等畫面能建預約後（切片 2／3）用 `SMOKE_FREEZE_BACKUP` 凍結。
-- **下一步切片 2**（草案第 9 節）：新檔 `js/ui/today-plans.js`（`loadTodayPlans`：讀今天的預約 → saved-ctx → `resolvePlan` → `planPseudoLog`；加進 check-arch C4.16 白名單與 `getMealPlans` 讀取白名單）；`tab-today.js` 日期列（七個圓點、位移保存、`visibilitychange` 重畫）、`renderRecs` 順序「紀錄→預約→關閉→推薦」、預約卡片（記下／改／取消預約；失效寫 `savedMealUnavailableLine`）、今天「這餐不吃」（關掉的時段不給）、配額因預約變低時的中性句（#142②）、未來日子 `renderFutureDay`（不跑推薦、頂端「已排 N 餐，約 X kcal」）；`today-hero.js` 多一行「已排」（主數字不扣預約、allLogged 只看紀錄、差額加預約）；選擇器 `openMealPicker(slot, { date, mode: "plan", planPreset })`（打開時記 m.date；plan 不顯示份額缺口；估算卡要出現；rememberMealType 只在 log；送出寫 `setMealPlan`／`setMealPlanWithSavedMeal`）。驗收：recs、picker、tdee 逐字不變，ui 只准新增行；walkthrough 新一節、截圖逐張看；手機腳本給行號。
-- 使用者週額度 2026-10-02 晚剩約 18%：不複雜的工作（文件、查詢、使用說明）交 Sonnet。**推送前先問使用者**（切片 0、1 都還沒推送）。
+- **切片 2 已完成（`2bbe554` ui、`f98145b` tools，未推送）**：today-plans.js、日期列、未來六天、今天的預約卡片、選擇器 plan 模式、這餐不吃、彙總卡「已排」。check-engine 43460、check-arch 通過、smoke 54、walkthrough 548（第 13 節，截圖看過含 360 寬）。快照：ui 去行號後舊行全保留＋新增 301 行（#today-dates、#rec-extra-*），唯一刻意改變 today/OFF/today-breakfast（M6）；比對腳本 `collab/proofs/2026-10-02-verify-date-switch-ui.py`。手機腳本短清單第 12 項（第 61–67 行）。
+  - 跟草案的偏離：`plan.txt` 快照還沒錄（預約情境由 check-engine 與 walkthrough 第 13 節涵蓋）；backup-v6 fixture 還沒凍結（切片 3 一起，smoke 要先建一筆預約與 skipped 再 `SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v6.json`）。
+  - 實作發現：今天那次 renderHero 是非同步的，切到未來日子後才跑完會把彙總卡打開 → today-hero `setHeroSuppressed`。
+- **下一步切片 3**（草案第 9 節）：「昨天的餐」卡片（預設收合「昨天的餐（N 餐）」；每列 吃了／S M L（ESTIMATE_RECALL_KCAL 依時段）／這餐沒吃／不確定；推薦列寫品名與熱量、跟 S/M/L 同大小；放獨立容器）、`setLastShownRecs`（排在 markRecipesShown 之後，整份覆寫當天）、補記（本週總覽入口＋選擇器 backfill 模式，addDailyLog minDate＝today−7）、「改」用 backfill 模式預載預約。
+- （以下是切片 2 動工前的規格，留作對照）切片 2（草案第 9 節）：新檔 `js/ui/today-plans.js`（`loadTodayPlans`：讀今天的預約 → saved-ctx → `resolvePlan` → `planPseudoLog`；加進 check-arch C4.16 白名單與 `getMealPlans` 讀取白名單）；`tab-today.js` 日期列（七個圓點、位移保存、`visibilitychange` 重畫）、`renderRecs` 順序「紀錄→預約→關閉→推薦」、預約卡片（記下／改／取消預約；失效寫 `savedMealUnavailableLine`）、今天「這餐不吃」（關掉的時段不給）、配額因預約變低時的中性句（#142②）、未來日子 `renderFutureDay`（不跑推薦、頂端「已排 N 餐，約 X kcal」）；`today-hero.js` 多一行「已排」（主數字不扣預約、allLogged 只看紀錄、差額加預約）；選擇器 `openMealPicker(slot, { date, mode: "plan", planPreset })`（打開時記 m.date；plan 不顯示份額缺口；估算卡要出現；rememberMealType 只在 log；送出寫 `setMealPlan`／`setMealPlanWithSavedMeal`）。驗收：recs、picker、tdee 逐字不變，ui 只准新增行；walkthrough 新一節、截圖逐張看；手機腳本給行號。
+- 使用者週額度 2026-10-02 晚剩約 18%：不複雜的工作（文件、查詢、使用說明）交 Sonnet。**推送前先問使用者**（切片 0、1、2 都還沒推送）。
 
 **2026-10-02 白天**：
 - 已推送：`f9200bf` 8a 衛福部查詢檔（`data/tfda_lookup.json`、`tools/build-tfda-lookup.js`、`data/reference/tfda_tags.json`／`tfda_groups.json`）；`1286f63` 查詢檔缺值補 0；`8f11984` 8b 計畫第三版。decisions #134（使用者：分類篩選、顯示位置、衛福部／自填標示、生熟固定、說法統一）、#135（8a 技術）、#136（使用者：克數記法全部單品、一份留空＋參考、衛福部過敏原不能改）、#137（補 0）；#138 留給 8b 技術定案。
