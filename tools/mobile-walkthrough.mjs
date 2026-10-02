@@ -1610,6 +1610,17 @@ async function run() {
   await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "13-8 取消後明天不是「還沒排」");
   await click(`#today-dates [data-day-offset='0']`);
 
+  // 13-9 現成飲料分組（decisions #143）：超商分頁超商那組在前，外食分頁手搖飲那組在前，全部照列
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  const drinkHeads = () => js(`[...document.querySelectorAll('#meal-picker-drinks .meal-picker-subrole')].map((h) => h.textContent).join(",")`);
+  await until(`!!document.querySelector('#meal-picker-drinks .meal-picker-subrole')`, "13-9 現成飲料沒有分組標題");
+  check((await drinkHeads()).indexOf("超商,手搖飲・咖啡・早餐店") === 0, "13-9 超商分頁的飲料分組順序不對：" + (await drinkHeads()));
+  await shot("飲料分組-超商", "#meal-picker-drinks .meal-picker-subrole");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await until(`(${text("#meal-picker-drinks .meal-picker-subrole")}) === "手搖飲・咖啡・早餐店"`, "13-9 外食分頁的飲料第一組不是手搖飲・咖啡・早餐店");
+  await closePicker();
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

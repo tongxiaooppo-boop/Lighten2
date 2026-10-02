@@ -455,6 +455,15 @@ async function main() {
     const t = M.picker.partitionByMealType(catalog.products, [cf], "lunch");
     check(t.delivery.indexOf(cf) !== -1 && t.convenience.indexOf(cf) === -1, "我的品項依 channel 進外食分頁");
     check(M.picker.partitionByMealType(catalog.products, [cf], "breakfast").delivery.indexOf(cf) === -1, "我的品項照自己的時段");
+    // 現成飲料分組（decisions #143）：全部照列；超商分頁超商在前，外食與自煮手搖飲那組在前；我的品項最後
+    const dcf = Object.assign({}, cf, { uid: "custom_drink", role: "drink" });
+    const drinks143 = M.picker.partitionByMealType(catalog.products, [dcf], "lunch").drinks;
+    const keys = (tab) => M.picker.drinkGroups(drinks143, tab).map((g) => g.key).join(",");
+    const flat = (tab) => M.picker.drinkGroups(drinks143, tab).reduce((a, g) => a.concat(g.items), []);
+    check(keys("convenience") === "convenience,delivery,mine" && keys("delivery") === "delivery,convenience,mine" && keys("cook") === "delivery,convenience,mine",
+      "飲料分組順序不對：" + keys("convenience") + " / " + keys("delivery"));
+    check(flat("convenience").length === drinks143.length && M.picker.drinkGroups(drinks143, "convenience")[0].items.every((p) => !p.is_taiwan && p.channel === "convenience"),
+      "超商分頁的飲料要全部照列、第一組只有超商飲料");
     // 選擇器的品項就是 catalog 的品項本身（章程 C2：不逐欄抄）
     SLOTS.forEach((slot) => {
       const p = M.picker.partitionByMealType(catalog.products, [], slot);

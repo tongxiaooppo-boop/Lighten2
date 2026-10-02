@@ -24,7 +24,7 @@ import {
 } from "../../engine/meal-content.js";
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
-  effectiveFavorites, splitFavorites, favoriteEntries,
+  effectiveFavorites, splitFavorites, favoriteEntries, drinkGroups,
   addFood, stepFood, removeFood, setFoodAmount, toggleFoodMode,
 } from "../../engine/picker.js";
 import { savedRowHtml, saveAsHtml } from "./saved-row.js";
@@ -461,7 +461,9 @@ function renderDrinks() {
   const fav = pickerFavSet();
   const favSplit = splitFavorites(split.rest, fav);
   const drinkReason = function (it) { return m.drinks.reasons[it.uid] || null; };
-  const entries = favSplit.rest.map(function (it) { return { item: it, reason: drinkReason(it) }; });
+  const groups = drinkGroups(favSplit.rest, m.tab).map(function (g) {
+    return { label: g.label, entries: g.items.map(function (it) { return { item: it, reason: drinkReason(it) }; }) };
+  });
   // 選中那杯的份量與動作放在飲料步驟（三分頁都看得到，B-1a 計畫 2.1 第 17 項）
   const drink = selectedDrink();
   let extra = drink ? '<div class="meal-picker-selected">' + selectedRowHtml(drink, m.qtyByUid[drink.uid] || 1, insertedNote(drink.uid), !!fav[drink.uid]) + "</div>" : "";
@@ -475,7 +477,7 @@ function renderDrinks() {
   if (m.saveAs.on && !m.saveAs.nameEdited) m.saveAs.name = currentSaveName();
   const favDrinks = favSplit.favorites.map(function (it) { return { item: it, reason: drinkReason(it) }; });
   const drinkCard = function (e) { return drinkCardHtml(e, m.drinkUid, fillableReason); };
-  el.innerHTML = drinksFruitStepHtml(st, stepNo, drinkGridHtml(entries, m.drinkUid, fillableReason), extra, split.disliked, favDrinks, drinkCard) +
+  el.innerHTML = drinksFruitStepHtml(st, stepNo, drinkGridHtml(groups, m.drinkUid, fillableReason), extra, split.disliked, favDrinks, drinkCard) +
     addFoodsStepHtml(st, stepNo + 1) + (m.editing ? "" : saveAsHtml(m.saveAs, hasEstimates));
 }
 
