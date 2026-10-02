@@ -88,7 +88,9 @@ export function favoriteTitleHtml() {
 
 // groups：engine groupForTab 的結果（不含標了不吃與常吃的）；favEntries：常吃組（engine favoriteEntries，被擋的在組尾）；
 // selected：這個分頁已選的 uid；tabLabel：「超商」「外食」；fillable：原因可不可以補填
-export function productTabHtml(groups, selected, tabLabel, fillable, favEntries) {
+// openMap：使用者在這次選擇器裡打開的組（key → true／false；decisions #144）。分類預設收合，有已選的品項就打開
+export function productTabHtml(groups, selected, tabLabel, fillable, favEntries, openMap) {
+  const opened = openMap || {};
   const favs = favEntries || [];
   const favBlocked = favs.filter(function (e) { return e.reason; }).length;
   // 空狀態與灰字筆數都要含常吃組（審核 M5）
@@ -118,7 +120,11 @@ export function productTabHtml(groups, selected, tabLabel, fillable, favEntries)
       html += '<details class="meal-picker-group is-all-blocked"><summary>' + name + "（" + g.blocked + " 項因設定不能選）</summary>" +
         cardsHtml(g.entries, selected) + "</details>";
     } else {
-      html += '<section class="meal-picker-group"><h5 class="meal-picker-category">' + name + "</h5>" + cardsHtml(g.entries, selected) + "</section>";
+      const key = tabLabel + ":" + g.role + "|" + (g.category || "");
+      const hasSel = g.entries.some(function (e) { return selected.indexOf(e.item.uid) !== -1; });
+      const open = key in opened ? opened[key] : hasSel;
+      html += '<details class="meal-picker-group meal-picker-fold" data-pick-group="' + escapeHtml(key) + '"' + (open ? " open" : "") + "><summary>" + name +
+        "（" + g.entries.length + "）</summary>" + cardsHtml(g.entries, selected) + "</details>";
     }
   });
   return html;
@@ -126,15 +132,17 @@ export function productTabHtml(groups, selected, tabLabel, fillable, favEntries)
 
 // 現成飲料（「加飲品・水果」步驟裡，三分頁共用）：「不加」＋可選的飲料，被擋的排最後、灰階寫原因。
 // entries：[{ item, reason }]（不含標了不吃的，那些併進步驟最下方的不吃組，food-step.js）；fillable：被擋的我的品項飲料可不可以補填
-// groups：[{ label, entries }]（engine drinkGroups 的順序）；「不加」在最前面，每組裡被擋的排組尾（decisions #143）
+// groups：[{ key, label, entries, open }]（engine drinkGroups 的順序）；「不加」在最前面，每組裡被擋的排組尾（decisions #143）；
+// 每組可以收合，目前分頁對應的那組預設打開（decisions #144）
 export function drinkGridHtml(groups, drinkUid, fillable) {
   let html = '<div class="item-grid"><button type="button" class="item-card' + (drinkUid ? "" : " selected") + '" data-drink=""><span class="item-card-name">不加</span></button></div>';
   groups.forEach(function (g) {
-    html += '<h5 class="meal-picker-subrole">' + escapeHtml(g.label) + '</h5><div class="item-grid">';
+    html += '<details class="meal-picker-group meal-picker-fold" data-pick-group="' + escapeHtml(g.key) + '"' + (g.open ? " open" : "") + '><summary class="meal-picker-subrole">' +
+      escapeHtml(g.label) + "（" + g.entries.length + '）</summary><div class="item-grid">';
     g.entries.filter(function (e) { return !e.reason; }).concat(g.entries.filter(function (e) { return e.reason; })).forEach(function (e) {
       html += drinkCardHtml(e, drinkUid, fillable);
     });
-    html += "</div>";
+    html += "</div></details>";
   });
   return html;
 }
