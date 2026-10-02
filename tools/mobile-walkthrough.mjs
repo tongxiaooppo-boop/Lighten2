@@ -1535,6 +1535,81 @@ async function run() {
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   await click(`[data-ing-add-close]`);
 
+  // ---------- 13. 日期切換與預約（decisions #140–#142，設計草案 docs/review/2026-10-02-日期切換-設計草案.md 第 9 節） ----------
+  console.log("[13. 日期切換與預約]");
+  await tab("today");
+  await until(`document.querySelectorAll('#today-dates [data-day-offset]').length === 7`, "13-1 日期列不是七個日子");
+  check((await js(text("#today-dates [data-day-offset='0']"))).indexOf("今天") !== -1, "13-1 第一個日子不是「今天」");
+  // 13-1 明天：不跑推薦、不顯示目標，只有「還沒排」與自己選
+  await click(`#today-dates [data-day-offset='1']`);
+  await until(`!document.getElementById('today-day-summary').hidden && ${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "13-1 明天沒有「還沒排任何一餐」");
+  check(await js(`document.getElementById('today-hero').hidden`), "13-1 未來日子不該顯示彙總卡（PRD 6.2）");
+  check(!(await js(`!!document.querySelector('#today-recs .rec-log-btn')`)), "13-1 未來日子出現了推薦的「記錄這餐」");
+  check(!!(await js(`!!document.querySelector('#rec-dinner [data-plan-pick=dinner]')`)), "13-1 明天晚餐沒有「自己選」");
+  await shot("日期切換-明天還沒排", "#today-dates");
+  // 13-2 明天晚餐排喜宴（估算 L）：選擇器 plan 模式的標題、送出鍵、不計算配額
+  await click(`#rec-dinner [data-plan-pick=dinner]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "13-2 預約的選擇器沒有打開");
+  check((await js(text("#meal-picker-title"))).indexOf("排進") !== -1 && (await js(text("#meal-picker-submit"))) === "排進預約", "13-2 預約模式的標題或送出鍵不對");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await until(`!!document.querySelector('[data-estimate-size=L]')`, "13-2 預約模式的外食分頁沒有估算卡");
+  await js(`(() => { document.getElementById('meal-picker-estimate-name').value = '喜宴'; })()`);
+  await click(`[data-estimate-size=L]`);
+  await until(`${text("#meal-picker-gap")}.indexOf("預約不計算配額") !== -1`, "13-2 預約模式沒有寫「不計算配額」");
+  check((await js(text("#meal-picker-gap"))).indexOf("缺口") === -1, "13-2 預約模式不該顯示缺口");
+  await click("#meal-picker-submit");
+  await until(`${text("#rec-dinner")}.indexOf("約 1200 kcal") !== -1 && ${text("#today-day-summary")}.indexOf("已排 1 餐，約 1200 kcal") !== -1`, "13-2 排完明天晚餐沒有顯示 1200 或頂端合計");
+  check(!(await js(`document.querySelector("#today-dates [data-day-offset='1'] .today-date-dot").hidden`)), "13-2 有預約的日子沒有小點");
+  // 13-3 明天早餐預約「這餐不吃」
+  await click(`#rec-breakfast [data-plan-skip=breakfast]`);
+  await until(`${text("#rec-breakfast")}.indexOf("這餐不吃（預約）") !== -1 && ${text("#today-day-summary")}.indexOf("已排 2 餐，約 1200 kcal") !== -1`, "13-3 預約不吃沒有顯示或合計不對");
+  check(!(await js(`!!document.querySelector('#rec-afternoon_tea [data-plan-skip]')`)), "13-3 關掉的時段不該有「這餐不吃」（審核 M13）");
+  await shot("日期切換-明天已排", "#today-day-summary");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("日期切換-明天已排-360寬", "#today-dates");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  // 13-4 改明天的晚餐：帶入喜宴
+  await click(`#rec-dinner [data-plan-edit=dinner]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && ${text("#meal-picker-panel")}.indexOf("喜宴（L") !== -1`, "13-4 改預約沒有帶入喜宴");
+  await closePicker();
+  // 13-5 今天的預約（模擬昨天排好的）：晚餐 1200 → 卡片、彙總卡主數字不扣、「已排」一行
+  await click(`#today-dates [data-day-offset='0']`);
+  await until(`!document.getElementById('today-hero').hidden && document.getElementById('today-day-summary').hidden`, "13-5 回到今天彙總卡沒有出現");
+  const heroBefore = await js(text("#today-hero-kcal-value"));
+  await js(`(async () => { const m = ${DBW}; const est = { kind: 'estimate', name: '聚餐', size: 'L', snapshot: { kcal: 1200, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null } };
+    const d = new Date(); const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    await m.setMealPlan({ date: ds, slot: 'dinner', name: '聚餐', content: { meal_type: 'delivery', archetype_id: null, method_id: null, implicit: null, components: [est] } }); })()`);
+  await click("#today-refresh");
+  await until(`${text("#rec-dinner")}.indexOf("預約 · 約 1200 kcal") !== -1 && !!document.querySelector('#rec-dinner [data-plan-log=dinner]')`, "13-5 今天的預約卡片沒有出現");
+  check((await js(text("#today-hero-kcal-value"))) === heroBefore, "13-5 彙總卡主數字被預約扣掉了（應維持目標減已記錄）");
+  check((await js(text("#today-hero-planned"))).indexOf("已排：晚餐 約 1200 kcal") !== -1, "13-5 彙總卡沒有「已排」一行");
+  check(!(await js(`!!document.querySelector('#rec-extra-dinner [data-skip-slot]')`)), "13-5 有預約的時段不該有「這餐不吃」");
+  await shot("日期切換-今天的預約", "#rec-dinner");
+  // 13-6 記下 → 已記錄；撤銷 → 預約還在；取消預約 → 回到推薦
+  await click(`#rec-dinner [data-plan-log=dinner]`);
+  await until(`${text("#rec-dinner")}.indexOf("已記錄：聚餐") !== -1`, "13-6 記下後沒有變成已記錄");
+  const planLog = await js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({})).filter((l) => l.source === 'from_plan').map((l) => l.name + '|' + l.totals.kcal); })()`);
+  check(planLog.indexOf("聚餐|1200") !== -1, "13-6 紀錄的 source 不是 from_plan 或熱量不對：" + JSON.stringify(planLog));
+  await click(`#rec-dinner .rec-undo-btn`);
+  await until(`!!document.querySelector('#rec-dinner [data-plan-cancel]')`, "13-6 撤銷後預約卡片沒有回來");
+  await click(`#rec-dinner [data-plan-cancel]`);
+  await until(`!!document.querySelector('#rec-dinner .rec-pick-btn') && document.getElementById('today-hero-planned').hidden`, "13-6 取消預約後沒有回到推薦，或「已排」沒收起來");
+  // 13-7 今天「這餐不吃」→ 這餐沒吃＋撤銷
+  await until(`!!document.querySelector('#rec-extra-lunch [data-skip-slot=lunch]')`, "13-7 午餐沒有「這餐不吃」");
+  await click(`#rec-extra-lunch [data-skip-slot=lunch]`);
+  await until(`${text("#rec-lunch")}.indexOf("這餐沒吃") !== -1 && !!document.querySelector('#rec-lunch .rec-undo-btn')`, "13-7 這餐不吃之後沒有「這餐沒吃」");
+  await shot("日期切換-這餐沒吃", "#rec-lunch");
+  await click(`#rec-lunch .rec-undo-btn`);
+  await until(`!!document.querySelector('#rec-lunch .rec-pick-btn')`, "13-7 撤銷這餐沒吃後沒有回到推薦");
+  // 收尾：取消明天的兩筆預約
+  await click(`#today-dates [data-day-offset='1']`);
+  await until(`!!document.querySelector('#rec-dinner [data-plan-cancel]')`, "13-8 明天的預約不見了");
+  await click(`#rec-dinner [data-plan-cancel]`);
+  await until(`!document.querySelector('#rec-dinner [data-plan-cancel]') && !!document.querySelector('#rec-breakfast [data-plan-cancel]')`, "13-8 取消晚餐預約沒有生效");
+  await click(`#rec-breakfast [data-plan-cancel]`);
+  await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "13-8 取消後明天不是「還沒排」");
+  await click(`#today-dates [data-day-offset='0']`);
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }
