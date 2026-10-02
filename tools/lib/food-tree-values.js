@@ -285,6 +285,6 @@ function loadFoodTreeContext(refs, readJson) {
 
 module.exports = {
   exchangeNames, loadExchange, cleanExchangeName, sampleState, sugarProblem, zeroFillProblem, autoZeroFill, ZERO_FILL,
-  nominalKcal, nominalMacro, nominalOutOfRange, buildFoodTree, stringifyFoodTree, loadFoodTreeContext, tfdaCodeOf,
+  nominalKcal, nominalMacro, nominalOutOfRange, buildFoodTree, stringifyFoodTree, loadFoodTreeContext, tfdaCodeOf, fieldSourcesOf,
   GROUP_OF_TABLE, EXCLUDED_AXES, STATES, readRef,
 };

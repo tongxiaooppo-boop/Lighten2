@@ -6,11 +6,12 @@
 // 標註：listed 的取 data/reference/tfda_tags.json；分層已用的取分層品項（同一樣品同標註，章程 B6.9）。
 // composite＝標註含「未確認」（審查檔第 3 點：描述有「等」字但照原料標完的是傳統單純原料，不算複合）。
 // 狀態：food-tree-values 的 sampleState，推不出的當「照現狀」（PRD 12.4）。
+// 缺值填 0：章程 B5.1 同一張白名單（food-tree-values 的 autoZeroFill），填了的欄位列在 zero_filled（D8b 審核 M1，decisions #137）。
 
 "use strict";
 
 const { computePer100g } = require("./ingredient-values");
-const { sampleState, readRef } = require("./food-tree-values");
+const { sampleState, readRef, autoZeroFill, fieldSourcesOf } = require("./food-tree-values");
 
 const VERSION = "2025-update1";
 const UNVERIFIED = "未確認";
@@ -59,10 +60,12 @@ function buildTfdaLookup(ctx) {
     const t = listed ? tagOf[id] : treeTags[id];
     if (!t) throw new Error("衛福部樣品沒有標註：" + id + " " + r["樣品名稱"] + "（補進 data/reference/tfda_tags.json）");
     const group = groupOf(r, ctx.groups, overrideOf);
+    const zero = autoZeroFill(r);
     return {
       id: id, name: r["樣品名稱"], aliases: splitAliases(r["俗名"]), category: r["食品分類"], desc: r["內容物描述"] || "",
       group: group, drink: isDrink(r, group, ctx.groups), state: sampleState(r) || "as_is",
-      per_100g: computePer100g({ source: { type: "tfda", ref: id } }, { tfda: ctx.tfdaById, usda: {} }),
+      per_100g: computePer100g({ source: { type: "tfda", ref: id }, field_sources: fieldSourcesOf(zero) }, { tfda: ctx.tfdaById, usda: {} }),
+      zero_filled: Object.keys(zero),
       allergen_tags: t.allergen_tags, vegan: t.vegan, lacto_ovo: t.lacto_ovo,
       composite: t.allergen_tags.indexOf(UNVERIFIED) !== -1, listed: listed,
     };
