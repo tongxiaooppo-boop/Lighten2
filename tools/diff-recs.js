@@ -722,6 +722,12 @@ async function snapPicker() {
     emit("picker", k, normTotals(A.pickerFoods([F("fx_ham", 1), F("fx_taro", 1)])));
     uiLines(k);
     await foodSubmit(k);
+    // 克數記法（切片 8b，decisions #136）：克數、份數、毫升混用；送出的元件寫 amount、名稱寫實際量
+    await foodOpen("lunch", "delivery");
+    k = "amount/mixed";
+    emit("picker", k, normTotals(A.pickerFoods([{ uid: "chicken_breast", amount: 95 }, F("fx_cooked_rice", 1), { uid: "fx_whole_milk", amount: 300 }])));
+    uiLines(k);
+    await foodSubmit(k);
   }
 
   // 我的組合（工作線 C，計畫 docs/review/2026-10-01-C-實作計畫.md 第 4 節）：組合列、帶入、存成組合、編輯模式、今日建議的「存成組合」
