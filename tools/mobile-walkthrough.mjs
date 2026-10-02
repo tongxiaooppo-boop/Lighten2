@@ -1221,6 +1221,35 @@ async function run() {
   check((await pickedFoodText("fx_orange")).indexOf("4 份＝可食部分 520g（4個，購買量約 680g）") !== -1, "9-6 柳丁 4 份的說明不對：" + (await pickedFoodText("fx_orange")));
   check((await submitAndUndo("lunch", "9-6")) === "柳丁 520g", "9-6 柳丁的紀錄名稱不是「柳丁 520g」");
 
+  // 9-7 份／克切換（切片 8b，decisions #136）：白飯 2 份 → 克（80）→ 改 95 → 切回份（2.5）→ 再切克改 95 送出「白飯 95g」；全脂奶是「毫升」
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=convenience]`);
+  await pickFood("fx_cooked_rice", "白飯");
+  await stepFoodBtn("fx_cooked_rice", 1, 2);
+  const modeOn = (uid) => js(`(() => { const b = document.querySelector('#food-sel-${uid} [data-food-mode][aria-pressed="true"]'); return b ? b.textContent : null; })()`);
+  check((await modeOn("fx_cooked_rice")) === "份", "9-7 已選的白飯預設不是「份」");
+  await click(`#food-sel-fx_cooked_rice [data-food-mode][aria-pressed="false"]`);
+  check((await modeOn("fx_cooked_rice")) === "克" && (await js(`document.querySelector('#food-sel-fx_cooked_rice .food-amount-input').value`)) === "80", "9-7 白飯 2 份切成克不是 80");
+  const setAmount = (uid, v) => js(`(() => { const el = document.querySelector('#food-sel-${uid} .food-amount-input'); el.value = ${JSON.stringify(String(v))}; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await setAmount("fx_cooked_rice", 95);
+  await until(`(document.getElementById('food-sel-fx_cooked_rice') || {}).innerText.indexOf("熟重 95g") !== -1`, "9-7 白飯改成 95 後說明不是「熟重 95g」");
+  await shot("單品-克數記法", "#food-sel-fx_cooked_rice");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("單品-克數記法-360寬", "#food-sel-fx_cooked_rice");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  check((await foodCardText("fx_cooked_rice", true)).indexOf("已選 · 95g") !== -1, "9-7 白飯卡片不是「已選 · 95g」：" + (await foodCardText("fx_cooked_rice", true)));
+  await click(`#food-sel-fx_cooked_rice [data-food-mode][aria-pressed="false"]`);
+  check((await pickedFoodText("fx_cooked_rice")).indexOf("2.5 份") !== -1, "9-7 95g 切回份不是 2.5 份：" + (await pickedFoodText("fx_cooked_rice")));
+  await click(`#food-sel-fx_cooked_rice [data-food-mode][aria-pressed="false"]`);
+  await setAmount("fx_cooked_rice", 95);
+  await until(`(document.getElementById('food-sel-fx_cooked_rice') || {}).innerText.indexOf("熟重 95g") !== -1`, "9-7 第二次改 95 沒生效");
+  await pickFood("fx_whole_milk", "全脂奶");
+  await click(`#food-sel-fx_whole_milk [data-food-mode][aria-pressed="false"]`);
+  check((await modeOn("fx_whole_milk")) === "毫升" && (await js(`document.querySelector('#food-sel-fx_whole_milk .food-amount-input').value`)) === "240", "9-7 全脂奶切換不是「毫升」240");
+  await setAmount("fx_whole_milk", 300);
+  await until(`(document.getElementById('food-sel-fx_whole_milk') || {}).innerText.indexOf("300ml") !== -1`, "9-7 全脂奶改 300 沒生效");
+  check((await submitAndUndo("lunch", "9-7")) === "白飯 95g＋全脂奶（自己倒） 300ml", "9-7 紀錄名稱不是「白飯 95g＋全脂奶（自己倒） 300ml」");
+
 
   // ---------- 10. 我的組合（工作線 C，計畫 docs/review/2026-10-01-C-實作計畫.md 第 4 節、第 8 節） ----------
   console.log("[10. 我的組合]");

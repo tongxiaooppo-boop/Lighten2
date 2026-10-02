@@ -2158,8 +2158,11 @@ function checkSavedMealsDb(catalog) {
   const up5 = db.migrateBackup(fixtureV4);
   check(up5.schema_version === 5 && Array.isArray(up5.sections.custom_ingredients) && up5.sections.custom_ingredients.length === 0 && up5.manifest.custom_ingredients === 0 &&
     db.validateBackup(up5).length === 0, "v4 升到 v5 補空的我的食材並且讀得了");
+  const fixtureV5 = JSON.parse(fs.readFileSync(path.join(ROOT, "tools", "fixtures", "backup-v5.json"), "utf8"));
+  check(fixtureV5.schema_version === 5 && Array.isArray(fixtureV5.sections.custom_ingredients) && db.validateBackup(fixtureV5).length === 0,
+    "凍結的 backup-v5.json（smoke 真的匯出）要能還原：" + db.validateBackup(fixtureV5).slice(0, 2).join("；"));
   const T0 = "2026-10-02T00:00:00.000Z";
-  const tfdaIng = { id: "cing_k0112102", source: "tfda", tfda_id: "K0112102", tfda_version: "2025-update1", name: "茶葉蛋", default_amount: null, note: null, created_at: T0, updated_at: T0 };
+  const tfdaIng ={ id: "cing_k0112102", source: "tfda", tfda_id: "K0112102", tfda_version: "2025-update1", name: "茶葉蛋", default_amount: null, note: null, created_at: T0, updated_at: T0 };
   const userIng = { id: "cing_u_abc", source: "user", name: "某牌豆干", group: "protein", drink: false, state: "as_is",
     per_100g: { kcal: 190, protein_g: 17, carb_g: 5, fat_g: 11, fiber_g: null, sat_fat_g: null, sodium_mg: 600 },
     default_amount: 40, allergen_tags: null, vegan: false, lacto_ovo: false, note: null, archived: false, created_at: T0, updated_at: T0 };

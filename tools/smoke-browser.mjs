@@ -131,6 +131,22 @@ async function run() {
     "單品紀錄寫進資料庫的內容不對：" + JSON.stringify(milkLog));
   await js(`document.querySelector('#rec-lunch .rec-undo-btn').click()`);
   await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "撤銷單品紀錄後午餐沒有回到推薦");
+  // 克數記法（切片 8b，decisions #136）：全脂奶切成毫升、改 300 → 寫進資料庫的是 amount、沒有 qty
+  await js(`document.querySelector('#rec-lunch .rec-pick-btn').click()`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden`, "午餐自己選沒有打開（克數記法）");
+  await js(`document.querySelector('#meal-picker-tabs [data-tab=delivery]').click()`);
+  await js(`document.querySelector('#meal-picker-drinks [data-food-uid=fx_whole_milk]').click()`);
+  await js(`document.querySelector('#food-sel-fx_whole_milk [data-food-mode][aria-pressed="false"]').click()`);
+  await js(`(() => { const el = document.querySelector('#food-sel-fx_whole_milk .food-amount-input'); el.value = '300'; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await until(`(document.getElementById('food-sel-fx_whole_milk') || {}).innerText.indexOf("300ml") !== -1`, "全脂奶改成 300 毫升沒有生效");
+  await js(`document.getElementById('meal-picker-submit').click()`);
+  await until(`${text("#rec-lunch")}.indexOf("已記錄") !== -1`, "克數記法送出後午餐沒有變成已記錄");
+  const mlLog = (await dailyLogs()).find((l) => l.slot === "lunch");
+  const ml0 = mlLog && mlLog.content.components[0];
+  check(!!mlLog && mlLog.name === "全脂奶（自己倒） 300ml" && ml0.amount === 300 && !("qty" in ml0) && ml0.snapshot.amount === 240,
+    "克數記法寫進資料庫的內容不對：" + JSON.stringify(mlLog));
+  await js(`document.querySelector('#rec-lunch .rec-undo-btn').click()`);
+  await until(`!!document.querySelector('#rec-lunch .rec-log-btn')`, "撤銷克數紀錄後午餐沒有回到推薦");
   // 自煮分頁不選餐型，搜尋白飯加點單品 → 可以送出，implicit 恰好 0 與 null
   await js(`document.querySelector('#rec-dinner .rec-pick-btn').click()`);
   await until(`!document.getElementById('meal-picker-overlay').hidden`, "晚餐自己選沒有打開（單品）");
@@ -389,8 +405,8 @@ async function run() {
   check(JSON.parse(exported).sections.logs.daily_log.some((l) => l.content.components.some((x) => x.kind === "food")), "備份沒有帶到單品紀錄");
   const favExported = JSON.parse(exported).sections.system.settings.find((x) => x.id === "favorite_refs");
   check(!!favExported && favExported.value.indexOf("fx_rice") !== -1 && favExported.value.some((u) => /^custom/.test(u)), "備份沒有帶到常吃（v4，含白米與複製後的我的品項）");
-  check(JSON.parse(exported).schema_version === 4 && JSON.parse(exported).sections.saved_meals.length === 2 &&
-    JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v3，含單品的組合）");
+  check(JSON.parse(exported).schema_version === 5 && Array.isArray(JSON.parse(exported).sections.custom_ingredients) && JSON.parse(exported).sections.saved_meals.length === 2 &&
+    JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v5，含單品的組合與我的食材區塊）");
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
   // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）

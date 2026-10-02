@@ -2202,6 +2202,10 @@ picker/foods/nullfiber/dom02	#meal-picker-gap html="<p>蛋白質缺口約 45.2g<
 picker/foods/nullfiber/dom03	#meal-picker-hint hidden
 picker/foods/nullfiber/dom05	#meal-picker-submit (untouched)
 picker/foods/nullfiber/dom06	#meal-picker-summary html="已選 2 件 · 約 136 kcal · 蛋白質 9g · 碳水 19g · 脂肪 3g · 纖維 — · 鈉 約 455 mg"
+picker/amount/mixed/dom01	#meal-picker-gap html="<p>蛋白質缺口約 21.3g</p><p>纖維缺口約 11g</p>"
+picker/amount/mixed/dom02	#meal-picker-hint hidden
+picker/amount/mixed/dom04	#meal-picker-submit (untouched)
+picker/amount/mixed/dom05	#meal-picker-summary html="已選 3 件 · 約 376 kcal · 蛋白質 33g · 碳水 31g · 脂肪 13g · 纖維 0g · 鈉 約 161 mg"
 picker/saved/load/saved_s1/lunch/dom01	#meal-picker-gap html="<p>這組合約 956 kcal，這個時段配額約 711 kcal（+245），仍可送出。</p><p>纖維缺口約 6.4g</p>"
 picker/saved/load/saved_s1/lunch/dom02	#meal-picker-hint hidden
 picker/saved/load/saved_s1/lunch/dom04	#meal-picker-submit (untouched)
