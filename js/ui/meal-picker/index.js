@@ -210,6 +210,7 @@ export async function openMealPicker(slotArg, opts) {
   m.foods = foodListsFor(catalog, profile);
   m.foodSections = { cook: foodTreeSections(catalog.foodTree, "cook"), drinks: foodTreeSections(catalog.foodTree, "drinks") };
   m.foodSel = []; m.foodOpen = {}; m.foodQuery = "";
+  m.groupOpen = {}; // 品項分類與現成飲料分組的收合（decisions #144），關掉選擇器再開回到預設
   ensurePickerLookup();
   m.quickAdd = null;
   m.quickAddMessage = null;
@@ -428,7 +429,7 @@ function renderPanel() {
   html += m.notice && !m.notice.drink ? dislikeNoticeHtml(m.notice) : "";
   html += selectedSectionHtml(selectedItems(m.tab), m.qtyByUid, insertedNote, fav);
   html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' +
-    productTabHtml(groups, t.selected, TAB_LABELS[m.tab], fillableReason, favoriteEntries(favSplit.favorites, reasonOf)) +
+    productTabHtml(groups, t.selected, TAB_LABELS[m.tab], fillableReason, favoriteEntries(favSplit.favorites, reasonOf), m.groupOpen) +
     dislikedGroupHtml(split.disliked, false);
   if (m.quickAddMessage) html += '<p class="meal-picker-note">' + escapeHtml(m.quickAddMessage) + "</p>";
   if (m.editing && !m.editForm) { panel.innerHTML = html; return; }
@@ -461,8 +462,12 @@ function renderDrinks() {
   const fav = pickerFavSet();
   const favSplit = splitFavorites(split.rest, fav);
   const drinkReason = function (it) { return m.drinks.reasons[it.uid] || null; };
+  const ownGroup = m.tab === "convenience" ? "convenience" : "delivery";
   const groups = drinkGroups(favSplit.rest, m.tab).map(function (g) {
-    return { label: g.label, entries: g.items.map(function (it) { return { item: it, reason: drinkReason(it) }; }) };
+    const key = "drinks:" + g.key;
+    const hasSel = g.items.some(function (it) { return it.uid === m.drinkUid; });
+    return { key: key, label: g.label, entries: g.items.map(function (it) { return { item: it, reason: drinkReason(it) }; }),
+      open: key in m.groupOpen ? m.groupOpen[key] : g.key === ownGroup || hasSel };
   });
   // 選中那杯的份量與動作放在飲料步驟（三分頁都看得到，B-1a 計畫 2.1 第 17 項）
   const drink = selectedDrink();
@@ -1175,6 +1180,12 @@ export async function closePicker() {
   }
 }
 
+// 品項分類與飲料分組的收合：記住這次選擇器裡的狀態，重畫時照舊（decisions #144）
+function rememberGroupToggle(e) {
+  const key = e.target && e.target.getAttribute && e.target.getAttribute("data-pick-group");
+  if (key && mealPicker.groupOpen) mealPicker.groupOpen[key] = e.target.open;
+}
+
 export function initMealPicker() {
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.addEventListener("click", function (e) { if (e.target === overlay) closePicker(); });
@@ -1183,6 +1194,7 @@ export function initMealPicker() {
   const panel = $("#meal-picker-panel");
   if (panel) {
     panel.addEventListener("click", onPanelClick);
+    panel.addEventListener("toggle", rememberGroupToggle, true);
     panel.addEventListener("input", function (e) { if (e.target.closest && e.target.closest("#quick-add-form")) refreshQuickAddNotes(); });
   }
   const drinks = $("#meal-picker-drinks");
@@ -1208,6 +1220,7 @@ export function initMealPicker() {
       renderDrinks();
       updateSummary();
     });
+    drinks.addEventListener("toggle", rememberGroupToggle, true);
     // 大類、子類收合：記住展開狀態；收合時沒有內容，打開時重畫補上（toggle 不冒泡，用捕獲階段，比照 tab-foods.js）
     drinks.addEventListener("toggle", function (e) {
       const key = e.target && e.target.getAttribute && e.target.getAttribute("data-food-section");

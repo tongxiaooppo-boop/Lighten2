@@ -306,7 +306,7 @@ async function run() {
   await until(`(document.querySelector('#meal-picker-tabs [aria-selected=true]') || {}).dataset.tab === 'delivery'`, "3-7 切到外食分頁沒有反應");
   check(await js(`!!document.querySelector('#meal-picker-drinks [data-drink="tw_dr05"].selected')`), "3-7 切到外食分頁後，剛選的飲料不見了");
   check((await js(text("#meal-picker-gap"))).indexOf("超商分頁還有 2 項沒有算進這餐") !== -1, "3-7 外食分頁沒有提示「超商分頁還有 2 項沒有算進這餐」");
-  check((await js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].map((c) => c.innerText).join('|')`)).indexOf("便當") !== -1, "3-7 外食分頁沒有列出便當");
+  check((await js(`[...document.querySelectorAll('#meal-picker-panel .item-card')].map((c) => c.textContent).join('|')`)).indexOf("便當") !== -1, "3-7 外食分頁沒有列出便當");
   await checkStepNumbers("3-7");
   await shot("自己選-外食分頁（飲料保留）");
   // 3-6 取消 → 沒有記錄；重開回到預設分頁
@@ -1615,10 +1615,18 @@ async function run() {
   await click(`#meal-picker-tabs [data-tab=convenience]`);
   const drinkHeads = () => js(`[...document.querySelectorAll('#meal-picker-drinks .meal-picker-subrole')].map((h) => h.textContent).join(",")`);
   await until(`!!document.querySelector('#meal-picker-drinks .meal-picker-subrole')`, "13-9 現成飲料沒有分組標題");
-  check((await drinkHeads()).indexOf("超商,手搖飲・咖啡・早餐店") === 0, "13-9 超商分頁的飲料分組順序不對：" + (await drinkHeads()));
+  check(/^超商（\d+）,手搖飲・咖啡・早餐店（\d+）/.test(await drinkHeads()), "13-9 超商分頁的飲料分組順序不對：" + (await drinkHeads()));
+  // 13-10 收合（decisions #144）：超商分頁的分類預設收起來；飲料只有超商那組打開
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel details.meal-picker-fold')].length > 0 && [...document.querySelectorAll('#meal-picker-panel details.meal-picker-fold')].every((d) => !d.open)`),
+    "13-10 超商分頁的分類沒有預設收起來");
+  check(await js(`(() => { const d = [...document.querySelectorAll('#meal-picker-drinks details[data-pick-group]')]; return d.length === 2 && d[0].open && !d[1].open; })()`),
+    "13-10 飲料不是只有超商那組打開");
+  await js(`document.querySelector('#meal-picker-panel details.meal-picker-fold').open = true`);
+  await until(`!!document.querySelector('#meal-picker-panel details.meal-picker-fold[open] .item-card')`, "13-10 打開分類沒有品項");
+  await shot("收合-超商分頁", "#meal-picker-panel");
   await shot("飲料分組-超商", "#meal-picker-drinks .meal-picker-subrole");
   await click(`#meal-picker-tabs [data-tab=delivery]`);
-  await until(`(${text("#meal-picker-drinks .meal-picker-subrole")}) === "手搖飲・咖啡・早餐店"`, "13-9 外食分頁的飲料第一組不是手搖飲・咖啡・早餐店");
+  await until(`(${text("#meal-picker-drinks .meal-picker-subrole")}).indexOf("手搖飲・咖啡・早餐店（") === 0`, "13-9 外食分頁的飲料第一組不是手搖飲・咖啡・早餐店");
   await closePicker();
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
