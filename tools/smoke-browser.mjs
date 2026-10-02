@@ -12,7 +12,7 @@ const { send, js, until, check, fail, text } = H;
 const URL_BASE = H.url;
 
 async function run() {
-  console.log("[資料庫升級 v1 → v2（工作線 C）]");
+  console.log("[資料庫升級 v1 → v3（工作線 C、D 切片 8b）]");
   await send("Page.navigate", { url: URL_BASE.replace(/index\.html$/, "data/food_tree.json") });
   await until(`document.readyState === "complete"`, "升級測試的空白頁沒有載入");
   check((await js(`new Promise((res, rej) => { const r = indexedDB.open('lighten2', 1);
@@ -29,7 +29,7 @@ async function run() {
   const upgraded = JSON.parse(await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result;
     const out = { version: db.version, stores: [...db.objectStoreNames].sort() };
     const q = db.transaction('weight_log').objectStore('weight_log').getAll(); q.onsuccess = () => { out.weights = q.result.length; db.close(); res(JSON.stringify(out)); }; }; })`));
-  check(upgraded.version === 2 && upgraded.stores.indexOf("saved_meals") !== -1 && upgraded.weights === 1, "v1 升到 v2 後要有 saved_meals、舊資料還在：" + JSON.stringify(upgraded));
+  check(upgraded.version === 3 && upgraded.stores.indexOf("saved_meals") !== -1 && upgraded.stores.indexOf("custom_ingredients") !== -1 && upgraded.weights === 1, "v1 升到 v3 後要有 saved_meals、custom_ingredients，舊資料還在：" + JSON.stringify(upgraded));
   // 升級測試留下的體重刪掉，後面的檢查照舊
   await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result; const tx = db.transaction('weight_log', 'readwrite');
     tx.objectStore('weight_log').delete('2000-01-05'); tx.oncomplete = () => { db.close(); res(true); }; }; })`);

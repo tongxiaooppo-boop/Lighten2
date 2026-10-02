@@ -4,14 +4,14 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty } from "../core/config.js";
+import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty, isFoodAmount, INGREDIENT_GROUPS } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
 
 const DB_NAME = "lighten2";
-// v2（工作線 C）：saved_meals。部署後不能退回較小的版本（已升級的瀏覽器會打不開，decisions #125）
-const DB_VERSION = 2;
+// v2（工作線 C）：saved_meals；v3（工作線 D 切片 8b）：custom_ingredients。部署後不能退回較小的版本（已升級的瀏覽器會打不開，decisions #125）
+const DB_VERSION = 3;
 const SETTING_PREFIX = "lighten2.";
 const PROFILE_KEY = "primary";
 
@@ -24,6 +24,7 @@ const STORE = {
   recipeFeedback: "recipe_feedback", // key = 推薦組合 id
   settings: "settings",              // key = "lighten2." + 名稱
   savedMeals: "saved_meals",         // keyPath id（我的組合，PRD 11）
+  customIngredients: "custom_ingredients", // keyPath id（我的食材，PRD 12.4）
 };
 
 // 備份檔的格式版本（PRD 11.6）：新增 store、新增 settings key、改變區塊結構就 +1，並在 tools/fixtures/ 凍結一份新版 fixture。
@@ -31,7 +32,8 @@ const STORE = {
 // v2（B-1a）：settings 多了 hidden_catalog_uids；v1→v2 沒有資料要改（v1 檔只是沒有這個 key），BACKUP_MIGRATIONS 不放步驟。
 // v3（工作線 C）：多了 saved_meals；舊檔沒有這個區塊，升級時補成空的，同樣不放步驟。
 // v4（工作線 D 切片 5）：settings 多了 favorite_refs（常吃）；舊檔只是沒有這個 key，不放步驟。
-export const BACKUP_SCHEMA_VERSION = 4;
+// v5（工作線 D 切片 8b）：多了 custom_ingredients；單品元件可以是 amount；舊檔沒有這個區塊，升級時補成空的，不放步驟。
+export const BACKUP_SCHEMA_VERSION = 5;
 const BACKUP_FORMAT = "lighten2-backup";
 
 // 每個 store 在備份檔裡的位置（sections 底下的路徑）。新增 store 一定要加在這裡（check-engine 斷言每個 store 都有位置）。
@@ -44,12 +46,13 @@ export const BACKUP_SECTIONS = {
   exercise_log: ["logs", "exercise_log"],
   custom_foods: ["custom_foods"],
   saved_meals: ["saved_meals"],
+  custom_ingredients: ["custom_ingredients"],
 };
 export const STORE_NAMES = Object.values(STORE);
 
 const BACKUP_LABELS = {
   user_profile: "基本資料", settings: "設定", recipe_feedback: "推薦紀錄", daily_log: "飲食紀錄",
-  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項", saved_meals: "我的組合",
+  weight_log: "體重紀錄", exercise_log: "運動紀錄", custom_foods: "我的品項", saved_meals: "我的組合", custom_ingredients: "我的食材",
 };
 
 let _dbPromise = null;
@@ -67,6 +70,9 @@ function upgrade(db, oldVersion) {
   }
   if (oldVersion < 2) {
     db.createObjectStore(STORE.savedMeals, { keyPath: "id" });
+  }
+  if (oldVersion < 3) {
+    db.createObjectStore(STORE.customIngredients, { keyPath: "id" });
   }
 }
 
@@ -189,6 +195,14 @@ function foodSnapshotProblems(snap, at) {
   return problems;
 }
 
+// 單品的量：qty（0.5 的倍數、0.5–12）或 amount（整數 g/ml 1–3000）恰好一個（PRD 13.4、decisions #138）
+function foodAmountProblems(comp, at) {
+  const hasQty = "qty" in comp, hasAmount = "amount" in comp;
+  if (hasQty === hasAmount) return [at + ".qty/amount"];
+  if (hasQty) return isFoodQty(comp.qty) ? [] : [at + ".qty"];
+  return isFoodAmount(comp.amount) ? [] : [at + ".amount"];
+}
+
 // 自煮的一餐沒有食材（只有單品、飲料）：沒有餐型與烹調法，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123、章程 C4.11）
 function noIngredientCookProblems(c) {
   const problems = [];
@@ -223,7 +237,7 @@ function contentProblems(c, mealType) {
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
     } else if (comp.kind === "food") {
       if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
-      if (!isFoodQty(comp.qty)) problems.push(at + ".qty"); // 0.5 的倍數、0.5–12（PRD 13.4）
+      Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
       Array.prototype.push.apply(problems, foodSnapshotProblems(comp.snapshot, at));
     } else {
       if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
@@ -298,6 +312,58 @@ export function validateCustomFood(food) {
   if (problems.length > 0) throw new Error("[db.js] 我的品項格式不對：" + problems.join("、"));
 }
 
+// 我的食材（PRD 12.4 切片 8b 定案、decisions #138）。衛福部來源只存名稱、一份、備註，其餘執行時讀查詢檔；
+// id 固定＝"cing_" + 整合編號小寫（同一樣品一筆；移除後再加回，組合的引用恢復）。自填 id 以 cing_u_ 開頭。
+const TFDA_ID_RE = /^[A-Z][0-9A-Z]{5,8}$/;
+const INGREDIENT_STATES = ["raw", "cooked", "as_is"];
+const TFDA_INGREDIENT_KEYS = ["id", "source", "tfda_id", "tfda_version", "name", "default_amount", "note", "created_at", "updated_at"];
+
+export function validateCustomIngredient(rec) {
+  assertRecord(rec, "custom_ingredients");
+  if (!isPlainObject(rec)) throw new Error("[db.js] 我的食材必須是物件");
+  const problems = [];
+  if (typeof rec.name !== "string" || rec.name.trim() === "") problems.push("name");
+  const amt = rec.default_amount;
+  if (!("default_amount" in rec) || (amt !== null && (!isNum(amt) || !(amt > 0) || amt > 3000))) problems.push("default_amount");
+  if (rec.note !== undefined && rec.note !== null && typeof rec.note !== "string") problems.push("note");
+  ["created_at", "updated_at"].forEach(function (k) {
+    if (typeof rec[k] !== "string" || isNaN(Date.parse(rec[k]))) problems.push(k);
+  });
+  if (rec.source === "tfda") {
+    if (typeof rec.tfda_id !== "string" || !TFDA_ID_RE.test(rec.tfda_id)) problems.push("tfda_id");
+    else if (rec.id !== "cing_" + rec.tfda_id.toLowerCase()) problems.push("id");
+    if (typeof rec.tfda_version !== "string" || rec.tfda_version === "") problems.push("tfda_version");
+    Object.keys(rec).forEach(function (k) { if (TFDA_INGREDIENT_KEYS.indexOf(k) === -1) problems.push(k + "（衛福部來源不存）"); });
+  } else if (rec.source === "user") {
+    if (typeof rec.id !== "string" || !/^cing_u_/.test(rec.id)) problems.push("id");
+    if (INGREDIENT_GROUPS.indexOf(rec.group) === -1) problems.push("group");
+    if (typeof rec.drink !== "boolean") problems.push("drink");
+    if (INGREDIENT_STATES.indexOf(rec.state) === -1) problems.push("state");
+    const p = rec.per_100g;
+    if (!isPlainObject(p) || !isNum(p.kcal) || p.kcal < 0) problems.push("per_100g.kcal");
+    else OPTIONAL_NUTRIENTS.forEach(function (k) {
+      if (!(k in p) || (p[k] !== null && (!isNum(p[k]) || p[k] < 0))) problems.push("per_100g." + k);
+    });
+    const tags = rec.allergen_tags;
+    if (!("allergen_tags" in rec) || (tags !== null && (!Array.isArray(tags) ||
+        tags.some(function (t) { return ALLERGEN_OPTIONS.indexOf(t) === -1 && t !== UNVERIFIED_ALLERGEN; })))) problems.push("allergen_tags");
+    ["archived", "vegan", "lacto_ovo"].forEach(function (k) { if (typeof rec[k] !== "boolean") problems.push(k); });
+  } else problems.push("source");
+  if (problems.length > 0) throw new Error("[db.js] 我的食材格式不對：" + problems.join("、"));
+}
+
+// 修改我的食材（純函式，fake-db 共用）：衛福部來源只准改名稱、一份、備註（decisions #136 ③）；誰都不能改 id、來源、時間戳
+const TFDA_PATCHABLE = ["name", "default_amount", "note"];
+export function applyCustomIngredientPatch(old, patch, now) {
+  Object.keys(patch).forEach(function (k) {
+    if (["id", "source", "tfda_id", "tfda_version", "created_at", "updated_at"].indexOf(k) !== -1) throw new Error("[db.js] 我的食材不能改 " + k);
+    if (old.source === "tfda" && TFDA_PATCHABLE.indexOf(k) === -1) throw new Error("[db.js] 衛福部來源的我的食材只能改名稱、一份幾克、備註（" + k + "）");
+  });
+  const next = Object.assign({}, old, patch, { updated_at: now });
+  validateCustomIngredient(next);
+  return next;
+}
+
 function isPlainObject(v) {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
@@ -332,7 +398,7 @@ function savedContentProblems(c) {
     } else if (comp.kind === "product") {
       if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty");
       if ("role" in comp) problems.push(at + ".role");
-    } else if (!isFoodQty(comp.qty)) problems.push(at + ".qty");
+    } else Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
   });
   return problems;
 }
@@ -584,6 +650,7 @@ export function validateBackup(obj, ctx) { // eslint-disable-line no-unused-vars
         else if (store === STORE.exerciseLog) validateExerciseLog(rec);
         else if (store === STORE.customFoods) validateCustomFood(rec);
         else if (store === STORE.savedMeals) validateSavedMeal(rec);
+        else if (store === STORE.customIngredients) validateCustomIngredient(rec);
         else throw new Error("沒有驗證器（新增 store 要在 validateBackup 補上）");
       } catch (e) {
         problems.push(at + errText(e));
@@ -852,6 +919,72 @@ export async function updateCustomFood(id, patch) {
       return reqPromise(store.put(next)).then(function () { return next; });
     });
   });
+}
+
+// ---------- 5b. custom_ingredients（我的食材，PRD 12.4、decisions #138） ----------
+
+export async function getCustomIngredients() {
+  return withStores([STORE.customIngredients], "readonly", function (s) {
+    return reqPromise(s[STORE.customIngredients].getAll());
+  });
+}
+
+// 新增。衛福部來源：{ source: "tfda", tfda_id, tfda_version, name, default_amount, note }（id 由 tfda_id 決定，已存在丟錯）；
+// 自填：{ source: "user", … }（id 在這裡產生）。回傳寫入的紀錄。
+export async function addCustomIngredient(rec) {
+  assertRecord(rec, "custom_ingredients");
+  const now = new Date().toISOString();
+  const base = rec.source === "tfda"
+    ? { id: "cing_" + String(rec.tfda_id || "").toLowerCase() }
+    : { id: generateId("cing_u"), archived: false };
+  const record = Object.assign({ note: null }, rec, base, { created_at: now, updated_at: now });
+  validateCustomIngredient(record);
+  await withStores([STORE.customIngredients], "readwrite", function (s) {
+    return reqPromise(s[STORE.customIngredients].add(record)); // add：同一個衛福部樣品已存在時丟 ConstraintError
+  });
+  return record;
+}
+
+// 修改（編輯、自填的刪除／還原＝archived）。一個 transaction 讀改寫；找不到 id 丟錯
+export async function updateCustomIngredient(id, patch) {
+  if (typeof id !== "string" || id === "") throw new Error("[db.js] updateCustomIngredient 需要 id");
+  assertRecord(patch, "custom_ingredients 的修改");
+  const now = new Date().toISOString();
+  return withStores([STORE.customIngredients], "readwrite", function (s) {
+    const store = s[STORE.customIngredients];
+    return reqPromise(store.get(id)).then(function (old) {
+      if (!old) throw new Error("[db.js] 找不到我的食材：" + id);
+      const next = applyCustomIngredientPatch(old, patch, now);
+      return reqPromise(store.put(next)).then(function () { return next; });
+    });
+  });
+}
+
+// 衛福部來源的「不吃」＝移除（decisions #134）：刪紀錄，同一個 transaction 移出常吃（id 會重用，復原時不放回）。回傳被刪的紀錄（給復原）
+export async function removeTfdaIngredient(id) {
+  return withStores([STORE.customIngredients, STORE.settings], "readwrite", function (s) {
+    const store = s[STORE.customIngredients];
+    return reqPromise(store.get(id)).then(function (old) {
+      if (!old || old.source !== "tfda") throw new Error("[db.js] 不是衛福部來源的我的食材：" + id);
+      store.delete(id);
+      const settings = s[STORE.settings];
+      return reqPromise(settings.get(FAVORITE_KEY)).then(function (v) {
+        if (Array.isArray(v) && v.indexOf(id) !== -1) settings.put(removeFavoriteFrom(v, id), FAVORITE_KEY);
+        return old;
+      });
+    });
+  });
+}
+
+// 移除後的「復原」：原樣放回（名稱、一份、備註、created_at 都保留，審核 M8）；常吃不放回
+export async function restoreTfdaIngredient(old) {
+  if (!old || old.source !== "tfda") throw new Error("[db.js] restoreTfdaIngredient 只收衛福部來源");
+  const record = Object.assign({}, old, { updated_at: new Date().toISOString() });
+  validateCustomIngredient(record);
+  await withStores([STORE.customIngredients], "readwrite", function (s) {
+    return reqPromise(s[STORE.customIngredients].add(record));
+  });
+  return record;
 }
 
 const HIDDEN_KEY = SETTING_PREFIX + "hidden_catalog_uids";

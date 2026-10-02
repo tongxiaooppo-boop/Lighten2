@@ -88,6 +88,7 @@ module.exports = async function createV2Adapter(ROOT) {
         exerciseLogs: clone(state.exerciseLogs) || [],
         settings: clone(state.settings) || {},
         savedMeals: clone(state.savedMeals) || [],
+        customIngredients: clone(state.customIngredients) || [],
         writes: [],
       };
       fdb.__resetSeq();
