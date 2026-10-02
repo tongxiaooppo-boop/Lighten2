@@ -29,7 +29,7 @@ async function run() {
   const upgraded = JSON.parse(await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result;
     const out = { version: db.version, stores: [...db.objectStoreNames].sort() };
     const q = db.transaction('weight_log').objectStore('weight_log').getAll(); q.onsuccess = () => { out.weights = q.result.length; db.close(); res(JSON.stringify(out)); }; }; })`));
-  check(upgraded.version === 3 && upgraded.stores.indexOf("saved_meals") !== -1 && upgraded.stores.indexOf("custom_ingredients") !== -1 && upgraded.weights === 1, "v1 升到 v3 後要有 saved_meals、custom_ingredients，舊資料還在：" + JSON.stringify(upgraded));
+  check(upgraded.version === 4 && upgraded.stores.indexOf("saved_meals") !== -1 && upgraded.stores.indexOf("custom_ingredients") !== -1 && upgraded.stores.indexOf("meal_plan") !== -1 && upgraded.weights === 1, "v1 升到 v4 後要有 saved_meals、custom_ingredients、meal_plan，舊資料還在：" + JSON.stringify(upgraded));
   // 升級測試留下的體重刪掉，後面的檢查照舊
   await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result; const tx = db.transaction('weight_log', 'readwrite');
     tx.objectStore('weight_log').delete('2000-01-05'); tx.oncomplete = () => { db.close(); res(true); }; }; })`);
@@ -433,8 +433,8 @@ async function run() {
   check(JSON.parse(exported).sections.logs.daily_log.some((l) => l.content.components.some((x) => x.kind === "food")), "備份沒有帶到單品紀錄");
   const favExported = JSON.parse(exported).sections.system.settings.find((x) => x.id === "favorite_refs");
   check(!!favExported && favExported.value.indexOf("fx_rice") !== -1 && favExported.value.some((u) => /^custom/.test(u)), "備份沒有帶到常吃（v4，含白米與複製後的我的品項）");
-  check(JSON.parse(exported).schema_version === 5 && Array.isArray(JSON.parse(exported).sections.custom_ingredients) && JSON.parse(exported).sections.saved_meals.length === 2 &&
-    JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v5，含單品的組合與我的食材區塊）");
+  check(JSON.parse(exported).schema_version === 6 && Array.isArray(JSON.parse(exported).sections.custom_ingredients) && Array.isArray(JSON.parse(exported).sections.meal_plan) && JSON.parse(exported).sections.saved_meals.length === 2 &&
+    JSON.parse(exported).sections.saved_meals.some((r) => r.content.components.some((x) => x.kind === "food")), "備份沒有帶到我的組合（v6，含單品的組合、我的食材與預約區塊）");
   const selfCheck = await js(`(async () => { const m = ${DB}; return m.validateBackup(m.migrateBackup(JSON.parse(${JSON.stringify(exported)}))); })()`);
   check(Array.isArray(selfCheck) && selfCheck.length === 0, "smoke 流程寫進去的資料匯出後不能還原：" + JSON.stringify(selfCheck).slice(0, 300));
   // 取代：多寫一筆、改一個設定，還原後回到匯出時的樣子（id 保留、多寫的消失）

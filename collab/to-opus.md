@@ -1,8 +1,18 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-02 收工：切片 8 我的食材完成、推送、使用者手機測過；下一步日期切換與預約）
+# 給接手的 Opus：Lighten2 交接（2026-10-02 晚：日期切換與預約 切片 0、1 完成，下一步切片 2 畫面）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**2026-10-02 最新（先讀）**：
+**2026-10-02 晚 日期切換（最新，先讀這段）**：
+- 依據：decisions #140（方向）、#141（U1–U5）、#142（第一輪審核的使用者決定；**使用者決定改完 PRD 就開工，不做第二輪審核**）。設計草案 [docs/review/2026-10-02-日期切換-設計草案.md](../docs/review/2026-10-02-日期切換-設計草案.md)，**第 9 節為準**（審核 M1–M13、S1–S10 的處理與切片）。審核逐字 `collab/opus-review-log/2026-10-02-date-switch-design-review.md`（一輪）。
+- `dbf157b` 修了 PRD 舊問題：5261fec 用 JS replace 寫入「$ 加反引號」，第 0.1–12 節被重複插入（788→1346 行），已還原。**腳本改文件一律 split/join 或 Python，不用 JS replace。**
+- 切片 0（`d6917b1`，Sonnet 起稿、Opus 驗收）：PRD 1、3、4、5.1、6.1、6.2、7、9、11.3；章程 C1.5、C2、C4.10、C4.15–C4.17。
+- 切片 1a（`7b8da4d` db）：`meal_plan`（DB v4、備份 v6；keyPath id＝日期|時段；`validateMealPlan`、`getMealPlans`、`setMealPlan`、`setMealPlanWithSavedMeal`、`deleteMealPlan`、`purgeOldMealPlans`）、`skipped` 紀錄、`last_shown_recs`（`getLastShownRecs`／`setLastShownRecs`）、`addDailyLog(entry, { today, minDate })`（`logDateProblem`）；config `LOG_SOURCES` 加 skipped、`BACKFILL_DAYS`、`ESTIMATE_RECALL_KCAL`／`ESTIMATE_RECALL_GROUP`；fake-db 同步。
+- 切片 1b（`aa4f6ba` engine）：meal-content `toPlanContent`、`resolvePlan`（skip／ok／invalid）、`planPseudoLog`、`skippedLogEntry`、`PLAN_SKIP_CONTENT`／`isSkipPlan`；today `effectiveTodayLogs`、`planToday({ …, todayPlans })` 回傳 `plannedSlots`／`plannedKcal`。check-engine 43460、smoke 54、快照逐字不變。
+- 跟草案的偏離：`plan.txt` 快照沒在切片 1 錄（用 check-engine 斷言代替），切片 2 跟畫面一起錄；v3→v4 升級用既有的 v1→v4 smoke 涵蓋；backup-v6 fixture 等畫面能建預約後（切片 2／3）用 `SMOKE_FREEZE_BACKUP` 凍結。
+- **下一步切片 2**（草案第 9 節）：新檔 `js/ui/today-plans.js`（`loadTodayPlans`：讀今天的預約 → saved-ctx → `resolvePlan` → `planPseudoLog`；加進 check-arch C4.16 白名單與 `getMealPlans` 讀取白名單）；`tab-today.js` 日期列（七個圓點、位移保存、`visibilitychange` 重畫）、`renderRecs` 順序「紀錄→預約→關閉→推薦」、預約卡片（記下／改／取消預約；失效寫 `savedMealUnavailableLine`）、今天「這餐不吃」（關掉的時段不給）、配額因預約變低時的中性句（#142②）、未來日子 `renderFutureDay`（不跑推薦、頂端「已排 N 餐，約 X kcal」）；`today-hero.js` 多一行「已排」（主數字不扣預約、allLogged 只看紀錄、差額加預約）；選擇器 `openMealPicker(slot, { date, mode: "plan", planPreset })`（打開時記 m.date；plan 不顯示份額缺口；估算卡要出現；rememberMealType 只在 log；送出寫 `setMealPlan`／`setMealPlanWithSavedMeal`）。驗收：recs、picker、tdee 逐字不變，ui 只准新增行；walkthrough 新一節、截圖逐張看；手機腳本給行號。
+- 使用者週額度 2026-10-02 晚剩約 18%：不複雜的工作（文件、查詢、使用說明）交 Sonnet。**推送前先問使用者**（切片 0、1 都還沒推送）。
+
+**2026-10-02 白天**：
 - 已推送：`f9200bf` 8a 衛福部查詢檔（`data/tfda_lookup.json`、`tools/build-tfda-lookup.js`、`data/reference/tfda_tags.json`／`tfda_groups.json`）；`1286f63` 查詢檔缺值補 0；`8f11984` 8b 計畫第三版。decisions #134（使用者：分類篩選、顯示位置、衛福部／自填標示、生熟固定、說法統一）、#135（8a 技術）、#136（使用者：克數記法全部單品、一份留空＋參考、衛福部過敏原不能改）、#137（補 0）；#138 留給 8b 技術定案。
 - **8b 計畫** [docs/review/2026-10-02-D8b-實作計畫.md](../docs/review/2026-10-02-D8b-實作計畫.md)：兩輪審核逐字 `collab/opus-review-log/2026-10-02-d8b-plan-review.md`；**第 8、9 節為準**。拆 8b-1（db、engine 克數記法、份／克切換、說法統一 → 使用者手機測一次）與 8b-2（新增食材、自填、我的食材組）。
 - **8b-1 已完成（commit ①–⑥：`docs PRD #138`、`34e6cc7` db、`621f2b2` engine、`9cf017e` 說法統一、`8f9618d` 份／克切換＋saved-ctx、`eb9493c` tools）**：check-engine 43k、smoke 51、walkthrough 489 全過，截圖看過（含 360 寬）；快照只新增 amount/mixed 7 行。手機腳本短清單第 10 項＝這次要測的。使用說明交 Sonnet 改（說法＋份／克），Opus 驗收後 commit（已完成、已推送）。
