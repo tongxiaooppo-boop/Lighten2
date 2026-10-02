@@ -130,3 +130,82 @@
 | Q9 | 修改 | 前提不成立（M11）：快照裡沒有任何「封存」「隱藏」文字；改成「commit 4 diff-recs 必須 0 行差異」，walkthrough 780–798 在 commit 4 一起改（M10） |
 
 **U2 參考句**：例句「代換表 1 份約 35g（生）」可用；其餘大類照 S4 表，水果建議不給數字（回 null）；整張表要跟 food_tree.json 對照或直接由它推出。
+
+## 第二輪：問題（逐字）
+
+你是獨立審核者，請用中文回覆，不要改任何檔案。專案 d:\ok\lighten（純前端 vanilla JS＋IndexedDB 的飲食追蹤 App）。
+
+第一輪你（另一個審核者）審了 `docs/review/2026-10-02-D8b-實作計畫.md`，意見逐字在 `collab/opus-review-log/2026-10-02-d8b-plan-review.md`（M1–M12、S1–S10）。作者已改成第二版，處理對照在計畫**第 8 節**（以第 8 節為準），M1 已實作於 commit 1286f63（`tools/lib/tfda-lookup-values.js`、`data/tfda_lookup.json` 的 `zero_filled`）。
+
+請只做第二輪：
+1. 逐條確認第 8 節對 M1–M12、S1–S10 的處理是否真的解決問題（必要時打開程式碼核對，例如 js/engine/foods.js 的 `isFoodTreeItem` 所有呼叫端、js/data/catalog.js `normalizeFoodTree`、tools/check-arch.js 的 C4.16 白名單規則、js/ui/tab-foods.js 能不能讀組合）。
+2. 檢查第二版新引入的設計是否有新問題：`default_amount` 改名、`isFoodTreeItem` 改看 `kind === "tree"`、新檔 `js/ui/saved-ctx.js` 與 C4.16 白名單、`defaultAmountHint` 從 food_tree 代表品項讀數字、M9 tfda_id 正則 `/^[A-Z][0-9A-Z]{5,8}$/`（查詢檔實際編號格式請實測 data/tfda_lookup.json）、8b-1／8b-2 拆法與 commit ①–⑨ 每個能不能過 pre-commit hook（check-data、check-engine、check-arch、diff-recs）。
+3. 抽驗 commit 1286f63 的 M1 實作是否正確（補 0 的欄位與 B5.1 白名單一致、check-data 會重算比對）。
+
+輸出：一句總結論（「改完可以開工」或「要第三版」），然後「必改」「建議」清單（每條：問題、證據 檔案:行號、改法），控制在 150 行內。
+
+## 第二輪：回覆（逐字）
+
+# D8b 計畫第二輪審核
+
+**總結論：要第三版，但只是小改**——M1–M11、S1–S10 大致都真的處理掉了，M1 實作也正確；卡住的是第二版**新引入**的三個設計（`isFoodTreeItem` 改看 `kind` 會讓我的食材從選擇器已選框消失、`defaultAmountHint` 的鍵粒度不夠會給錯數字、`saved-ctx.js` 不該進 C4.16 白名單）。改法都很明確，作者照下面改完自查即可開工，不必再送一輪完整審核。
+
+---
+
+## 必改
+
+**N1. `isFoodTreeItem` 改看 `kind === "tree"` 會讓我的食材被分到「超商」，已選框看不到（M12 改法本身有問題）**
+- 問題：`foodsWhereOf`（foods.js:97–101）在「不是分層品項」時落到 `role`／`is_taiwan`／`channel` 判斷，我的食材三者皆無 → 一律回 `"convenience"`。選擇器已選框以它過濾（food-step.js:89 `foodsWhereOf(x.item) === where`）→ 兩個步驟都不顯示已選的我的食材；搜尋結果的「在飲品・水果」標籤（food-step.js:140）也錯；「我的食物」搜尋與位置判斷同理。另外第 8 節 M12 只寫「`source === "user"` 時回飲食限制未確認」，隱含衛福部食材會走分層分支——但改看 `kind` 後衛福部食材在 foods.js:295 也會走「未確認」，跟「8a 人工標註可以說不符合」的意圖相反。
+- 證據：foods.js:91–101、:132、:295、:326；food-step.js:89、:140；check-engine.js:1355。
+- 改法：計畫要逐一寫明每個呼叫端要的語意。建議二選一：(a) 保留「有 `group`」＝「單品（分層＋我的食材）」，另加 `isMyIngredient(item)`；:326 `dislikedMessage` 改 `isFoodTreeItem && !isMyIngredient`，:295 改「(分層 或 衛福部來源) 且非未確認」；或 (b) 照第二版改 `kind`，但 `foodsWhereOf` 另加我的食材分支（液體或水果 → drinks，其餘 → cook）。無論哪個，check-engine 斷言我的食材的 `foodsWhereOf`、衛福部「不符合」、自填「未確認」。
+
+**N2. `defaultAmountHint(group, state, drink, foodTree)` 的鍵分不出蛋／肉／豆、油／堅果（S4 改法本身有問題）**
+- 問題：查詢檔 listed 沒有子類，實測同一鍵混了不同東西：`protein|raw` 有肉類 120、魚貝 276、**蛋類 27**、豆類 6——一顆蛋會拿到雞胸「約 30g」（雞蛋 1 份 55g）；`protein|as_is|drink` 是豆漿 2 筆（應對 `soy_milk` 190ml，計畫對照表沒有這格）；`fat|as_is` 有油脂 28＋堅果 2；`grain|dry` 有 6 筆乾豆；`dairy|as_is` 非液體 19 筆起司與奶粉混在一起；狀態還有 `wet`（7）沒處理。
+- 證據：`data/tfda_lookup.json` 實測（node 統計 group×state×category）；food_tree `chicken_breast` 30g、`egg` 55g、`soy_milk` 190ml、`fx_peanut` 13g、`fx_soybean_oil` 5g。
+- 改法：衛福部來源的鍵改用**衛福部食品分類×狀態**（再加 drink），對不到回 null；自填只有大類（protein/grain/fat 不可分），建議自填一律回 null（或只給 dairy 液體、vegetable 這種無歧義的）。對照表寫具體 id（不要「任一葉菜」，寫例如 `cabbage`），check-engine 斷言每個 id 存在。
+
+**N3. `js/ui/saved-ctx.js` 不要加進 C4.16 白名單（第 8 節 M6 的寫法跟章程衝突，也跟 2.1-F「白名單不變」自相矛盾）**
+- 問題：C4.16 白名單只管誰能 import `listSavedMeals`／`getSavedMeal`／`exportAllData`（check-arch.js:26、:290–296）；saved-ctx.js 只組 ctx、不讀組合，本來就不需要白名單。CHARTER.md:308 規定白名單「只能加入」五類職責的檔案，共用 ctx 不屬於任何一類；加進去反而放寬了檢查（日後在這支檔案讀組合 check-arch 也不會擋）。
+- 改法：不加白名單，2.1-F 維持「C4.16 白名單不變」。另外 S9 要現在定案：tab-foods.js 被 check-arch.js:377 明確斷言**不能**進白名單，所以組合引用數由 `js/ui/foods/saved-meals.js` 匯出計數函式提供（tab-foods.js:18 已 import 它，它的 state 已有 `records`）。
+
+---
+
+## 建議
+
+**S-a. 第一版正文還沒跟第 8 節同步**：計畫:36、:123 技術定案仍寫 #137（#137 已被 M1 用掉，應為 #138）；2.1-B／C／D 全文仍是 `default_g`（:44、:47、:51、:52、:64、:72）；:90「C4.16 白名單不變」 vs :160「加白名單」；:113 Q9 仍是舊寫法。建議直接把正文改成定案內容，不要靠「以第 8 節為準」，實作時才不會照錯段落。
+
+**S-b. `ingredientItem` 的 `source: "tfda"|"user"` 跟分層品項的 `source`（物件）同名不同型**：food_tree 每筆有 `source: {type, ref, note, derivation}`，foods.js:256 讀 `item.source.derivation`、catalog.js:42、:64 也讀 `source`。改名 `origin`（或 `ing_source`），避免日後明細共用函式時把字串當物件讀。
+
+**S-c. `foodTreeSections` 只能傳分層品項**：foods.js:115 乳品類只有一個 `code: null` 子類，會吃進所有 `group === "dairy"` 的品項；:128 `homeDrinks` 用 `home_drink` 過濾而 `ingredientItem` 給了 `home_drink: drink`。若把「分層＋我的食材」合併後的 items 傳進去（計畫:141 寫得模糊），我的食材會混進代換表乳品組與家裡的飲品、重複出現。明寫 `foodTreeSections` 只收 `catalog.foodTree`，我的食材只走 `ingredientSections`；check-engine 斷言合併後 sections 裡同一 uid 只出現一次。
+
+**S-d. diff-recs 的克數寫法帶單位**：計畫寫 `food:ref=Ng`，液體會是 ml——改 `food:ref=N<unit>`（用 `snapshot.unit`）。另 S2 不進位的 `per_serving` 會讓 `@kcal` 印出長小數，`normContent` 印之前先 round1，快照才可讀。
+
+**S-e. `saved-ctx.js` 的 commit 歸屬沒寫**：建議放在 ③ 或 ⑤（8b-1）——engine fail-closed（遇 `cing_` 而 ctx 沒帶 `customIngredients` 就丟錯）跟三個呼叫端改用它要同一段完成，不要拖到 8b-2，否則 8b-1 期間匯入含 `cing_` 的 v5 備份時今日建議／組合管理會直接丟錯。
+
+**S-f. M9 正則可接受**：實測查詢檔 2213 筆全是大寫英數，長度只有 6（97 筆，例 A05001 秈米平均值；listed 50）或 8（2116），`/^[A-Z][0-9A-Z]{5,8}$/` 0 筆不合；小寫 id 不重複（2213）。沒有 U 開頭編號，就算有也不會撞 `cing_u_`（衛福部編號無底線）。不用改。
+
+**S-g. 衛福部食材的 g／ml 跟著查詢檔 `drink` 走（紀錄不存）**：日後查詢檔改版若改了 `drink` 分類，同一個 `default_amount` 的單位會變；1ml≈1g 下數值影響可忽略，但 PRD 12.4 寫一句「單位跟著查詢檔」較好。
+
+---
+
+## 第一輪逐條確認（未列者皆已解決）
+
+- **M2–M5、M7、M8、M10、M11**：處理正確。M4 列的行號都核對過（meal-content.js:590/679/734/881/906，food-step.js:16/95–100，index.js:231/278）。M10 的 check-engine.js:2030（`=== 4`）與 :1081（store 要登記在 BACKUP_SECTIONS）在 commit ② 改沒問題；backup-v5 在 ⑥ 凍結不影響 hook（check-engine 到 ⑥ 才讀它）。M11：commit ④ 要求 diff-recs 0 行差異成立。
+- **M6**：方向對，白名單部分見 N3。
+- **M9**：見 S-f。
+- **M12**：見 N1。
+- **S1–S3、S5–S8、S10**：同意。
+- **S4**：見 N2。
+- **S9**：見 N3。
+
+**8b-1／8b-2 拆法與 hook**：①–⑨ 每個都能過 check-data／check-engine／check-arch／diff-recs，前提是 N1 的 `foodsWhereOf` 修正跟 `isFoodTreeItem` 的改動放同一個 commit ③。smoke／walkthrough 不在 hook，照第 8 節 M10 安排即可。
+
+---
+
+## M1 抽驗（commit 1286f63）：正確
+
+- `tools/lib/tfda-lookup-values.js:63–68` 用分層同一份 `autoZeroFill`／`fieldSourcesOf`；白名單是 food-tree-values.js:78–83 `ZERO_FILL`，跟 CHARTER.md:162–169 B5.1 表格完全一致（依衛福部食品分類、只補衛福部原值 null 的欄位〔food-tree-values.js:101〕、蔬菜／水果另有脂肪 ≤0.5 條件）。
+- 實測 `zero_filled` 分布：protein:fiber 533、dairy:fiber 62、fat:fiber 41、fat:sodium 32、vegetable:sat_fat 141、fruit:sat_fat 101——沒有任何白名單以外的組合。
+- check-data.js:353–355 重算整份查詢檔並逐字比對（所以 `zero_filled` 與補上的 0 也在比對範圍），且 check-data.js:388–393 有加工品不准補 0 的反例斷言。實跑 `node tools/check-data.js` 通過（1 個既有警告）。
+- 小提醒：commit 訊息寫的 decisions 編號（#136、#137）正確，但計畫:36、:123 也要跟著改成 #138（見 S-a）。
+
