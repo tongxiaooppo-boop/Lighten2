@@ -1,0 +1,1401 @@
+{
+  "_by": "Gemini 2.5",
+  "_date": "2026-10-02",
+  "items": [
+    {
+      "no": 1,
+      "name": "統一 陽光高纖豆漿（無糖，瓶裝 450ml）",
+      "group": "超商",
+      "serving_ml": 450,
+      "kcal": 146.3,
+      "protein_g": 14.4,
+      "carb_g": 11.7,
+      "fat_g": 5.0,
+      "sat_fat_g": 0.9,
+      "sodium_mg": 113,
+      "fiber_g": 9.0,
+      "sugar_g": 2.3,
+      "allergen_tags": [
+        "黃豆"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "fiber_g",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.uni-sunshine.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 32.5kcal、蛋白質 3.2g、脂肪 1.1g (飽和脂肪 0.2g)、碳水化合物 2.6g (膳食纖維 2.0g、糖 0.5g)、鈉 25mg。乘以 4.5 換算。"
+    },
+    {
+      "no": 2,
+      "name": "統一 陽光高纖豆漿（低糖，瓶裝 450ml）",
+      "group": "超商",
+      "serving_ml": 450,
+      "kcal": 182.3,
+      "protein_g": 14.0,
+      "carb_g": 20.3,
+      "fat_g": 5.0,
+      "sat_fat_g": 0.9,
+      "sodium_mg": 113,
+      "fiber_g": 9.0,
+      "sugar_g": 11.3,
+      "allergen_tags": [
+        "黃豆"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "fiber_g",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.uni-sunshine.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 40.5kcal、蛋白質 3.1g、脂肪 1.1g (飽和脂肪 0.2g)、碳水化合物 4.5g (膳食纖維 2.0g、糖 2.5g)、鈉 25mg。乘以 4.5 換算。"
+    },
+    {
+      "no": 3,
+      "name": "原萃 綠茶（寶特瓶 580ml）",
+      "group": "超商",
+      "serving_ml": 580,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 58,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 0kcal、蛋白質 0g、脂肪 0g、碳水化合物 0g (糖 0g)、鈉 10mg。乘以 5.8 換算。"
+    },
+    {
+      "no": 4,
+      "name": "原萃 烏龍茶（寶特瓶 580ml）",
+      "group": "超商",
+      "serving_ml": 580,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 58,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 0kcal、蛋白質 0g、脂肪 0g、碳水化合物 0g (糖 0g)、鈉 10mg。乘以 5.8 換算。"
+    },
+    {
+      "no": 5,
+      "name": "純喫茶 檸檬紅茶（新鮮屋 650ml）",
+      "group": "超商",
+      "serving_ml": 650,
+      "kcal": 240.5,
+      "protein_g": 0,
+      "carb_g": 60.5,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 85,
+      "fiber_g": null,
+      "sugar_g": 58.5,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.pecos.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 37kcal、蛋白質 0g、脂肪 0g、碳水化合物 9.3g (糖 9.0g)、鈉 13mg。乘以 6.5 換算。"
+    },
+    {
+      "no": 6,
+      "name": "純喫茶 鮮柚綠茶（新鮮屋 650ml）",
+      "group": "超商",
+      "serving_ml": 650,
+      "kcal": 221.0,
+      "protein_g": 0,
+      "carb_g": 55.3,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 78,
+      "fiber_g": null,
+      "sugar_g": 53.3,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.pecos.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 34kcal、蛋白質 0g、脂肪 0g、碳水化合物 8.5g (糖 8.2g)、鈉 12mg。乘以 6.5 換算。"
+    },
+    {
+      "no": 7,
+      "name": "麥香 紅茶（箔包 300ml）",
+      "group": "超商",
+      "serving_ml": 300,
+      "kcal": 114.0,
+      "protein_g": 0,
+      "carb_g": 28.5,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 24,
+      "fiber_g": null,
+      "sugar_g": 27.0,
+      "allergen_tags": [
+        "麩質"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.pecos.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包含大麥萃取物，標註過敏原麩質。每 100ml: 熱量 38kcal、蛋白質 0g、脂肪 0g、碳水化合物 9.5g (糖 9.0g)、鈉 8mg。乘以 3.0 換算。"
+    },
+    {
+      "no": 8,
+      "name": "麥香 奶茶（箔包 300ml）",
+      "group": "超商",
+      "serving_ml": 300,
+      "kcal": 132.0,
+      "protein_g": 0.6,
+      "carb_g": 27.0,
+      "fat_g": 2.4,
+      "sat_fat_g": 1.8,
+      "sodium_mg": 48,
+      "fiber_g": null,
+      "sugar_g": 25.2,
+      "allergen_tags": [
+        "乳製品",
+        "麩質"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.pecos.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "含乳粉與大麥萃取物。每 100ml: 熱量 44kcal、蛋白質 0.2g、脂肪 0.8g (飽和脂肪 0.6g)、碳水化合物 9.0g (糖 8.4g)、鈉 16mg。乘以 3.0 換算。"
+    },
+    {
+      "no": 9,
+      "name": "可爾必思 水語乳酸菌飲料（寶特瓶 500ml）",
+      "group": "超商",
+      "serving_ml": 500,
+      "kcal": 230.0,
+      "protein_g": 1.5,
+      "carb_g": 56.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 85,
+      "fiber_g": null,
+      "sugar_g": 54.0,
+      "allergen_tags": [
+        "乳製品",
+        "黃豆"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.asahi-softdrinks.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "含脫脂奶粉與大豆多醣體。每 100ml: 熱量 46kcal、蛋白質 0.3g、脂肪 0g、碳水化合物 11.2g (糖 10.8g)、鈉 17mg。乘以 5.0 換算。"
+    },
+    {
+      "no": 10,
+      "name": "養樂多（瓶裝 100ml）",
+      "group": "超商",
+      "serving_ml": 100,
+      "kcal": 72.0,
+      "protein_g": 1.2,
+      "carb_g": 16.7,
+      "fat_g": 0.1,
+      "sat_fat_g": 0,
+      "sodium_mg": 18,
+      "fiber_g": null,
+      "sugar_g": 13.3,
+      "allergen_tags": [
+        "乳製品"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.yakult.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "整瓶 100ml 標示。含脫脂奶粉。"
+    },
+    {
+      "no": 11,
+      "name": "可口可樂（罐裝 330ml）",
+      "group": "超商",
+      "serving_ml": 330,
+      "kcal": 139.0,
+      "protein_g": 0,
+      "carb_g": 35.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 20,
+      "fiber_g": null,
+      "sugar_g": 35.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "成分表香料與焦糖色素細節未完整公開，依規範過敏原標註未確認，vegan/lacto_ovo填false。每100ml: 熱量 42kcal、蛋白質 0g、脂肪 0g、碳水化合物 10.6g (糖 10.6g)、鈉 6mg。乘以 3.3 換算。"
+    },
+    {
+      "no": 12,
+      "name": "雪碧（罐裝 330ml）",
+      "group": "超商",
+      "serving_ml": 330,
+      "kcal": 120.0,
+      "protein_g": 0,
+      "carb_g": 30.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 36,
+      "fiber_g": null,
+      "sugar_g": 30.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "成分含天然香料細節未公開，過敏原標註未確認。每100ml: 熱量 36.4kcal、蛋白質 0g、脂肪 0g、碳水化合物 9.1g (糖 9.1g)、鈉 11mg。乘以 3.3 換算。"
+    },
+    {
+      "no": 13,
+      "name": "愛之味 麥仔茶（寶特瓶 590ml）",
+      "group": "超商",
+      "serving_ml": 590,
+      "kcal": 188.8,
+      "protein_g": 0,
+      "carb_g": 47.2,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 59,
+      "fiber_g": null,
+      "sugar_g": 38.4,
+      "allergen_tags": [
+        "麩質"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.agv.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "含大麥萃取物，過敏原標註麩質。每 100ml: 熱量 32kcal、蛋白質 0g、脂肪 0g、碳水化合物 8.0g (糖 6.5g)、鈉 10mg。乘以 5.9 換算。"
+    },
+    {
+      "no": 14,
+      "name": "波蜜 芭樂汁（箔包 300ml）",
+      "group": "超商",
+      "serving_ml": 300,
+      "kcal": 138.0,
+      "protein_g": 0,
+      "carb_g": 34.5,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 36,
+      "fiber_g": null,
+      "sugar_g": 31.5,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.bomylife.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "市售最常見波蜜芭樂汁。成分含複合香料，過敏原標註未確認。每100ml: 熱量 46kcal、蛋白質 0g、脂肪 0g、碳水化合物 11.5g (糖 10.5g)、鈉 12mg。乘以 3.0 換算。"
+    },
+    {
+      "no": 15,
+      "name": "Schweppes 舒味思氣泡水（原味無糖 500ml）",
+      "group": "超商",
+      "serving_ml": 500,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 0,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "以舒味思(Schweppes)原味氣泡水為例，成分僅碳酸水。每 100ml 各項均為 0。"
+    },
+    {
+      "no": 16,
+      "name": "Schweppes 舒味思氣泡水（檸檬風味 500ml）",
+      "group": "超商",
+      "serving_ml": 500,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 0,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.coca-cola.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "成分含檸檬香料未明確公開，過敏原標註未確認。每 100ml 各營養成分均為 0。"
+    },
+    {
+      "no": 17,
+      "name": "7-11 City Cafe 美式咖啡（大杯 480ml，無糖）",
+      "group": "超商",
+      "serving_ml": 480,
+      "kcal": 18.0,
+      "protein_g": 0.8,
+      "carb_g": 3.0,
+      "fat_g": 0.2,
+      "sat_fat_g": 0,
+      "sodium_mg": 12,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.7-11.com.tw/citycafe/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "7-11 官網熱量與總糖量公告（大美式約 18 kcal）。純黑咖啡，不含過敏原。"
+    },
+    {
+      "no": 18,
+      "name": "7-11 City Cafe 拿鐵咖啡（大杯 480ml，無糖）",
+      "group": "超商",
+      "serving_ml": 480,
+      "kcal": 190.0,
+      "protein_g": 8.5,
+      "carb_g": 12.0,
+      "fat_g": 11.0,
+      "sat_fat_g": 7.0,
+      "sodium_mg": 110,
+      "fiber_g": null,
+      "sugar_g": 11.5,
+      "allergen_tags": [
+        "乳製品"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.7-11.com.tw/citycafe/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "7-11 官網熱量與總糖量公告（大拿鐵約 190 kcal）。添加鮮乳，含乳製品過敏原。糖分為牛奶天然乳糖。"
+    },
+    {
+      "no": 19,
+      "name": "茶裏王 日式無糖綠茶（寶特瓶 600ml）",
+      "group": "超商",
+      "serving_ml": 600,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 48,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "包裝標示",
+          "url": "https://www.pecos.com.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "包裝標示每 100ml: 熱量 0kcal、蛋白質 0g、脂肪 0g、碳水化合物 0g (糖 0g)、鈉 8mg。乘以 6.0 換算。"
+    },
+    {
+      "no": 20,
+      "name": "早餐店 大冰奶（大杯 500ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 500,
+      "kcal": 250.0,
+      "protein_g": 1.5,
+      "carb_g": 38.0,
+      "fat_g": 10.0,
+      "sat_fat_g": 8.5,
+      "sodium_mg": 65,
+      "fiber_g": null,
+      "sugar_g": 35.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (補述: 奶精茶飲估算)",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "low",
+      "note": "傳統早餐店多使用奶精（脂肪與飽和脂肪偏高）。奶精配方各店不同且可能含乾酪素鈉或奶粉，過敏原標註未確認，vegan/lacto_ovo填false。"
+    },
+    {
+      "no": 21,
+      "name": "早餐店 紅茶（大杯 500ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 500,
+      "kcal": 180.0,
+      "protein_g": 0.5,
+      "carb_g": 44.5,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 30,
+      "fiber_g": null,
+      "sugar_g": 42.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (樣品名稱: 紅茶飲料)",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "low",
+      "note": "早餐店預調甜紅茶（約含糖8-9%）。店家添加之決明子或香料來源不一，過敏原保守標註未確認。"
+    },
+    {
+      "no": 22,
+      "name": "傳統豆漿店 清漿（無糖豆漿 450ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 450,
+      "kcal": 162.0,
+      "protein_g": 16.2,
+      "carb_g": 5.0,
+      "fat_g": 8.6,
+      "sat_fat_g": 1.4,
+      "sodium_mg": 54,
+      "fiber_g": 1.4,
+      "sugar_g": 1.8,
+      "allergen_tags": [
+        "黃豆"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "fiber_g",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (整合編號: S1020101，樣品名稱: 豆漿(無糖))",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "以衛福部資料庫『豆漿(無糖)』每100g (熱量36kcal、蛋白質3.6g、碳水1.1g、脂肪1.9g、飽和脂肪0.3g、鈉12mg、膳食纖維0.3g、糖0.4g) 乘以 4.5 換算 450ml。"
+    },
+    {
+      "no": 23,
+      "name": "傳統豆漿店 米漿（450ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 450,
+      "kcal": 274.5,
+      "protein_g": 3.6,
+      "carb_g": 54.0,
+      "fat_g": 5.4,
+      "sat_fat_g": 0.9,
+      "sodium_mg": 162,
+      "fiber_g": 1.8,
+      "sugar_g": 36.0,
+      "allergen_tags": [
+        "花生",
+        "麩質"
+      ],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "fiber_g",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (整合編號: S1040101，樣品名稱: 米漿)",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "以衛福部資料庫『米漿』每100g (熱量61kcal、蛋白質0.8g、碳水12.0g、脂肪1.2g、飽和脂肪0.2g、鈉36mg、膳食纖維0.4g、糖8.0g) 乘以 4.5 換算 450ml。含花生與芝麻/炒米(麩質)。"
+    },
+    {
+      "no": 24,
+      "name": "早餐店 鮮奶茶（大杯 500ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 500,
+      "kcal": 210.0,
+      "protein_g": 5.0,
+      "carb_g": 35.0,
+      "fat_g": 5.5,
+      "sat_fat_g": 3.5,
+      "sodium_mg": 80,
+      "fiber_g": null,
+      "sugar_g": 32.0,
+      "allergen_tags": [
+        "乳製品"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫與常見鮮奶茶比例估算",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "low",
+      "note": "以紅茶底加入約 150ml 鮮乳及適量糖份估算。明確含有鮮乳（乳製品過敏原）。"
+    },
+    {
+      "no": 25,
+      "name": "50嵐 茉莉綠茶（無糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 15,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐官網公告無糖純茶類大杯熱量為 0 kcal、總糖量 0g。"
+    },
+    {
+      "no": 26,
+      "name": "50嵐 四季春青茶（無糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 15,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐官網公告無糖四季春青茶大杯熱量為 0 kcal、總糖量 0g。"
+    },
+    {
+      "no": 27,
+      "name": "古早味冬瓜茶（500ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 500,
+      "kcal": 165.0,
+      "protein_g": 0,
+      "carb_g": 41.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 45,
+      "fiber_g": null,
+      "sugar_g": 39.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (整合編號: S1050101，樣品名稱: 冬瓜茶)",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "以衛福部資料庫『冬瓜茶』每100g (熱量33kcal、碳水8.2g、糖7.8g、鈉9mg) 乘以 5.0 換算 500ml。傳統冬瓜磚配方未公開，過敏原保守標註未確認。"
+    },
+    {
+      "no": 28,
+      "name": "酸梅湯（500ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 500,
+      "kcal": 190.0,
+      "protein_g": 0.5,
+      "carb_g": 47.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 280,
+      "fiber_g": null,
+      "sugar_g": 44.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "估算",
+          "url": "衛福部食品營養成分資料庫 (樣品名稱: 酸梅湯)",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "以衛福部酸梅湯樣品每100g (熱量38kcal、碳水9.4g、鈉56mg) 乘以 5.0 換算 500ml。含醃製中藥材與醃梅成分，過敏原標註未確認。"
+    },
+    {
+      "no": 29,
+      "name": "CoCo都可 檸檬紅茶（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 220.0,
+      "protein_g": 0,
+      "carb_g": 55.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 35,
+      "fiber_g": null,
+      "sugar_g": 50.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.coco-tea.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "CoCo門市/官網營養標示公告。濃縮檸檬汁及糖漿成分細節未公開，過敏原標註未確認。"
+    },
+    {
+      "no": 30,
+      "name": "CoCo都可 金桔檸檬（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 245.0,
+      "protein_g": 0.7,
+      "carb_g": 61.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 40,
+      "fiber_g": null,
+      "sugar_g": 56.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.coco-tea.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "CoCo門市/官網營養標示公告。果汁與濃縮液成分未完全公開，過敏原標註未確認。"
+    },
+    {
+      "no": 31,
+      "name": "50嵐 梅子綠茶（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 210.0,
+      "protein_g": 0,
+      "carb_g": 52.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 180,
+      "fiber_g": null,
+      "sugar_g": 48.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐門市/官網公告熱量與總糖量。梅子汁/醃梅含添加物，過敏原標註未確認。"
+    },
+    {
+      "no": 32,
+      "name": "50嵐 多多綠茶（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 290.0,
+      "protein_g": 2.4,
+      "carb_g": 70.0,
+      "fat_g": 0.2,
+      "sat_fat_g": 0,
+      "sodium_mg": 50,
+      "fiber_g": null,
+      "sugar_g": 65.0,
+      "allergen_tags": [
+        "乳製品"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐門市/官網公告熱量。添加養樂多/乳酸菌發酵乳，明確含乳製品過敏原。"
+    },
+    {
+      "no": 33,
+      "name": "CoCo都可 百香雙響炮（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 380.0,
+      "protein_g": 0.8,
+      "carb_g": 94.0,
+      "fat_g": 0.2,
+      "sat_fat_g": 0,
+      "sodium_mg": 70,
+      "fiber_g": null,
+      "sugar_g": 82.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.coco-tea.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "CoCo門市/官網公告熱量與糖量。內含珍珠與椰果，配方膠體與原汁成分未公開，過敏原標註未確認。"
+    },
+    {
+      "no": 34,
+      "name": "50嵐 冰淇淋紅茶（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 360.0,
+      "protein_g": 3.5,
+      "carb_g": 62.0,
+      "fat_g": 11.0,
+      "sat_fat_g": 7.5,
+      "sodium_mg": 95,
+      "fiber_g": null,
+      "sugar_g": 55.0,
+      "allergen_tags": [
+        "乳製品"
+      ],
+      "vegan": false,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐門市/官網公告熱量與糖量。添加香草冰淇淋，明確含有乳製品過敏原。"
+    },
+    {
+      "no": 35,
+      "name": "CoCo都可 冬瓜檸檬（半糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 260.0,
+      "protein_g": 0,
+      "carb_g": 65.0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 60,
+      "fiber_g": null,
+      "sugar_g": 60.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.coco-tea.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "CoCo門市/官網營養標示公告。冬瓜露與檸檬汁成分未完整公開，過敏原標註未確認。"
+    },
+    {
+      "no": 36,
+      "name": "可不可熟成紅茶 炭焙烏龍（無糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 15,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.kebuke.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "可不可官網公告無糖純茶大杯熱量為 0 kcal、糖 0g。"
+    },
+    {
+      "no": 37,
+      "name": "清心福全 鐵觀音（無糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 0,
+      "protein_g": 0,
+      "carb_g": 0,
+      "fat_g": 0,
+      "sat_fat_g": 0,
+      "sodium_mg": 15,
+      "fiber_g": null,
+      "sugar_g": 0,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "https://www.chingshin.tw/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "清心福全官網公告無糖純茶熱量為 0 kcal、糖 0g。"
+    },
+    {
+      "no": 38,
+      "name": "50嵐 珍珠奶茶（微糖/3分糖大杯 700ml）",
+      "group": "手搖飲・咖啡・早餐店",
+      "serving_ml": 700,
+      "kcal": 510.0,
+      "protein_g": 2.5,
+      "carb_g": 78.0,
+      "fat_g": 21.0,
+      "sat_fat_g": 18.0,
+      "sodium_mg": 110,
+      "fiber_g": null,
+      "sugar_g": 38.0,
+      "allergen_tags": [
+        "未確認"
+      ],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [
+        {
+          "fields": [
+            "kcal",
+            "protein_g",
+            "carb_g",
+            "fat_g",
+            "sat_fat_g",
+            "sodium_mg",
+            "sugar_g"
+          ],
+          "type": "官網營養標示",
+          "url": "http://www.50lan.com/",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "high",
+      "note": "50嵐門市/官網公告大杯微糖珍珠奶茶數據。奶精成分及珍珠膠體配方未公開，過敏原標註未確認。"
+    }
+  ]
+}
