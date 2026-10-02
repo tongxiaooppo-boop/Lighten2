@@ -1560,3 +1560,10 @@ div.food-row-main {
 #today-refresh[hidden] {
   display: none;
 }
+/* 現成飲料分組（decisions #143） */
+.meal-picker-subrole {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #8A7A63;
+  margin: 0.5rem 0 0.25rem;
+}

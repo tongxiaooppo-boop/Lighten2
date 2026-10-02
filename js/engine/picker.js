@@ -60,6 +60,20 @@ function partition(products, customs, fits, hiddenUids) {
   };
 }
 
+// 現成飲料分組（使用者 2026-10-02，decisions #143）：全部照列，依通路分組，目前分頁的那組在前；組內照原順序。
+// 我的品項（不分 channel）一律最後一組，跟品項分頁一致。
+export const DRINK_GROUP_LABELS = { convenience: "超商", delivery: "手搖飲・咖啡・早餐店", mine: "我的品項" };
+export function drinkGroups(items, tab) {
+  const by = { convenience: [], delivery: [], mine: [] };
+  items.forEach(function (it) {
+    by[it.is_custom ? "mine" : it.is_taiwan || it.channel === "delivery" ? "delivery" : "convenience"].push(it);
+  });
+  const order = tab === "convenience" ? ["convenience", "delivery", "mine"] : ["delivery", "convenience", "mine"];
+  return order.filter(function (k) { return by[k].length > 0; }).map(function (k) {
+    return { key: k, label: DRINK_GROUP_LABELS[k], items: by[k] };
+  });
+}
+
 // 把「你標了不吃」的品項移到另一組（PRD 6.3 第 4 點：不吃的放最下方收合）。codeOf(item)：passesHardFilters 的 code。
 // 只在 ui 組 HTML 時用；選擇器 state 裡的 items、reasons 的內容與順序不動（picker 快照不變的前提）。
 // 又不吃又被過敏原或飲食擋的，code 是 allergen／diet，留在 rest 裡原位灰掉（decisions #80）。
