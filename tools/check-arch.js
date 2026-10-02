@@ -112,7 +112,7 @@ function stripCommentsAndStrings(src) {
 
 function lineOf(src, idx) { return src.slice(0, idx).split("\n").length; }
 
-// C4.17 ③（啟發式）：推薦候選池相關檔案不得出現字面量 "dish"、"food"（單雙引號與反引號）與識別字 foodTree。
+// C4.17 ③（啟發式）：推薦候選池相關檔案不得出現字面量 "dish"、"food"（單雙引號與反引號）與識別字 foodTree，也不得碰我的食材（切片 8b）。
 // 掃原始碼本身、不去掉字串與註解（字面量就是要抓的東西）。回傳 [{ what, line }]。
 const RECOMMEND_FILES = ["js/engine/pool.js", "js/engine/recommend.js", "js/engine/today.js", "js/engine/matcher.js"];
 function recommendLeaks(src) {
@@ -120,6 +120,8 @@ function recommendLeaks(src) {
   const scan = (re, what) => { let m; while ((m = re.exec(src))) out.push({ what: what(m), line: lineOf(src, m.index) }); };
   scan(/(["'`])(dish|food)\1/g, (m) => "字面量 " + m[0]);
   scan(/(?<![\w$])foodTree(?![\w$])/g, () => "識別字 foodTree");
+  // 切片 8b：我的食材與衛福部查詢檔（decisions #138）
+  scan(/custom_ingredients|tfda_lookup|my-ingredients|(?<![\w$])(loadTfdaLookup|ingredientItem|getCustomIngredients)(?![\w$])/g, (m) => "我的食材 " + m[0]);
   return out;
 }
 
@@ -365,7 +367,8 @@ check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/recommend.js"
 });
 // 規則本身要擋得住刻意寫壞的原始碼，也不能誤報相近的寫法
 [["if (c.kind === \"food\") {}", 1], ["const k = 'dish';", 1], ["const k = `food`;", 1], ["const t = catalog.foodTree;", 1],
-  ["const { foodTree } = catalog;", 1], ["x = \"foods\" + 'dishes';", 0], ["const foodTreeX = 1; myfoodTree();", 0],
+  ["const { foodTree } = catalog;", 1], ["x = \"foods\" + 'dishes';", 0],
+  ["import { ingredientItem } from './my-ingredients.js';", 2], ["await loadTfdaLookup();", 1], ["const myIngredientItems = 1;", 0], ["const foodTreeX = 1; myfoodTree();", 0],
   ["// 註解裡的 \"food\" 也算（不去掉字串與註解）", 1]].forEach(([src, n]) => {
   check(recommendLeaks(src).length === n, "C4.17 ③ 規則對「" + src + "」應找到 " + n + " 處，實際 " + recommendLeaks(src).length);
 });

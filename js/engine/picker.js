@@ -2,10 +2,10 @@
 // 預設分頁、品項分到哪個分頁、分頁內怎麼分組、快速新增的預設值與送出前預告。
 // 不碰 DOM、不 import data（章程 C1）；選擇器記住的「上次選的型態」由 ui 讀好，這裡只收 lastPicked 值（章程 C4.15）。
 
-import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_QTY_STEP, FOOD_QTY_MAX } from "../core/config.js";
+import { MEAL_TYPES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_QTY_STEP, FOOD_QTY_MAX, FOOD_AMOUNT_MAX } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { passesHardFilters, normalizeAllergens } from "./filters.js";
-import { emptyOptionalNutrients, canAddManualItem, manualSelectionProblem, foodLimitProblem } from "./meal-content.js";
+import { emptyOptionalNutrients, canAddManualItem, manualSelectionProblem, foodLimitProblem, foodAmount } from "./meal-content.js";
 
 function validMealType(v) {
   return MEAL_TYPES.indexOf(v) !== -1 ? v : null;
@@ -222,22 +222,50 @@ export function placeNewCustom(item, ctx) {
   return { dest: "tab", tab: tab, select: false, reason: null, roleProblem: manualSelectionProblem(roleItems.concat([item]), ctx.slot) };
 }
 
-// ---------- 單品的選取（工作線 D 切片 7；PRD 13.4） ----------
-// sel：[{ uid, qty }]，照點選順序；三個型態分頁共用一份。一餐裡同一個 uid 只有一筆。
+// ---------- 單品的選取（工作線 D 切片 7；PRD 13.4；克數記法切片 8b） ----------
+// sel：[{ uid, qty } | { uid, amount }]，照點選順序；三個型態分頁共用一份。一餐裡同一個 uid 只有一筆。
 
-// 再點已選的不新增（existed: true，畫面捲到它的步進器）；第 5 項回 problem；否則附在最後、份量 1
-export function addFood(sel, uid) {
+// 沒有 1 份的品項（沒設一份的我的食材）點選時的預設克數（計畫 Q3）
+export const FOOD_AMOUNT_DEFAULT = 100;
+
+// 再點已選的不新增（existed: true，畫面捲到它的步進器）；第 5 項回 problem；否則附在最後：份量 1，沒有 1 份的是 100g/ml
+export function addFood(sel, uid, item) {
   const list = sel || [];
   if (list.some(function (f) { return f.uid === uid; })) return { sel: list, existed: true, problem: null };
   const problem = foodLimitProblem(list.length + 1);
   if (problem) return { sel: list, existed: false, problem: problem };
-  return { sel: list.concat([{ uid: uid, qty: 1 }]), existed: false, problem: null };
+  const entry = item && item.serving && item.serving.amount == null ? { uid: uid, amount: FOOD_AMOUNT_DEFAULT } : { uid: uid, qty: 1 };
+  return { sel: list.concat([entry]), existed: false, problem: null };
 }
 
-// 步進器：dir 是 1 或 -1，一格 FOOD_QTY_STEP，夾在 FOOD_QTY_STEP–FOOD_QTY_MAX（不會變成 0；移除另有按鈕）
-export function stepFood(sel, uid, dir) {
+function clampAmount(a) {
+  return Math.min(FOOD_AMOUNT_MAX, Math.max(1, Math.round(a)));
+}
+
+// 克數輸入：整數 1–3000；不是數字的不改
+export function setFoodAmount(sel, uid, amount) {
+  const a = Number(amount);
+  return (sel || []).map(function (f) {
+    if (f.uid !== uid || !isFinite(a) || f.amount == null) return f;
+    return { uid: f.uid, amount: clampAmount(a) };
+  });
+}
+
+// 份／克切換（decisions #136）：份→克取整數（round(1 份 × 份數)），克→份取最接近的 0.5 倍（0.5–12）；沒有 1 份的不能切
+export function toggleFoodMode(sel, uid, item) {
   return (sel || []).map(function (f) {
     if (f.uid !== uid) return f;
+    if (f.qty != null) return { uid: f.uid, amount: clampAmount(foodAmount(item, f.qty)) };
+    if (!item || item.serving.amount == null) return f;
+    const q = Math.round(f.amount / item.serving.amount / FOOD_QTY_STEP) * FOOD_QTY_STEP;
+    return { uid: f.uid, qty: Math.min(FOOD_QTY_MAX, Math.max(FOOD_QTY_STEP, q)) };
+  });
+}
+
+// 步進器：dir 是 1 或 -1，一格 FOOD_QTY_STEP，夾在 FOOD_QTY_STEP–FOOD_QTY_MAX（不會變成 0；移除另有按鈕）；克數記法的不動
+export function stepFood(sel, uid, dir) {
+  return (sel || []).map(function (f) {
+    if (f.uid !== uid || f.qty == null) return f;
     const q = Math.min(FOOD_QTY_MAX, Math.max(FOOD_QTY_STEP, f.qty + (dir > 0 ? FOOD_QTY_STEP : -FOOD_QTY_STEP)));
     return { uid: f.uid, qty: q };
   });

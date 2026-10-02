@@ -75,6 +75,7 @@ async function main() {
     nutrition: await imp("js/engine/nutrition.js"),
     picker: await imp("js/engine/picker.js"),
     foods: await imp("js/engine/foods.js"),
+    myIng: await imp("js/engine/my-ingredients.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -823,8 +824,110 @@ async function main() {
   await checkFavorites(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
 
+  // ---------- 14. 我的食材與單品克數記法（工作線 D 切片 8b，計畫 docs/review/2026-10-02-D8b-實作計畫.md） ----------
+  console.log("[我的食材與克數記法]");
+  checkMyIngredients(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+function checkMyIngredients(catalog) {
+  const mc = M.mc, pk = M.picker, fd = M.foods, mi = M.myIng;
+  const errOf = (fn) => { try { fn(); return null; } catch (e) { return String(e.message); } };
+  const lookup = M.catalog.normalizeTfdaLookup(readJson("tfda_lookup.json"));
+  const b = catalog.foodTree.byId;
+  const T0 = "2026-10-02T00:00:00.000Z";
+  const tfdaRec = (tfda, extra) => Object.assign({ id: "cing_" + tfda.toLowerCase(), source: "tfda", tfda_id: tfda, tfda_version: "2025-update1", name: lookup.byId[tfda].name,
+    default_amount: null, note: null, created_at: T0, updated_at: T0 }, extra || {});
+  const userRec = Object.assign({ id: "cing_u_t1", source: "user", name: "某牌豆干", group: "protein", drink: false, state: "as_is",
+    per_100g: { kcal: 190, protein_g: 17, carb_g: 5, fat_g: 11, fiber_g: null, sat_fat_g: null, sodium_mg: 600 },
+    default_amount: 40, allergen_tags: null, vegan: false, lacto_ovo: false, note: null, archived: false, created_at: T0, updated_at: T0 });
+
+  // 1. 查詢檔正規化與 ingredientItem
+  check(lookup.items.length === 2213 && lookup.byId.K0112102 && lookup.items.filter((x) => x.listed).length === 1887, "查詢檔 2213 筆、listed 1887");
+  const egg = mi.ingredientItem(tfdaRec("K0112102"), lookup);
+  check(egg && egg.uid === "cing_k0112102" && egg.id === egg.uid && egg.origin === "tfda" && egg.serving.amount === null && egg.serving.unit === "g" &&
+    egg.per_serving === null && egg.per_100g === lookup.byId.K0112102.per_100g && egg.allergen_tags.join() === "蛋" && egg.diet_tags.join() === "蛋奶素" &&
+    egg.tfda.name === "茶葉蛋(浸泡隔夜)" && mi.isMyIngredient(egg) && fd.isFoodTreeItem(egg), "衛福部茶葉蛋的品項形狀");
+  check(mi.ingredientItem(tfdaRec("K0112102"), null) === null && mi.ingredientItem(Object.assign(tfdaRec("K0112102"), { tfda_id: "Z9999999", id: "cing_z9999999" }), lookup) === null,
+    "衛福部來源查不到（沒載或下架）回 null");
+  const drinkId = lookup.items.find((x) => x.listed && x.drink && x.category === "乳品類").id;
+  const milk = mi.ingredientItem(tfdaRec(drinkId, { default_amount: 240 }), lookup);
+  check(milk.serving.unit === "ml" && milk.home_drink === true && Math.abs(milk.per_serving.kcal - lookup.byId[drinkId].per_100g.kcal * 2.4) < 1e-9, "液體是 ml、1 份＝每 100 × 2.4（不進位）");
+  const tofu = mi.ingredientItem(userRec, null);
+  check(tofu.origin === "user" && tofu.allergen_tags.join() === "未確認" && tofu.serving.amount === 40 && tofu.per_serving.kcal === 76 && tofu.per_serving.fiber_g === null,
+    "自填：未確認一律陣列、1 份＝每 100 × 0.4、null 照實");
+  check(!mi.isMyIngredient(b.chicken_breast) && fd.isFoodTreeItem(b.chicken_breast), "分層品項不是我的食材");
+
+  // 2. 克數記法：快照、名稱、合計（克數＝份數 × 1 份時完全相同）
+  const ck = b.chicken_breast;
+  const cq = mc.foodComponent(ck, 4), ca = mc.foodComponent(ck, null, 120);
+  check(Object.keys(cq).join() === "kind,ref,qty,snapshot" && Object.keys(ca).join() === "kind,ref,amount,snapshot" && ca.amount === 120 && JSON.stringify(ca.snapshot) === JSON.stringify(cq.snapshot),
+    "克數記法的元件只換 qty 成 amount，快照相同");
+  check(mc.foodLogName(ck, 4) === "雞胸肉 生 120g" && mc.foodLogName(ck, null, 120) === "雞胸肉 生 120g" && mc.foodLogName(ck, null, 95) === "雞胸肉 生 95g", "兩種記法名稱同一格式");
+  const tot = (comps) => mc.contentTotals({ meal_type: "delivery", archetype_id: null, method_id: null, components: comps, implicit: null }, catalog);
+  let diff = 0;
+  catalog.foodTree.items.forEach((it) => [1, 2, 3].forEach((q) => {
+    const amt = it.serving.amount * q;
+    if (!Number.isInteger(amt)) return;
+    if (JSON.stringify(tot([mc.foodComponent(it, q)])) !== JSON.stringify(tot([mc.foodComponent(it, null, amt)]))) diff++;
+  }));
+  check(diff === 0, "克數＝份數 × 1 份時，兩種記法合計完全相同（不同 " + diff + " 筆）");
+  const eggC = mc.foodComponent(egg, null, 55);
+  check(eggC.snapshot.amount === 100 && eggC.snapshot.kcal === lookup.byId.K0112102.per_100g.kcal && Math.abs(tot([eggC]).kcal - Math.round(lookup.byId.K0112102.per_100g.kcal * 0.55 * 10) / 10) < 0.051,
+    "沒設一份的快照是每 100g，合計乘 amount/100");
+  check(mc.foodLogName(egg, null, 55) === "茶葉蛋 55g" || mc.foodLogName(egg, null, 55) === "茶葉蛋(浸泡隔夜) 55g", "衛福部食材的名稱：" + mc.foodLogName(egg, null, 55));
+  const d = { kind: "products", meal_type: "delivery", items: [], estimates: [], foods: [{ item: ck, amount: 95 }, { item: b.fx_whole_milk, qty: 1 }] };
+  const dc = mc.buildDraftContent(d, {});
+  check(dc.components[0].amount === 95 && !("qty" in dc.components[0]) && dc.components[1].qty === 1 && mc.draftLogName(d) === "雞胸肉 生 95g＋全脂奶（自己倒） 240ml",
+    "草稿：克數與份數混用、名稱照實際量");
+
+  // 3. 選取：addFood 預設、步進器不動克數、份／克切換
+  check(JSON.stringify(pk.addFood([], "chicken_breast", ck).sel) === '[{"uid":"chicken_breast","qty":1}]' &&
+    JSON.stringify(pk.addFood([], egg.uid, egg).sel) === '[{"uid":"cing_k0112102","amount":100}]', "addFood：有 1 份的從 1 份開始，沒有的 100");
+  const selA = [{ uid: "chicken_breast", amount: 95 }];
+  check(JSON.stringify(pk.stepFood(selA, "chicken_breast", 1)) === JSON.stringify(selA), "步進器不動克數記法");
+  check(JSON.stringify(pk.toggleFoodMode([{ uid: "chicken_breast", qty: 1.5 }], "chicken_breast", ck)) === '[{"uid":"chicken_breast","amount":45}]' &&
+    JSON.stringify(pk.toggleFoodMode(selA, "chicken_breast", ck)) === '[{"uid":"chicken_breast","qty":3}]' &&
+    JSON.stringify(pk.toggleFoodMode([{ uid: "chicken_breast", amount: 1 }], "chicken_breast", ck)) === '[{"uid":"chicken_breast","qty":0.5}]' &&
+    JSON.stringify(pk.toggleFoodMode([{ uid: "chicken_breast", amount: 3000 }], "chicken_breast", ck)) === '[{"uid":"chicken_breast","qty":12}]',
+    "份→克取整數、克→份取最接近的 0.5（0.5–12）");
+  check(JSON.stringify(pk.toggleFoodMode([{ uid: egg.uid, amount: 55 }], egg.uid, egg)) === '[{"uid":"cing_k0112102","amount":55}]', "沒有 1 份的不能切成份");
+  check(JSON.stringify(pk.setFoodAmount(selA, "chicken_breast", "130")) === '[{"uid":"chicken_breast","amount":130}]' &&
+    pk.setFoodAmount(selA, "chicken_breast", 0)[0].amount === 1 && pk.setFoodAmount(selA, "chicken_breast", 99999)[0].amount === 3000 &&
+    pk.setFoodAmount(selA, "chicken_breast", "abc")[0].amount === 95 && pk.setFoodAmount(selA, "chicken_breast", 12.6)[0].amount === 13, "克數輸入夾在 1–3000、取整數、不是數字不改");
+
+  // 4. 組合：amount 原樣保存；我的食材的解析（fail-closed、移除、沒設一份、查詢檔沒載）
+  const saved = mc.toSavedContent(dc);
+  check(JSON.stringify(saved.components) === '[{"kind":"food","ref":"chicken_breast","amount":95},{"kind":"food","ref":"fx_whole_milk","qty":1}]', "toSavedContent：amount 原樣（審核 M3）");
+  const withIng = { meal_type: "delivery", archetype_id: null, method_id: null, implicit: null,
+    components: [{ kind: "food", ref: "cing_k0112102", amount: 55 }, { kind: "food", ref: "cing_u_t1", qty: 2 }] };
+  check(/customIngredients/.test(errOf(() => mc.resolveSavedMeal(withIng, catalog, { hidden: [], customs: [], slot: null, profile: {} })) || ""), "ctx 沒帶我的食材要丟錯（fail-closed，審核 M6）");
+  const ctx = { hidden: [], customs: [], slot: null, profile: {}, customIngredients: [tfdaRec("K0112102"), userRec], tfdaLookup: lookup };
+  const r1 = mc.resolveSavedMeal(withIng, catalog, ctx);
+  check(r1.available.length === 2 && r1.blocked.length === 0 && r1.gone.length === 0, "我的食材的組合解析：兩項都可用");
+  const dr = mc.savedMealDraft(r1);
+  check(dr.foods[0].amount === 55 && !("qty" in dr.foods[0]) && dr.foods[1].qty === 2 && mc.savedMealDefaultName(withIng, catalog, ctx) === "茶葉蛋(浸泡隔夜)＋某牌豆干",
+    "帶入草稿保留 amount；預設名稱含我的食材");
+  const r2 = mc.resolveSavedMeal(withIng, catalog, Object.assign({}, ctx, { customIngredients: [userRec] }));
+  check(r2.gone.length === 1 && r2.gone[0].ref === "cing_k0112102" && r2.available.length === 1, "衛福部來源被移除 → 已不提供");
+  const r3 = mc.resolveSavedMeal(withIng, catalog, Object.assign({}, ctx, { customIngredients: [tfdaRec("K0112102"), Object.assign({}, userRec, { archived: true })] }));
+  check(r3.gone.length === 1 && r3.gone[0].name === "某牌豆干", "自填已刪除 → 已不提供（名稱照紀錄）");
+  const r4 = mc.resolveSavedMeal(withIng, catalog, Object.assign({}, ctx, { customIngredients: [tfdaRec("K0112102"), Object.assign({}, userRec, { default_amount: null })] }));
+  check(r4.blocked.length === 1 && /沒有設一份/.test(r4.blocked[0].reason), "份數記法但沒設一份 → 擋下（審核 M5）");
+  const r5 = mc.resolveSavedMeal(withIng, catalog, Object.assign({}, ctx, { tfdaLookup: null }));
+  check(r5.blocked.length === 1 && /載入失敗/.test(r5.blocked[0].reason) && r5.gone.length === 0, "查詢檔沒載到 → 擋下「載入失敗」，不當已不提供");
+  const r6 = mc.resolveSavedMeal(withIng, catalog, Object.assign({}, ctx, { profile: { allergens: ["蛋"] } }));
+  check(r6.blocked.length === 2 && r6.blocked[0].name === "茶葉蛋(浸泡隔夜)" && /含過敏原/.test(r6.blocked[0].reason) && /成分未確認/.test(r6.blocked[1].reason), "我的食材照過敏原擋（自填未確認也擋）：" + JSON.stringify(r6.blocked.map((x) => x.reason)));
+
+  // 5. 我的食物的灰字與位置（審核 N1）
+  const vegan = { diet_restriction: "vegan" };
+  check(fd.foodsBlockLabel(egg, vegan) === "不符合你的飲食設定" && fd.foodsBlockLabel(Object.assign({}, tofu, { allergen_tags: [] }), vegan) === "飲食限制未確認",
+    "衛福部食材說「不符合」、自填說「未確認」");
+  check(fd.foodsWhereOf(egg) === "cook" && fd.foodsWhereOf(milk) === "drinks", "我的食材的子分頁：液體在飲品・水果");
+  check(!/只擋這一項/.test(fd.dislikedMessage(egg, true)), "dislikedMessage 不把我的食材當分層");
 }
 
 async function checkFavorites(catalog) {

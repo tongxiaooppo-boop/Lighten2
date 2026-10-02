@@ -243,11 +243,11 @@ module.exports = async function createV2Adapter(ROOT) {
     // 單品（工作線 D 切片 7）：直接設已選的單品 [{ uid, qty }]，回傳摘要用的合計
     pickerFoods(sel) {
       const mp = picker.mealPicker;
-      mp.foodSel = sel.map((x) => ({ uid: x.uid, qty: x.qty }));
+      mp.foodSel = sel.map((x) => (x.amount != null ? { uid: x.uid, amount: x.amount } : { uid: x.uid, qty: x.qty }));
       picker.renderMealPicker();
       return picker.currentTotals();
     },
-    pickerFoodSel: () => picker.mealPicker.foodSel.map((x) => ({ uid: x.uid, qty: x.qty })),
+    pickerFoodSel: () => picker.mealPicker.foodSel.map((x) => (x.amount != null ? { uid: x.uid, amount: x.amount } : { uid: x.uid, qty: x.qty })),
     // 點一張單品卡片（同 index.js onFoodClick：第 5 項 alert、再點已選的不新增）
     pickerAddFood(uid) {
       const mp = picker.mealPicker;
