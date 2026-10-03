@@ -136,13 +136,21 @@ export function productTabHtml(groups, selected, tabLabel, fillable, favEntries,
 // 每組可以收合，目前分頁對應的那組預設打開（decisions #144）
 export function drinkGridHtml(groups, drinkUid, fillable) {
   let html = '<div class="item-grid"><button type="button" class="item-card' + (drinkUid ? "" : " selected") + '" data-drink=""><span class="item-card-name">不加</span></button></div>';
+  const cards = function (entries) {
+    return '<div class="item-grid">' + entries.filter(function (e) { return !e.reason; }).concat(entries.filter(function (e) { return e.reason; })).map(function (e) {
+      return drinkCardHtml(e, drinkUid, fillable);
+    }).join("") + "</div>";
+  };
   groups.forEach(function (g) {
     html += '<details class="meal-picker-group meal-picker-fold" data-pick-group="' + escapeHtml(g.key) + '"' + (g.open ? " open" : "") + '><summary class="meal-picker-subrole">' +
-      escapeHtml(g.label) + "（" + g.entries.length + '）</summary><div class="item-grid">';
-    g.entries.filter(function (e) { return !e.reason; }).concat(g.entries.filter(function (e) { return e.reason; })).forEach(function (e) {
-      html += drinkCardHtml(e, drinkUid, fillable);
-    });
-    html += "</div></details>";
+      escapeHtml(g.label) + "（" + g.entries.length + "）</summary>";
+    // 超商與手搖飲這組再分小類（decisions #145）：小標題接各自的卡片格
+    if (g.subgroups && g.subgroups.length > 0) {
+      g.subgroups.forEach(function (sg) { html += '<div class="meal-picker-subcat">' + escapeHtml(sg.label) + "</div>" + cards(sg.entries); });
+    } else {
+      html += cards(g.entries);
+    }
+    html += "</details>";
   });
   return html;
 }

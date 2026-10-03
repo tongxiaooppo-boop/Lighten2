@@ -1567,6 +1567,12 @@ div.food-row-main {
   color: #8A7A63;
   margin: 0.5rem 0 0.25rem;
 }
+/* 飲料組內的小類標題（decisions #145） */
+.meal-picker-subcat {
+  font-size: 0.75rem;
+  color: #A8997F;
+  margin: 0.5rem 0 0.2rem;
+}
 /* 品項分類與飲料分組的收合（decisions #144） */
 .meal-picker-fold > summary {
   cursor: pointer;

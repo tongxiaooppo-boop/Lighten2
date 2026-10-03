@@ -27,6 +27,8 @@ const official = (url, ref) => ({ type: "official_web", ref: url, note: ref + "�
 const PX = "https://shop.pxgo.com.tw/hourArrive/goods/";
 
 function drink(o) {
+  // note 是「來源說明；內容物描述」，只有第一個「；」是分隔（contentNote），後面的改用逗號
+  if (o.note) { const i = o.note.indexOf("；"); if (i !== -1) o.note = o.note.slice(0, i + 1) + o.note.slice(i + 1).replace(/；/g, "，"); }
   return Object.assign({
     channel: "convenience", vendor: null, role: "drink", valid_slots: ALL, contains_drink: false, is_treat: false,
     kcal_basis: "stated", kcal_range: null, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null,
@@ -51,7 +53,7 @@ const CONV = [
   drink({ id: "conv_dr10", name: "純喫茶 鮮柚綠茶（650ml）", vendor: "統一", category: "茶", is_treat: true,
     kcal: 254, protein_g: 0, carb_g: 63.6, fat_g: 0, sat_fat_g: 0, sodium_mg: 46, allergen_tags: ["未確認"], vegan: false, lacto_ovo: true,
     source: label(PX + "254029-21330148-4710088470485", "每份 325ml、2 份：熱量 127、蛋白質 0、脂肪 0、飽和脂肪 0、碳水 31.8、糖 29.2、鈉 23mg；標示奶素"),
-    note: "包裝標示；含糖，整瓶 2 份；沒有完整成分表，過敏原未確認；包裝標「奶素」" }),
+    note: "包裝標示；含糖，整瓶 2 份；沒有完整成分表，過敏原未確認；素食依據：包裝標「奶素」，照標示記蛋奶素" }),
   drink({ id: "conv_dr11", name: "麥香 紅茶（375ml）", vendor: "統一", category: "茶", is_treat: true,
     kcal: 142, protein_g: 0, carb_g: 35.6, fat_g: 0, sat_fat_g: 0, sodium_mg: 52, allergen_tags: ["麩質"], vegan: false, lacto_ovo: true,
     source: label(PX + "246583-13060188-4710088471239", "375ml：熱量 142、蛋白質 0、脂肪 0、飽和脂肪 0、碳水 35.6、糖 34、鈉 52mg；含麩質穀物；標示奶素"),
