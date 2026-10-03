@@ -70,8 +70,22 @@ export function drinkGroups(items, tab) {
   });
   const order = tab === "convenience" ? ["convenience", "delivery", "mine"] : ["delivery", "convenience", "mine"];
   return order.filter(function (k) { return by[k].length > 0; }).map(function (k) {
-    return { key: k, label: DRINK_GROUP_LABELS[k], items: by[k] };
+    return { key: k, label: DRINK_GROUP_LABELS[k], items: by[k], subgroups: drinkSubgroups(by[k], k) };
   });
+}
+
+// 組內再依小類（category）分：小類順序＝品項第一次出現的順序（資料檔順序）。我的品項不分小類（category 是自填的）；
+// 只有一個小類時不分（回傳空陣列，畫面不畫小標題）
+export function drinkSubgroups(items, groupKey) {
+  if (groupKey === "mine") return [];
+  const order = [];
+  const by = {};
+  items.forEach(function (it) {
+    const c = it.category || "其他";
+    if (!by[c]) { by[c] = []; order.push(c); }
+    by[c].push(it);
+  });
+  return order.length > 1 ? order.map(function (c) { return { label: c, items: by[c] }; }) : [];
 }
 
 // 把「你標了不吃」的品項移到另一組（PRD 6.3 第 4 點：不吃的放最下方收合）。codeOf(item)：passesHardFilters 的 code。

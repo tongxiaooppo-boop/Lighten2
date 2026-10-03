@@ -221,6 +221,7 @@ export function buildCandidatePool(catalog) {
 
   const convenience = catalog.products
     .filter(function (p) { return !p.is_taiwan && p.kcal != null; })
+    .filter(function (p) { return !p.is_treat; }) // 含糖飲料不主動推薦（同下面台式外食；使用者照樣能自己選）
     .map(toMember);
   const taiwan = catalog.products
     .filter(function (p) { return p.is_taiwan; })

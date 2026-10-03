@@ -466,7 +466,9 @@ function renderDrinks() {
   const groups = drinkGroups(favSplit.rest, m.tab).map(function (g) {
     const key = "drinks:" + g.key;
     const hasSel = g.items.some(function (it) { return it.uid === m.drinkUid; });
-    return { key: key, label: g.label, entries: g.items.map(function (it) { return { item: it, reason: drinkReason(it) }; }),
+    const toEntry = function (it) { return { item: it, reason: drinkReason(it) }; };
+    return { key: key, label: g.label, entries: g.items.map(toEntry),
+      subgroups: g.subgroups.map(function (s) { return { label: s.label, entries: s.items.map(toEntry) }; }),
       open: key in m.groupOpen ? m.groupOpen[key] : g.key === ownGroup || hasSel };
   });
   // 選中那杯的份量與動作放在飲料步驟（三分頁都看得到，B-1a 計畫 2.1 第 17 項）

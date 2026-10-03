@@ -323,7 +323,7 @@ v1 的大餐預約是「預先登記未來某天某時段要吃什麼、預扣�
   channel: "convenience" | "delivery",          // 必填（從目前分頁自動帶入）
   role: "main" | "side" | "snack" | "drink",    // 必填，預設依時段（早午晚＝main，下午茶/宵夜＝snack）
   valid_slots: [...],                           // 必填，依 role 推預設，且一定包含新增當下的時段
-  kcal,                                         // 必填，正數
+  kcal,                                         // 必填，正數（飲料可以是 0：無糖茶、氣泡水）
   protein_g, carb_g, fat_g, fiber_g, sat_fat_g, sodium_mg,   // 選填，未填為 null
   vendor, category, note,                       // 選填
   allergen_tags: null | [],                     // 必有此欄；null=未確認（預設）／[]=確認不含／[..]=含這些

@@ -59,7 +59,7 @@ export function recordFromValues(values) {
   const rec = { name: String(values.name || "").trim(), channel: values.channel, role: values.role };
   if (rec.name === "") errors.push("請填名稱");
   rec.kcal = parseNum(values.kcal);
-  if (!(rec.kcal > 0)) errors.push("請填熱量（大於 0 的數字）");
+  if (!(rec.kcal > 0 || (rec.kcal === 0 && rec.role === "drink"))) errors.push(rec.role === "drink" ? "請填熱量（無糖飲料可填 0）" : "請填熱量（大於 0 的數字）");
   rec.valid_slots = SLOTS.filter(function (s) { return values.slots.indexOf(s) !== -1; });
   if (rec.valid_slots.length === 0) errors.push("至少勾一個適合的時段");
   MORE_FIELDS.forEach(function (f) {

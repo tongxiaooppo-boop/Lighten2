@@ -312,7 +312,7 @@ export function validateCustomFood(food) {
   assertRecord(food, "custom_foods");
   const problems = [];
   if (typeof food.name !== "string" || food.name.trim() === "") problems.push("name");
-  if (!isNum(food.kcal) || !(food.kcal > 0)) problems.push("kcal");
+  if (!isNum(food.kcal) || !(food.kcal > 0 || (food.kcal === 0 && food.role === "drink"))) problems.push("kcal"); // 無糖茶、氣泡水的飲料可以是 0
   if (PRODUCT_ROLES.indexOf(food.role) === -1) problems.push("role");
   if (PRODUCT_CHANNELS.indexOf(food.channel) === -1) problems.push("channel");
   if (!Array.isArray(food.valid_slots) || food.valid_slots.length === 0 ||
