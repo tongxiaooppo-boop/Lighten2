@@ -15,7 +15,8 @@ import { loadTfdaLookup, loadCatalog, fromCustomFood } from "../../data/catalog.
 import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
 import { effectiveTodayLogs } from "../../engine/today.js";
-import { shortDate, weekdayLabel } from "../../core/dates.js";
+import { shortDate, weekdayLabel, dateAddDays } from "../../core/dates.js";
+import { BACKFILL_DAYS } from "../../core/config.js";
 import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, oilOptions, draftLogName, copyFromBuiltin,
@@ -153,7 +154,7 @@ async function readLastPicked() {
 }
 
 // opts：{ onLogged（記錄成功後要做的事，今日建議重新整理）, savedEdit（要編輯的組合紀錄：沒有時段、不寫紀錄，PRD 12.6）, onSaved,
-//         mode（"log" 今天記錄＝預設；"plan" 排預約，日期切換）, date（plan 的日期）, planPreset（改預約時帶入的預約紀錄）,
+//         mode（"log" 今天記錄＝預設；"plan" 排預約；"backfill" 補記過去的一餐，日期切換）, date（plan、backfill 的日期）, planPreset（改預約時帶入的預約紀錄）,
 //         todayPlans（今天的暫時紀錄：log 模式算這個時段的配額時扣掉其他時段的預約） }；
 // 模式與日期在打開時就定（23:59 打開、00:01 送出也寫同一天，設計草案第 9 節 S7）。舊的呼叫方式 openMealPicker(slot, onLogged) 照樣可以用
 export async function openMealPicker(slotArg, opts) {
@@ -164,9 +165,9 @@ export async function openMealPicker(slotArg, opts) {
   try { profile = await getProfile(); } catch (e) { console.error(e); return; }
   if (!profile) { alert("請先到「基本資料」分頁填寫並按「計算」。"); return; }
   const targets = await getCalibratedTargets(profile);
-  const mode = editing ? "edit" : o.mode === "plan" ? "plan" : "log";
+  const mode = editing ? "edit" : o.mode === "plan" ? "plan" : o.mode === "backfill" ? "backfill" : "log";
   const today = todayStr();
-  const day = mode === "plan" && o.date ? o.date : today;
+  const day = (mode === "plan" || mode === "backfill") && o.date ? o.date : today;
   const todayLogs = mode === "log" ? effectiveTodayLogs(await getDailyLogs({ start: today, end: today }), o.todayPlans) : [];
   const catalog = await loadCatalog();
   const rawCustoms = await getCustomFoods();
@@ -226,15 +227,15 @@ export async function openMealPicker(slotArg, opts) {
 
   computeSavedCards();
   if (editing) applySaved(editing);
-  else if (mode === "plan" && o.planPreset) applySaved(o.planPreset);
+  else if ((mode === "plan" || mode === "backfill") && o.planPreset) applySaved(o.planPreset);
   // 標題與送出鈕只在打開時寫（render 路徑不寫，快照的 domNN 才不會位移，審核第 4 節）
   const titleEl = $("#meal-picker-title");
   if (titleEl) {
-    titleEl.innerHTML = (editing ? "編輯組合：" : mode === "plan" ? "排進 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : "自己選這一餐：") + '<span id="meal-picker-slot-label">' +
+    titleEl.innerHTML = (editing ? "編輯組合：" : mode === "plan" ? "排進 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : mode === "backfill" ? "補記 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : "自己選這一餐：") + '<span id="meal-picker-slot-label">' +
       escapeHtml(editing ? editing.name : SLOT_LABELS[slot] || slot) + "</span>";
   }
   const submitEl = $("#meal-picker-submit");
-  if (submitEl) submitEl.textContent = editing ? "存回組合" : mode === "plan" ? "排進預約" : "記下這餐";
+  if (submitEl) submitEl.textContent = editing ? "存回組合" : mode === "plan" ? "排進預約" : mode === "backfill" ? "補記這餐" : "記下這餐";
   renderMealPicker();
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = false;
@@ -827,6 +828,8 @@ export function updateSummary() {
       lines.push("編輯組合不計算時段的配額。");
     } else if (m.mode === "plan") {
       lines.push("預約不計算配額；到那天，其他餐會照這一餐自動調整。");
+    } else if (m.mode === "backfill") {
+      lines.push("補記過去的一餐，不計算配額。");
     } else if (isCook && d.archetype ? true : pickedCount(d) > 0) {
       const share = slotNutrientShare(m.targets, m.todayLogs, m.profile.enabled_slots, m.slot);
       const gaps = slotGaps(share, totals);
@@ -1144,8 +1147,10 @@ export async function onMealSubmit() {
   const problem = submitProblem(d);
   if (problem) { alert(problem); return; }
   const content = buildDraftContent(d, { oilHabit: m.profile.oil_habit });
+  const backfill = m.mode === "backfill";
+  const dateOpts = backfill ? { today: todayStr(), minDate: dateAddDays(todayStr(), -BACKFILL_DAYS) } : { today: m.date };
   const entry = buildLogEntry({
-    date: m.date, slot: m.slot, source: "manual", name: draftLogName(d),
+    date: m.date, slot: m.slot, source: backfill ? "backfill" : "manual", name: draftLogName(d),
     content: content, totals: contentTotals(content, m.catalog), createdAt: nowIso(),
   });
   const saving = m.saveAs.on && (d.estimates || []).length === 0;
@@ -1158,14 +1163,14 @@ export async function onMealSubmit() {
     savedRec = { name: name, content: s.content };
   }
   try {
-    if (savedRec) await addDailyLogWithSavedMeal(entry, savedRec, { today: m.date });
-    else await addDailyLog(entry, { today: m.date });
+    if (savedRec) await addDailyLogWithSavedMeal(entry, savedRec, dateOpts);
+    else await addDailyLog(entry, dateOpts);
   } catch (err) {
     console.error(err);
     alert(savedRec ? "記錄失敗，請重試。取消勾選「存成組合」就只記這一餐。" : "記錄失敗，請重試。");
     return;
   }
-  await rememberMealType(m.slot, content.meal_type);
+  if (!backfill) await rememberMealType(m.slot, content.meal_type); // 補記不算「上次選過」（章程 C4.15）
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = true;
   if (m.onLogged) await m.onLogged();

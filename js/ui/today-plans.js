@@ -47,15 +47,17 @@ export function plannedSummary(dayPlans) {
 }
 
 // 今天按「記下」：預約 → 一筆 daily_log（from_plan；預約不吃 → skipped）。預約留著，紀錄優先顯示（PRD 6.1）
-export async function logPlanEntry(entry, today, oilHabit) {
+// today：寫進哪一天（今天，或昨天卡片的昨天）；realToday 省略＝today
+export async function logPlanEntry(entry, today, oilHabit, realToday) {
   const plan = entry.plan;
-  if (entry.result.status === "skip") return addDailyLog(skippedLogEntry(today, plan.slot, nowIso()), { today: today });
+  const bound = { today: realToday || today };
+  if (entry.result.status === "skip") return addDailyLog(skippedLogEntry(today, plan.slot, nowIso()), bound);
   if (entry.result.status !== "ok") throw new Error("[today-plans.js] 失效的預約不能記下");
   const content = buildDraftContent(savedMealDraft(entry.result.resolved), { oilHabit: oilHabit });
   const totals = contentTotals(content, entry.catalog);
   return addDailyLog(buildLogEntry({
     date: today, slot: plan.slot, source: "from_plan", name: plan.name, content: content, totals: totals, createdAt: nowIso(),
-  }), { today: today });
+  }), bound);
 }
 
 // 日期列的小點：範圍內哪幾天有預約

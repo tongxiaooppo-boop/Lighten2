@@ -5,7 +5,7 @@
 **後續工作盤點（2026-10-02 深夜，照順序）**：
 1. **#145 隨餐飲料加進 App**：已完成（`429b1dc`，2026-10-04，未推送；decisions #146）。剩：請使用者手機看超商分頁的飲料小類、問是否推送（切片 0、1、2 與這個都還沒推送）。
 2. **使用說明更新**：任務檔 `collab/to-sonnet-manual.md`（日期切換、預約、這餐不吃、飲料分組、收合），使用者晚上請 Sonnet 做，Opus 360 寬驗收後 commit。
-3. **日期切換切片 3**：昨天的餐（收合一行、吃了／S M L／這餐沒吃／不確定）、補記過去的一餐（本週總覽、backfill 模式）、`setLastShownRecs`、backup-v6 fixture、`plan.txt` 快照（規格：設計草案第 9 節、本檔「日期切換」段）。→ 使用者手機測。
+3. **日期切換切片 3**：已完成（2026-10-04，decisions #147；未推送）：昨天的餐（`js/ui/today-yesterday.js`）、補記（本週總覽＋選擇器 backfill 模式）、`setLastShownRecs`（含 prev）。check-engine 49872、smoke 54、walkthrough 587（第 14 節）。**手機腳本短清單第 13 項**（第 69–77 行）等使用者測。**還沒做**：backup-v6 fixture 凍結（smoke 要先建預約與 skipped 再 `SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v6.json`）、`plan.txt` 快照（預約與昨天卡片由 check-engine 與 walkthrough 13、14 節涵蓋）。比對腳本 `collab/proofs/2026-10-04-verify-date-switch-3.py`（pool／matrix／tdee 逐字不變；recs、picker 只新增 setLastShownRecs；ui 只新增昨天卡片與補記區，另有彙總卡校正公告因多幾個 await 拍到寫完的樣子）。
 4. 路線圖照舊：擴充餐型（先問四個口味方向）→ 切片 9 我的料理 → 切片 10 沖泡 → 採買清單。
 5. 待使用者確認：decisions #95 三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）。
 6. 日後討論新增一節「日期切換與飲料登記的日後項目」（配額下限、校正極低日、估算卡 S/M/L 統一、飲料再查、只有熱量的飲料）。

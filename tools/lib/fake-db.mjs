@@ -2,7 +2,7 @@
 // 讀取順序照 IndexedDB：依日期範圍讀的依 log_date、再依 id 排序；custom_foods 依 id 排序。
 // 寫入驗證直接用真的 db.js（validateDailyLog 等），確保快照走的是同一套格式檢查。
 
-import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, applyCustomFoodPatch,
+import { validateDailyLog, validateWeightLog, validateExerciseLog, validateCustomFood, validateSetting, nextLastShownRecs, applyCustomFoodPatch,
   addDislikedTo, removeDislikedFrom, mergeProfileForm, validateSavedMeal, applySavedMealPatch,
   addFavoriteTo, removeFavoriteFrom, applyFavoriteOp, replaceFavoriteRef, validateCustomIngredient, applyCustomIngredientPatch,
   validateMealPlan, logDateProblem } from "../../js/data/db.js";
@@ -308,7 +308,8 @@ export async function getLastShownRecs() {
   return v ? clone(v) : null;
 }
 export async function setLastShownRecs(date, slots) {
-  const v = { date: date, slots: clone(slots || {}) };
+  validateSetting("last_shown_recs", { date: date, slots: clone(slots || {}) });
+  const v = nextLastShownRecs(S().lastShownRecs, date, clone(slots || {}));
   validateSetting("last_shown_recs", v);
   S().lastShownRecs = v;
   S().writes.push({ op: "setLastShownRecs", value: clone(v) });

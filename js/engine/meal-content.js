@@ -12,10 +12,10 @@
 // 用油與調味不跟主要槽位縮放；推薦、自己選、紀錄快照都用這裡的函式。
 
 import {
-  PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL,
+  PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL, ESTIMATE_RECALL_KCAL, ESTIMATE_RECALL_GROUP,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
 } from "../core/config.js";
-import { SLOT_LABELS } from "../core/slots.js";
+import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
 import { round1, isNum } from "../core/num.js";
 import { ingredientItem } from "./my-ingredients.js";
@@ -1000,6 +1000,71 @@ export function skippedLogEntry(date, slot, createdAt) {
     content: { meal_type: null, archetype_id: null, method_id: null, components: [], implicit: null },
     totals: zeroTotals(), created_at: createdAt,
   };
+}
+
+// ---------- 昨天的餐（隔天確認，PRD 6.1、decisions #140⑤、#142） ----------
+
+// 推薦 → 紀錄用的三樣東西（今天「記錄這餐」與昨天「吃了」共用；推薦卡片當下也存一份給隔天用）
+export function recLogParts(rec, productsByUid) {
+  return {
+    name: rec.name,
+    content: contentFromRec(rec, productsByUid),
+    totals: {
+      kcal: rec.scaled_kcal, protein_g: rec.protein_g, carb_g: rec.carb_g, fat_g: rec.fat_g, fiber_g: rec.fiber_g,
+      sat_fat_g: rec.sat_fat_g, sodium_mg: rec.sodium_mg, partial: rec.partial,
+    },
+  };
+}
+
+// 今天畫面上每個時段「最後顯示的推薦」（隔天昨天卡片用，只留真的有卡片的時段；沒有組合或配額太低的不算）
+export function lastShownSlots(recs, productsByUid) {
+  const out = {};
+  Object.keys(recs || {}).forEach(function (slot) {
+    const rec = recs[slot];
+    if (!rec || rec.lowBudget) return;
+    out[slot] = recLogParts(rec, productsByUid);
+  });
+  return out;
+}
+
+const RECALL_SIZE_NAME = { S: "小", M: "中", L: "大" };
+
+export function recallEstimateKcal(slot, size) {
+  const group = ESTIMATE_RECALL_KCAL[ESTIMATE_RECALL_GROUP[slot]];
+  if (!group || !group.hasOwnProperty(size)) throw new Error("[meal-content.js] 回想估算的時段或份量不對：" + slot + "／" + size);
+  return group[size];
+}
+
+// 昨天（或補記）按 S／M／L：一筆 estimate 元件（外食型態、名稱「估算（中）」），熱量依時段（decisions #142④），其餘營養素未知
+export function recallEstimateLogEntry(date, slot, size, createdAt) {
+  const kcal = recallEstimateKcal(slot, size);
+  const comp = {
+    kind: "estimate", name: "估算（" + RECALL_SIZE_NAME[size] + "）", size: size,
+    snapshot: { kcal: kcal, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null },
+  };
+  const content = { meal_type: "delivery", archetype_id: null, method_id: null, components: [comp], implicit: null };
+  return buildLogEntry({ date: date, slot: slot, source: "backfill", name: comp.name, content: content, totals: contentTotals(content, null), createdAt: createdAt });
+}
+
+// 昨天卡片的列（純函式）：開啟中、昨天沒有紀錄的時段各一列。
+//   kind "plan"（有效預約：內容｜吃了｜改）、"plan_skip"（預約不吃：一鍵確認）、"rec"（昨天最後顯示的推薦）、"none"（只有 S／M／L）
+// o：{ date, enabledSlots, logs（昨天的紀錄）, plans（slot → { plan, result }，失效的預約當沒有）, lastShown（getLastShownRecs 的值或 null） }
+export function yesterdayRows(o) {
+  const logged = {};
+  (o.logs || []).forEach(function (l) { logged[l.slot] = true; });
+  const ls = o.lastShown;
+  const shown = ls && ls.date === o.date ? ls.slots : ls && ls.prev && ls.prev.date === o.date ? ls.prev.slots : {};
+  const rows = [];
+  SLOTS.forEach(function (slot) {
+    if (logged[slot] || !isSlotEnabled(o.enabledSlots, slot)) return;
+    const e = o.plans && o.plans[slot];
+    if (e && e.result.status === "skip") { rows.push({ slot: slot, kind: "plan_skip", name: "這餐不吃（預約）", kcal: 0 }); return; }
+    if (e && e.result.status === "ok") { rows.push({ slot: slot, kind: "plan", name: e.plan.name, kcal: Math.round(e.result.totals.kcal) }); return; }
+    const r = shown && shown[slot];
+    if (r) { rows.push({ slot: slot, kind: "rec", name: r.name, kcal: Math.round(r.totals.kcal) }); return; }
+    rows.push({ slot: slot, kind: "none", name: null, kcal: null });
+  });
+  return rows;
 }
 
 // 組合卡片的熱量＝帶入後選擇器摘要的合計（主要槽位 1 倍，decisions #124）
