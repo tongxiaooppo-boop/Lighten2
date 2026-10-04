@@ -13,8 +13,8 @@ const SIZE_LABELS = { S: "小份", M: "一般", L: "大餐" };
 const PART_LABELS = { S: "小", M: "中", L: "大" };
 
 // 「主食＋家常菜」表單的初始設定
-export function emptyHomeEst() {
-  return { mode: "plain", name: "", cfg: { n: 1, cats: ["mixed"], staple: "white", staple_size: "M", dish: "M", soup: false } };
+export function emptyHomeEst(dish) {
+  return { mode: "plain", name: "", cfg: { n: 1, cats: ["mixed"], staple: "white", staple_size: "M", dish: dish || "M", soup: false } };
 }
 
 // 改設定後讓 cfg 保持一致：道數改變時補或裁 cats；不吃主食時 staple_size 是 null，改回有主食時預設中份
