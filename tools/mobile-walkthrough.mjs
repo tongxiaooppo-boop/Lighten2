@@ -1797,6 +1797,91 @@ async function run() {
   await js(`(async () => { const m = ${DBW}; const logs = await m.getDailyLogs({ start: ${dayStr(2)}, end: ${dayStr(2)} }); for (const l of logs) await m.undoDailyLog(l.id); })()`);
   await tab("today");
 
+  // ---------- 16. 家庭共餐（自煮，decisions #152，設計草案 docs/review/2026-10-04-家庭共餐-設計草案.md） ----------
+  console.log("[16. 家庭共餐]");
+  const hmLogs = (date) => js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({ start: ${date}, end: ${date} })).map((l) => JSON.stringify({ slot: l.slot, source: l.source, name: l.name, kcal: l.totals.kcal, type: l.meal_type, arch: l.content.archetype_id, imp: l.content.implicit, comps: l.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount) })); })()`);
+  const hmPick = async (nDishes, withSoup) => {
+    const ids = await js(`[...document.querySelectorAll('#meal-picker-panel [data-hm-dish]:not([disabled])')].map((b) => b.getAttribute('data-hm-dish')).slice(0, ${nDishes})`);
+    for (const id of ids) await click(`#meal-picker-panel [data-hm-dish="${id}"]`);
+    if (withSoup) {
+      const sid = await js(`([...document.querySelectorAll('#meal-picker-panel [data-hm-soup]:not([disabled])')].map((b) => b.getAttribute('data-hm-soup')).filter(Boolean))[0]`);
+      await click(`#meal-picker-panel [data-hm-soup="${sid}"]`);
+    }
+    return ids;
+  };
+  // 16-1 晚餐：自煮 → 開伙 → 「共餐」→ 選 3 道菜加 1 道湯 → 記下
+  await tab("today");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await click(`#meal-picker-panel [data-tier=cook_full]`);
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`), "16-1 晚餐開伙的「選餐型」沒有「共餐」");
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`)), "16-1 沒按「共餐」前不該顯示菜單");
+  await click(`#meal-picker-panel [data-hm-toggle]`);
+  await until(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`, "16-1 按「共餐」沒有出現家常菜");
+  const hmText0 = await js(text("#meal-picker-panel"));
+  check(hmText0.indexOf("素菜") !== -1 && hmText0.indexOf("菜肉") !== -1 && hmText0.indexOf("純肉") !== -1 && hmText0.indexOf("當季") !== -1 && hmText0.indexOf("最多 4 道") !== -1, "16-1 共餐沒有素菜／菜肉／純肉分組或「最多 4 道」：" + hmText0.slice(0, 200));
+  await shot("共餐-預設", "#meal-picker-panel");
+  const picked16 = await hmPick(3, true);
+  await until(`${text("#meal-picker-summary")}.indexOf("kcal") !== -1 && ${text("#meal-picker-summary")}.indexOf("已選 4 件") !== -1`, "16-1 選了 3 道菜加湯後摘要不是已選 4 件");
+  check((await js(text("#meal-picker-panel"))).indexOf("每道菜約") !== -1, "16-1 沒有每道菜的克數");
+  await shot("共餐-已選", "#meal-picker-panel");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("共餐-360寬", "#meal-picker-panel");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  // 同一道菜不能選第五道：先選滿 4 道再看第 5 個按鈕選不進去
+  const more = await js(`[...document.querySelectorAll('#meal-picker-panel [data-hm-dish]:not([disabled]):not(.selected)')].map((b) => b.getAttribute('data-hm-dish')).slice(0, 3)`);
+  for (const id of more) await click(`#meal-picker-panel [data-hm-dish="${id}"]`);
+  check((await js(`document.querySelectorAll('#meal-picker-panel [data-hm-dish].selected').length`)) === 4, "16-1 共餐的菜要停在 4 道（再點不會超過）");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("共餐：") !== -1`, "16-1 送出後晚餐紀錄沒有「共餐：」");
+  const todayStr16 = `(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`;
+  const log16 = JSON.parse((await hmLogs(todayStr16)).filter((x) => /"slot":"dinner"/.test(x))[0] || "{}");
+  check(log16.type === "cook_full" && log16.arch === null && log16.imp && log16.imp.oil_g === 0 && log16.comps.length >= 4 && log16.comps.every((c) => /^food:/.test(c)) && log16.comps.some((c) => /^food:hd_/.test(c)) && log16.name.indexOf("共餐：") === 0 && !/\d+g/.test(log16.name),
+    "16-1 共餐紀錄不是自煮的 hd_ 單品、或名稱帶克數：" + JSON.stringify(log16));
+  await click("#rec-dinner .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-dinner .rec-log-btn') || !!document.querySelector('#rec-dinner .rec-pick-btn')`, "16-1 撤銷晚餐沒有完成");
+  // 16-2 早餐沒有「共餐」；午餐開伙有；切到快煮就收起
+  await openPicker("breakfast");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`)), "16-2 早餐不該有「共餐」");
+  await closePicker();
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await click(`#meal-picker-panel [data-tier=cook_full]`);
+  await click(`#meal-picker-panel [data-hm-toggle]`);
+  await hmPick(1, false);
+  await click(`#meal-picker-panel [data-tier=cook_quick]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`)) && ((await js(text("#meal-picker-summary"))).indexOf("還沒配好") !== -1 || (await js(text("#meal-picker-summary"))).indexOf("已選 0 件") !== -1), "16-2 切到快煮後共餐沒有收起、或還算進這一餐：" + (await js(text("#meal-picker-summary"))));
+  // 共餐與餐型擇一：點任一餐型就收起共餐
+  await click(`#meal-picker-panel [data-tier=cook_full]`);
+  await click(`#meal-picker-panel [data-hm-toggle]`);
+  await until(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`, "16-2 再按「共餐」沒有展開");
+  await click(`#meal-picker-panel [data-axis=archetype]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`)), "16-2 選餐型後共餐沒有收起（擇一）");
+  await closePicker();
+  // 16-3 預約明天晚餐：共餐選 2 道 → 排進預約 → 預約只存 ref＋amount → 改（帶入）還原
+  await click(`#today-dates [data-day-offset='1']`);
+  await until(`!document.getElementById('today-day-summary').hidden`, "16-3 切到明天失敗");
+  await click(`#rec-dinner [data-plan-pick=dinner]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "16-3 預約的選擇器沒有打開");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await click(`#meal-picker-panel [data-tier=cook_full]`);
+  await click(`#meal-picker-panel [data-hm-toggle]`);
+  const plan16ids = await hmPick(2, false);
+  await click("#meal-picker-submit");
+  await until(`${text("#today-day-summary")}.indexOf("已排 1 餐") !== -1`, "16-3 排完共餐沒有頂端合計");
+  const plan16 = JSON.parse(await js(`(async () => { const m = ${DBW}; const d = new Date(); d.setDate(d.getDate() + 1); const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const p = (await m.getMealPlans({ start: ds, end: ds })).filter((x) => x.slot === 'dinner')[0]; return JSON.stringify(p.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount + (c.snapshot ? '+snapshot' : ''))); })()`));
+  check(plan16.length >= 3 && plan16.every((c) => /^food:/.test(c) && c.indexOf("+snapshot") === -1) && plan16.filter((c) => /^food:hd_/.test(c)).length === 2, "16-3 預約不是只存 ref＋amount 的 hd_ 單品：" + JSON.stringify(plan16));
+  await shot("共餐-預約", "#rec-dinner");
+  await click(`#rec-dinner [data-plan-edit=dinner]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.querySelectorAll('#meal-picker-panel [data-hm-dish].selected').length === 2`, "16-3 改預約沒有帶回 2 道共餐的菜");
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-hm-staple].selected')`), "16-3 帶回後主食沒有還原");
+  await closePicker();
+  await click(`#rec-dinner [data-plan-cancel]`);
+  await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "16-3 取消預約後明天不是「還沒排」");
+  await click(`#today-dates [data-day-offset='0']`);
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

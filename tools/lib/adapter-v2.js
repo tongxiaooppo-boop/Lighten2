@@ -238,6 +238,18 @@ module.exports = async function createV2Adapter(ROOT) {
       picker.mealPicker.homeEst.cfg = JSON.parse(JSON.stringify(cfg));
       return picker.estimateCardHtmlNow();
     },
+    // 家庭共餐（decisions #152）：form 同 homeMealDefaultForm 的形狀；回傳選好後的合計
+    pickerHomeMeal(form) {
+      picker.selectTab("cook");
+      const m = picker.mealPicker;
+      m.cook.tier = "cook_full";
+      m.cook.home.open = true;
+      m.cook.home.form = JSON.parse(JSON.stringify(form));
+      return picker.currentTotals();
+    },
+    pickerHomeMealHtml() {
+      return picker.cookPanelHtmlNow();
+    },
     // 快速新增：values 同表單（quick-add.js emptyQuickAdd 的形狀，只給要改的欄位）；回傳送出前預告、存完的說明與目前分頁的選取
     async pickerQuickAdd(values) {
       const mp = picker.mealPicker;

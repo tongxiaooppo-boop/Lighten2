@@ -11,7 +11,7 @@ import {
 import { homeEstimate, homeEstimateGrams, homeEstimateProblem } from "../../engine/meal-content.js";
 
 const SIZE_LABELS = { S: "小份", M: "一般", L: "大餐" };
-const PART_LABELS = { S: "小", M: "中", L: "大" };
+export const PART_LABELS = { S: "小", M: "中", L: "大" };
 
 // 「主食＋家常菜」表單的初始設定
 export function emptyHomeEst(defaults) {
@@ -27,12 +27,12 @@ export function normalizeHomeCfg(cfg) {
   return Object.assign({}, cfg, { cats: cats, staple_size: size });
 }
 
-function chip(attr, value, selected, label, sub) {
-  return '<button type="button" class="compose-option' + (selected ? " selected" : "") + '" ' + attr + '="' + escapeHtml(String(value)) + '">' + escapeHtml(label) +
+export function chip(attr, value, selected, label, sub, disabled) {
+  return '<button type="button" class="compose-option' + (selected ? " selected" : "") + '" ' + attr + '="' + escapeHtml(String(value)) + '"' + (disabled ? " disabled" : "") + ">" + escapeHtml(label) +
     (sub ? '<span class="item-card-kcal">' + escapeHtml(sub) + "</span>" : "") + "</button>";
 }
 
-function group(title, inner) {
+export function group(title, inner) {
   return '<div class="meal-picker-estimate-sub">' + escapeHtml(title) + '</div><div class="compose-options">' + inner + "</div>";
 }
 
