@@ -462,6 +462,19 @@ compose/lunch/protein_steamed/three-veg	kcal=483.4 P=33.9 C=72.9 F=7 Fb=9.3 SF=2
 compose/lunch/protein_steamed/oil-10	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=783
 compose/lunch/protein_steamed/light	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=383
 compose/lunch/protein_steamed/quick	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=783
+compose/lunch/protein_braised/s1	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/lunch/protein_braised/s0.5	kcal=297.7 P=17.7 C=35.5 F=9.3 Fb=5.2 SF=1.7 Na=757.3
+compose/lunch/protein_braised/s1.3	kcal=516.2 P=22.1 C=81.4 F=10.7 Fb=8 SF=2.1 Na=759.1
+compose/lunch/protein_braised/s2	kcal=707.4 P=26 C=121.7 F=12 Fb=10.4 SF=2.4 Na=760.7
+compose/lunch/protein_braised/no-veg-sauce	kcal=416.7 P=20 C=60.3 F=10.1 Fb=5.9 SF=2 Na=712.3
+compose/lunch/protein_braised/drink	kcal=569.3 P=26.5 C=83.4 F=14 Fb=8 SF=2 Na=758.4 partial=sat_fat_g,sodium_mg
+compose/lunch/protein_braised/no-method	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/lunch/protein_braised/last-protein	kcal=457.8 P=29.8 C=61.4 F=9.1 Fb=4.6 SF=3.6 Na=843.4
+compose/lunch/protein_braised/two-proteins	kcal=648.4 P=46.2 C=64.2 F=21.7 Fb=7 SF=5.1 Na=846.4
+compose/lunch/protein_braised/three-veg	kcal=488.3 P=24.2 C=75.1 F=10.3 Fb=11.1 SF=2 Na=770.1
+compose/lunch/protein_braised/oil-10	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/lunch/protein_braised/light	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=358.4
+compose/lunch/protein_braised/quick	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
 compose/lunch/submit0	addDailyLog lunch "炒類＋牛腱＋蝦仁＋花椰菜米＋青花菜＋菠菜＋燕麥奶／牛奶（一杯約240ml）" kcal=584.7 P=58.7 C=36.7 F=23.1 Fb=9.3 SF=5.5 Na=1413.1 partial=sat_fat_g,sodium_mg type=cook_full source=manual content=cook_full|protein_stir_fry/method_stir_fry|protein:beef_shank,protein:shrimp,staple:cauliflower_rice*1.2,vegetable:broccoli,vegetable:spinach,tw_bf02x1@135|implicit={"oil_g":10,"seasoning":"normal"}
 compose/lunch/lastPicked	{"lunch":"cook_full"}
 compose/dinner/egg_pan/s1	kcal=217.5 P=16.1 C=8.1 F=14.3 Fb=2.8 SF=4.1 Na=851.1
@@ -529,6 +542,19 @@ compose/dinner/protein_steamed/three-veg	kcal=483.4 P=33.9 C=72.9 F=7 Fb=9.3 SF=
 compose/dinner/protein_steamed/oil-10	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=783
 compose/dinner/protein_steamed/light	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=383
 compose/dinner/protein_steamed/quick	kcal=422.3 P=29.2 C=61.6 F=6.5 Fb=5.4 SF=2.1 Na=783
+compose/dinner/protein_braised/s1	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/dinner/protein_braised/s0.5	kcal=297.7 P=17.7 C=35.5 F=9.3 Fb=5.2 SF=1.7 Na=757.3
+compose/dinner/protein_braised/s1.3	kcal=516.2 P=22.1 C=81.4 F=10.7 Fb=8 SF=2.1 Na=759.1
+compose/dinner/protein_braised/s2	kcal=707.4 P=26 C=121.7 F=12 Fb=10.4 SF=2.4 Na=760.7
+compose/dinner/protein_braised/no-veg-sauce	kcal=416.7 P=20 C=60.3 F=10.1 Fb=5.9 SF=2 Na=712.3
+compose/dinner/protein_braised/drink	kcal=569.3 P=26.5 C=83.4 F=14 Fb=8 SF=2 Na=758.4 partial=sat_fat_g,sodium_mg
+compose/dinner/protein_braised/no-method	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/dinner/protein_braised/last-protein	kcal=457.8 P=29.8 C=61.4 F=9.1 Fb=4.6 SF=3.6 Na=843.4
+compose/dinner/protein_braised/two-proteins	kcal=648.4 P=46.2 C=64.2 F=21.7 Fb=7 SF=5.1 Na=846.4
+compose/dinner/protein_braised/three-veg	kcal=488.3 P=24.2 C=75.1 F=10.3 Fb=11.1 SF=2 Na=770.1
+compose/dinner/protein_braised/oil-10	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
+compose/dinner/protein_braised/light	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=358.4
+compose/dinner/protein_braised/quick	kcal=434.3 P=20.5 C=64.2 F=10.2 Fb=7 SF=2 Na=758.4
 compose/dinner/submit0	addDailyLog dinner "炒類＋牛腱＋蝦仁＋花椰菜米＋青花菜＋菠菜＋燕麥奶／牛奶（一杯約240ml）" kcal=584.7 P=58.7 C=36.7 F=23.1 Fb=9.3 SF=5.5 Na=1413.1 partial=sat_fat_g,sodium_mg type=cook_full source=manual content=cook_full|protein_stir_fry/method_stir_fry|protein:beef_shank,protein:shrimp,staple:cauliflower_rice*1.2,vegetable:broccoli,vegetable:spinach,tw_bf02x1@135|implicit={"oil_g":10,"seasoning":"normal"}
 compose/dinner/lastPicked	{"dinner":"cook_full"}
 estimate/lunch/L-only	kcal=1200 P=null C=null F=null Fb=null SF=null Na=null

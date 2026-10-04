@@ -71,5 +71,18 @@
     "seasoning": { "allow": [] },
     "methods": ["method_steam"],
     "note": "餐型擴充步驟 2a（decisions #150、餐型claude.md）：清蒸魚蝦配飯與蒸菜，不加油；蔬菜拿掉 celery、加 shiitake／wood_ear（香菇蒸魚、木耳蒸魚是常見做法，也是讓纖維靠近封頂的選項，14 天輪替模擬）；出處見 collab/proofs/2026-10-01-workline-a-archetype-survey.md B1"
+  },
+  {
+    "id": "protein_braised",
+    "name": "滷燉定食",
+    "seasoned": true,
+    "not_included": ["滷汁拌飯"],
+    "valid_slots": ["lunch", "dinner"],
+    "protein": { "allow": ["firm_tofu", "chicken_thigh", "beef_shank"] },
+    "staple": { "allow": ["brown_rice_cooked", "mixed_grain_rice_cooked", "sweet_potato"] },
+    "vegetable": { "allow": ["daikon", "cabbage", "shiitake", "wood_ear", "bamboo_shoot", "onion", "tomato"] },
+    "seasoning": { "allow": [] },
+    "methods": ["method_braise"],
+    "note": "餐型擴充步驟 2b（decisions #150、餐型claude.md）：滷豆腐、滷雞腿、燉牛腱配飯；拿掉 egg 與 celery（蛋當定食主蛋白質太弱），主食三種不含南瓜；牛腱的正確做法是滷燉；滷汁的鈉高，用 not_included（未含滷汁拌飯）與 method_braise 的 tip 提醒，不顯示警告（C4.14）"
   }
 ]

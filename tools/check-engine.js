@@ -417,6 +417,11 @@ async function main() {
     check(imp(steam, "protein_steamed", true, false, "normal").oil_g === 0 && imp(steam, "protein_steamed", true, false, "less").oil_g === 0, "蒸＋蔬菜：用油 0（少油習慣也是 0）");
     check(imp(steam, "protein_steamed", true, false, "normal").seasoning === "normal", "蒸魚定食沒選醬料：預設調味一般");
     check(mc.oilOptions({ method: steam, archetype: arch("protein_steamed"), vegetables: [1], proteins: [1], staple: null }, "normal").length === 0, "蒸：沒有用油選項");
+    // 滷／燉（餐型擴充 2b）：用油 0、🔴（快煮不會推）、滷燉定食帶 not_included
+    const braise = byId("method_braise");
+    check(braise && braise.axis === "method" && braise.prep_tier === "🔴" && braise.implicit.length === 0 && !/[紅黃橘綠]色|警告|過高|太鹹/.test(braise.tip || ""), "method_braise：烹調法、🔴、沒有隱含成分、tip 是中性句");
+    check(imp(braise, "protein_braised", true, false, "normal").oil_g === 0 && imp(braise, "protein_braised", true, false, "normal").seasoning === "normal", "滷燉：用油 0、預設調味一般");
+    check((arch("protein_braised").not_included || []).join() === "滷汁拌飯", "滷燉定食要帶 not_included: [滷汁拌飯]");
     const ic = mc.implicitContribution({ oil_g: 10, seasoning: "normal" }, catalog.implicit);
     check(Math.abs(ic.kcal - 88.4) < 0.05 && ic.fat_g === 10 && ic.sodium_mg === 700, "10g 油＋一般調味 ＝ 88.4 kcal、脂肪 10g、鈉 700 mg（實際 " + JSON.stringify(ic) + "）");
 
