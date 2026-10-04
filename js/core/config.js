@@ -119,6 +119,11 @@ export const EST_DISH_GRAMS = { S: 120, M: 160, L: 200 };
 export const EST_STAPLE_PORTIONS = { S: 2, M: 4, L: 6 };
 export const EST_STAPLE_G_PER_PORTION = { white: 40, brown: 40, mixed: 40, noodle: 60 };
 export const EST_SOUP_ML = 250;
+// 家庭共餐（decisions #152）：家常菜另計上限，不佔 FOOD_MAX_PER_MEAL；湯 1 碗＝250ml
+export const HOME_MEAL_DISH_MAX = 4;
+export const HOME_MEAL_SOUP_MAX = 1;
+export const HOME_MEAL_SLOTS = ["lunch", "dinner"];
+export const HOME_DISH_PREFIX = "hd_";
 // 打開估算卡時「菜量」預設選哪一格：每餐蛋白質目標（一天目標 ÷ 3）低於第一個門檻選小、高於第二個選大，其餘中（使用者 2026-10-04）。只決定預設，估算的數字永遠等於畫面上選的量
 export const EST_DEFAULT_DISH_PROTEIN_CUTS = [30, 50];
 export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };

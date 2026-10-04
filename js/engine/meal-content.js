@@ -14,7 +14,7 @@
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL, ESTIMATE_RECALL_KCAL, ESTIMATE_RECALL_GROUP,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
-  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_DEFAULT_DISH_PROTEIN_CUTS, EST_CAT_LABELS, EST_STAPLE_LABELS,
+  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_DEFAULT_DISH_PROTEIN_CUTS, HOME_MEAL_DISH_MAX, HOME_MEAL_SOUP_MAX, HOME_DISH_PREFIX, EST_CAT_LABELS, EST_STAPLE_LABELS,
 } from "../core/config.js";
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
@@ -629,6 +629,115 @@ export function homeEstimate(cfg, home) {
   return { size: null, name: homeEstimateName(cfg), snapshot: snapshot, est: est };
 }
 
+// ---------- 家庭共餐（自煮，decisions #152）：主食＋從家常菜清單選 1–4 樣＋湯，記成 food 元件（hd_ 菜、主食都用 amount 克） ----------
+// form：{ staple: white|brown|mixed|noodle|none, staple_size: S|M|L|null, dish: S|M|L, dishes: [hd_ id…], soup: hd_ id | null }
+// draft.homeMeal：{ staple: { item, amount } | null, dishes: [{ item, amount }], soup: { item, amount } | null }（item 是 catalog 的單品形狀）
+
+function isHomeStapleItem(item) {
+  return item && !!_homeStapleRefs && _homeStapleRefs.indexOf(item.uid) !== -1;
+}
+let _homeStapleRefs = ["fx_cooked_rice", "brown_rice_cooked", "mixed_grain_rice_cooked", "fx_cooked_noodles"];
+
+// 元件順序固定：主食、各道菜、湯
+function homeMealParts(hm) {
+  if (!hm) return [];
+  return (hm.staple ? [hm.staple] : []).concat(hm.dishes || [], hm.soup ? [hm.soup] : []);
+}
+
+// 這份共餐的克數：主食、菜的全分量與每道（整數，每道＝round(全分量 ÷ N)）、湯
+export function homeMealGrams(form) {
+  const n = form.dishes.length;
+  return {
+    staple_g: form.staple === "none" ? 0 : EST_STAPLE_PORTIONS[form.staple_size] * EST_STAPLE_G_PER_PORTION[form.staple],
+    dish_total_g: EST_DISH_GRAMS[form.dish], per_dish_g: n > 0 ? Math.round(EST_DISH_GRAMS[form.dish] / n) : 0, soup_ml: form.soup ? EST_SOUP_ML : 0,
+  };
+}
+
+// 表單設定不完整、超過上限、被過敏原或飲食限制擋下、資料不在回傳原因，否則 null（沒選菜時回傳 null：還沒開始）
+export function homeMealProblem(form, catalog, profile) {
+  if (!form) return null;
+  if (form.dishes.length === 0 && !form.soup) return null;
+  if (EST_STAPLES.indexOf(form.staple) === -1) return "共餐：主食不對。";
+  if (form.staple === "none" ? form.staple_size !== null : EST_SIZES.indexOf(form.staple_size) === -1) return "共餐：主食的量不對。";
+  if (EST_SIZES.indexOf(form.dish) === -1) return "共餐：菜的量不對。";
+  if (form.dishes.length > HOME_MEAL_DISH_MAX) return "共餐的菜最多選 " + HOME_MEAL_DISH_MAX + " 道。";
+  if (new Set(form.dishes).size !== form.dishes.length) return "共餐：同一道菜不用選兩次。";
+  const home = catalog.homeDishes && catalog.homeDishes.byId;
+  if (!home) return "共餐：家常菜資料還沒載入。";
+  const pf = profile || {};
+  const bad = form.dishes.concat(form.soup ? [form.soup] : []).map(function (id) {
+    const it = home[id];
+    if (!it) return "共餐：「" + id + "」已不提供。";
+    if ((it.kind === "soup") !== (id === form.soup)) return "共餐：菜與湯放錯位置。";
+    const f = passesHardFilters(it, pf);
+    return f.ok ? null : "「" + it.name + "」" + f.reason;
+  }).filter(Boolean)[0];
+  if (bad) return bad;
+  if (form.staple !== "none") {
+    const st = catalog.homeDishes.staples[form.staple];
+    const item = st && treeById(catalog)[st.ref];
+    if (!item) return "共餐：缺少主食資料。";
+    const f = passesHardFilters(item, pf);
+    if (!f.ok) return "「" + item.name + "」" + f.reason;
+  }
+  return null;
+}
+
+// form → draft.homeMeal（沒選任何菜或湯回傳 null）；有問題丟錯
+export function homeMealDraftPart(form, catalog, profile) {
+  if (!form || (form.dishes.length === 0 && !form.soup)) return null;
+  const problem = homeMealProblem(form, catalog, profile);
+  if (problem) throw new Error("[meal-content.js] " + problem);
+  const g = homeMealGrams(form);
+  const home = catalog.homeDishes.byId;
+  const out = { staple: null, dishes: form.dishes.map(function (id) { return { item: home[id], amount: g.per_dish_g }; }), soup: form.soup ? { item: home[form.soup], amount: g.soup_ml } : null };
+  if (form.staple !== "none") out.staple = { item: treeById(catalog)[catalog.homeDishes.staples[form.staple].ref], amount: g.staple_g };
+  return out;
+}
+
+// draft.homeMeal → form（帶回選擇器用；主食種類與大小由克數與主食 ref 反推，找不到就用預設中份）
+export function homeMealFormOf(homeMeal, catalog, base) {
+  const b = base || { dish: "M" };
+  if (!homeMeal) return { staple: "white", staple_size: "M", dish: b.dish, dishes: [], soup: null };
+  const staples = (catalog.homeDishes && catalog.homeDishes.staples) || {};
+  let staple = "none", size = null;
+  if (homeMeal.staple) {
+    staple = Object.keys(staples).filter(function (k) { return staples[k].ref === homeMeal.staple.item.uid; })[0] || "white";
+    size = EST_SIZES.filter(function (s) { return EST_STAPLE_PORTIONS[s] * EST_STAPLE_G_PER_PORTION[staple] === homeMeal.staple.amount; })[0] || "M";
+  }
+  const n = homeMeal.dishes.length;
+  const total = n > 0 ? homeMeal.dishes.reduce(function (a, d) { return a + d.amount; }, 0) : EST_DISH_GRAMS[b.dish];
+  const dish = EST_SIZES.filter(function (s) { return Math.abs(EST_DISH_GRAMS[s] - total) <= n; })[0] || b.dish;
+  return { staple: staple, staple_size: size, dish: dish, dishes: homeMeal.dishes.map(function (d) { return d.item.uid; }), soup: homeMeal.soup ? homeMeal.soup.item.uid : null };
+}
+
+// 共餐單品的名額（主食算 1 項單品，菜與湯另計，decisions #152）：選擇器算單品上限時用
+export function homeMealFoodCount(homeMeal) {
+  return homeMeal && homeMeal.staple ? 1 : 0;
+}
+
+// 當季的家常菜與湯（共餐清單）：依素菜／菜肉／純肉分組（分組只是標題），不當季的不列；
+// 被過敏原或飲食限制擋的灰在該組最後、帶原因（章程 C4.1）。season 是 spring|summer|autumn|winter
+export function homeMealChoices(catalog, season, profile) {
+  const pf = profile || {};
+  const home = (catalog.homeDishes && catalog.homeDishes.dishes) || [];
+  const entry = function (it) { const f = passesHardFilters(it, pf); return { item: it, reason: f.ok ? null : f.reason }; };
+  const order = function (rows) { return rows.filter(function (r) { return !r.reason; }).concat(rows.filter(function (r) { return r.reason; })); };
+  const inSeason = home.filter(function (d) { return (d.seasons || []).indexOf(season) !== -1; });
+  return {
+    groups: EST_CATS.map(function (cl) {
+      return { cls: cl, label: EST_CAT_LABELS[cl], dishes: order(inSeason.filter(function (d) { return d.kind === "dish" && d.class === cl; }).map(entry)) };
+    }),
+    soups: order(inSeason.filter(function (d) { return d.kind === "soup"; }).map(entry)),
+  };
+}
+
+// 打開共餐區塊時的預設：菜量依蛋白質目標、主食量選整餐熱量最接近這個時段配額的一格（decisions #151），其餘空白
+export function homeMealDefaultForm(targets, kcalShare, catalog) {
+  const d = homeEstimateDefaults(targets, kcalShare, catalog.homeDishes);
+  return { staple: "white", staple_size: d.staple_size, dish: d.dish, dishes: [], soup: null };
+}
+
 // ---------- 單品（food 元件，PRD 13.4） ----------
 // 品項形狀：{ uid, name, group?, state?, serving: { amount, unit: "g"|"ml" }, per_serving: { kcal, …七個欄位 } }。
 // 分層品項（catalog.foodTree.items）本來就是這個形狀；我的食材由 my-ingredients.js 的 ingredientItem 轉成同一形狀
@@ -696,7 +805,7 @@ function componentFactor(c) {
 // 自煮沒有食材（只有單品或飲料）時，餐型、烹調法是 null，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123）。
 export function buildDraftContent(draft, opts) {
   const drink = draft.drink ? [productComponent(draft.drink, draftQty(draft, draft.drink.uid))] : [];
-  const foods = (draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty, f.amount); });
+  const foods = homeMealParts(draft.homeMeal).concat(draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty, f.amount); });
   if (draft.kind === "cook") {
     const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
     if (content.components.length === 0) {
@@ -786,6 +895,8 @@ export function draftLogName(d) {
     return p.name + (q === 0.5 ? "（半份）" : q !== 1 ? " " + qtyLabel(q) : "");
   };
   const tail = (d.foods || []).map(function (f) { return foodLogName(f.item, f.qty, f.amount); }).concat(d.drink ? [withQty(d.drink)] : []);
+  const homeNames = homeMealParts(d.homeMeal).filter(function (f) { return isHomeDishRef(f.item.uid); }).map(function (f) { return f.item.name; });
+  if (homeNames.length > 0) tail.unshift("共餐：" + homeNames.join("＋")); // 記錄名稱不寫克數（decisions #152）
   if (d.kind === "cook") {
     return (d.archetype ? [d.archetype.name] : []).concat(draftIngredients(d).map(function (it) { return it.name; }), tail).join("＋");
   }
@@ -858,8 +969,18 @@ function customsByUid(ctx) {
   return out;
 }
 
+// 單品查詢表：分層品項＋內建家常菜（hd_，家庭共餐，decisions #152），組合、預約的解析共用
+const _treeIndex = new WeakMap();
 function treeById(catalog) {
-  return (catalog.foodTree && catalog.foodTree.byId) || {};
+  if (!_treeIndex.has(catalog)) {
+    const home = (catalog.homeDishes && catalog.homeDishes.byId) || {};
+    _treeIndex.set(catalog, Object.assign({}, home, (catalog.foodTree && catalog.foodTree.byId) || {}));
+  }
+  return _treeIndex.get(catalog);
+}
+
+export function isHomeDishRef(ref) {
+  return typeof ref === "string" && ref.indexOf(HOME_DISH_PREFIX) === 0;
 }
 
 // 我的食材的紀錄（ctx.customIngredients：custom_ingredients 原始紀錄，含已刪除的自填）。
@@ -949,6 +1070,8 @@ export function resolveSavedMeal(saved, catalog, ctx) {
   const axisCount = {};
   const roleItems = [];
   let foods = 0;
+  let homeDishes = 0;
+  let homeSoups = 0;
   comps.forEach(function (c) {
     if (c.kind === "ingredient") {
       const it = ingIdx[c.ref];
@@ -976,6 +1099,13 @@ export function resolveSavedMeal(saved, catalog, ctx) {
       if (c.amount == null && it.serving.amount == null) { block(c, it, "沒有設一份，請改用克數"); return; }
       const f = passesHardFilters(it, profile);
       if (!f.ok) { block(c, it, f.reason); return; }
+      if (isHomeDishRef(c.ref)) {
+        // 家庭共餐的菜與湯另計上限（decisions #152），不佔單品的名額
+        if (it.kind === "soup" ? homeSoups >= HOME_MEAL_SOUP_MAX : homeDishes >= HOME_MEAL_DISH_MAX) { block(c, it, it.kind === "soup" ? "共餐的湯最多選 " + HOME_MEAL_SOUP_MAX + " 道" : "共餐的菜最多選 " + HOME_MEAL_DISH_MAX + " 道"); return; }
+        if (it.kind === "soup") homeSoups++; else homeDishes++;
+        available.push({ component: c, item: it });
+        return;
+      }
       if (foods >= FOOD_MAX_PER_MEAL) { block(c, it, foodLimitProblem(foods + 1)); return; }
       foods++;
       available.push({ component: c, item: it });
@@ -1009,8 +1139,21 @@ export function savedMealDraft(resolved) {
       implicitOverride: resolved.implicit ? { oil_g: resolved.implicit.oil_g, seasoning: resolved.implicit.seasoning } : {},
     });
   }
-  resolved.available.forEach(function (a) {
+  const firstHome = resolved.available.findIndex(function (a) { return a.component.kind === "food" && isHomeDishRef(a.component.ref); });
+  resolved.available.forEach(function (a, idx) {
     const c = a.component;
+    if (c.kind === "food" && isHomeDishRef(c.ref)) {
+      // 共餐：菜與湯進 homeMeal，緊接在第一道菜前的主食元件也歸共餐（元件順序固定：主食、各道菜、湯）
+      d.homeMeal = d.homeMeal || { staple: null, dishes: [], soup: null };
+      const part = { item: a.item, amount: c.amount };
+      if (a.item.kind === "soup") d.homeMeal.soup = part; else d.homeMeal.dishes.push(part);
+      return;
+    }
+    if (c.kind === "food" && firstHome > 0 && idx === firstHome - 1 && c.amount != null && isHomeStapleItem(a.item)) {
+      d.homeMeal = d.homeMeal || { staple: null, dishes: [], soup: null };
+      d.homeMeal.staple = { item: a.item, amount: c.amount };
+      return;
+    }
     if (c.kind === "ingredient") {
       if (c.axis === "protein") d.proteins.push(a.item);
       else if (c.axis === "vegetable") d.vegetables.push(a.item);

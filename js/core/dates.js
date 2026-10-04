@@ -1,6 +1,13 @@
 // 日期工具（唯一來源，章程 C2）。一律用本地日期字串 "YYYY-MM-DD" 運算。
 // 這裡不讀時鐘：「今天」由 ui/clock.js 取得後當參數傳進來（engine 不得讀時鐘，章程 C1.1）。
 
+// 台灣的季節（共餐家常菜只列當季，decisions #152）：春 3–5、夏 6–8、秋 9–11、冬 12–2 月
+export function seasonOfDate(dateStr) {
+  const m = Number(String(dateStr).slice(5, 7));
+  if (!(m >= 1 && m <= 12)) throw new Error("[dates.js] 日期不對：" + dateStr);
+  return m >= 3 && m <= 5 ? "spring" : m >= 6 && m <= 8 ? "summer" : m >= 9 && m <= 11 ? "autumn" : "winter";
+}
+
 export function fmtDate(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
