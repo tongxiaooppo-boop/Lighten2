@@ -45,7 +45,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 | `data/reference/` | TFDA 資料庫等參考資料（檢查程式依賴，版本管理） | 是（B10） |
 | `data/tfda_lookup.json` | 衛福部全表的精簡查詢檔（由 `tools/` 從 `data/reference/` 產生，PRD 12.2） | 是（數值必須跟參考資料算出來的完全相等） |
 | `data/food_tree.json` | 代換表分層品項（由 `tools/` 從 `data/reference/` 的代換表轉錄、對應表、標註產生，PRD 13.3） | 是（B4「分層品項」、B6、B12）。代換表完整轉錄搬進 `data/reference/` 時取代舊的部分轉錄 `food_exchange_table.json`，decisions #35 引用的欄位要相容 |
-| `data/home_dishes.json` | 家常菜估算的資料（由 `tools/build-home-dishes.js` 從 `data/reference/home_dish_recipes.json`（手寫配方）與 `data/reference/home_dish_seasonings.json`（調料選樣表）產生，decisions #151）：每道菜每 100g 的七欄、三個類別的平均、湯平均、主食每 100g | 是（B4「家常菜」、B12；數值必須跟來源重算完全相等）。只供外食分頁「主食＋家常菜」估算，不供逐道選擇，推薦不得讀（C4.17 ③） |
+| `data/home_dishes.json` | 家常菜估算的資料（由 `tools/build-home-dishes.js` 從 `data/reference/home_dish_recipes.json`（手寫配方）與 `data/reference/home_dish_seasonings.json`（調料選樣表）產生，decisions #151）：每道菜每 100g 的七欄、三個類別的平均、湯平均、主食每 100g | 是（B4「家常菜」、B12；數值必須跟來源重算完全相等）。供外食分頁「自助餐」類別平均估算與自煮分頁「共餐」逐道選擇（decisions #152），推薦不得讀（C4.17 ③）；`hd_` 前綴只給家常菜（B4） |
 | 使用者的「我的品項」（`custom_foods` store） | 使用者自建 | 否，只受 B8 的最低驗證 |
 | 使用者的「我的食材」「我的料理」（`custom_ingredients`、`custom_dishes` store，PRD 12.4、12.5） | 使用者自建 | 否，只受 B8 的最低驗證；B6.8 不適用 |
 
@@ -281,6 +281,7 @@ ui/  →  data/    →  core/
 | 過敏原／飲食限制／不吃清單判斷 | `engine/filters.js` |
 | 一餐內容的營養計算（含用油、調味、縮放、null 傳染）、驗證、快照 | `engine/meal-content.js` |
 | 家常菜估算（`est`）的七欄營養與克數換算 | `engine/meal-content.js`（估算函式）；常數（菜量 120／160／200g、主食 2／4／6 份、湯 250ml）在 `core/config.js`；每 100g 數字來自 `data/home_dishes.json`（`tools/lib/home-dish-values.js` 產生，前端不重算配方） |
+| 家庭共餐（`hd_` 單品）的克數分配、表單⇄元件、季節清單、過敏原擋法 | `engine/meal-content.js`（`homeMeal*`）；常數在 `core/config.js`（`HOME_MEAL_*`、`HOME_STAPLE_REFS`、`EST_*`），季節 `core/dates.js` 的 `seasonOfDate`；每 100g 與過敏原由 `tools/lib/home-dish-values.js` 產生 `data/home_dishes.json` |
 | 代換表分層品項的 1 份營養（預先算好，前端不換算） | `tools/` 產生 `data/food_tree.json`；`data/catalog.js` 載入、正規化 `diet_tags` |
 
 「不吃清單」「倒讚紀錄」一律以 id 為 key，不用名稱〔機：check-engine 斷言——把食材改名後，不吃清單仍然命中〕。

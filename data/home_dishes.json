@@ -172,6 +172,10 @@
    },
    "veg_share": 1,
    "cooked_g": 282,
+   "components": [
+    "hd_garlic_cabbage",
+    "cabbage"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -209,6 +213,10 @@
    },
    "veg_share": 1,
    "cooked_g": 250,
+   "components": [
+    "hd_garlic_qingjiang",
+    "fx_qingjiang"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -247,6 +255,10 @@
    },
    "veg_share": 1,
    "cooked_g": 217,
+   "components": [
+    "hd_garlic_sweet_potato_leaves",
+    "fx_sweet_potato_leaves"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -284,6 +296,10 @@
    },
    "veg_share": 1,
    "cooked_g": 282,
+   "components": [
+    "hd_cold_cucumber",
+    "cucumber"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -322,6 +338,11 @@
    },
    "veg_share": 0.602,
    "cooked_g": 391,
+   "components": [
+    "hd_tomato_egg",
+    "egg",
+    "tomato"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -361,6 +382,12 @@
    },
    "veg_share": 0.625,
    "cooked_g": 353,
+   "components": [
+    "hd_green_pepper_pork",
+    "fx_pork_loin",
+    "fx_green_pepper",
+    "bell_pepper"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -398,6 +425,12 @@
    },
    "veg_share": 0.303,
    "cooked_g": 347,
+   "components": [
+    "hd_kung_pao_chicken",
+    "chicken_thigh",
+    "fx_peanut",
+    "cucumber"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -436,6 +469,11 @@
    },
    "veg_share": 0.667,
    "cooked_g": 361,
+   "components": [
+    "hd_oyster_kailan_beef",
+    "beef_shank",
+    "fx_kailan"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -472,6 +510,14 @@
    },
    "veg_share": 0.906,
    "cooked_g": 500,
+   "components": [
+    "hd_braised_napa",
+    "fx_napa_cabbage",
+    "fx_pork_belly",
+    "fx_carrot",
+    "shiitake",
+    "wood_ear"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -511,6 +557,10 @@
    },
    "veg_share": 0,
    "cooked_g": 480,
+   "components": [
+    "hd_mapo_tofu",
+    "firm_tofu"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -552,6 +602,9 @@
    },
    "veg_share": 0,
    "cooked_g": 330,
+   "components": [
+    "hd_steamed_perch"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -591,6 +644,11 @@
    },
    "veg_share": 0,
    "cooked_g": 480,
+   "components": [
+    "hd_braised_dried_tofu_egg",
+    "fx_small_dried_tofu",
+    "egg"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -632,6 +690,10 @@
    },
    "veg_share": 0,
    "cooked_g": 300,
+   "components": [
+    "hd_braised_tofu",
+    "firm_tofu"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -670,6 +732,10 @@
    },
    "veg_share": 0,
    "cooked_g": 400,
+   "components": [
+    "hd_braised_chicken_leg",
+    "chicken_thigh"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -709,6 +775,11 @@
    },
    "veg_share": 0.719,
    "cooked_g": 1500,
+   "components": [
+    "hd_daikon_rib_soup",
+    "fx_pork_rib",
+    "daikon"
+   ],
    "state": "cooked",
    "unit": "ml",
    "allergen_tags": [
@@ -743,6 +814,13 @@
    },
    "veg_share": 0.688,
    "cooked_g": 1150,
+   "components": [
+    "hd_napa_chicken_soup",
+    "fx_napa_cabbage",
+    "daikon",
+    "shiitake",
+    "chicken_thigh"
+   ],
    "state": "cooked",
    "unit": "ml",
    "allergen_tags": [
@@ -779,6 +857,10 @@
    },
    "veg_share": 0,
    "cooked_g": 700,
+   "components": [
+    "hd_seaweed_egg_soup",
+    "egg"
+   ],
    "state": "cooked",
    "unit": "ml",
    "allergen_tags": [
@@ -815,6 +897,10 @@
    },
    "veg_share": 1,
    "cooked_g": 230,
+   "components": [
+    "hd_garlic_water_spinach",
+    "fx_water_spinach"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -848,6 +934,10 @@
    },
    "veg_share": 1,
    "cooked_g": 340,
+   "components": [
+    "hd_stirfry_luffa",
+    "luffa"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -881,6 +971,10 @@
    },
    "veg_share": 1,
    "cooked_g": 260,
+   "components": [
+    "hd_stirfry_bitter_melon",
+    "fx_bitter_melon"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -917,6 +1011,10 @@
    },
    "veg_share": 1,
    "cooked_g": 220,
+   "components": [
+    "hd_garlic_spinach",
+    "spinach"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -951,6 +1049,10 @@
    },
    "veg_share": 1,
    "cooked_g": 330,
+   "components": [
+    "hd_garlic_broccoli",
+    "broccoli"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -984,6 +1086,10 @@
    },
    "veg_share": 1,
    "cooked_g": 230,
+   "components": [
+    "hd_garlic_crown_daisy",
+    "fx_crown_daisy"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1017,6 +1123,10 @@
    },
    "veg_share": 1,
    "cooked_g": 300,
+   "components": [
+    "hd_garlic_asparagus",
+    "fx_green_asparagus"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1051,6 +1161,10 @@
    },
    "veg_share": 1,
    "cooked_g": 380,
+   "components": [
+    "hd_stirfry_cauliflower",
+    "fx_cauliflower"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1086,6 +1200,11 @@
    },
    "veg_share": 0.548,
    "cooked_g": 300,
+   "components": [
+    "hd_chive_egg",
+    "egg",
+    "fx_chives"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1121,6 +1240,11 @@
    },
    "veg_share": 0.732,
    "cooked_g": 380,
+   "components": [
+    "hd_luffa_egg",
+    "luffa",
+    "egg"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1157,6 +1281,11 @@
    },
    "veg_share": 0.625,
    "cooked_g": 380,
+   "components": [
+    "hd_broccoli_shrimp",
+    "broccoli",
+    "shrimp"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1194,6 +1323,11 @@
    },
    "veg_share": 0.667,
    "cooked_g": 350,
+   "components": [
+    "hd_water_spinach_beef",
+    "fx_water_spinach",
+    "beef_shank"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1230,6 +1364,10 @@
    },
    "veg_share": 0.789,
    "cooked_g": 360,
+   "components": [
+    "hd_eggplant_pork",
+    "eggplant"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1267,6 +1405,11 @@
    },
    "veg_share": 0.5,
    "cooked_g": 430,
+   "components": [
+    "hd_spinach_tofu",
+    "spinach",
+    "firm_tofu"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1305,6 +1448,12 @@
    },
    "veg_share": 0.636,
    "cooked_g": 280,
+   "components": [
+    "hd_wood_ear_pork",
+    "wood_ear",
+    "fx_carrot",
+    "fx_pork_loin"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1343,6 +1492,10 @@
    },
    "veg_share": 0,
    "cooked_g": 350,
+   "components": [
+    "hd_three_cup_chicken",
+    "chicken_thigh"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1382,6 +1535,10 @@
    },
    "veg_share": 0,
    "cooked_g": 260,
+   "components": [
+    "hd_pan_salmon",
+    "salmon"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1419,6 +1576,10 @@
    },
    "veg_share": 0,
    "cooked_g": 230,
+   "components": [
+    "hd_scallion_beef",
+    "beef_shank"
+   ],
    "state": "cooked",
    "unit": "g",
    "allergen_tags": [
@@ -1455,6 +1616,11 @@
    },
    "veg_share": 0.719,
    "cooked_g": 1500,
+   "components": [
+    "hd_winter_melon_rib_soup",
+    "fx_pork_rib",
+    "fx_winter_melon"
+   ],
    "state": "cooked",
    "unit": "ml",
    "allergen_tags": [

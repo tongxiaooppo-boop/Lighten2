@@ -203,6 +203,8 @@ function buildHomeDishes(ctx) {
     const row = { id: d.id, name: d.name, kind: d.kind, class: d.class, seasons: SEASONS.filter((x) => (d.seasons || []).indexOf(x) !== -1),
       per_100g: c.per_100g, veg_share: c.veg_share, cooked_g: d.cooked_g,
       // 家庭共餐的單品欄位（decisions #152）：複合料理，過敏原＝配方聯集＋未確認，素食一律不標
+      // 「不吃」清單用：自己的 id 加上配方裡的食材與分層品項 id（findDislikedHit 比對 components）
+      components: [d.id].concat((d.recipe || []).map((it) => it.ref).filter((ref, i, a) => a.indexOf(ref) === i && !/^hs_/.test(ref) && (ctx.ingredients[ref] || ctx.tree[ref]))),
       state: "cooked", unit: d.kind === "soup" ? "ml" : "g", allergen_tags: c.allergen_tags, vegan: false, lacto_ovo: false, composite: true,
       source: d.source || { type: "assumption", ref: "配方與成品重為估計（見 note）" }, note: d.note };
     if (d.ntu_kcal_100g != null) {

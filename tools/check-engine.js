@@ -2466,6 +2466,13 @@ function checkSavedMealsDb(catalog) {
   check(eggAllergy.groups.every((g) => g.dishes.every((x) => x.reason === "成分未確認")) && eggAllergy.soups.every((x) => x.reason === "成分未確認"), "有設任何過敏原：家常菜是複合料理、成分未確認，全部照擋（章程 C4.1）");
   const vegan = mc.homeMealChoices(catalog, "winter", Object.assign({}, okProfile, { diet_restriction: "全素" }));
   check(vegan.groups.every((g) => g.dishes.every((x) => x.reason)) && vegan.soups.every((x) => x.reason), "全素：家常菜全部被擋（複合料理不標素食）");
+  const dis = mc.homeMealChoices(catalog, "winter", Object.assign({}, okProfile, { disliked_ingredients: [{ type: "ingredient", key: "egg", label: "雞蛋" }] }));
+  const disRow = (n) => dis.groups.flatMap((g) => g.dishes).find((x) => x.item.name === n);
+  check(/不吃/.test(disRow("番茄炒蛋").reason || "") && disRow("蒜炒高麗菜").reason === null && /不吃/.test((dis.soups.find((x) => x.item.name === "紫菜蛋花湯") || {}).reason || ""), "不吃清單對家常菜有效：不吃雞蛋→番茄炒蛋、蛋花湯被擋，高麗菜不受影響");
+  const offs = mc.homeMealChoices(catalog, "winter", okProfile, ["hd_stirfry_luffa"]);
+  const luffaRow = offs.groups.flatMap((g) => g.dishes).find((x) => x.item.name === "清炒絲瓜");
+  check(luffaRow && luffaRow.offSeason === true && luffaRow.reason === null && mc.homeMealChoices(catalog, "winter", okProfile).groups.flatMap((g) => g.dishes).every((x) => x.item.name !== "清炒絲瓜") &&
+    offs.groups.find((g) => g.cls === "veg").dishes.slice(-1)[0].item.name === "清炒絲瓜", "已選但不當季的菜：列在該組最後、標非當季、可取消；沒選就不列");
   const form = (o) => Object.assign({ staple: "white", staple_size: "M", dish: "M", dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg"], soup: "hd_seaweed_egg_soup" }, o || {});
   const hg = mc.homeMealGrams(form());
   check(hg.staple_g === 160 && hg.dish_total_g === 160 && hg.per_dish_g === 53 && hg.soup_ml === 250 && mc.homeMealGrams(form({ dishes: ["hd_garlic_cabbage"], soup: null })).per_dish_g === 160 &&

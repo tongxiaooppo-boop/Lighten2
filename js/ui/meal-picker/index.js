@@ -333,7 +333,7 @@ function applySaved(rec) {
       primaryScale: d.primaryScale, implicitOverride: d.implicitOverride,
     };
     // 共餐帶回：表單還原並展開（decisions #152）；沒有共餐就維持收起
-    if (d.homeMeal) m.cook.home = { open: true, form: homeMealFormOf(d.homeMeal, m.catalog, { dish: m.cook.home.form.dish }) };
+    if (d.homeMeal) m.cook.home = { open: true, carried: true, form: homeMealFormOf(d.homeMeal, m.catalog, { dish: m.cook.home.form.dish }) };
   } else {
     const t = m.tabs[tab];
     t.selected.forEach(function (u) { delete m.qtyByUid[u]; });
@@ -377,9 +377,16 @@ export function currentDraft() {
 }
 
 // 共餐在目前的選擇器裡有沒有效：開伙、午餐或晚餐、展開了、至少選一道菜或湯；有問題（過敏原等）不進草稿，由 submitProblem 說明
+// 共餐區塊可不可以用：午餐、晚餐；編輯組合（沒有時段）也要顯示，不然組合裡的共餐存回時會被刪掉；
+// 帶入含共餐的組合或預約到別的時段時照樣顯示（carried），數字才跟卡片一致（審核 M-1、M-2）
+function homeMealAllowed() {
+  const m = mealPicker;
+  return !!m.cook.home && (m.editing || (m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1) || m.cook.home.carried === true);
+}
+
 function homeMealActive() {
   const m = mealPicker;
-  return m.tab === "cook" && m.cook.tier === "cook_full" && !!m.cook.home && m.cook.home.open && m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1;
+  return m.tab === "cook" && m.cook.tier === "cook_full" && homeMealAllowed() && m.cook.home.open;
 }
 
 function currentHomeMeal() {
@@ -404,6 +411,7 @@ function submitProblem(d) {
       const hp = homeMealProblem(mealPicker.cook.home.form, mealPicker.catalog, mealPicker.profile);
       if (hp) return hp;
     }
+    if (homeMealActive() && !d.homeMeal && !d.archetype && d.foods.length === 0 && !d.drink) return "共餐：請至少選一道菜或湯。";
     const p = composeProblem(d, { tier: d.meal_type });
     return p && d.archetype && d.foods.length > 0 ? p + "（只記單品可以再點一次「" + d.archetype.name + "」取消餐型）" : p;
   }
@@ -433,7 +441,7 @@ function renderPanel() {
   const m = mealPicker;
   const top = m.editing ? (m.savedNotice ? '<p class="meal-picker-note">' + escapeHtml(m.savedNotice) + "</p>" : "") : savedRowHtml(m.savedCards, m.savedNotice);
   if (m.tab === "cook") {
-    const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1 && !m.editing ? { season: m.season } : null);
+    const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), homeMealAllowed() ? { season: m.season } : null);
     m.cookSteps = r.steps;
     panel.innerHTML = top + r.html;
     bindSlider();

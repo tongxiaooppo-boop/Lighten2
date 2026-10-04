@@ -1882,6 +1882,21 @@ async function run() {
   await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "16-3 取消預約後明天不是「還沒排」");
   await click(`#today-dates [data-day-offset='0']`);
 
+  // 16-4 含共餐的組合帶入到早餐（不是午晚餐）：共餐照樣顯示、算進去（審核 M-2）；非當季的菜標「非當季」可取消（M-3）；封存組合收尾
+  const savedHm = JSON.parse(await js(`(async () => { const m = ${DBW};
+    const r = await m.addSavedMeal({ name: '共餐測試組合', content: { meal_type: 'cook_full', archetype_id: null, method_id: null, implicit: null,
+      components: [{ kind: 'food', ref: 'fx_cooked_rice', amount: 160 }, { kind: 'food', ref: 'hd_garlic_cabbage', amount: 160 }, { kind: 'food', ref: 'hd_stirfry_luffa', amount: 100 }] } });
+    return JSON.stringify({ id: r.id }); })()`));
+  await openPicker("breakfast");
+  await click(`#meal-picker-panel [data-saved-id="${savedHm.id}"]`);
+  await until(`document.querySelectorAll('#meal-picker-panel [data-hm-dish].selected').length === 2`, "16-4 早餐帶入共餐組合後沒有顯示 2 道共餐的菜");
+  const sum164 = await js(text("#meal-picker-summary"));
+  check(sum164.indexOf("已選 2 件") !== -1 && /約 [1-9]\d+ kcal/.test(sum164), "16-4 帶入的共餐沒有算進摘要：" + sum164);
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-hm-dish].selected') && ![...document.querySelectorAll('#meal-picker-panel [data-hm-dish]')].some((b) => b.textContent.indexOf('非當季') !== -1 && !b.classList.contains('selected'))`), "16-4 非當季但沒選的菜不該出現");
+  await shot("共餐-早餐帶入", "#meal-picker-panel");
+  await closePicker();
+  await js(`(async () => { const m = ${DBW}; await m.updateSavedMeal(${JSON.stringify(savedHm.id)}, { archived: true }); })()`);
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

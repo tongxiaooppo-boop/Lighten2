@@ -18,7 +18,7 @@ export function homeMealToggleHtml(open) {
 // hm：{ open, form }；ctx：{ catalog, profile, season }
 export function homeMealStepHtml(hm, ctx, label) {
   const form = hm.form;
-  const choices = homeMealChoices(ctx.catalog, ctx.season, ctx.profile);
+  const choices = homeMealChoices(ctx.catalog, ctx.season, ctx.profile, form.dishes.concat(form.soup ? [form.soup] : []));
   let html = '<div class="compose-step"><div class="meal-picker-step-label">' + escapeHtml(label) + "</div>" +
     '<p class="meal-picker-note">家裡的共餐：記你自己吃的那一份。選主食、當季的家常菜 1–' + HOME_MEAL_DISH_MAX + " 樣；每一樣的量是全部的菜平分。</p>";
   html += group("主食", EST_STAPLES.map(function (k) { return chip("data-hm-staple", k, form.staple === k, EST_STAPLE_LABELS[k]); }).join(""));
@@ -30,7 +30,7 @@ export function homeMealStepHtml(hm, ctx, label) {
   choices.groups.forEach(function (g) {
     html += group(g.label, g.dishes.map(function (x) {
       const on = form.dishes.indexOf(x.item.uid) !== -1;
-      return chip("data-hm-dish", x.item.uid, on, x.item.name, x.reason || null, !!x.reason && !on);
+      return chip("data-hm-dish", x.item.uid, on, x.item.name, x.reason || (x.offSeason ? "非當季" : null), !!x.reason && !on);
     }).join(""));
   });
   html += '<p class="meal-picker-note">純肉＝肉、魚、蛋、豆腐為主。已選 ' + form.dishes.length + " 道（最多 " + HOME_MEAL_DISH_MAX + " 道）。</p>";
@@ -38,7 +38,7 @@ export function homeMealStepHtml(hm, ctx, label) {
     return chip("data-hm-size", s, form.dish === s, PART_LABELS[s], EST_DISH_GRAMS[s] + "g");
   }).join(""));
   html += group("湯（選填）", chip("data-hm-soup", "", !form.soup, "不加") + choices.soups.map(function (x) {
-    return chip("data-hm-soup", x.item.uid, form.soup === x.item.uid, x.item.name, x.reason || EST_SOUP_ML + "ml", !!x.reason && form.soup !== x.item.uid);
+    return chip("data-hm-soup", x.item.uid, form.soup === x.item.uid, x.item.name, x.reason || (x.offSeason ? "非當季" : EST_SOUP_ML + "ml"), !!x.reason && form.soup !== x.item.uid);
   }).join(""));
   const problem = homeMealProblem(form, ctx.catalog, ctx.profile);
   if (problem) return html + '<p class="meal-picker-note">' + escapeHtml(problem) + "</p></div>";

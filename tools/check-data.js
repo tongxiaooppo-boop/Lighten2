@@ -385,6 +385,10 @@ function checkHomeDishes(ctx, fileText, frozen) {
     if (!Array.isArray(d.allergen_tags) || d.allergen_tags.indexOf(UNVERIFIED) === -1 || d.allergen_tags.some((t) => t !== UNVERIFIED && ALLERGENS.indexOf(t) === -1)) err("家常菜估算：" + w + " 的過敏原要在詞彙內且含「未確認」（章程 B6.3）");
     if (d.vegan !== false || d.lacto_ovo !== false || d.composite !== true) err("家常菜估算：" + w + " 複合料理不得標素食、composite 要是 true");
   });
+  // 共餐主食 ref 與 config 一致；hd_ 前綴只給家常菜（treeById 併入家常菜，撞名會被分層蓋掉）
+  const cfgStaples = JSON.parse(/HOME_STAPLE_REFS = (\[[^\]]*\])/.exec(configSrc)[1]);
+  if (JSON.stringify(cfgStaples) !== JSON.stringify(HD.STAPLES.map((x) => x.ref))) err("家常菜估算：js/core/config.js 的 HOME_STAPLE_REFS 要等於 tools/lib/home-dish-values.js 的 STAPLES ref");
+  Object.keys(ctx.ingredients).concat(Object.keys(ctx.tree)).forEach((id) => { if (/^hd_/.test(id)) err("家常菜估算：hd_ 前綴只給家常菜，食材或分層品項不得使用：" + id); });
   // hd_ id 凍結：凍結清單裡的都要還在（或在 retired）；新的要加進清單；retired 不重用
   if (frozen) {
     const ids = built.data.dishes.map((d) => d.id);

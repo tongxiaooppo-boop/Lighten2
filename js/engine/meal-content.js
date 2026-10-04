@@ -14,7 +14,7 @@
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL, ESTIMATE_RECALL_KCAL, ESTIMATE_RECALL_GROUP,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
-  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_DEFAULT_DISH_PROTEIN_CUTS, HOME_MEAL_DISH_MAX, HOME_MEAL_SOUP_MAX, HOME_DISH_PREFIX, EST_CAT_LABELS, EST_STAPLE_LABELS,
+  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_DEFAULT_DISH_PROTEIN_CUTS, HOME_MEAL_DISH_MAX, HOME_MEAL_SOUP_MAX, HOME_DISH_PREFIX, HOME_STAPLE_REFS, EST_CAT_LABELS, EST_STAPLE_LABELS,
 } from "../core/config.js";
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
@@ -634,9 +634,8 @@ export function homeEstimate(cfg, home) {
 // draft.homeMeal：{ staple: { item, amount } | null, dishes: [{ item, amount }], soup: { item, amount } | null }（item 是 catalog 的單品形狀）
 
 function isHomeStapleItem(item) {
-  return item && !!_homeStapleRefs && _homeStapleRefs.indexOf(item.uid) !== -1;
+  return !!item && HOME_STAPLE_REFS.indexOf(item.uid) !== -1;
 }
-let _homeStapleRefs = ["fx_cooked_rice", "brown_rice_cooked", "mixed_grain_rice_cooked", "fx_cooked_noodles"];
 
 // 元件順序固定：主食、各道菜、湯
 function homeMealParts(hm) {
@@ -722,17 +721,20 @@ export function homeMealFoodCount(homeMeal) {
 
 // 當季的家常菜與湯（共餐清單）：依素菜／菜肉／純肉分組（分組只是標題），不當季的不列；
 // 被過敏原或飲食限制擋的灰在該組最後、帶原因（章程 C4.1）。season 是 spring|summer|autumn|winter
-export function homeMealChoices(catalog, season, profile) {
+export function homeMealChoices(catalog, season, profile, selectedIds) {
   const pf = profile || {};
+  const picked = selectedIds || [];
   const home = (catalog.homeDishes && catalog.homeDishes.dishes) || [];
-  const entry = function (it) { const f = passesHardFilters(it, pf); return { item: it, reason: f.ok ? null : f.reason }; };
+  const entry = function (it) { const f = passesHardFilters(it, pf); return { item: it, reason: f.ok ? null : f.reason, offSeason: (it.seasons || []).indexOf(season) === -1 }; };
   const order = function (rows) { return rows.filter(function (r) { return !r.reason; }).concat(rows.filter(function (r) { return r.reason; })); };
-  const inSeason = home.filter(function (d) { return (d.seasons || []).indexOf(season) !== -1; });
+  // 當季的，加上「已選但不當季」的（例如夏天存的組合秋天帶入）：留在清單最後、標非當季，才取消得掉
+  const listed = home.filter(function (d) { return (d.seasons || []).indexOf(season) !== -1 || picked.indexOf(d.id) !== -1; });
+  const tail = function (rows) { return rows.filter(function (r) { return !r.offSeason; }).concat(rows.filter(function (r) { return r.offSeason; })); };
   return {
     groups: EST_CATS.map(function (cl) {
-      return { cls: cl, label: EST_CAT_LABELS[cl], dishes: order(inSeason.filter(function (d) { return d.kind === "dish" && d.class === cl; }).map(entry)) };
+      return { cls: cl, label: EST_CAT_LABELS[cl], dishes: tail(order(listed.filter(function (d) { return d.kind === "dish" && d.class === cl; }).map(entry))) };
     }),
-    soups: order(inSeason.filter(function (d) { return d.kind === "soup"; }).map(entry)),
+    soups: tail(order(listed.filter(function (d) { return d.kind === "soup"; }).map(entry))),
   };
 }
 
