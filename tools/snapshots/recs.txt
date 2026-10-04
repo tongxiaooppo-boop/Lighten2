@@ -2,7 +2,7 @@ today/M/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fat_g
 today/M/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/base/skip	afternoon_tea,snack
-today/M/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/base/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/base/afternoon_tea	-
 today/M/base/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -12,7 +12,7 @@ today/M/base-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/M/base-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/base-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/base-night/skip	afternoon_tea,snack
-today/M/base-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/base-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/base-night/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/base-night/afternoon_tea	-
 today/M/base-night/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -42,7 +42,7 @@ today/M/high-fiber-history/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g
 today/M/high-fiber-history/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/high-fiber-history/hardConstraints	{"fiberGapThisWeek":0,"proteinGapToday":144}
 today/M/high-fiber-history/skip	afternoon_tea,snack
-today/M/high-fiber-history/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/high-fiber-history/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/high-fiber-history/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/high-fiber-history/afternoon_tea	-
 today/M/high-fiber-history/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -120,7 +120,7 @@ today/M/offset-plus-effective-tomorrow/targets	{"baseTargetKcal":1896.1,"bmr":17
 today/M/offset-plus-effective-tomorrow/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/offset-plus-effective-tomorrow/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/offset-plus-effective-tomorrow/skip	afternoon_tea,snack
-today/M/offset-plus-effective-tomorrow/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/offset-plus-effective-tomorrow/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/offset-plus-effective-tomorrow/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/offset-plus-effective-tomorrow/afternoon_tea	-
 today/M/offset-plus-effective-tomorrow/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -140,7 +140,7 @@ today/M/pending/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,"fa
 today/M/pending/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/pending/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/pending/skip	afternoon_tea,snack
-today/M/pending/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/pending/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/pending/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/pending/afternoon_tea	-
 today/M/pending/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -230,7 +230,7 @@ today/ALLERGY/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/ALLERGY/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/ALLERGY/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/ALLERGY/base/skip	afternoon_tea,snack
-today/ALLERGY/base/breakfast	conv_bx05+conv_dr20 scale=1 kcal=348.1 base=348.1 P=9 C=48 F=8.4 Fb=4 budget=474 src=convenience
+today/ALLERGY/base/breakfast	conv_bx05+conv_dr20 scale=1 kcal=348.1 base=348.1 P=9.8 C=49.2 F=9.3 Fb=4 budget=474 src=convenience
 today/ALLERGY/base/lunch	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_pan_fry scale=2 kcal=774 base=505.2 P=43.1 C=120.9 F=11.5 Fb=9 budget=774 src=convenience fallback
 today/ALLERGY/base/afternoon_tea	-
 today/ALLERGY/base/dinner	protein_stir_fry_beef_shank_brown_rice_cooked_baby_corn_none_method_stir_fry scale=1.8 kcal=774 base=562 P=35.4 C=109 F=20.6 Fb=8.3 budget=774 src=cook_full
@@ -250,7 +250,7 @@ today/DISLIKE/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/DISLIKE/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/DISLIKE/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/DISLIKE/base/skip	afternoon_tea,snack
-today/DISLIKE/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/DISLIKE/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/DISLIKE/base/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/DISLIKE/base/afternoon_tea	-
 today/DISLIKE/base/dinner	grain_bowl_baked_chicken_thigh_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.7 kcal=710.5 base=520.7 P=37 C=104.3 F=14.9 Fb=8 budget=710.5 src=cook_full
@@ -310,7 +310,7 @@ today/LOWCARB/base/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/LOWCARB/base/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/LOWCARB/base/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/LOWCARB/base/skip	afternoon_tea,snack
-today/LOWCARB/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/LOWCARB/base/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/LOWCARB/base/lunch	conv_bx07+conv_pk01+conv_pk03 scale=1 kcal=512.5 base=512.5 P=51.5 C=30 F=19.9 Fb=9 budget=711.5 src=convenience
 today/LOWCARB/base/afternoon_tea	-
 today/LOWCARB/base/dinner	grain_bowl_baked_chicken_thigh_quinoa_spinach_none_method_pan_fry scale=0.9 kcal=432.5 base=446.7 P=32.9 C=30 F=19.6 Fb=5.3 budget=910.5 src=cook_full
@@ -410,7 +410,7 @@ today/M/fb-likeAlt/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211.5,
 today/M/fb-likeAlt/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/fb-likeAlt/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/fb-likeAlt/skip	afternoon_tea,snack
-today/M/fb-likeAlt/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/fb-likeAlt/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/fb-likeAlt/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/fb-likeAlt/afternoon_tea	-
 today/M/fb-likeAlt/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -420,7 +420,7 @@ today/M/fb-likeAlt-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":
 today/M/fb-likeAlt-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/fb-likeAlt-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/fb-likeAlt-night/skip	afternoon_tea,snack
-today/M/fb-likeAlt-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/fb-likeAlt-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/fb-likeAlt-night/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/fb-likeAlt-night/afternoon_tea	-
 today/M/fb-likeAlt-night/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -430,7 +430,7 @@ today/M/fb-shownToday/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_g":211
 today/M/fb-shownToday/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/fb-shownToday/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/fb-shownToday/skip	afternoon_tea,snack
-today/M/fb-shownToday/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/fb-shownToday/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/fb-shownToday/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/fb-shownToday/afternoon_tea	-
 today/M/fb-shownToday/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -440,7 +440,7 @@ today/M/fb-shownToday-night/targets	{"baseTargetKcal":1896.1,"bmr":1723.8,"carb_
 today/M/fb-shownToday-night/remainingBudget	{"perSlotSuggestion":{"afternoon_tea":0,"breakfast":474,"dinner":711,"lunch":711,"snack":0},"remainingKcal":1896.1}
 today/M/fb-shownToday-night/hardConstraints	{"fiberGapThisWeek":2.5,"proteinGapToday":144}
 today/M/fb-shownToday-night/skip	afternoon_tea,snack
-today/M/fb-shownToday-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+today/M/fb-shownToday-night/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 today/M/fb-shownToday-night/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 today/M/fb-shownToday-night/afternoon_tea	-
 today/M/fb-shownToday-night/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -486,7 +486,7 @@ today/M/fb-shownOften-night/afternoon_tea	-
 today/M/fb-shownOften-night/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave scale=1.9 kcal=711.1 base=461 P=42.7 C=117 F=6.3 Fb=8.8 budget=711.1 src=cook_full
 today/M/fb-shownOften-night/snack	-
 today/M/fb-shownOften-night/write0	markRecipesShown conv_bx04+conv_sl04+conv_pk04,conv_bx03+conv_sl01+conv_dr01,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave
-flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 薯泥鮮蔬蛋沙拉 ＋ CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）" kcal=473.1 P=36 C=25.3 F=20.1 Fb=3 SF=null Na=null type=convenience source=rec_accepted content=convenience|-/-|conv_bx04x1@120,conv_sl03x1@165,conv_dr20x1@188.1|implicit=null
+flow/log-breakfast/write0	addDailyLog breakfast "即食舒肥雞胸肉（單包） ＋ 薯泥鮮蔬蛋沙拉 ＋ CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）" kcal=473.1 P=36.8 C=26.5 F=21 Fb=3 SF=null Na=null type=convenience source=rec_accepted content=convenience|-/-|conv_bx04x1@120,conv_sl03x1@165,conv_dr20x1@188.1|implicit=null
 flow/log-breakfast/write1	markRecipesShown conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry
 flow/log-breakfast/breakfast	-
 flow/log-breakfast/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
@@ -495,7 +495,7 @@ flow/log-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby
 flow/log-breakfast/snack	-
 flow/undo-breakfast/write0	removeDailyLog {"id":"log_0001","op":"removeDailyLog"}
 flow/undo-breakfast/write1	markRecipesShown conv_bx04+conv_sl03+conv_dr20,conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry
-flow/undo-breakfast/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+flow/undo-breakfast/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 flow/undo-breakfast/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 flow/undo-breakfast/afternoon_tea	-
 flow/undo-breakfast/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -503,7 +503,7 @@ flow/undo-breakfast/snack	-
 flow/dislike-dinner/excluded	ok
 flow/dislike-dinner/write0	saveRecipeFeedback {"id":"grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry","op":"saveRecipeFeedback","rating":"dislike"}
 flow/dislike-dinner/write1	markRecipesShown conv_bx04+conv_sl03+conv_dr20,conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave
-flow/dislike-dinner/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+flow/dislike-dinner/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 flow/dislike-dinner/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 flow/dislike-dinner/afternoon_tea	-
 flow/dislike-dinner/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_microwave scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
@@ -511,13 +511,13 @@ flow/dislike-dinner/snack	-
 flow/chip-dinner-protein/excluded	ok
 flow/chip-dinner-protein/write0	addDislikedIngredient {"disliked":[{"key":"chicken_breast","label":"雞胸肉","type":"protein"}],"op":"addDislikedIngredient"}
 flow/chip-dinner-protein/write1	markRecipesShown conv_bx04+conv_sl03+conv_dr20,conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_chicken_thigh_brown_rice_cooked_baby_corn_none_method_air_fry
-flow/chip-dinner-protein/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+flow/chip-dinner-protein/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 flow/chip-dinner-protein/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 flow/chip-dinner-protein/afternoon_tea	-
 flow/chip-dinner-protein/dinner	grain_bowl_baked_chicken_thigh_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.7 kcal=710.5 base=520.7 P=37 C=104.3 F=14.9 Fb=8 budget=710.5 src=cook_full
 flow/chip-dinner-protein/snack	-
 flow/rebuild-same-day/write0	markRecipesShown conv_bx04+conv_sl03+conv_dr20,conv_bx08+conv_pk01+conv_pk03,grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry
-flow/rebuild-same-day/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36 C=25.3 F=20.1 Fb=3 budget=474 src=convenience
+flow/rebuild-same-day/breakfast	conv_bx04+conv_sl03+conv_dr20 scale=1 kcal=473.1 base=473.1 P=36.8 C=26.5 F=21 Fb=3 budget=474 src=convenience
 flow/rebuild-same-day/lunch	conv_bx08+conv_pk01+conv_pk03 scale=1 kcal=712.5 base=712.5 P=39 C=86 F=22.6 Fb=14.5 budget=711.5 src=convenience
 flow/rebuild-same-day/afternoon_tea	-
 flow/rebuild-same-day/dinner	grain_bowl_baked_chicken_breast_brown_rice_cooked_baby_corn_none_method_air_fry scale=1.9 kcal=710.5 base=461 P=42.7 C=116.9 F=6.3 Fb=8.8 budget=710.5 src=cook_full
