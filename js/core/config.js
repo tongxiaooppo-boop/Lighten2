@@ -108,4 +108,9 @@ export const ESTIMATE_RECALL_KCAL = {
   main: { S: 400, M: 700, L: 1200 },
   light: { S: 150, M: 300, L: 500 },
 };
-export const ESTIMATE_RECALL_GROUP = { breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };
+// 「主食＋家常菜」估算的 est 欄位列舉（PRD 第 3 節、decisions #151；db 驗證與 engine 共用）
+export const EST_SIZES = ["S", "M", "L"];
+export const EST_CATS = ["veg", "mixed", "meat"];       // 素菜／菜肉／純肉
+export const EST_STAPLES = ["white", "brown", "mixed", "noodle", "none"];
+export const EST_DISH_MAX = 4;
+export const ESTIMATE_RECALL_GROUP ={ breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };
