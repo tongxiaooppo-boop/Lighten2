@@ -1629,6 +1629,91 @@ async function run() {
   await until(`(${text("#meal-picker-drinks .meal-picker-subrole")}).indexOf("手搖飲・咖啡・早餐店（") === 0`, "13-9 外食分頁的飲料第一組不是手搖飲・咖啡・早餐店");
   await closePicker();
 
+  // ---------- 14. 昨天的餐與補記（日期切換切片 3；decisions #140⑤、#142、#120） ----------
+  console.log("[14. 昨天的餐與補記]");
+  const dayStr = (back) => `(() => { const d = new Date(); d.setDate(d.getDate() - ${back}); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`;
+  const ydLogs = (date) => js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({ start: ${date}, end: ${date} })).map((l) => l.slot + '|' + l.source + '|' + l.name + '|' + l.totals.kcal); })()`);
+  await tab("today");
+  await click(`#today-dates [data-day-offset='0']`);
+  // 14-1 昨天：午餐有預約（聚餐 L）、晚餐有昨天最後顯示的推薦、早餐什麼都沒有
+  await js(`(async () => { const m = ${DBW}; const y = ${dayStr(1)};
+    const est = { kind: 'estimate', name: '聚餐', size: 'L', snapshot: { kcal: 1200, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null } };
+    await m.setMealPlan({ date: y, slot: 'lunch', name: '聚餐', content: { meal_type: 'delivery', archetype_id: null, method_id: null, implicit: null, components: [est] } });
+    const rest = { kind: 'estimate', name: '便當', size: 'M', snapshot: { kcal: 650, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null } };
+    await m.setLastShownRecs(y, { dinner: { name: '昨天的建議便當', content: { meal_type: 'delivery', archetype_id: null, method_id: null, implicit: null, components: [rest] }, totals: { kcal: 650, protein_g: null, carb_g: null, fat_g: null, fiber_g: null, sat_fat_g: null, sodium_mg: null, partial: [] } } }); })()`);
+  await click("#today-refresh");
+  await until(`!document.getElementById('today-yesterday').hidden && ${text("#today-yesterday")}.indexOf("昨天的餐（3 餐）") !== -1`, "14-1 昨天的餐卡片沒有出現或不是 3 餐：" + (await js(text("#today-yesterday"))).slice(0, 120));
+  check(await js(`!document.querySelector('#today-yesterday details').open`), "14-1 昨天的餐預設應該收合");
+  await shot("昨天的餐-收合", "#today-yesterday");
+  await js(`document.querySelector('#today-yesterday details').open = true`);
+  await until(`!!document.querySelector('#today-yesterday [data-yday=eat-plan]') && !!document.querySelector('#today-yesterday [data-yday=eat-rec]')`, "14-1 展開後沒有預約與推薦的「吃了」");
+  check(await js(`!!document.querySelector('#today-yesterday [data-yday=est-S][data-slot=breakfast]') && !document.querySelector('#today-yesterday [data-yday=eat-plan][data-slot=breakfast]')`), "14-1 早餐只該有 S／M／L");
+  check((await js(text("#today-yesterday"))).indexOf("昨天看到的建議：昨天的建議便當（約 650 kcal）") !== -1 && (await js(text("#today-yesterday"))).indexOf("聚餐（預約，約 1200 kcal）") !== -1, "14-1 推薦或預約那一列沒有寫品名與熱量");
+  await shot("昨天的餐-展開", "#today-yesterday");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("昨天的餐-展開-360寬", "#today-yesterday");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  // 14-2 早餐按 M → backfill 估算（中）500 kcal；卡片剩 2 餐、維持展開
+  await click(`#today-yesterday [data-yday=est-M][data-slot=breakfast]`);
+  await until(`${text("#today-yesterday")}.indexOf("昨天的餐（2 餐）") !== -1`, "14-2 按 M 之後卡片沒有剩 2 餐");
+  check(await js(`document.querySelector('#today-yesterday details').open`), "14-2 寫入後卡片不該自己收起來");
+  check((await ydLogs(dayStr(1))).indexOf("breakfast|backfill|估算（中）|500") !== -1, "14-2 昨天早餐沒有寫入 backfill 估算（中）500：" + JSON.stringify(await ydLogs(dayStr(1))));
+  // 14-3 晚餐「吃了」＝昨天推薦 → rec_accepted；午餐「吃了」＝預約 → from_plan 1200
+  await click(`#today-yesterday [data-yday=eat-rec][data-slot=dinner]`);
+  await until(`${text("#today-yesterday")}.indexOf("昨天的餐（1 餐）") !== -1`, "14-3 吃了推薦之後卡片沒有剩 1 餐");
+  check((await ydLogs(dayStr(1))).indexOf("dinner|rec_accepted|昨天的建議便當|650") !== -1, "14-3 晚餐沒有以 rec_accepted 寫入昨天的推薦");
+  await click(`#today-yesterday [data-yday=eat-plan][data-slot=lunch]`);
+  await until(`document.getElementById('today-yesterday').hidden`, "14-3 三餐都處理完卡片應該消失");
+  check((await ydLogs(dayStr(1))).indexOf("lunch|from_plan|聚餐|1200") !== -1, "14-3 午餐沒有以 from_plan 寫入預約");
+  // 14-4 「不確定」只收起、不寫紀錄；「這餐沒吃」寫 skipped；先不用收整張
+  await js(`(async () => { const m = ${DBW}; const logs = await m.getDailyLogs({ start: ${dayStr(1)}, end: ${dayStr(1)} }); for (const l of logs) await m.undoDailyLog(l.id); })()`);
+  await click("#today-refresh");
+  await until(`!document.getElementById('today-yesterday').hidden && ${text("#today-yesterday")}.indexOf("昨天的餐（3 餐）") !== -1`, "14-4 清掉昨天紀錄後卡片沒有回來");
+  await click(`#today-yesterday [data-yday=unsure][data-slot=breakfast]`);
+  await until(`${text("#today-yesterday")}.indexOf("昨天的餐（2 餐）") !== -1`, "14-4 不確定之後卡片沒有剩 2 餐");
+  check((await ydLogs(dayStr(1))).length === 0, "14-4 不確定不該寫任何紀錄");
+  await click("#today-refresh");
+  await until(`${text("#today-yesterday")}.indexOf("昨天的餐（2 餐）") !== -1`, "14-4 重畫後不確定的那餐又出現了（應該維持略過）");
+  await click(`#today-yesterday [data-yday=skipped][data-slot=dinner]`);
+  await until(`${text("#today-yesterday")}.indexOf("昨天的餐（1 餐）") !== -1`, "14-4 這餐沒吃之後卡片沒有剩 1 餐");
+  check((await ydLogs(dayStr(1))).indexOf("dinner|skipped|這餐沒吃|0") !== -1, "14-4 這餐沒吃沒有寫 skipped 0 kcal");
+  await click(`#today-yesterday [data-yday=close]`);
+  await until(`document.getElementById('today-yesterday').hidden`, "14-4 先不用沒有收起整張卡");
+  // 14-5 切到明天：卡片收起；回今天不再冒出來（先不用只收今天）
+  await click(`#today-dates [data-day-offset='1']`);
+  await until(`!document.getElementById('today-day-summary').hidden`, "14-5 沒有切到明天");
+  check(await js(`document.getElementById('today-yesterday').hidden`), "14-5 未來日子不該有昨天的餐");
+  await click(`#today-dates [data-day-offset='0']`);
+  await until(`!document.getElementById('today-hero').hidden`, "14-5 沒有回到今天");
+  check(await js(`document.getElementById('today-yesterday').hidden`), "14-5 先不用之後回到今天卡片又出現了");
+  // 14-6 補記：本週總覽選前天、午餐 → 選擇器補記模式 → 估算 M → backfill
+  await js(`(async () => { const m = ${DBW}; const logs = await m.getDailyLogs({ start: ${dayStr(1)}, end: ${dayStr(1)} }); for (const l of logs) await m.undoDailyLog(l.id); })()`);
+  await tab("week");
+  await until(`!!document.querySelector('#week-backfill [data-backfill-slot=lunch]')`, "14-6 本週總覽沒有補記區");
+  await shot("補記-本週總覽", "#week-backfill");
+  await js(`(() => { const el = document.getElementById('week-backfill-date'); el.value = ${dayStr(2)}; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  const lastPicked0 = await js(`(async () => { const m = ${DBW}; return JSON.stringify(await m.getSetting('picker_last_meal_type')); })()`);
+  await click(`#week-backfill [data-backfill-slot=lunch]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "14-6 補記的選擇器沒有打開");
+  check((await js(text("#meal-picker-title"))).indexOf("補記") !== -1 && (await js(text("#meal-picker-submit"))) === "補記這餐", "14-6 補記模式的標題或送出鍵不對：" + (await js(text("#meal-picker-title"))));
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await until(`!!document.querySelector('[data-estimate-size=M]')`, "14-6 補記模式的外食分頁沒有估算卡");
+  await click(`[data-estimate-size=M]`);
+  await until(`${text("#meal-picker-gap")}.indexOf("補記過去的一餐，不計算配額") !== -1`, "14-6 補記模式沒有寫「不計算配額」");
+  await shot("補記-選擇器", "#meal-picker-panel");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden`, "14-6 補記送出後選擇器沒有關閉");
+  check((await ydLogs(dayStr(2))).some((x) => /^lunch\|backfill\|.*\|700$/.test(x)), "14-6 前天午餐沒有以 backfill 寫入：" + JSON.stringify(await ydLogs(dayStr(2))));
+  const lastPicked1 = await js(`(async () => { const m = ${DBW}; return JSON.stringify(await m.getSetting('picker_last_meal_type')); })()`);
+  check(lastPicked0 === lastPicked1, "14-6 補記不該更新上次選過的型態（章程 C4.15）：" + lastPicked0 + " → " + lastPicked1);
+  // 14-7 日期超出範圍：選 8 天前不行
+  await js(`(() => { const el = document.getElementById('week-backfill-date'); el.value = ${dayStr(9)}; })()`);
+  await click(`#week-backfill [data-backfill-slot=lunch]`);
+  await until(`${text("#week-backfill-msg")}.indexOf("過去 7 天") !== -1`, "14-7 超出 7 天沒有提示");
+  check(await js(`document.getElementById('meal-picker-overlay').hidden`), "14-7 超出 7 天不該打開選擇器");
+  await js(`(async () => { const m = ${DBW}; for (const d of [${dayStr(1)}, ${dayStr(2)}]) { const logs = await m.getDailyLogs({ start: d, end: d }); for (const l of logs) await m.undoDailyLog(l.id); } })()`);
+  await tab("today");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

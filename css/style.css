@@ -1533,6 +1533,70 @@ div.food-row-main {
 .today-day-summary[hidden] {
   display: none;
 }
+/* 昨天的餐（日期切換切片 3）：預設收合一行，用字與顏色中性 */
+.today-yesterday {
+  margin: 0 0 0.8rem;
+}
+.today-yesterday[hidden] {
+  display: none;
+}
+.yday-card {
+  border: 1px solid #E8DCC8;
+  border-radius: 10px;
+  padding: 0.2rem 0.8rem 0.6rem;
+  background: #FBF6EC;
+}
+.yday-card > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: #3A2E22;
+  font-weight: 500;
+}
+.yday-note {
+  margin: 0 0 0.4rem;
+  font-size: 0.85rem;
+  color: #8A7A63;
+}
+.yday-row {
+  padding: 0.5rem 0;
+  border-top: 1px solid #EFE4D0;
+}
+.yday-slot {
+  font-weight: 600;
+  margin-right: 0.4rem;
+}
+.yday-name {
+  color: #3A2E22;
+}
+.yday-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+.yday-btn {
+  min-height: 44px;
+}
+.yday-skip {
+  border-style: dashed;
+}
+.yday-hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: #A8997F;
+}
+.week-backfill-date {
+  display: block;
+  margin: 0 0 0.5rem;
+}
+.week-backfill-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
 .rec-plan {
   margin: 0 0 0.6rem;
 }
@@ -1585,4 +1649,9 @@ div.food-row-main {
 }
 .meal-picker-fold[open] > summary {
   margin-bottom: 0.3rem;
+}
+/* 昨天的餐不用紅色（PRD 6.1 用字中性）：這餐沒吃、不確定、先不用都是中性咖啡色 */
+.yday-card .undo-btn {
+  color: #6B5B45;
+  border-color: #D9CBB2;
 }

@@ -41,7 +41,7 @@ const MEAL_PLAN_READERS = ["getMealPlans"];
 const MEAL_PLAN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/data\/db\.js$/];
 // 昨天最後顯示的推薦只給今日建議與昨天的餐（不能長成隱性偏好，同 C4.15 的理由；S1）
 const LAST_SHOWN_READERS = ["getLastShownRecs"];
-const LAST_SHOWN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/ui\/tab-today\.js$/, /^js\/data\/db\.js$/];
+const LAST_SHOWN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/ui\/tab-today\.js$/, /^js\/ui\/today-yesterday\.js$/, /^js\/data\/db\.js$/];
 
 // picker_last_meal_type 只允許出現在 db.js 與「自己選」選擇器（C4.15）
 const PICKER_LAST_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//];

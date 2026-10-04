@@ -9,6 +9,9 @@ import { getProfile, getDailyLogs } from "../data/db.js";
 import { summarizeWeek, computeRecentAvgVsTarget } from "../engine/budget.js";
 import { getCalibratedTargets } from "./calibration.js";
 import { todayStr } from "./clock.js";
+import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
+import { BACKFILL_DAYS } from "../core/config.js";
+import { openMealPicker } from "./meal-picker/index.js";
 
 const WEEKDAY = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"];
 
@@ -51,6 +54,37 @@ function renderDays(byDate, weekStart, daysElapsed) {
     }
   }
   container.innerHTML = rows.join("");
+}
+
+// 補記過去的一餐（decisions #120）：日期選擇器（過去 7 天，不含今天）→ 時段 → 選擇器補記模式
+let backfillDate = null; // 選過的日期（重畫時保留）
+function renderBackfill(today, profile) {
+  const el = $("#week-backfill");
+  if (!el) return;
+  const min = dateAddDays(today, -BACKFILL_DAYS);
+  const max = dateAddDays(today, -1);
+  if (!backfillDate || backfillDate < min || backfillDate > max) backfillDate = max;
+  const slots = SLOTS.filter(function (s) { return isSlotEnabled(profile.enabled_slots, s); });
+  el.innerHTML = '<label class="week-backfill-date">日期 <input type="date" id="week-backfill-date" min="' + min + '" max="' + max + '" value="' + backfillDate + '"></label>' +
+    '<div class="week-backfill-slots">' + slots.map(function (s) {
+      return '<button type="button" class="secondary-btn" data-backfill-slot="' + s + '">' + escapeHtml(SLOT_LABELS[s]) + "</button>";
+    }).join("") + "</div>" + '<p id="week-backfill-msg" class="status-text" aria-live="polite"></p>';
+}
+
+function onBackfillClick(e) {
+  const b = e.target.closest("[data-backfill-slot]");
+  if (!b) return;
+  const input = $("#week-backfill-date");
+  const msg = $("#week-backfill-msg");
+  const today = todayStr();
+  const date = input ? input.value : "";
+  if (!date || date < dateAddDays(today, -BACKFILL_DAYS) || date > dateAddDays(today, -1)) {
+    if (msg) msg.textContent = "請選過去 7 天內的日期（不含今天，今天的請到今日建議）。";
+    return;
+  }
+  if (msg) msg.textContent = "";
+  backfillDate = date;
+  openMealPicker(b.getAttribute("data-backfill-slot"), { mode: "backfill", date: date, onLogged: renderWeek });
 }
 
 export async function renderWeek() {
@@ -135,11 +169,15 @@ export async function renderWeek() {
   }
 
   renderDays(week.byDate, weekStart, daysElapsed);
+  renderBackfill(today, profile);
 
   if (status) status.textContent = "";
 }
 
 export function initWeekTab() {
+  const bf = $("#week-backfill");
+  if (bf) bf.addEventListener("click", onBackfillClick);
+  if (bf) bf.addEventListener("change", function (e) { if (e.target.id === "week-backfill-date" && e.target.value) backfillDate = e.target.value; });
   document.addEventListener("tab:activated", function (e) {
     if (e.detail === "week") renderWeek();
   });

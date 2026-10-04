@@ -7,14 +7,15 @@ import { escapeHtml } from "../core/html.js";
 import { $, notIncludedText } from "./dom.js";
 import {
   getProfile, addDislikedIngredient, getDailyLogs, addDailyLog, undoDailyLog,
-  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, addSavedMeal,
+  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, addSavedMeal, setLastShownRecs,
 } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { loadSavedMealCtx } from "./saved-ctx.js";
 import { loadDayPlans, pseudoLogsOf, plannedSummary, logPlanEntry, cancelPlan, skipToday, purgePlans, planDatesInRange, setSkipPlan } from "./today-plans.js";
 import { buildCandidatePool } from "../engine/pool.js";
 import { planToday } from "../engine/today.js";
-import { contentFromRec, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
+import { recLogParts, lastShownSlots, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
+import { renderYesterday, hideYesterday } from "./today-yesterday.js";
 import { getCalibratedTargets } from "./calibration.js";
 import { renderHero, setHeroSuppressed } from "./today-hero.js";
 import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
@@ -352,6 +353,7 @@ export async function buildRecommendation() {
   const today = todayNow;
   setHeroSuppressed(dayOffset > 0);
   if (dayOffset > 0) {
+    hideYesterday();
     try {
       renderDateStrip(today, await planDatesInRange(today, dateAddDays(today, DAYS_AHEAD)));
       await renderFutureDay(today, profile);
@@ -409,7 +411,24 @@ export async function buildRecommendation() {
   // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
   const shownIds = Object.keys(recs).map(function (slot) { return recs[slot] && recs[slot].id; }).filter(Boolean);
   if (shownIds.length > 0) markRecipesShown(shownIds, today).catch(function (err) { console.error(err); });
+  // 昨天的餐要先讀（昨天最後顯示的推薦），再寫今天的（寫入時 db 會把昨天的收進 prev）
+  await renderYesterday(today, profile, buildRecommendation);
+  try {
+    await setLastShownRecs(today, lastShownSlots(shownOnCards(recs, profile, plan.logsBySlot), catalog.productsByUid));
+  } catch (err) { console.error(err); }
   setStatus("");
+}
+
+// 畫面上真的畫出推薦卡片的時段（已有紀錄、有效預約、關掉的時段都不算）
+function shownOnCards(recs, profile, logsBySlot) {
+  const out = {};
+  SLOTS.forEach(function (slot) {
+    const hasLog = logsBySlot && logsBySlot[slot] && logsBySlot[slot].length > 0;
+    const e = todayPlans[slot];
+    if (hasLog || (e && e.result.status !== "invalid") || !isSlotEnabled(profile.enabled_slots, slot)) return;
+    if (recs[slot]) out[slot] = recs[slot];
+  });
+  return out;
 }
 
 // 推薦的組合照組合本身算好的數字記錄。記錄完重新渲染，這個時段會改顯示「已記錄＋撤銷」。
@@ -417,14 +436,9 @@ export async function onLogRecClick(slot, rec, btnEl) {
   btnEl.disabled = true; // 防連點
   try {
     const catalog = await loadCatalog();
+    const parts = recLogParts(rec, catalog.productsByUid);
     await addDailyLog(buildLogEntry({
-      date: todayStr(), slot: slot, source: "rec_accepted", name: rec.name,
-      content: contentFromRec(rec, catalog.productsByUid),
-      totals: {
-        kcal: rec.scaled_kcal, protein_g: rec.protein_g, carb_g: rec.carb_g, fat_g: rec.fat_g, fiber_g: rec.fiber_g,
-        sat_fat_g: rec.sat_fat_g, sodium_mg: rec.sodium_mg, partial: rec.partial,
-      },
-      createdAt: nowIso(),
+      date: todayStr(), slot: slot, source: "rec_accepted", name: parts.name, content: parts.content, totals: parts.totals, createdAt: nowIso(),
     }));
     await buildRecommendation();
   } catch (err) {

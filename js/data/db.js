@@ -574,12 +574,25 @@ const SETTING_KEYS = {
   },
 };
 
-function lastShownRecsValid(v) {
+function lastShownSlotsValid(v) {
   return isPlainObject(v) && isDateStr(v.date) && isPlainObject(v.slots) && Object.keys(v.slots).every(function (slot) {
     const r = v.slots[slot];
     return SLOTS.indexOf(slot) !== -1 && isPlainObject(r) && typeof r.name === "string" && r.name !== "" &&
       isPlainObject(r.content) && isPlainObject(r.totals) && isNum(r.totals.kcal);
   });
+}
+
+// prev：再前一天留下的（今天第一次寫入時把昨天的搬過來，不然今天一重畫昨天的推薦就不見了）；只留一層
+function lastShownRecsValid(v) {
+  return lastShownSlotsValid(v) && (v.prev === undefined || (lastShownSlotsValid(v.prev) && v.prev.prev === undefined && v.prev.date < v.date));
+}
+
+// 今天的整份換掉；舊的是更早的日子就收進 prev，舊的就是今天（重畫）就沿用它的 prev。純函式，db 與 fake-db 共用
+export function nextLastShownRecs(old, date, slots) {
+  const v = { date: date, slots: slots || {} };
+  const prev = !lastShownRecsValid(old) ? null : old.date < date ? { date: old.date, slots: old.slots } : old.date === date ? old.prev || null : null;
+  if (prev) v.prev = prev;
+  return v;
 }
 export const SETTING_KEY_NAMES = Object.keys(SETTING_KEYS);
 
@@ -1315,10 +1328,13 @@ export async function getLastShownRecs() {
 
 // 整份換掉當天（某時段變成已記錄、配額不多時，舊的推薦不殘留）
 export async function setLastShownRecs(date, slots) {
-  const v = { date: date, slots: slots || {} };
-  validateSetting("last_shown_recs", v);
+  validateSetting("last_shown_recs", { date: date, slots: slots || {} });
   await withStores([STORE.settings], "readwrite", function (s) {
-    return reqPromise(s[STORE.settings].put(v, LAST_SHOWN_KEY));
+    return reqPromise(s[STORE.settings].get(LAST_SHOWN_KEY)).then(function (old) {
+      const v = nextLastShownRecs(old, date, slots);
+      validateSetting("last_shown_recs", v);
+      return reqPromise(s[STORE.settings].put(v, LAST_SHOWN_KEY));
+    });
   });
 }
 

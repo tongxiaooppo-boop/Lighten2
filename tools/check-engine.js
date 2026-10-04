@@ -2321,6 +2321,56 @@ function checkSavedMealsDb(catalog) {
     withSkip.remainingBudget.perSlotSuggestion.lunch > base8.remainingBudget.perSlotSuggestion.lunch, "planToday：預約不吃晚餐，配額分給其他餐");
   const realDinner = Object.assign(clone(skipLog), { log_date: "2026-10-04", slot: "dinner", id: "log_d" });
   check(M.today.effectiveTodayLogs([realDinner], [estPseudo]).length === 1 && pt([estPseudo], [realDinner]).plannedKcal === undefined, "已有紀錄的時段，預約不算（紀錄優先）");
+  // ---- 日期切換：昨天的餐與補記（切片 3） ----
+  console.log("[日期切換：昨天的餐與補記]");
+  const YD = "2026-10-03";
+  const est = (slot, size) => mc.recallEstimateLogEntry(YD, slot, size, T0);
+  check(["breakfast", "lunch", "dinner", "afternoon_tea", "snack"].every((s) => ["S", "M", "L"].every((z) => {
+    const e = est(s, z);
+    return !errOf(() => db.validateDailyLog(e)) && e.source === "backfill" && e.log_date === YD && e.totals.kcal === mc.recallEstimateKcal(s, z) &&
+      e.content.components.length === 1 && e.content.components[0].kind === "estimate" && e.name === "估算（" + { S: "小", M: "中", L: "大" }[z] + "）";
+  })), "S／M／L 回想估算：每個時段、大小都通過寫入驗證，熱量依時段（decisions #142④）");
+  check(mc.recallEstimateKcal("breakfast", "M") === 500 && mc.recallEstimateKcal("lunch", "L") === 1200 && mc.recallEstimateKcal("dinner", "S") === 400 &&
+    mc.recallEstimateKcal("afternoon_tea", "M") === 300 && mc.recallEstimateKcal("snack", "L") === 500 && errOf(() => mc.recallEstimateKcal("lunch", "XL")),
+    "回想估算的熱量表：早餐 300/500/800、午晚 400/700/1200、下午茶宵夜 150/300/500");
+  const ydToday = { today: "2026-10-04", minDate: "2026-09-27" };
+  check(db.logDateProblem(est("lunch", "M"), ydToday) === null && db.logDateProblem(Object.assign(est("lunch", "M"), { log_date: "2026-09-26" }), ydToday) &&
+    db.logDateProblem(Object.assign(est("lunch", "M"), { log_date: "2026-10-05" }), ydToday), "補記日期：昨天可以、8 天前不行、未來不行");
+  const okPlan = (slot, name, kcal) => ({ plan: { slot: slot, name: name, id: YD + "|" + slot, date: YD }, result: { status: "ok", totals: { kcal: kcal } } });
+  const skipE = { plan: { slot: "dinner", name: "這餐不吃", id: YD + "|dinner", date: YD }, result: { status: "skip", totals: { kcal: 0 } } };
+  const badE = { plan: { slot: "snack", name: "x", id: YD + "|snack", date: YD }, result: { status: "invalid", totals: null } };
+  const shownYd = { name: "雞胸便當", content: prod, totals: { kcal: 620.4 } };
+  const ydRows = (o) => mc.yesterdayRows(Object.assign({ date: YD, enabledSlots: { breakfast: true, lunch: true, afternoon_tea: true, dinner: true, snack: true }, logs: [], plans: {}, lastShown: null }, o));
+  const r0 = ydRows({});
+  check(r0.length === 5 && r0.every((r) => r.kind === "none" && r.name === null) && r0.map((r) => r.slot).join() === "breakfast,lunch,afternoon_tea,dinner,snack", "昨天卡片：什麼都沒有時五個時段都只有 S／M／L");
+  const r1b = ydRows({ logs: [{ slot: "lunch" }], plans: { breakfast: okPlan("breakfast", "地瓜＋豆漿", 330.4), dinner: skipE, snack: badE },
+    lastShown: { date: YD, slots: { afternoon_tea: shownYd, snack: shownYd } } });
+  check(r1b.map((r) => r.slot + ":" + r.kind).join() === "breakfast:plan,afternoon_tea:rec,dinner:plan_skip,snack:rec" && r1b[0].kcal === 330 && r1b[1].kcal === 620 && r1b[1].name === "雞胸便當",
+    "昨天卡片：已有紀錄的略過、有效預約優先、預約不吃一鍵確認、失效的預約退回推薦：" + r1b.map((r) => r.slot + ":" + r.kind).join());
+  check(ydRows({ enabledSlots: { breakfast: false, lunch: true, afternoon_tea: false, dinner: true, snack: false } }).map((r) => r.slot).join() === "lunch,dinner", "昨天卡片：基本資料關掉的時段不列");
+  check(ydRows({ lastShown: { date: "2026-10-02", slots: { lunch: shownYd } } }).every((r) => r.kind === "none") &&
+    ydRows({ lastShown: { date: "2026-10-04", slots: { lunch: shownYd }, prev: { date: YD, slots: { dinner: shownYd } } } }).filter((r) => r.kind === "rec").map((r) => r.slot).join() === "dinner",
+    "昨天卡片：只認昨天的推薦；今天已經寫過時從 prev 找昨天的");
+  const lsRecs = { lunch: { name: "r1", lowBudget: true }, dinner: { name: "r2", lowBudget: true }, snack: null };
+  const lsSlot = (slot) => ({ name: "n" + slot, content: prod, totals: { kcal: 100 } });
+  const n1 = db.nextLastShownRecs(null, "2026-10-04", { lunch: lsSlot("lunch") });
+  const n2 = db.nextLastShownRecs(n1, "2026-10-04", { lunch: lsSlot("lunch"), dinner: lsSlot("dinner") });
+  const n3 = db.nextLastShownRecs({ date: YD, slots: { dinner: lsSlot("dinner") } }, "2026-10-04", { lunch: lsSlot("lunch") });
+  const n4 = db.nextLastShownRecs(n3, "2026-10-04", {});
+  const n5 = db.nextLastShownRecs(n4, "2026-10-05", { snack: lsSlot("snack") });
+  check(n1.prev === undefined && n2.prev === undefined && n3.prev.date === YD && n3.prev.slots.dinner && n4.prev.date === YD && n4.date === "2026-10-04" && Object.keys(n4.slots).length === 0 &&
+    n5.date === "2026-10-05" && n5.prev.date === "2026-10-04" && n5.prev.prev === undefined && ![n1, n2, n3, n4, n5].some((v) => errOf(() => db.validateSetting("last_shown_recs", v))),
+    "last_shown_recs：今天的整份換掉、前一天收進 prev、只留一層");
+  check(errOf(() => db.validateSetting("last_shown_recs", { date: "2026-10-04", slots: {}, prev: { date: "2026-10-05", slots: {} } })) &&
+    errOf(() => db.validateSetting("last_shown_recs", { date: "2026-10-04", slots: {}, prev: { date: YD, slots: {}, prev: { date: "2026-10-02", slots: {} } } })), "last_shown_recs：prev 要比今天早、不能再套 prev");
+  const shownReal = mc.lastShownSlots(base8.recs, catalog.productsByUid);
+  const liveSlots = Object.keys(base8.recs).filter((s) => base8.recs[s] && !base8.recs[s].lowBudget);
+  check(liveSlots.length > 0 && Object.keys(shownReal).sort().join() === liveSlots.sort().join() &&
+    !errOf(() => db.validateSetting("last_shown_recs", { date: "2026-10-04", slots: shownReal })) &&
+    liveSlots.every((s) => shownReal[s].totals.kcal === base8.recs[s].scaled_kcal && shownReal[s].name === base8.recs[s].name &&
+      !errOf(() => db.validateDailyLog(mc.buildLogEntry({ date: YD, slot: s, source: "rec_accepted", name: shownReal[s].name, content: shownReal[s].content, totals: shownReal[s].totals, createdAt: T0 })))) &&
+    Object.keys(mc.lastShownSlots(lsRecs, catalog.productsByUid)).join() === "",
+    "lastShownSlots：只存真的有卡片的時段（配額太低、沒有組合的不存），存下的內容能直接寫成昨天的紀錄");
   const newer = clone(v3); newer.schema_version = db.BACKUP_SCHEMA_VERSION + 1;
   check(db.validateBackup(newer).some((x) => /較新的版本/.test(x)), "比目前新一版的檔案要擋（較新的版本）");
 }
