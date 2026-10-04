@@ -224,6 +224,20 @@ module.exports = async function createV2Adapter(ROOT) {
       picker.addEstimate(size, name);
       return picker.currentTotals();
     },
+    // 「主食＋家常菜」估算（decisions #151）：cfg 同 est；回傳加入後的合計，並可取估算卡的 HTML（pickerHomeCardHtml）
+    pickerHomeEstimate(cfg, name) {
+      picker.selectTab("delivery");
+      picker.mealPicker.homeEst.mode = "home";
+      picker.mealPicker.homeEst.cfg = JSON.parse(JSON.stringify(cfg));
+      picker.addHomeEstimate(name || "");
+      return picker.currentTotals();
+    },
+    pickerHomeCardHtml(cfg, mode) {
+      picker.selectTab("delivery");
+      picker.mealPicker.homeEst.mode = mode || "home";
+      picker.mealPicker.homeEst.cfg = JSON.parse(JSON.stringify(cfg));
+      return picker.estimateCardHtmlNow();
+    },
     // 快速新增：values 同表單（quick-add.js emptyQuickAdd 的形狀，只給要改的欄位）；回傳送出前預告、存完的說明與目前分頁的選取
     async pickerQuickAdd(values) {
       const mp = picker.mealPicker;

@@ -21,7 +21,7 @@ import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, oilOptions, draftLogName, copyFromBuiltin,
   resolveSavedMeal, savedMealDraft, savedMealTotals, savedMealDefaultName, savedMealUnavailableLine, toSavedContent, savedMealForSave,
-  toPlanContent,
+  toPlanContent, homeEstimate,
 } from "../../engine/meal-content.js";
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
@@ -35,7 +35,7 @@ import { productTabHtml, drinkGridHtml, drinkCardHtml, selectedSectionHtml, sele
 import { drinksFruitStepHtml, addFoodsStepHtml, foodSearchResultsHtml } from "./food-step.js";
 import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml, readCustomFoodInputs, onCustomFoodFormClick } from "../custom-food-form.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
-import { estimateCardHtml } from "./estimate-card.js";
+import { estimateCardHtml, emptyHomeEst, normalizeHomeCfg } from "./estimate-card.js";
 import { emptyQuickAdd, quickAddRecord, quickAddNotes, quickAddFormHtml, readQuickAddInputs } from "./quick-add.js";
 import { getCalibratedTargets } from "../calibration.js";
 import { todayStr, nowIso } from "../clock.js";
@@ -205,6 +205,7 @@ export async function openMealPicker(slotArg, opts) {
     m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), codes: codesFor(parts[t], profile), selected: [] };
   });
   m.tabs.delivery.estimates = [];
+  m.homeEst = emptyHomeEst(); // 「主食＋家常菜」估算表單（decisions #151），關掉選擇器再開回到預設
   m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile), codes: codesFor(parts.drinks, profile) };
   m.drinkUid = null;
   m.qtyByUid = {}; // 份量倍數（PRD 12.3）：uid → 0.5／1.5／2，缺＝1；商品分頁的品項與飲料共用
@@ -426,7 +427,7 @@ function renderPanel() {
   const groups = groupForTab(favSplit.rest, reasonOf);
   syncEditForm();
   // 編輯組合：不顯示估算（組合不收估算）與快速新增（沒有時段，審核 M4）
-  let html = top + (m.tab === "delivery" && !m.editing ? estimateCardHtml(t.estimates) : "");
+  let html = top + (m.tab === "delivery" && !m.editing ? estimateCardHtml(t.estimates, m.homeEst, m.catalog.homeDishes) : "");
   html += m.notice && !m.notice.drink ? dislikeNoticeHtml(m.notice) : "";
   html += selectedSectionHtml(selectedItems(m.tab), m.qtyByUid, insertedNote, fav);
   html += '<div class="meal-picker-step-label">1. 選品項（可以多選）</div>' +
@@ -730,6 +731,54 @@ export function addEstimate(size, name) {
   updateSummary();
 }
 
+// 估算卡目前的 HTML（測試用，diff-recs 的快照）
+export function estimateCardHtmlNow() {
+  const m = mealPicker;
+  return estimateCardHtml(m.tabs.delivery.estimates, m.homeEst, m.catalog.homeDishes);
+}
+
+// 「主食＋家常菜」估算（decisions #151）：表單狀態在 m.homeEst，按「加入這一餐」才由 engine 算出快照與 est 加進這一餐
+export function addHomeEstimate(name) {
+  const m = mealPicker;
+  const e = homeEstimate(m.homeEst.cfg, m.catalog.homeDishes);
+  if (name && name.trim()) e.name = name.trim();
+  m.tabs.delivery.estimates.push(e);
+  m.homeEst = Object.assign(emptyHomeEst(), { mode: "home", cfg: m.homeEst.cfg });
+  renderPanel();
+  renderDrinks();
+  updateSummary();
+}
+
+// 估算卡的「主食＋家常菜」按鈕：改設定後重畫；有處理回傳 true
+function onHomeEstimateClick(e) {
+  const m = mealPicker;
+  const at = function (sel) { return e.target.closest(sel); };
+  const attr = function (el, name) { return el.getAttribute(name); };
+  let el;
+  const nameEl = (at("[data-estimate-mode]") || at("[data-home-staple]") || at("[data-home-staple-size]") || at("[data-home-n]") || at("[data-home-cat]") ||
+    at("[data-home-dish]") || at("[data-home-soup]") || at("[data-home-add]")) ? document.getElementById("meal-picker-estimate-name") : null;
+  if (nameEl) m.homeEst.name = nameEl.value;
+  const set = function (patch) {
+    m.homeEst.cfg = normalizeHomeCfg(Object.assign({}, m.homeEst.cfg, patch));
+    renderPanel();
+  };
+  if ((el = at("[data-estimate-mode]"))) { m.homeEst.mode = attr(el, "data-estimate-mode"); renderPanel(); return true; }
+  if ((el = at("[data-home-staple]"))) { set({ staple: attr(el, "data-home-staple") }); return true; }
+  if ((el = at("[data-home-staple-size]"))) { set({ staple_size: attr(el, "data-home-staple-size") }); return true; }
+  if ((el = at("[data-home-n]"))) { set({ n: parseInt(attr(el, "data-home-n"), 10) }); return true; }
+  if ((el = at("[data-home-cat]"))) {
+    const parts = attr(el, "data-home-cat").split(":");
+    const cats = m.homeEst.cfg.cats.slice();
+    cats[parseInt(parts[0], 10)] = parts[1];
+    set({ cats: cats });
+    return true;
+  }
+  if ((el = at("[data-home-dish]"))) { set({ dish: attr(el, "data-home-dish") }); return true; }
+  if ((el = at("[data-home-soup]"))) { set({ soup: attr(el, "data-home-soup") === "on" }); return true; }
+  if (at("[data-home-add]")) { addHomeEstimate(m.homeEst.name); return true; }
+  return false;
+}
+
 // 存成我的品項（PRD 10.3）：寫入 → 放進目前分頁（飲料進飲料步驟）→ 能選且有名額就選中，否則不選中並說明原因
 export async function saveQuickAdd(values) {
   const m = mealPicker;
@@ -918,6 +967,7 @@ function onProductExtrasClick(e) {
   const q = m.quickAdd && m.quickAdd.values;
   const at = function (sel) { return e.target.closest(sel); };
   let el;
+  if (onHomeEstimateClick(e)) return true;
   if ((el = at("[data-estimate-size]"))) {
     const nameEl = document.getElementById("meal-picker-estimate-name");
     addEstimate(el.getAttribute("data-estimate-size"), nameEl ? nameEl.value : "");
