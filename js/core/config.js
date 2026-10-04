@@ -113,4 +113,12 @@ export const EST_SIZES = ["S", "M", "L"];
 export const EST_CATS = ["veg", "mixed", "meat"];       // 素菜／菜肉／純肉
 export const EST_STAPLES = ["white", "brown", "mixed", "noodle", "none"];
 export const EST_DISH_MAX = 4;
+// 「主食＋家常菜」估算的份量常數（decisions #151）：菜的「全分量」S／M／L 是一個總量、分給 N 道（每道 1/N，4 道總量不比 1 道多）；
+// 主食 S／M／L ＝ 2／4／6 熱量份（每份約 70 kcal），每份克數依主食種類；湯 1 碗約 250ml（1ml 當 1g）
+export const EST_DISH_GRAMS = { S: 120, M: 160, L: 200 };
+export const EST_STAPLE_PORTIONS = { S: 2, M: 4, L: 6 };
+export const EST_STAPLE_G_PER_PORTION = { white: 40, brown: 40, mixed: 40, noodle: 60 };
+export const EST_SOUP_ML = 250;
+export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };
+export const EST_STAPLE_LABELS = { white: "白飯", brown: "糙米飯", mixed: "雜糧飯", noodle: "白麵", none: "不吃" };
 export const ESTIMATE_RECALL_GROUP ={ breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };

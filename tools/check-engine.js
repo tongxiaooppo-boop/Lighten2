@@ -832,31 +832,31 @@ async function main() {
   // ---------- 10. 我的食物：分層（工作線 D 切片 4，計畫 docs/review/2026-09-30-D4-實作計畫.md 第 4 節） ----------
   console.log("[我的食物：分層]");
   checkFoodTreeViews(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), readJson("food_tree.json"));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }), readJson("food_tree.json"));
 
   // ---------- 11. 單品（工作線 D 切片 7） ----------
   console.log("[單品]");
   checkSingleFoods(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }), candidatePool);
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }), candidatePool);
   checkSingleFoodsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
   // ---------- 12. 我的組合（工作線 C） ----------
   console.log("[我的組合]");
   checkSavedMeals(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
   checkSavedMealsDb(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
   // ---------- 13. 常吃（工作線 D 切片 5，計畫 docs/review/2026-10-01-D5-實作計畫.md） ----------
   console.log("[常吃]");
   await checkFavorites(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
   // ---------- 14. 我的食材與單品克數記法（工作線 D 切片 8b，計畫 docs/review/2026-10-02-D8b-實作計畫.md） ----------
   console.log("[我的食材與克數記法]");
   checkMyIngredients(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
-    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json") }));
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
@@ -2385,6 +2385,49 @@ function checkSavedMealsDb(catalog) {
     "est 驗證：staple、staple_size（不吃時必須 null）、dish、soup、不得有多餘欄位");
   const homeLogBad = clone(homeLogEntry); homeLogBad.content.components[0].snapshot.protein_g = null;
   check(/snapshot/.test(errOf(() => db.validateDailyLog(homeLogBad)) || ""), "紀錄的 est 估算：快照七欄不能是 null");
+  // ---- 家常菜估算：engine 函式（步 3） ----
+  console.log("[家常菜估算：engine]");
+  const hd = catalog.homeDishes, hdata = readJson("home_dishes.json");
+  const ecfg = (o) => Object.assign({ n: 1, cats: ["veg"], staple: "white", staple_size: "M", dish: "S", soup: false }, o || {});
+  const near = (a, b, tol) => Math.abs(a - b) <= (tol == null ? 1 : tol);
+  check(hd.dishes.length === 17 && hd.classes.veg.n === 4 && hd.classes.mixed.n === 5 && hd.classes.meat.n === 5 && hd.soup.n === 3 && hd.staples.white.per_100g.kcal === 183.1 && hd.byId.hd_mapo_tofu.class === "meat",
+    "catalog.homeDishes 載入：17 道（菜 14＋湯 3）、三類 4／5／5、湯 3、主食每 100g");
+  check(hdata.classes.veg.per_100g.kcal === 64.6 && hdata.classes.mixed.per_100g.kcal === 142.4 && hdata.classes.meat.per_100g.kcal === 161.9 && hdata.soup.per_100g.kcal === 32.1,
+    "類別平均對照審核第二輪 Q4：素菜 64.6、菜肉 142.4、純肉 161.9、湯 32.1");
+  // 審核第二輪 Q4 的「白飯＋1 樣」表（飯 小／中／大＝80／160／240g；菜 120g＝菜量 S、160g＝菜量 M）：熱量、蛋白質、鈉
+  const q4 = {
+    "veg|S": { S: [224, 5.5, 489], M: [371, 8.0, 490], L: [517, 10.4, 492] }, "veg|M": { M: [396, 9.0, 653] },
+    "mixed|S": { S: [317, 13.2, 396], M: [464, 15.6, 398], L: [610, 18.1, 400] }, "mixed|M": { M: [521, 19.2, 529] },
+    "meat|S": { S: [341, 20.8, 649], M: [487, 23.3, 651], L: [634, 25.8, 652] }, "meat|M": { M: [552, 29.4, 867] },
+  };
+  Object.keys(q4).forEach((key) => Object.keys(q4[key]).forEach((rice) => {
+    const [cat, dsh] = key.split("|");
+    const e = mc.homeEstimate(ecfg({ cats: [cat], staple_size: rice, dish: dsh }), hd), want = q4[key][rice];
+    check(near(e.snapshot.kcal, want[0]) && near(e.snapshot.protein_g, want[1], 0.15) && near(e.snapshot.sodium_mg, want[2]), "白飯＋1 道" + cat + "（飯 " + rice + "、菜 " + dsh + "）對照審核表 " + want.join("／") + "：" + JSON.stringify(e.snapshot));
+  }));
+  const e1 = mc.homeEstimate(ecfg({ cats: ["meat"] }), hd);
+  check(e1.size === null && e1.name === "白飯＋1 道菜（純肉）" && e1.est.n === 1 && same(e1.est.cats, ["meat"]),
+    "估算草稿：size null、名稱、est、七欄都有數字");
+  check(Object.keys(e1.snapshot).length === 7 && Object.keys(e1.snapshot).every((k) => typeof e1.snapshot[k] === "number"), "snapshot 七欄都是數字");
+  const g4 = mc.homeEstimateGrams(ecfg({ n: 4, cats: ["veg", "veg", "mixed", "meat"], dish: "M", staple_size: "L", soup: true }));
+  check(g4.staple_g === 240 && g4.dish_total_g === 160 && g4.per_dish_g === 40 && g4.soup_ml === 250 && mc.homeEstimateGrams(ecfg({ staple: "noodle", staple_size: "L" })).staple_g === 360 &&
+    mc.homeEstimateGrams(ecfg({ staple: "noodle", staple_size: "S" })).staple_g === 120 && mc.homeEstimateGrams(ecfg({ staple: "none", staple_size: null })).staple_g === 0, "克數：飯 80／160／240、熟麵 120／240／360、菜全分量分 N 道、湯 250ml");
+  const kc = (o) => mc.homeEstimate(ecfg(o), hd).snapshot.kcal;
+  const veg1 = kc({ staple: "none", staple_size: null, cats: ["veg"], dish: "M" }), meat1 = kc({ staple: "none", staple_size: null, cats: ["meat"], dish: "M" });
+  const four = kc({ staple: "none", staple_size: null, n: 4, cats: ["veg", "veg", "meat", "meat"], dish: "M" });
+  check(near(four, (veg1 + meat1) / 2, 0.2) && four < meat1, "4 道的總量不比 1 道多：2 素＋2 純肉＝（全量素菜＋全量純肉）的一半，且低於全量純肉");
+  check(near(kc({ soup: true }) - kc({ soup: false }), 250 * 32.1 / 100, 0.2), "湯＝湯類平均 × 250ml");
+  check(near(kc({ staple: "noodle", staple_size: "M" }) - kc({ staple: "none", staple_size: null }), 240 * 116.7 / 100, 0.3) && near(kc({ staple: "brown" }) - kc({ staple: "none", staple_size: null }), 160 * hd.staples.brown.per_100g.kcal / 100, 0.3),
+    "主食：麵 240g × 116.7、糙米飯 160g × 182");
+  const thrown = (cfg, home) => errOf(() => mc.homeEstimate(cfg, home === undefined ? hd : home)) || "";
+  check(/道數/.test(thrown(ecfg({ n: 5, cats: ["veg", "veg", "veg", "veg", "veg"] }))) && /類別/.test(thrown(ecfg({ n: 2, cats: ["veg"] }))) && /類別/.test(thrown(ecfg({ cats: ["fish"] }))) &&
+    /主食不對/.test(thrown(ecfg({ staple: "bread" }))) && /主食的量/.test(thrown(ecfg({ staple: "none", staple_size: "M" }))) && /主食的量/.test(thrown(ecfg({ staple_size: null }))) &&
+    /菜的量/.test(thrown(ecfg({ dish: "XL" }))) && /湯/.test(thrown(ecfg({ soup: 1 }))) && /缺少菜的類別|還沒載入/.test(thrown(ecfg(), { staples: {}, classes: {}, soup: null, dishes: [], byId: {} })), "設定不完整或資料沒載入要丟錯");
+  check(mc.homeEstimateName(ecfg({ n: 2, cats: ["veg", "meat"], soup: true })) === "白飯＋2 道菜（素菜、純肉）＋湯" && mc.homeEstimateName(ecfg({ staple: "none", staple_size: null, n: 2, cats: ["mixed", "meat"] })) === "2 道菜（菜肉、純肉）" &&
+    mc.homeEstimateName(ecfg({ staple: "noodle" })) === "白麵＋1 道菜（素菜）", "預設名稱");
+  const heDraft = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd)], drink: null, qtyByUid: {}, foods: [] });
+  check(!errOf(() => db.validateMealPlan(plan(mc.toPlanContent(heDraft, { keepImplicit: false })))) && mc.contentTotals(heDraft, catalog).kcal === mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd).snapshot.kcal,
+    "engine 產生的估算草稿通過預約驗證、合計等於快照");
   const homeBackup = clone(v6); homeBackup.sections.meal_plan = [plan(homePc)]; homeBackup.manifest.meal_plan = 1;
   homeBackup.sections.logs.daily_log.push(Object.assign(clone(homeLogEntry), { id: "log_home1" })); homeBackup.manifest.daily_log += 1;
   const homeBackup2 = JSON.parse(JSON.stringify(homeBackup));

@@ -140,6 +140,15 @@ function normalizeFoodTree(tree) {
   return { groups: t.groups || [], items: items, byId: byId };
 }
 
+// 家常菜估算資料（data/home_dishes.json，章程 B4「家常菜估算」、decisions #151）：只供外食分頁的「主食＋家常菜」估算算出七欄營養；
+// 推薦不讀（章程 C4.17 ③）；沒傳（測試合成的 catalog）就是空的，估算函式會報錯
+function normalizeHomeDishes(h) {
+  if (!h) return { staples: {}, classes: {}, soup: null, dishes: [], byId: {} };
+  const byId = {};
+  (h.dishes || []).forEach(function (d) { byId[d.id] = d; });
+  return { staples: h.staples || {}, classes: h.classes || {}, soup: h.soup || null, dishes: h.dishes || [], byId: byId };
+}
+
 export function buildCatalog(raw) {
   const products = raw.convenienceItems.map(function (it) { return fromProduct(it, false); })
     .concat(raw.taiwanItems.map(function (it) { return fromProduct(it, true); }));
@@ -160,6 +169,7 @@ export function buildCatalog(raw) {
     products: products,
     productsByUid: productsByUid,
     foodTree: normalizeFoodTree(raw.foodTree),
+    homeDishes: normalizeHomeDishes(raw.homeDishes),
   };
 }
 
@@ -174,8 +184,9 @@ export function loadCatalog() {
       fetchJson("data/taiwan_items.json"),
       fetchJson("data/dish_archetypes.json"),
       fetchJson("data/food_tree.json"),
+      fetchJson("data/home_dishes.json"),
     ]).then(function (r) {
-      return buildCatalog({ ingredients: r[0], convenienceItems: r[1], taiwanItems: r[2], archetypes: r[3], foodTree: r[4] });
+      return buildCatalog({ ingredients: r[0], convenienceItems: r[1], taiwanItems: r[2], archetypes: r[3], foodTree: r[4], homeDishes: r[5] });
     }).catch(function (err) {
       _catalog = null;
       throw err;

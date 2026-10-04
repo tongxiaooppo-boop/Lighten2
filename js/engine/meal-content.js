@@ -14,6 +14,7 @@
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL, ESTIMATE_RECALL_KCAL, ESTIMATE_RECALL_GROUP,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
+  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_CAT_LABELS, EST_STAPLE_LABELS,
 } from "../core/config.js";
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
@@ -555,6 +556,51 @@ export function estimateFromDraft(e) {
 
 function copyEst(est) {
   return Object.assign({}, est, { cats: est.cats.slice() });
+}
+
+// ---------- 「主食＋家常菜」估算（decisions #151） ----------
+// cfg（＝est）：{ n: 1–4, cats: ["veg"|"mixed"|"meat" × n], staple: white|brown|mixed|noodle|none, staple_size: S|M|L|null, dish: S|M|L, soup: boolean }
+// home：catalog.homeDishes（data/home_dishes.json 正規化後：staples、classes、soup 的每 100g）。回傳選擇器的估算草稿 { size: null, name, snapshot, est }。
+
+// 這份估算的克數：主食、菜的全分量與每道、湯（預覽「飯 160g」「菜 160g 分 2 道」用）
+export function homeEstimateGrams(cfg) {
+  const stapleG = cfg.staple === "none" ? 0 : EST_STAPLE_PORTIONS[cfg.staple_size] * EST_STAPLE_G_PER_PORTION[cfg.staple];
+  const dishG = EST_DISH_GRAMS[cfg.dish];
+  return { staple_g: stapleG, dish_total_g: dishG, per_dish_g: round1(dishG / cfg.n), soup_ml: cfg.soup ? EST_SOUP_ML : 0 };
+}
+
+// 設定不完整或資料沒載入回傳原因，否則 null
+export function homeEstimateProblem(cfg, home) {
+  if (!cfg || !Number.isInteger(cfg.n) || cfg.n < 1 || cfg.n > EST_DISH_MAX) return "家常菜估算：菜的道數要在 1 到 " + EST_DISH_MAX + "。";
+  if (!Array.isArray(cfg.cats) || cfg.cats.length !== cfg.n || cfg.cats.some(function (k) { return EST_CATS.indexOf(k) === -1; })) return "家常菜估算：每道菜都要選類別。";
+  if (EST_STAPLES.indexOf(cfg.staple) === -1) return "家常菜估算：主食不對。";
+  if (cfg.staple === "none" ? cfg.staple_size !== null : EST_SIZES.indexOf(cfg.staple_size) === -1) return "家常菜估算：主食的量不對。";
+  if (EST_SIZES.indexOf(cfg.dish) === -1) return "家常菜估算：菜的量不對。";
+  if (typeof cfg.soup !== "boolean") return "家常菜估算：湯要選有或沒有。";
+  if (!home || !home.classes) return "家常菜估算：資料還沒載入。";
+  if (cfg.cats.some(function (k) { return !home.classes[k] || !home.classes[k].per_100g; })) return "家常菜估算：缺少菜的類別資料。";
+  if (cfg.staple !== "none" && !(home.staples[cfg.staple] && home.staples[cfg.staple].per_100g)) return "家常菜估算：缺少主食資料。";
+  if (cfg.soup && !(home.soup && home.soup.per_100g)) return "家常菜估算：缺少湯的資料。";
+  return null;
+}
+
+export function homeEstimateName(cfg) {
+  const dishes = cfg.n + " 道菜（" + cfg.cats.map(function (k) { return EST_CAT_LABELS[k]; }).join("、") + "）";
+  return (cfg.staple === "none" ? "" : EST_STAPLE_LABELS[cfg.staple] + "＋") + dishes + (cfg.soup ? "＋湯" : "");
+}
+
+export function homeEstimate(cfg, home) {
+  const problem = homeEstimateProblem(cfg, home);
+  if (problem) throw new Error("[meal-content.js] " + problem);
+  const g = homeEstimateGrams(cfg);
+  const sum = { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: 0 };
+  const add = function (per, grams) { Object.keys(sum).forEach(function (k) { sum[k] += per[k] * grams / 100; }); };
+  if (cfg.staple !== "none") add(home.staples[cfg.staple].per_100g, g.staple_g);
+  cfg.cats.forEach(function (k) { add(home.classes[k].per_100g, g.dish_total_g / cfg.n); });
+  if (cfg.soup) add(home.soup.per_100g, g.soup_ml);
+  const snapshot = {};
+  Object.keys(sum).forEach(function (k) { snapshot[k] = round1(sum[k]); });
+  return { size: null, name: homeEstimateName(cfg), snapshot: snapshot, est: copyEst(cfg) };
 }
 
 // ---------- 單品（food 元件，PRD 13.4） ----------

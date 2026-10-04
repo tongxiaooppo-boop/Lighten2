@@ -128,6 +128,8 @@ function recommendLeaks(src) {
   const scan = (re, what) => { let m; while ((m = re.exec(src))) out.push({ what: what(m), line: lineOf(src, m.index) }); };
   scan(/(["'`])(dish|food)\1/g, (m) => "字面量 " + m[0]);
   scan(/(?<![\w$])foodTree(?![\w$])/g, () => "識別字 foodTree");
+  // 家常菜估算（decisions #151）：資料掛在 catalog.homeDishes、檔案 home_dishes.json，推薦不讀
+  scan(/(?<![\w$])homeDishes(?![\w$])|home_dishes/g, (m) => "家常菜估算資料 " + m[0]);
   // 切片 8b：我的食材與衛福部查詢檔（decisions #138）
   scan(/custom_ingredients|tfda_lookup|my-ingredients|(?<![\w$])(loadTfdaLookup|ingredientItem|getCustomIngredients)(?![\w$])/g, (m) => "我的食材 " + m[0]);
   return out;
@@ -379,6 +381,7 @@ check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/recommend.js"
 [["if (c.kind === \"food\") {}", 1], ["const k = 'dish';", 1], ["const k = `food`;", 1], ["const t = catalog.foodTree;", 1],
   ["const { foodTree } = catalog;", 1], ["x = \"foods\" + 'dishes';", 0],
   ["import { ingredientItem } from './my-ingredients.js';", 2], ["await loadTfdaLookup();", 1], ["const myIngredientItems = 1;", 0], ["const foodTreeX = 1; myfoodTree();", 0],
+  ["const h = catalog.homeDishes;", 1], ["fetch('data/home_dishes.json')", 1], ["const homeDishesX = 1; myhomeDishes();", 0],
   ["// 註解裡的 \"food\" 也算（不去掉字串與註解）", 1]].forEach(([src, n]) => {
   check(recommendLeaks(src).length === n, "C4.17 ③ 規則對「" + src + "」應找到 " + n + " 處，實際 " + recommendLeaks(src).length);
 });
