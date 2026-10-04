@@ -1,0 +1,120 @@
+{
+  "_by": "Cline",
+  "_date": "2026-10-02",
+  "items": [
+    {
+      "no": 1,
+      "name": "統一 陽光高纖豆漿（無糖，400ml）",
+      "group": "超商",
+      "serving_ml": 400,
+      "kcal": null,
+      "protein_g": null,
+      "carb_g": null,
+      "fat_g": null,
+      "sat_fat_g": null,
+      "sodium_mg": null,
+      "fiber_g": null,
+      "sugar_g": null,
+      "allergen_tags": ["黃豆"],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [],
+      "confidence": "low",
+      "note": "未取得可引用的包裝標示網址，依規格不填數字。衛福部 H1150201「豆漿(無糖)」每100g為 35 kcal／蛋白3.6／碳水0.7／脂肪1.9／纖維1.3，但本品為高纖配方（纖維與碳水較高），直接換算會低估，故不採用。過敏原與葷素依產品屬性（黃豆＋水）判斷，非包裝標示。"
+    },
+    {
+      "no": 2,
+      "name": "統一 陽光高纖豆漿（低糖，400ml）",
+      "group": "超商",
+      "serving_ml": 400,
+      "kcal": null,
+      "protein_g": null,
+      "carb_g": null,
+      "fat_g": null,
+      "sat_fat_g": null,
+      "sodium_mg": null,
+      "fiber_g": null,
+      "sugar_g": null,
+      "allergen_tags": ["黃豆"],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [],
+      "confidence": "low",
+      "note": "同第1筆：未取得可引用標示，不猜數字。低糖版另含蔗糖，糖量須以標示為準。"
+    },
+    {
+      "no": 3,
+      "name": "原萃 綠茶（寶特瓶 580ml）",
+      "group": "超商",
+      "serving_ml": 580,
+      "kcal": 2.3,
+      "protein_g": 0.6,
+      "carb_g": 0,
+      "fat_g": null,
+      "sat_fat_g": null,
+      "sodium_mg": null,
+      "fiber_g": 0,
+      "sugar_g": null,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": ["kcal", "protein_g", "carb_g", "fiber_g"],
+          "type": "衛福部",
+          "url": "data/tfda_lookup.json#O0701301",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "未取得原萃官方標示網址，以衛福部整合編號 O0701301「綠茶茶湯」每100g（0.4 kcal／蛋白0.1／碳水0／纖維0）× 580ml 換算。無糖瓶裝綠茶之營養標示通常標 0 kcal，本換算值同量級。"
+    },
+    {
+      "no": 4,
+      "name": "原萃 烏龍茶（寶特瓶 580ml）",
+      "group": "超商",
+      "serving_ml": 580,
+      "kcal": 2.3,
+      "protein_g": 0.6,
+      "carb_g": 0.6,
+      "fat_g": null,
+      "sat_fat_g": null,
+      "sodium_mg": 41.8,
+      "fiber_g": 0,
+      "sugar_g": null,
+      "allergen_tags": [],
+      "vegan": true,
+      "lacto_ovo": true,
+      "sources": [
+        {
+          "fields": ["kcal", "protein_g", "carb_g", "fiber_g", "sodium_mg"],
+          "type": "衛福部",
+          "url": "data/tfda_lookup.json#O0700901",
+          "checked": "2026-10-02"
+        }
+      ],
+      "confidence": "medium",
+      "note": "未取得原萃官方標示網址，以衛福部整合編號 O0700901「烏龍茶」（瓶裝：烏龍茶、維生素C）每100g（0.4 kcal／蛋白0.1／碳水0.1／鈉7.2／纖維0）× 580ml 換算。"
+    },
+    {
+      "no": 5,
+      "name": "純喫茶 檸檬紅茶",
+      "group": "超商",
+      "serving_ml": null,
+      "kcal": null,
+      "protein_g": null,
+      "carb_g": null,
+      "fat_g": null,
+      "sat_fat_g": null,
+      "sodium_mg": null,
+      "fiber_g": null,
+      "sugar_g": null,
+      "allergen_tags": ["未確認"],
+      "vegan": false,
+      "lacto_ovo": false,
+      "sources": [],
+      "confidence": "low",
+      "note": "本輪只查到同系列「純喫茶紅茶 650ml」標示（172.8 kcal），並非檸檬紅茶，依規格不用其他品項冒充，故留空。"
+    }
+  ]
+}
