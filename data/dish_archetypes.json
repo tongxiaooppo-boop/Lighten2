@@ -18,34 +18,34 @@
     "valid_slots": ["breakfast", "lunch", "dinner", "snack"],
     "protein": { "allow": ["egg"] },
     "staple": { "allow": [] },
-    "vegetable": { "allow": ["broccoli", "spinach", "celery", "tomato", "bell_pepper", "onion"] },
+    "vegetable": { "allow": ["broccoli", "spinach", "celery", "tomato", "bell_pepper", "onion", "shiitake", "wood_ear", "bean_sprout"] },
     "seasoning": { "allow": [] },
     "methods": ["method_pan_fry", "method_stir_fry"],
-    "note": "出自「菠菜起司蛋白歐姆蛋」；蛋＋蔬菜，沒有主食槽（原本歐姆蛋本來就不配飯）；2026-09-25 蔬菜擴充加番茄/甜椒/洋蔥（常見歐姆蛋配料）"
+    "note": "出自「菠菜起司蛋白歐姆蛋」；蛋＋蔬菜，沒有主食槽（原本歐姆蛋本來就不配飯）；2026-09-25 蔬菜擴充加番茄/甜椒/洋蔥（常見歐姆蛋配料）；2026-10-04 加香菇/木耳/豆芽（咖哩菇菇歐姆蛋等，decisions #150，餐型擴充步驟 1）"
   },
   {
     "id": "protein_stir_fry",
     "name": "炒類",
     "seasoned": true,
     "valid_slots": ["lunch", "dinner"],
-    "protein": { "allow": ["beef_shank", "shrimp", "chicken_thigh", "edamame"] },
-    "staple": { "allow": ["cauliflower_rice", "brown_rice_cooked"] },
+    "protein": { "allow": ["beef_shank", "shrimp", "chicken_thigh", "edamame", "egg", "firm_tofu"] },
+    "staple": { "allow": ["cauliflower_rice", "brown_rice_cooked", "mixed_grain_rice_cooked"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "onion", "bell_pepper", "bean_sprout", "eggplant", "luffa", "wood_ear", "shiitake", "snap_pea", "okra", "baby_corn"] },
     "seasoning": { "allow": ["kimchi"] },
     "methods": ["method_stir_fry"],
-    "note": "出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」（毛豆仁 2026-09-28 移到蛋白質軸，decisions #37；Phase 0 起「自己選」蛋白質可選 2 個，蝦仁＋毛豆仁就是原型食譜的組法，推薦仍是單一蛋白質）；一定要熱炒，蔬菜/泡菜都是選填加分項不是必要；2026-09-25 蔬菜擴充：熱炒是台式蔬菜使用量最大的餐型，加了大部分新增的需煮熟蔬菜"
+    "note": "出自「韓式泡菜炒牛肉花椰菜米」「清煎蝦仁毛豆炒蛋」（毛豆仁 2026-09-28 移到蛋白質軸，decisions #37；Phase 0 起「自己選」蛋白質可選 2 個，蝦仁＋毛豆仁就是原型食譜的組法，推薦仍是單一蛋白質）；一定要熱炒，蔬菜/泡菜都是選填加分項不是必要；2026-09-25 蔬菜擴充：熱炒是台式蔬菜使用量最大的餐型，加了大部分新增的需煮熟蔬菜；2026-10-04 蛋白質加蛋與板豆腐、主食加雜糧飯（番茄炒蛋、家常豆腐類，decisions #150）"
   },
   {
     "id": "grain_bowl_baked",
     "name": "烤／舒肥定食",
     "seasoned": true,
     "valid_slots": ["lunch", "dinner"],
-    "protein": { "allow": ["chicken_breast", "salmon", "chicken_thigh", "tilapia_fillet", "firm_tofu"] },
+    "protein": { "allow": ["chicken_breast", "salmon", "chicken_thigh", "tilapia_fillet", "firm_tofu", "shrimp"] },
     "staple": { "allow": ["brown_rice_cooked", "quinoa", "mixed_grain_rice_cooked", "sweet_potato"] },
     "vegetable": { "allow": ["broccoli", "spinach", "celery", "bamboo_shoot", "cabbage", "bell_pepper", "tomato", "onion", "snap_pea", "baby_corn", "okra"] },
     "seasoning": { "allow": ["teriyaki_sauce"] },
     "methods": ["method_air_fry", "method_pan_fry", "method_microwave"],
-    "note": "出自「舒肥雞胸地瓜餐」「義式香草烤鮭魚藜麥飯」「日式照燒豆腐鯛魚飯」；主食＋蛋白質＋菜的標準定食組合；2026-09-25 蔬菜擴充"
+    "note": "出自「舒肥雞胸地瓜餐」「義式香草烤鮭魚藜麥飯」「日式照燒豆腐鯛魚飯」；主食＋蛋白質＋菜的標準定食組合；2026-09-25 蔬菜擴充；2026-10-04 蛋白質加蝦仁（decisions #150）"
   },
   {
     "id": "warm_salad",

@@ -417,7 +417,7 @@ compose/lunch/protein_stir_fry/s2	kcal=373.5 P=33.2 C=21.7 F=18 Fb=9.6 SF=5 Na=5
 compose/lunch/protein_stir_fry/no-veg-sauce	kcal=246 P=26.5 C=6.8 F=12.4 Fb=3 SF=3.9 Na=816.6
 compose/lunch/protein_stir_fry/drink	kcal=473.7 P=36.5 C=34.2 F=21.7 Fb=7.6 SF=5 Na=575.8 partial=sat_fat_g,sodium_mg
 compose/lunch/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6 SF=3.4 Na=575.8
-compose/lunch/protein_stir_fry/last-protein	kcal=373.7 P=25.5 C=29.7 F=19.8 Fb=16.4 SF=3.6 Na=1019.1
+compose/lunch/protein_stir_fry/last-protein	kcal=315.2 P=21.1 C=17.8 F=18.9 Fb=9 SF=3.3 Na=490.8
 compose/lunch/protein_stir_fry/two-proteins	kcal=435.4 P=50.6 C=15.4 F=19.1 Fb=6.6 SF=5.4 Na=1111.3
 compose/lunch/protein_stir_fry/three-veg	kcal=372 P=33.5 C=20.5 F=18.3 Fb=9.9 SF=5.1 Na=684.8
 compose/lunch/protein_stir_fry/oil-10	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
@@ -430,7 +430,7 @@ compose/lunch/grain_bowl_baked/s2	kcal=784.1 P=45.4 C=131.9 F=6.8 Fb=9.7 SF=1.9 
 compose/lunch/grain_bowl_baked/no-veg-sauce	kcal=427.6 P=35.8 C=57.5 F=4.5 Fb=3.5 SF=1.2 Na=767.5
 compose/lunch/grain_bowl_baked/drink	kcal=645.9 P=45.8 C=93.7 F=8.8 Fb=7.3 SF=1.5 Na=748.6 partial=sat_fat_g,sodium_mg
 compose/lunch/grain_bowl_baked/no-method	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
-compose/lunch/grain_bowl_baked/last-protein	kcal=500 P=24 C=77.3 F=10.6 Fb=8.7 SF=2.2 Na=693.4
+compose/lunch/grain_bowl_baked/last-protein	kcal=453.2 P=29.7 C=74.9 F=3.5 Fb=6.3 SF=1.1 Na=1218.8
 compose/lunch/grain_bowl_baked/two-proteins	kcal=719.4 P=64.7 C=74.5 F=16.4 Fb=6.3 SF=4.6 Na=796
 compose/lunch/grain_bowl_baked/three-veg	kcal=544.2 P=42.8 C=80 F=5.4 Fb=9.6 SF=1.6 Na=857.6
 compose/lunch/grain_bowl_baked/oil-10	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
@@ -471,7 +471,7 @@ compose/dinner/protein_stir_fry/s2	kcal=373.5 P=33.2 C=21.7 F=18 Fb=9.6 SF=5 Na=
 compose/dinner/protein_stir_fry/no-veg-sauce	kcal=246 P=26.5 C=6.8 F=12.4 Fb=3 SF=3.9 Na=816.6
 compose/dinner/protein_stir_fry/drink	kcal=473.7 P=36.5 C=34.2 F=21.7 Fb=7.6 SF=5 Na=575.8 partial=sat_fat_g,sodium_mg
 compose/dinner/protein_stir_fry/no-method	kcal=250.3 P=30.5 C=15 F=7.9 Fb=6.6 SF=3.4 Na=575.8
-compose/dinner/protein_stir_fry/last-protein	kcal=373.7 P=25.5 C=29.7 F=19.8 Fb=16.4 SF=3.6 Na=1019.1
+compose/dinner/protein_stir_fry/last-protein	kcal=315.2 P=21.1 C=17.8 F=18.9 Fb=9 SF=3.3 Na=490.8
 compose/dinner/protein_stir_fry/two-proteins	kcal=435.4 P=50.6 C=15.4 F=19.1 Fb=6.6 SF=5.4 Na=1111.3
 compose/dinner/protein_stir_fry/three-veg	kcal=372 P=33.5 C=20.5 F=18.3 Fb=9.9 SF=5.1 Na=684.8
 compose/dinner/protein_stir_fry/oil-10	kcal=338.7 P=30.5 C=15 F=17.9 Fb=6.6 SF=5 Na=575.8
@@ -484,7 +484,7 @@ compose/dinner/grain_bowl_baked/s2	kcal=784.1 P=45.4 C=131.9 F=6.8 Fb=9.7 SF=1.9
 compose/dinner/grain_bowl_baked/no-veg-sauce	kcal=427.6 P=35.8 C=57.5 F=4.5 Fb=3.5 SF=1.2 Na=767.5
 compose/dinner/grain_bowl_baked/drink	kcal=645.9 P=45.8 C=93.7 F=8.8 Fb=7.3 SF=1.5 Na=748.6 partial=sat_fat_g,sodium_mg
 compose/dinner/grain_bowl_baked/no-method	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
-compose/dinner/grain_bowl_baked/last-protein	kcal=500 P=24 C=77.3 F=10.6 Fb=8.7 SF=2.2 Na=693.4
+compose/dinner/grain_bowl_baked/last-protein	kcal=453.2 P=29.7 C=74.9 F=3.5 Fb=6.3 SF=1.1 Na=1218.8
 compose/dinner/grain_bowl_baked/two-proteins	kcal=719.4 P=64.7 C=74.5 F=16.4 Fb=6.3 SF=4.6 Na=796
 compose/dinner/grain_bowl_baked/three-veg	kcal=544.2 P=42.8 C=80 F=5.4 Fb=9.6 SF=1.6 Na=857.6
 compose/dinner/grain_bowl_baked/oil-10	kcal=510.9 P=39.8 C=74.5 F=5 Fb=6.3 SF=1.5 Na=748.6
@@ -600,23 +600,23 @@ saved/load/saved_s3/dinner	true {"cook":{"archetype":"protein_stir_fry","method"
 saved/load/replace	true {"cook":{"archetype":null,"method":null,"override":{},"proteins":[],"seasoning":null,"staple":null,"vegetables":[]},"drink":"tw_dr05","foods":[{"qty":2,"uid":"fx_whole_milk"}],"inserted":{},"notice":"已帶入「超商早午餐」。","qty":{},"selected":{"convenience":["conv_bx01"],"delivery":["custom_a"]},"tab":"convenience","tier":"cook_full"}
 saved/submit+save/write0	addDailyLog lunch "全家 健身G肉餐盒（健身工廠聯名）＋全脂奶（自己倒） 480ml＋拿鐵咖啡（無糖，大杯約400ml）" kcal=956.2 P=56.9 C=102.9 F=35.3 Fb=4.8 SF=17.1 Na=292.7 partial=sat_fat_g,sodium_mg type=convenience source=manual content=convenience|-/-|conv_bx01x1@481,food:fx_whole_milkx2@151.7/240ml,tw_dr05x1@171.8|implicit=null
 saved/submit+save/write1	addSavedMeal saved_0001 "全家 健身G肉餐盒（健身工廠聯名）＋全脂奶（自己倒）＋拿鐵咖啡（無糖，大杯約400ml）" content=convenience|-/-|conv_bx01x1,food:fx_whole_milkx2,tw_dr05x1|implicit=null
-saved/submit+save/write2	markRecipesShown conv_bx05+conv_sl02+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry
-saved/submit+save/write3	setLastShownRecs {"op":"setLastShownRecs","value":{"date":"2026-09-23","slots":{"breakfast":{"content":{"archetype_id":null,"components":[{"kind":"product","qty":1,"ref":"conv_bx05","role":"main","snapshot":{"carb_g":37.2,"fat_g":0.3,"fiber_g":4,"kcal":160,"name":"蒸地瓜／烤甘薯（中）","protein_g":2,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_sl02","role":"side","snapshot":{"carb_g":8.5,"fat_g":1.2,"fiber_g":5,"kcal":57,"name":"海苔／日式海藻高纖沙拉","protein_g":2.5,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_dr01","role":"drink","snapshot":{"carb_g":14,"fat_g":7.6,"fiber_g":10.2,"kcal":160,"name":"統一陽光 高纖無糖豆漿","protein_g":15,"sat_fat_g":null,"sodium_mg":null}}],"implicit":null,"meal_type":"convenience","method_id":null},"name":"蒸地瓜／烤甘薯（中） ＋ 海苔／日式海藻高纖沙拉 ＋ 統一陽光 高纖無糖豆漿","totals":{"carb_g":59.7,"fat_g":9.1,"fiber_g":19.2,"kcal":377,"partial":[],"protein_g":19.5,"sat_fat_g":null,"sodium_mg":null}},"dinner":{"content":{"archetype_id":"protein_stir_fry","components":[{"axis":"protein","kind":"ingredient","ref":"edamame"},{"axis":"staple","is_primary":true,"kind":"ingredient","ref":"brown_rice_cooked","scale":0.848},{"axis":"vegetable","kind":"ingredient","ref":"wood_ear"},{"axis":"seasoning","kind":"ingredient","ref":"kimchi"}],"implicit":{"oil_g":10,"seasoning":"light"},"meal_type":"cook_full","method_id":"method_stir_fry"},"name":"毛豆仁 + 糙米飯 + 黑木耳 + 韓式泡菜","totals":{"carb_g":72.2,"fat_g":20.9,"fiber_g":19.5,"kcal":562.9,"partial":[],"protein_g":24.8,"sat_fat_g":3.8,"sodium_mg":996.1}}}}}
+saved/submit+save/write2	markRecipesShown conv_bx05+conv_sl02+conv_dr01,protein_stir_fry_edamame_mixed_grain_rice_cooked_wood_ear_kimchi_method_stir_fry
+saved/submit+save/write3	setLastShownRecs {"op":"setLastShownRecs","value":{"date":"2026-09-23","slots":{"breakfast":{"content":{"archetype_id":null,"components":[{"kind":"product","qty":1,"ref":"conv_bx05","role":"main","snapshot":{"carb_g":37.2,"fat_g":0.3,"fiber_g":4,"kcal":160,"name":"蒸地瓜／烤甘薯（中）","protein_g":2,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_sl02","role":"side","snapshot":{"carb_g":8.5,"fat_g":1.2,"fiber_g":5,"kcal":57,"name":"海苔／日式海藻高纖沙拉","protein_g":2.5,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_dr01","role":"drink","snapshot":{"carb_g":14,"fat_g":7.6,"fiber_g":10.2,"kcal":160,"name":"統一陽光 高纖無糖豆漿","protein_g":15,"sat_fat_g":null,"sodium_mg":null}}],"implicit":null,"meal_type":"convenience","method_id":null},"name":"蒸地瓜／烤甘薯（中） ＋ 海苔／日式海藻高纖沙拉 ＋ 統一陽光 高纖無糖豆漿","totals":{"carb_g":59.7,"fat_g":9.1,"fiber_g":19.2,"kcal":377,"partial":[],"protein_g":19.5,"sat_fat_g":null,"sodium_mg":null}},"dinner":{"content":{"archetype_id":"protein_stir_fry","components":[{"axis":"protein","kind":"ingredient","ref":"edamame"},{"axis":"staple","is_primary":true,"kind":"ingredient","ref":"mixed_grain_rice_cooked","scale":0.862},{"axis":"vegetable","kind":"ingredient","ref":"wood_ear"},{"axis":"seasoning","kind":"ingredient","ref":"kimchi"}],"implicit":{"oil_g":10,"seasoning":"light"},"meal_type":"cook_full","method_id":"method_stir_fry"},"name":"毛豆仁 + 雜糧飯 + 黑木耳 + 韓式泡菜","totals":{"carb_g":70.6,"fat_g":21.1,"fiber_g":19.6,"kcal":562.9,"partial":[],"protein_g":25.6,"sat_fat_g":3.9,"sodium_mg":995.5}}}}}
 saved/submit+save/lastPicked	{"lunch":"convenience"}
 saved/submit+estimate/write0	addDailyLog lunch "聚餐" kcal=700 P=null C=null F=null Fb=null SF=null Na=null type=delivery source=manual content=delivery|-/-|estimate:聚餐@700|implicit=null
-saved/submit+estimate/write1	markRecipesShown conv_bx05+conv_sl04+conv_dr01,protein_stir_fry_edamame_brown_rice_cooked_wood_ear_kimchi_method_stir_fry
-saved/submit+estimate/write2	setLastShownRecs {"op":"setLastShownRecs","value":{"date":"2026-09-23","slots":{"breakfast":{"content":{"archetype_id":null,"components":[{"kind":"product","qty":1,"ref":"conv_bx05","role":"main","snapshot":{"carb_g":37.2,"fat_g":0.3,"fiber_g":4,"kcal":160,"name":"蒸地瓜／烤甘薯（中）","protein_g":2,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_sl04","role":"side","snapshot":{"carb_g":28,"fat_g":7,"fiber_g":6,"kcal":210,"name":"高纖藜麥／穀物沙拉盒","protein_g":7.5,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_dr01","role":"drink","snapshot":{"carb_g":14,"fat_g":7.6,"fiber_g":10.2,"kcal":160,"name":"統一陽光 高纖無糖豆漿","protein_g":15,"sat_fat_g":null,"sodium_mg":null}}],"implicit":null,"meal_type":"convenience","method_id":null},"name":"蒸地瓜／烤甘薯（中） ＋ 高纖藜麥／穀物沙拉盒 ＋ 統一陽光 高纖無糖豆漿","totals":{"carb_g":79.2,"fat_g":14.9,"fiber_g":20.2,"kcal":530,"partial":[],"protein_g":24.5,"sat_fat_g":null,"sodium_mg":null}},"dinner":{"content":{"archetype_id":"protein_stir_fry","components":[{"axis":"protein","kind":"ingredient","ref":"edamame"},{"axis":"staple","is_primary":true,"kind":"ingredient","ref":"brown_rice_cooked","scale":1.226},{"axis":"vegetable","kind":"ingredient","ref":"wood_ear"},{"axis":"seasoning","kind":"ingredient","ref":"kimchi"}],"implicit":{"oil_g":10,"seasoning":"light"},"meal_type":"cook_full","method_id":"method_stir_fry"},"name":"毛豆仁 + 糙米飯 + 黑木耳 + 韓式泡菜","totals":{"carb_g":93.9,"fat_g":21.6,"fiber_g":20.8,"kcal":666.1,"partial":[],"protein_g":26.9,"sat_fat_g":4,"sodium_mg":996.9}}}}}
+saved/submit+estimate/write1	markRecipesShown conv_bx05+conv_sl04+conv_dr01,protein_stir_fry_edamame_mixed_grain_rice_cooked_wood_ear_kimchi_method_stir_fry
+saved/submit+estimate/write2	setLastShownRecs {"op":"setLastShownRecs","value":{"date":"2026-09-23","slots":{"breakfast":{"content":{"archetype_id":null,"components":[{"kind":"product","qty":1,"ref":"conv_bx05","role":"main","snapshot":{"carb_g":37.2,"fat_g":0.3,"fiber_g":4,"kcal":160,"name":"蒸地瓜／烤甘薯（中）","protein_g":2,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_sl04","role":"side","snapshot":{"carb_g":28,"fat_g":7,"fiber_g":6,"kcal":210,"name":"高纖藜麥／穀物沙拉盒","protein_g":7.5,"sat_fat_g":null,"sodium_mg":null}},{"kind":"product","qty":1,"ref":"conv_dr01","role":"drink","snapshot":{"carb_g":14,"fat_g":7.6,"fiber_g":10.2,"kcal":160,"name":"統一陽光 高纖無糖豆漿","protein_g":15,"sat_fat_g":null,"sodium_mg":null}}],"implicit":null,"meal_type":"convenience","method_id":null},"name":"蒸地瓜／烤甘薯（中） ＋ 高纖藜麥／穀物沙拉盒 ＋ 統一陽光 高纖無糖豆漿","totals":{"carb_g":79.2,"fat_g":14.9,"fiber_g":20.2,"kcal":530,"partial":[],"protein_g":24.5,"sat_fat_g":null,"sodium_mg":null}},"dinner":{"content":{"archetype_id":"protein_stir_fry","components":[{"axis":"protein","kind":"ingredient","ref":"edamame"},{"axis":"staple","is_primary":true,"kind":"ingredient","ref":"mixed_grain_rice_cooked","scale":1.246},{"axis":"vegetable","kind":"ingredient","ref":"wood_ear"},{"axis":"seasoning","kind":"ingredient","ref":"kimchi"}],"implicit":{"oil_g":10,"seasoning":"light"},"meal_type":"cook_full","method_id":"method_stir_fry"},"name":"毛豆仁 + 雜糧飯 + 黑木耳 + 韓式泡菜","totals":{"carb_g":91.7,"fat_g":21.9,"fiber_g":21,"kcal":666.1,"partial":[],"protein_g":28.1,"sat_fat_g":4.1,"sodium_mg":996.1}}}}}
 saved/edit/open	{"cook":{"archetype":null,"method":null,"override":{},"proteins":[],"seasoning":null,"staple":null,"vegetables":[]},"drink":"tw_dr05","foods":[{"qty":2,"uid":"fx_whole_milk"}],"inserted":{},"notice":"編輯「超商早午餐」。","qty":{},"selected":{"convenience":["conv_bx01"],"delivery":[]},"tab":"convenience","tier":"cook_full"}
 saved/edit/submit/write0	updateSavedMeal saved_s1 "超商早午餐" content=convenience|-/-|conv_bx01x1,food:fx_whole_milkx3,tw_dr05x1|implicit=null
 saved/edit/lastPicked	null
-fav/list	conv_bx08,conv_sl01,custom_a,tw_dr05,conv_dr01,custom_c,fx_rice,fx_whole_milk,fx_banana,chicken_breast,fx_gone_for_test,edamame,beef_shank
+fav/list	conv_bx08,conv_sl01,custom_a,tw_dr05,conv_dr01,custom_c,fx_rice,fx_whole_milk,fx_banana,chicken_breast,fx_gone_for_test,firm_tofu,beef_shank
 fav/lunch/convenience/favorites	conv_bx08,conv_sl01
 fav/lunch/convenience/also-elsewhere	-
-fav/lunch/convenience/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,edamame,fx_rice,beef_shank
+fav/lunch/convenience/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,firm_tofu,fx_rice,beef_shank
 fav/lunch/convenience/drinks+foods/also-elsewhere	-
 fav/lunch/delivery/favorites	custom_a
 fav/lunch/delivery/also-elsewhere	-
-fav/lunch/delivery/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,edamame,fx_rice,beef_shank
+fav/lunch/delivery/drinks+foods/favorites	tw_dr05,custom_c,fx_whole_milk,fx_banana,firm_tofu,fx_rice,beef_shank
 fav/lunch/delivery/drinks+foods/also-elsewhere	-
-fav/lunch/cook/protein_stir_fry/protein-before	beef_shank(擋),shrimp(擋),chicken_thigh(擋),edamame
-fav/lunch/cook/protein_stir_fry/protein-after	edamame,beef_shank(擋),shrimp(擋),chicken_thigh(擋)
+fav/lunch/cook/protein_stir_fry/protein-before	beef_shank(擋),shrimp(擋),chicken_thigh(擋),edamame,egg,firm_tofu
+fav/lunch/cook/protein_stir_fry/protein-after	firm_tofu,beef_shank(擋),shrimp(擋),chicken_thigh(擋),edamame,egg
