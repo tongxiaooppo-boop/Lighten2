@@ -1722,8 +1722,8 @@ async function run() {
   await openPicker("lunch");
   await click(`#meal-picker-tabs [data-tab=delivery]`);
   check(!(await js(`!!document.querySelector('#meal-picker-panel [data-home-n]')`)), "15-1 沒選「主食＋家常菜」前不該顯示它的設定");
-  await click(`#meal-picker-panel [data-estimate-mode=home]`);
-  await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 切到「主食＋家常菜」沒有出現道數按鈕");
+  await click(`#meal-picker-panel [data-home-toggle]`);
+  await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 展開「家庭共食／自助餐」沒有出現道數按鈕");
   const homePreview0 = await js(text("#meal-picker-panel .meal-picker-estimate"));
   check(/白飯 (80|160|240)g/.test(homePreview0) && /菜 (120|160|200)g/.test(homePreview0) && homePreview0.indexOf("蛋白質") !== -1 && homePreview0.indexOf("鈉") !== -1 && homePreview0.indexOf("估計") !== -1 &&
     homePreview0.indexOf("純肉＝肉、魚、蛋、豆腐為主") !== -1, "15-1 預設預覽沒有白飯 160g、菜 160g、蛋白質、鈉、估計、純肉說明：" + homePreview0);
@@ -1762,7 +1762,7 @@ async function run() {
   await click(`#rec-lunch [data-plan-pick=lunch]`);
   await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "15-2 預約的選擇器沒有打開");
   await click(`#meal-picker-tabs [data-tab=delivery]`);
-  await click(`#meal-picker-panel [data-estimate-mode=home]`);
+  await click(`#meal-picker-panel [data-home-toggle]`);
   await click(`#meal-picker-panel [data-home-n="3"]`);
   await click(`#meal-picker-panel [data-home-add]`);
   await until(`${text("#meal-picker-panel .meal-picker-estimate-list")}.indexOf("3 道菜") !== -1`, "15-2 預約模式加入家常菜估算失敗");
@@ -1786,7 +1786,7 @@ async function run() {
   await click(`#week-backfill [data-backfill-slot=lunch]`);
   await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "15-3 補記的選擇器沒有打開");
   await click(`#meal-picker-tabs [data-tab=delivery]`);
-  await click(`#meal-picker-panel [data-estimate-mode=home]`);
+  await click(`#meal-picker-panel [data-home-toggle]`);
   await click(`#meal-picker-panel [data-home-staple=brown]`);
   await click(`#meal-picker-panel [data-home-add]`);
   await until(`${text("#meal-picker-panel .meal-picker-estimate-list")}.indexOf("糙米飯＋1 道菜") !== -1`, "15-3 補記模式加入家常菜估算失敗");

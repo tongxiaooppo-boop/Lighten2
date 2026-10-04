@@ -1,5 +1,6 @@
-// 輕盈計畫 — 外食分頁最上方的「找不到？直接估算」（PRD 第 9 節、decisions #46、#151）：
-// 兩種：①名稱（選填）＋ S/M/L → estimate 元件；②主食＋家常菜（共食、自助餐）：主食、道數、每道的類別、菜量、湯 → 七欄營養由 engine 算。
+// 輕盈計畫 — 外食分頁最上方的兩張卡（PRD 第 9 節、decisions #46、#151）：
+// ①「家庭共食／自助餐」：主食、道數（1–4）、每道的類別、菜量、湯 → 七欄營養由 engine 算（預設收合，按標題展開）；
+// ②「找不到？直接估算」：名稱（選填）＋ S/M/L → estimate 元件。
 // 只存在這一餐，不存成品項；估算是使用者自己宣告吃了什麼，不過硬性過濾。按鈕一律用 data 屬性＋事件委派（沒有新的 DOM id）。
 
 import { escapeHtml } from "../../core/html.js";
@@ -15,7 +16,7 @@ const PART_LABELS = { S: "小", M: "中", L: "大" };
 // 「主食＋家常菜」表單的初始設定
 export function emptyHomeEst(defaults) {
   const d = defaults || {};
-  return { mode: "plain", name: "", cfg: { n: 1, cats: ["mixed"], staple: "white", staple_size: d.staple_size || "M", dish: d.dish || "M", soup: false } };
+  return { open: false, name: "", cfg: { n: 1, cats: ["mixed"], staple: "white", staple_size: d.staple_size || "M", dish: d.dish || "M", soup: false } };
 }
 
 // 改設定後讓 cfg 保持一致：道數改變時補或裁 cats；不吃主食時 staple_size 是 null，改回有主食時預設中份
@@ -67,20 +68,23 @@ function homeFormHtml(cfg, home) {
 // estimates：這一餐已加入的估算 [{ size, name, snapshot?, est? }]；homeEst：表單狀態（emptyHomeEst）；home：catalog.homeDishes
 export function estimateCardHtml(estimates, homeEst, home) {
   const st = homeEst || emptyHomeEst();
-  let html = '<div class="meal-picker-estimate"><div class="meal-picker-estimate-title">找不到？直接估算</div>' +
-    '<p class="meal-picker-note">有聚餐？先記下來，其他餐會自動調整。</p>' +
-    '<div class="compose-options">' + chip("data-estimate-mode", "plain", st.mode === "plain", "一般外食") + chip("data-estimate-mode", "home", st.mode === "home", "主食＋家常菜") + "</div>" +
-    '<input type="text" id="meal-picker-estimate-name" class="meal-picker-input" maxlength="30" placeholder="名稱（選填，例：喜宴）" value="' + escapeHtml(st.name || "") + '">';
-  if (st.mode === "home") {
-    html += homeFormHtml(st.cfg, home);
-  } else {
-    html += '<div class="compose-options">';
-    Object.keys(ESTIMATE_SIZE_KCAL).forEach(function (size) {
-      html += '<button type="button" class="compose-option" data-estimate-size="' + size + '">' + size + " " + SIZE_LABELS[size] +
-        '<span class="item-card-kcal">約 ' + ESTIMATE_SIZE_KCAL[size] + " kcal</span></button>";
-    });
-    html += "</div>";
+  // ① 家庭共食／自助餐：標題是展開鈕，展開才有表單
+  let html = '<div class="meal-picker-estimate"><button type="button" class="compose-option' + (st.open ? " selected" : "") + '" data-home-toggle="1">' + escapeHtml("家庭共食／自助餐") + "</button>" +
+    '<p class="meal-picker-note">記你自己吃的那一份：選主食、幾道菜、每道是素菜／菜肉／純肉。</p>';
+  if (st.open) {
+    html += '<input type="text" id="meal-picker-home-name" class="meal-picker-input" maxlength="30" placeholder="名稱（選填，例：自助餐）" value="' + escapeHtml(st.name || "") + '">' + homeFormHtml(st.cfg, home);
   }
+  html += "</div>";
+  // ② 找不到？直接估算
+  html += '<div class="meal-picker-estimate"><div class="meal-picker-estimate-title">找不到？直接估算</div>' +
+    '<p class="meal-picker-note">有聚餐？先記下來，其他餐會自動調整。</p>' +
+    '<input type="text" id="meal-picker-estimate-name" class="meal-picker-input" maxlength="30" placeholder="名稱（選填，例：喜宴）">' +
+    '<div class="compose-options">';
+  Object.keys(ESTIMATE_SIZE_KCAL).forEach(function (size) {
+    html += '<button type="button" class="compose-option" data-estimate-size="' + size + '">' + size + " " + SIZE_LABELS[size] +
+      '<span class="item-card-kcal">約 ' + ESTIMATE_SIZE_KCAL[size] + " kcal</span></button>";
+  });
+  html += "</div>";
   if (estimates.length > 0) {
     html += '<div class="meal-picker-estimate-list">';
     estimates.forEach(function (e, i) {

@@ -744,7 +744,7 @@ export function addHomeEstimate(name) {
   const e = homeEstimate(m.homeEst.cfg, m.catalog.homeDishes);
   if (name && name.trim()) e.name = name.trim();
   m.tabs.delivery.estimates.push(e);
-  m.homeEst = Object.assign(emptyHomeEst(), { mode: "home", cfg: m.homeEst.cfg });
+  m.homeEst = Object.assign(emptyHomeEst(), { open: true, cfg: m.homeEst.cfg });
   renderPanel();
   renderDrinks();
   updateSummary();
@@ -756,14 +756,14 @@ function onHomeEstimateClick(e) {
   const at = function (sel) { return e.target.closest(sel); };
   const attr = function (el, name) { return el.getAttribute(name); };
   let el;
-  const nameEl = (at("[data-estimate-mode]") || at("[data-home-staple]") || at("[data-home-staple-size]") || at("[data-home-n]") || at("[data-home-cat]") ||
-    at("[data-home-dish]") || at("[data-home-soup]") || at("[data-home-add]")) ? document.getElementById("meal-picker-estimate-name") : null;
+  const nameEl = (at("[data-home-toggle]") || at("[data-home-staple]") || at("[data-home-staple-size]") || at("[data-home-n]") || at("[data-home-cat]") ||
+    at("[data-home-dish]") || at("[data-home-soup]") || at("[data-home-add]")) ? document.getElementById("meal-picker-home-name") : null;
   if (nameEl) m.homeEst.name = nameEl.value;
   const set = function (patch) {
     m.homeEst.cfg = normalizeHomeCfg(Object.assign({}, m.homeEst.cfg, patch));
     renderPanel();
   };
-  if ((el = at("[data-estimate-mode]"))) { m.homeEst.mode = attr(el, "data-estimate-mode"); renderPanel(); return true; }
+  if (at("[data-home-toggle]")) { m.homeEst.open = !m.homeEst.open; renderPanel(); return true; }
   if ((el = at("[data-home-staple]"))) { set({ staple: attr(el, "data-home-staple") }); return true; }
   if ((el = at("[data-home-staple-size]"))) { set({ staple_size: attr(el, "data-home-staple-size") }); return true; }
   if ((el = at("[data-home-n]"))) { set({ n: parseInt(attr(el, "data-home-n"), 10) }); return true; }
@@ -972,7 +972,6 @@ function onProductExtrasClick(e) {
   if ((el = at("[data-estimate-size]"))) {
     const nameEl = document.getElementById("meal-picker-estimate-name");
     addEstimate(el.getAttribute("data-estimate-size"), nameEl ? nameEl.value : "");
-    m.homeEst.name = ""; // 加完輸入框會重畫成空的，不讓下一筆沿用上一次的名稱
     return true;
   }
   if ((el = at("[data-estimate-remove]"))) {
