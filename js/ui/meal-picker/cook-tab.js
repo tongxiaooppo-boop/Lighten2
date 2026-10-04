@@ -7,6 +7,7 @@ import { COMPOSE_MAX } from "../../core/config.js";
 import { ingredientFilterResult } from "../../engine/filters.js";
 import { composeOptionProblem, composePrimary, archetypeHasStaple, oilOptions, composeImplicit } from "../../engine/meal-content.js";
 import { favoritesFirst } from "../../engine/picker.js";
+import { homeMealToggleHtml, homeMealStepHtml } from "./home-meal.js";
 
 export const TIER_LABELS = { cook_quick: "快煮（簡單料理）", cook_full: "開伙" };
 
@@ -61,7 +62,8 @@ function axisHtml(label, axis, catalog, st, profile, withNone, favSet) {
 }
 
 // st = { tier, draft }；favSet：常吃（可省略）；回傳 { html, steps }（steps：這個分頁用掉的步驟數，飲料步驟接在後面）
-export function cookTabHtml(catalog, slot, st, profile, favSet) {
+// homeCtx（選填）：{ season }，午餐與晚餐的開伙才有「共餐」（decisions #152）
+export function cookTabHtml(catalog, slot, st, profile, favSet, homeCtx) {
   const d = st.draft;
   let n = 0;
   const step = function (label) { n++; return '<div class="meal-picker-step-label">' + n + ". " + escapeHtml(label) + "</div>"; };
@@ -79,7 +81,13 @@ export function cookTabHtml(catalog, slot, st, profile, favSet) {
   }).forEach(function (a) {
     html += optionHtml("archetype", a.id, a.name, { selected: !!(d.archetype && d.archetype.id === a.id) });
   });
+  const showHome = !!homeCtx && st.tier === "cook_full" && !!st.home;
+  if (showHome) html += homeMealToggleHtml(st.home.open);
   html += "</div></div>";
+  if (showHome && st.home.open && !d.archetype) {
+    html += homeMealStepHtml(st.home, { catalog: catalog, profile: profile, season: homeCtx.season }, n + 1 + ". 選家常菜");
+    return { html: html, steps: n + 1 };
+  }
   if (!d.archetype) return { html: html, steps: n };
 
   const a = d.archetype;

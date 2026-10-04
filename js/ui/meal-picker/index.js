@@ -16,12 +16,12 @@ import { passesHardFilters } from "../../engine/filters.js";
 import { slotNutrientShare } from "../../engine/budget.js";
 import { effectiveTodayLogs } from "../../engine/today.js";
 import { shortDate, weekdayLabel, dateAddDays } from "../../core/dates.js";
-import { BACKFILL_DAYS } from "../../core/config.js";
+import { BACKFILL_DAYS, HOME_MEAL_SLOTS, HOME_MEAL_DISH_MAX } from "../../core/config.js";
 import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, oilOptions, draftLogName, copyFromBuiltin,
   resolveSavedMeal, savedMealDraft, savedMealTotals, savedMealDefaultName, savedMealUnavailableLine, toSavedContent, savedMealForSave,
-  toPlanContent, homeEstimate, homeEstimateDefaults,
+  toPlanContent, homeEstimate, homeEstimateDefaults, homeMealDefaultForm, homeMealDraftPart, homeMealProblem, homeMealFormOf, homeMealItemCount,
 } from "../../engine/meal-content.js";
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
@@ -35,6 +35,7 @@ import { productTabHtml, drinkGridHtml, drinkCardHtml, selectedSectionHtml, sele
 import { drinksFruitStepHtml, addFoodsStepHtml, foodSearchResultsHtml } from "./food-step.js";
 import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml, readCustomFoodInputs, onCustomFoodFormClick } from "../custom-food-form.js";
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
+import { seasonOfDate } from "../../core/dates.js";
 import { estimateCardHtml, emptyHomeEst, normalizeHomeCfg } from "./estimate-card.js";
 import { emptyQuickAdd, quickAddRecord, quickAddNotes, quickAddFormHtml, readQuickAddInputs } from "./quick-add.js";
 import { getCalibratedTargets } from "../calibration.js";
@@ -225,7 +226,9 @@ export async function openMealPicker(slotArg, opts) {
   m.cook = {
     tier: tabOfMealType(mealType) === "cook" ? mealType : tabOfMealType(lastPicked[slot]) === "cook" ? lastPicked[slot] : "cook_full",
     draft: emptyCookDraft(),
+    home: { open: false, form: homeMealDefaultForm(targets, homeShare, catalog) }, // 共餐（decisions #152）：預設份量同估算卡（#151）
   };
+  m.season = seasonOfDate(day); // 共餐清單只列這一餐那天的當季菜
 
   computeSavedCards();
   if (editing) applySaved(editing);
@@ -329,6 +332,8 @@ function applySaved(rec) {
       archetype: d.archetype, proteins: d.proteins, staple: d.staple, vegetables: d.vegetables, seasoning: d.seasoning, method: d.method,
       primaryScale: d.primaryScale, implicitOverride: d.implicitOverride,
     };
+    // 共餐帶回：表單還原並展開（decisions #152）；沒有共餐就維持收起
+    if (d.homeMeal) m.cook.home = { open: true, form: homeMealFormOf(d.homeMeal, m.catalog, { dish: m.cook.home.form.dish }) };
   } else {
     const t = m.tabs[tab];
     t.selected.forEach(function (u) { delete m.qtyByUid[u]; });
@@ -364,11 +369,23 @@ function keepImplicitOf(d) {
 export function currentDraft() {
   const m = mealPicker;
   const qtyByUid = Object.assign({}, m.qtyByUid);
-  if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink(), qtyByUid: qtyByUid, foods: selectedFoods() }, m.cook.draft);
+  if (m.tab === "cook") return Object.assign({ kind: "cook", meal_type: m.cook.tier, drink: selectedDrink(), qtyByUid: qtyByUid, foods: selectedFoods(), homeMeal: currentHomeMeal() }, m.cook.draft);
   return {
     kind: "products", meal_type: m.tab, items: selectedItems(m.tab),
     estimates: m.tab === "delivery" ? m.tabs.delivery.estimates.slice() : [], drink: selectedDrink(), qtyByUid: qtyByUid, foods: selectedFoods(),
   };
+}
+
+// 共餐在目前的選擇器裡有沒有效：開伙、午餐或晚餐、展開了、至少選一道菜或湯；有問題（過敏原等）不進草稿，由 submitProblem 說明
+function homeMealActive() {
+  const m = mealPicker;
+  return m.tab === "cook" && m.cook.tier === "cook_full" && !!m.cook.home && m.cook.home.open && m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1;
+}
+
+function currentHomeMeal() {
+  const m = mealPicker;
+  if (!homeMealActive()) return null;
+  try { return homeMealDraftPart(m.cook.home.form, m.catalog, m.profile); } catch (e) { return null; }
 }
 
 // 送出規則用的品項（角色上限含飲料）
@@ -383,6 +400,10 @@ export function currentTotals() {
 // 自煮分頁：選了餐型要配完整；沒選餐型時有單品或飲料就可以送出（PRD 13.4，decisions #122 修正 #45）
 function submitProblem(d) {
   if (d.kind === "cook") {
+    if (homeMealActive()) {
+      const hp = homeMealProblem(mealPicker.cook.home.form, mealPicker.catalog, mealPicker.profile);
+      if (hp) return hp;
+    }
     const p = composeProblem(d, { tier: d.meal_type });
     return p && d.archetype && d.foods.length > 0 ? p + "（只記單品可以再點一次「" + d.archetype.name + "」取消餐型）" : p;
   }
@@ -391,7 +412,7 @@ function submitProblem(d) {
 
 // 摘要的「已選 N 件」（自煮分頁有餐型時寫「還沒配好／已配好」，不用這個）
 function pickedCount(d) {
-  return (d.kind === "cook" ? 0 : d.items.length + d.estimates.length) + d.foods.length + (d.drink ? 1 : 0);
+  return (d.kind === "cook" ? homeMealItemCount(d.homeMeal) : d.items.length + d.estimates.length) + d.foods.length + (d.drink ? 1 : 0);
 }
 
 function fmtNutrient(v) { return v == null ? "—" : Math.round(v) + "g"; }
@@ -412,7 +433,7 @@ function renderPanel() {
   const m = mealPicker;
   const top = m.editing ? (m.savedNotice ? '<p class="meal-picker-note">' + escapeHtml(m.savedNotice) + "</p>" : "") : savedRowHtml(m.savedCards, m.savedNotice);
   if (m.tab === "cook") {
-    const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet());
+    const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1 && !m.editing ? { season: m.season } : null);
     m.cookSteps = r.steps;
     panel.innerHTML = top + r.html;
     bindSlider();
@@ -732,6 +753,12 @@ export function addEstimate(size, name) {
   updateSummary();
 }
 
+// 自煮分頁（含共餐區塊）目前的 HTML（測試用，diff-recs 的快照）
+export function cookPanelHtmlNow() {
+  const m = mealPicker;
+  return cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), m.slot !== null && HOME_MEAL_SLOTS.indexOf(m.slot) !== -1 && !m.editing ? { season: m.season } : null).html;
+}
+
 // 估算卡目前的 HTML（測試用，diff-recs 的快照）
 export function estimateCardHtmlNow() {
   const m = mealPicker;
@@ -851,7 +878,7 @@ export function updateSummary() {
   const summaryEl = $("#meal-picker-summary");
   const isCook = d.kind === "cook";
   const lead = isCook && d.archetype ? (composeProblem(d, { tier: d.meal_type }) ? "還沒配好 · " : "已配好 · ") : "已選 " + pickedCount(d) + " 件 · ";
-  if (summaryEl && isCook && !d.archetype && !d.drink && d.foods.length === 0) {
+  if (summaryEl && isCook && !d.archetype && !d.drink && d.foods.length === 0 && !d.homeMeal) {
     summaryEl.innerHTML = "還沒配好";
   } else if (summaryEl) {
     const oil = isCook && content.implicit ? content.implicit.oil_g : 0;
@@ -911,6 +938,7 @@ export function updateSummary() {
 // 自煮分頁的點選：子切換、餐型、食材（蛋白質/蔬菜多選，其餘單選）、烹調法、用油、調味
 function onCookClick(e) {
   const m = mealPicker;
+  if (onHomeMealClick(e)) return;
   const d = m.cook.draft;
   const tierBtn = e.target.closest("[data-tier]");
   const oilBtn = e.target.closest("[data-oil]");
@@ -918,6 +946,7 @@ function onCookClick(e) {
   const btn = e.target.closest("[data-axis]");
   if (tierBtn) {
     m.cook.tier = tierBtn.getAttribute("data-tier");
+    if (m.cook.tier !== "cook_full") m.cook.home.open = false; // 共餐只在開伙；切到快煮就收起（已選的菜不再算進這一餐）
   } else if (oilBtn) {
     const g = oilBtn.getAttribute("data-oil");
     if (g === "") delete d.implicitOverride.oil_g; else d.implicitOverride.oil_g = parseFloat(g);
@@ -928,6 +957,7 @@ function onCookClick(e) {
     const id = btn.getAttribute("data-id");
     if (axis === "archetype") {
       const again = !!(d.archetype && d.archetype.id === id);
+      m.cook.home.open = false; // 共餐與餐型擇一
       m.cook.draft = emptyCookDraft();
       if (!again) m.cook.draft.archetype = m.catalog.archetypes.filter(function (a) { return a.id === id; })[0] || null;
     } else {
@@ -949,6 +979,41 @@ function onCookClick(e) {
   renderPanel();
   renderDrinks();
   updateSummary();
+}
+
+// 共餐區塊的點選（decisions #152）；有處理回傳 true
+function onHomeMealClick(e) {
+  const m = mealPicker;
+  const at = function (sel) { return e.target.closest(sel); };
+  const home = m.cook.home;
+  let el;
+  if (at("[data-hm-toggle]")) {
+    home.open = !home.open;
+    if (home.open) m.cook.draft = emptyCookDraft(); // 與餐型擇一
+  } else if ((el = at("[data-hm-staple]"))) {
+    const k = el.getAttribute("data-hm-staple");
+    home.form.staple = k;
+    home.form.staple_size = k === "none" ? null : (home.form.staple_size || "M");
+  } else if ((el = at("[data-hm-staple-size]"))) {
+    home.form.staple_size = el.getAttribute("data-hm-staple-size");
+  } else if ((el = at("[data-hm-size]"))) {
+    home.form.dish = el.getAttribute("data-hm-size");
+  } else if ((el = at("[data-hm-dish]"))) {
+    if (el.disabled) return true;
+    const id = el.getAttribute("data-hm-dish");
+    const i = home.form.dishes.indexOf(id);
+    if (i !== -1) home.form.dishes.splice(i, 1);
+    else if (home.form.dishes.length < HOME_MEAL_DISH_MAX) home.form.dishes.push(id);
+  } else if ((el = at("[data-hm-soup]"))) {
+    if (el.disabled) return true;
+    home.form.soup = el.getAttribute("data-hm-soup") || null;
+  } else {
+    return false;
+  }
+  renderPanel();
+  renderDrinks();
+  updateSummary();
+  return true;
 }
 
 function bindSlider() {

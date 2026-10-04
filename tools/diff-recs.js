@@ -606,6 +606,48 @@ async function snapPicker() {
     A.takeDom(); A.takeEngineIO();
   }
 
+  // 家庭共餐（decisions #152）：每個設定一行七欄合計；展開的畫面每個標籤一行；送出看寫入（hd_ 單品、名稱、implicit）
+  {
+    const hform = { staple: "white", staple_size: "M", dish: "M", dishes: [], soup: null };
+    const hcases = [
+      ["one-dish", { dishes: ["hd_garlic_cabbage"] }],
+      ["three-dishes-soup", { dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg"], soup: "hd_seaweed_egg_soup" }],
+      ["four-dishes-noodle-L", { staple: "noodle", staple_size: "L", dish: "L", dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg", "hd_mapo_tofu"] }],
+      ["no-staple", { staple: "none", staple_size: null, dish: "S", dishes: ["hd_pan_salmon", "hd_garlic_spinach"] }],
+      ["soup-only", { dishes: [], soup: "hd_daikon_rib_soup" }],
+    ];
+    const cardLines = (html) => html.replace(/<(button|div|p|input)/g, " ¶ <$1").split(" ¶ ").filter(Boolean).join(" ¶ ");
+    for (const slot of ["lunch", "dinner"]) {
+      for (const [name, patch] of hcases) {
+        env.setNow(NOW_DAY);
+        A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+        await A.pickerOpen(slot);
+        A.takeDom();
+        emit("picker", "home-meal/" + slot + "/" + name, normTotals(A.pickerHomeMeal(Object.assign({}, hform, patch))));
+      }
+    }
+    emit("picker", "home-meal/card", cardLines(A.pickerHomeMealHtml()));
+    A.takeDom(); A.takeEngineIO();
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen("dinner");
+    A.takeDom();
+    A.pickerHomeMeal(Object.assign({}, hform, hcases[1][1]));
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "home-meal/submit" + i, normWrite(w)); });
+    A.takeAlerts().forEach((m, i) => emit("picker", "home-meal/alert" + i, m));
+    // 有設過敏原：共餐不進草稿、送出被擋並說明
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: Object.assign({}, P.M, { allergens: ["蛋"] }), dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen("dinner");
+    A.takeDom();
+    A.pickerHomeMeal(Object.assign({}, hform, hcases[0][1]));
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "home-meal/allergen/submit" + i, normWrite(w)); });
+    emit("picker", "home-meal/allergen/card", cardLines(A.pickerHomeMealHtml()));
+    A.takeDom(); A.takeEngineIO();
+  }
+
   // 「我的品項」快速新增（decisions #48）：存完能選且有名額就選中；被擋或名額滿不選中並說明；送出前預告不引導改「確認不含」
   const quickCases = [
     ["M/lunch/convenience/main", P.M, "lunch", "convenience", [], { name: "新品健身餐盒", kcal: "520", role: "main", nutrients: { protein_g: "32" } }],

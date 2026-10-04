@@ -304,10 +304,10 @@ export function composeOptionProblem(item, axis, d, opts) {
 // 沒選餐型時有單品（d.foods）或飲料（d.drink）就可以送出（PRD 13.4，decisions #122 修正 #45）；選了餐型就照餐型檢查，半套照樣擋。
 export function composeProblem(d, opts) {
   const a = d.archetype;
-  const foods = (d.foods || []).length;
+  const foods = (d.foods || []).length + homeMealFoodCount(d.homeMeal); // 共餐的主食算 1 項單品，菜與湯另計（decisions #152）
   const limit = foodLimitProblem(foods);
   if (limit) return limit;
-  if (!a) return foods > 0 || d.drink ? null : "請先選餐型";
+  if (!a) return foods > 0 || d.drink || homeMealParts(d.homeMeal).length > 0 ? null : "請先選餐型";
   if (onAxis(d, "protein").length === 0) return "請選蛋白質";
   if (archetypeHasStaple(a) && !d.staple) return "請選主食";
   if (!d.method) return "請選烹調法";
@@ -712,6 +712,10 @@ export function homeMealFormOf(homeMeal, catalog, base) {
 }
 
 // 共餐單品的名額（主食算 1 項單品，菜與湯另計，decisions #152）：選擇器算單品上限時用
+export function homeMealItemCount(homeMeal) {
+  return homeMeal ? (homeMeal.dishes || []).length + (homeMeal.soup ? 1 : 0) : 0;
+}
+
 export function homeMealFoodCount(homeMeal) {
   return homeMeal && homeMeal.staple ? 1 : 0;
 }
