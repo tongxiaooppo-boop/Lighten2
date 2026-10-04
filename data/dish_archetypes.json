@@ -84,5 +84,17 @@
     "seasoning": { "allow": [] },
     "methods": ["method_braise"],
     "note": "餐型擴充步驟 2b（decisions #150、餐型claude.md）：滷豆腐、滷雞腿、燉牛腱配飯；拿掉 egg 與 celery（蛋當定食主蛋白質太弱），主食三種不含南瓜；牛腱的正確做法是滷燉；滷汁的鈉高，用 not_included（未含滷汁拌飯）與 method_braise 的 tip 提醒，不顯示警告（C4.14）"
+  },
+  {
+    "id": "protein_veg_plate",
+    "name": "低碳蛋白質蔬菜盤",
+    "seasoned": true,
+    "valid_slots": ["lunch", "dinner"],
+    "protein": { "allow": ["chicken_breast", "chicken_thigh", "salmon", "tilapia_fillet", "shrimp", "firm_tofu"] },
+    "staple": { "allow": [] },
+    "vegetable": { "allow": ["broccoli", "spinach", "cabbage", "celery", "bell_pepper", "tomato", "onion", "snap_pea", "baby_corn", "okra", "bamboo_shoot"] },
+    "seasoning": { "allow": [] },
+    "methods": ["method_pan_fry", "method_stir_fry", "method_air_fry"],
+    "note": "餐型擴充步驟 3（decisions #150、餐型claude.md）：低碳使用者專用的午晚餐——沒有主食槽，主要槽位是蛋白質（縮放 0.5–2.0，低碳模式下不受碳水上限，recommend 的 lowCarbMaxScale）；一般模式縮放到 2 倍熱量也偏低，推薦不會選它（14 天輪替模擬），所以不打擾一般使用者；沒有 beef_shank（牛腱煎、炒、氣炸不成菜，正確位置是滷燉）；出處見 collab/proofs/2026-10-01-workline-a-archetype-survey.md A2"
   }
 ]

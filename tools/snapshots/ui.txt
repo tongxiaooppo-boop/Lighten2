@@ -785,7 +785,7 @@ today/QUICK/today-breakfast/dom23	#today-hero-week-avg text="近7天平均 1884�
 today/QUICK/today-breakfast/dom24	#today-status (untouched)
 today/LOWCARB/base/dom00	#rec-afternoon_tea html="<p class=\"rec-empty\">已設定不需要這個時段的建議，可到基本資料分頁調整</p>"
 today/LOWCARB/base/dom01	#rec-breakfast html="<img class=\"rec-card-img\" src=\"images/gemini/meal-default-breakfast.jpg\" alt=\"早餐\" loading=\"lazy\"><div class=\"rec-name\">即食舒肥雞胸肉（單包） ＋ 薯泥鮮蔬蛋沙拉 ＋ CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）</div><p class=\"rec-content-note\">舒肥雞胸肉；地瓜/薯泥、雞蛋與蔬菜；不另加糖，糖是牛奶的乳糖，官方只公告熱量與糖，蛋白質、碳水、脂肪依牛奶約 250ml 估算，飽和脂肪與鈉無資料</p><div class=\"rec-meta\">🟢 · 約 473.1 kcal<span class=\"rec-base\">（基準 473.1 kcal）</span><span class=\"rec-base\"> · 配額 474 kcal</span></div><div class=\"dislike-chips\"><span class=\"dislike-chips-label\">順便不要：</span><button type=\"button\" class=\"dislike-chip\" data-type=\"item\" data-key=\"conv_bx04\" data-label=\"即食舒肥雞胸肉（單包）\">即食舒肥雞胸肉（單包）</button><button type=\"button\" class=\"dislike-chip\" data-type=\"item\" data-key=\"conv_sl03\" data-label=\"薯泥鮮蔬蛋沙拉\">薯泥鮮蔬蛋沙拉</button><button type=\"button\" class=\"dislike-chip\" data-type=\"item\" data-key=\"conv_dr20\" data-label=\"CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）\">CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）</button></div><button type=\"button\" class=\"dislike-btn\" data-id=\"conv_bx04+conv_sl03+conv_dr20\">倒讚</button><button type=\"button\" class=\"secondary-btn rec-log-btn\" data-slot=\"breakfast\">記錄這餐</button><button type=\"button\" class=\"secondary-btn rec-pick-btn\" data-slot=\"breakfast\">自己選</button>"
-today/LOWCARB/base/dom02	#rec-dinner html="<img class=\"rec-card-img\" src=\"images/gemini/meal-default-dinner.jpg\" alt=\"晚餐\" loading=\"lazy\"><div class=\"rec-name\">去皮雞腿肉 + 雜糧飯 + 菠菜</div><div class=\"rec-meta\">🔴 · 約 455.6 kcal<span class=\"rec-base\">（基準 589.1 kcal，含用油約 10g）</span><span class=\"rec-base\"> · 配額 911 kcal</span></div><div class=\"dislike-chips\"><span class=\"dislike-chips-label\">順便不要：</span><button type=\"button\" class=\"dislike-chip\" data-type=\"protein\" data-key=\"chicken_thigh\" data-label=\"去皮雞腿肉\">去皮雞腿肉</button><button type=\"button\" class=\"dislike-chip\" data-type=\"vegetable\" data-key=\"spinach\" data-label=\"菠菜\">菠菜</button></div><button type=\"button\" class=\"dislike-btn\" data-id=\"protein_stir_fry_chicken_thigh_mixed_grain_rice_cooked_spinach_none_method_stir_fry\">倒讚</button><button type=\"button\" class=\"secondary-btn rec-log-btn\" data-slot=\"dinner\">記錄這餐</button><button type=\"button\" class=\"secondary-btn rec-pick-btn\" data-slot=\"dinner\">自己選</button>"
+today/LOWCARB/base/dom02	#rec-dinner html="<img class=\"rec-card-img\" src=\"images/gemini/meal-default-dinner.jpg\" alt=\"晚餐\" loading=\"lazy\"><div class=\"rec-name\">去皮雞腿肉 + 甜豆</div><div class=\"rec-meta\">🔴 · 約 558.9 kcal<span class=\"rec-base\">（基準 344.8 kcal，含用油約 10g）</span><span class=\"rec-base\"> · 配額 911 kcal</span></div><div class=\"dislike-chips\"><span class=\"dislike-chips-label\">順便不要：</span><button type=\"button\" class=\"dislike-chip\" data-type=\"protein\" data-key=\"chicken_thigh\" data-label=\"去皮雞腿肉\">去皮雞腿肉</button><button type=\"button\" class=\"dislike-chip\" data-type=\"vegetable\" data-key=\"snap_pea\" data-label=\"甜豆\">甜豆</button></div><button type=\"button\" class=\"dislike-btn\" data-id=\"protein_veg_plate_chicken_thigh_none_snap_pea_none_method_stir_fry\">倒讚</button><button type=\"button\" class=\"secondary-btn rec-log-btn\" data-slot=\"dinner\">記錄這餐</button><button type=\"button\" class=\"secondary-btn rec-pick-btn\" data-slot=\"dinner\">自己選</button>"
 today/LOWCARB/base/dom03	#rec-extra-afternoon_tea (untouched)
 today/LOWCARB/base/dom04	#rec-extra-breakfast html="<button type=\"button\" class=\"undo-btn rec-skip-btn\" data-skip-slot=\"breakfast\">這餐不吃</button>"
 today/LOWCARB/base/dom05	#rec-extra-dinner html="<button type=\"button\" class=\"undo-btn rec-skip-btn\" data-skip-slot=\"dinner\">這餐不吃</button>"
@@ -800,7 +800,7 @@ today/LOWCARB/base/dom13	#today-hero-coverage-warn hidden
 today/LOWCARB/base/dom14	#today-hero-fiber text="0 / 30g"
 today/LOWCARB/base/dom15	#today-hero-kcal (untouched)
 today/LOWCARB/base/dom16	#today-hero-kcal-sub (untouched)
-today/LOWCARB/base/dom17	#today-hero-kcal-sub-value text="1441（-455）"
+today/LOWCARB/base/dom17	#today-hero-kcal-sub-value text="1545（-351）"
 today/LOWCARB/base/dom18	#today-hero-kcal-value text="1896"
 today/LOWCARB/base/dom19	#today-hero-label text="接下來幾餐的建議熱量"
 today/LOWCARB/base/dom20	#today-hero-nutrition (untouched)
@@ -810,7 +810,7 @@ today/LOWCARB/base/dom23	#today-hero-week-avg text="近7天平均 1884／目標 
 today/LOWCARB/base/dom24	#today-status (untouched)
 today/LOWCARB/today-breakfast/dom00	#rec-afternoon_tea html="<p class=\"rec-empty\">已設定不需要這個時段的建議，可到基本資料分頁調整</p>"
 today/LOWCARB/today-breakfast/dom01	#rec-breakfast html="<p class=\"rec-logged-note\">已記錄：御飯糰＋豆漿（約 420 kcal）</p><button type=\"button\" class=\"undo-btn rec-undo-btn\" data-log-id=\"fx_0001\">撤銷</button>"
-today/LOWCARB/today-breakfast/dom02	#rec-dinner html="<img class=\"rec-card-img\" src=\"images/gemini/meal-default-dinner.jpg\" alt=\"晚餐\" loading=\"lazy\"><div class=\"rec-name\">去皮雞腿肉 + 雜糧飯 + 菠菜</div><div class=\"rec-meta\">🔴 · 約 455.6 kcal<span class=\"rec-base\">（基準 589.1 kcal，含用油約 10g）</span><span class=\"rec-base\"> · 配額 964 kcal</span></div><div class=\"dislike-chips\"><span class=\"dislike-chips-label\">順便不要：</span><button type=\"button\" class=\"dislike-chip\" data-type=\"protein\" data-key=\"chicken_thigh\" data-label=\"去皮雞腿肉\">去皮雞腿肉</button><button type=\"button\" class=\"dislike-chip\" data-type=\"vegetable\" data-key=\"spinach\" data-label=\"菠菜\">菠菜</button></div><button type=\"button\" class=\"dislike-btn\" data-id=\"protein_stir_fry_chicken_thigh_mixed_grain_rice_cooked_spinach_none_method_stir_fry\">倒讚</button><button type=\"button\" class=\"secondary-btn rec-log-btn\" data-slot=\"dinner\">記錄這餐</button><button type=\"button\" class=\"secondary-btn rec-pick-btn\" data-slot=\"dinner\">自己選</button>"
+today/LOWCARB/today-breakfast/dom02	#rec-dinner html="<img class=\"rec-card-img\" src=\"images/gemini/meal-default-dinner.jpg\" alt=\"晚餐\" loading=\"lazy\"><div class=\"rec-name\">去皮雞腿肉 + 甜豆</div><div class=\"rec-meta\">🔴 · 約 558.9 kcal<span class=\"rec-base\">（基準 344.8 kcal，含用油約 10g）</span><span class=\"rec-base\"> · 配額 964 kcal</span></div><div class=\"dislike-chips\"><span class=\"dislike-chips-label\">順便不要：</span><button type=\"button\" class=\"dislike-chip\" data-type=\"protein\" data-key=\"chicken_thigh\" data-label=\"去皮雞腿肉\">去皮雞腿肉</button><button type=\"button\" class=\"dislike-chip\" data-type=\"vegetable\" data-key=\"snap_pea\" data-label=\"甜豆\">甜豆</button></div><button type=\"button\" class=\"dislike-btn\" data-id=\"protein_veg_plate_chicken_thigh_none_snap_pea_none_method_stir_fry\">倒讚</button><button type=\"button\" class=\"secondary-btn rec-log-btn\" data-slot=\"dinner\">記錄這餐</button><button type=\"button\" class=\"secondary-btn rec-pick-btn\" data-slot=\"dinner\">自己選</button>"
 today/LOWCARB/today-breakfast/dom03	#rec-extra-afternoon_tea (untouched)
 today/LOWCARB/today-breakfast/dom04	#rec-extra-breakfast (untouched)
 today/LOWCARB/today-breakfast/dom05	#rec-extra-dinner html="<button type=\"button\" class=\"undo-btn rec-skip-btn\" data-skip-slot=\"dinner\">這餐不吃</button>"
@@ -825,7 +825,7 @@ today/LOWCARB/today-breakfast/dom13	#today-hero-coverage-warn hidden
 today/LOWCARB/today-breakfast/dom14	#today-hero-fiber text="5 / 30g"
 today/LOWCARB/today-breakfast/dom15	#today-hero-kcal (untouched)
 today/LOWCARB/today-breakfast/dom16	#today-hero-kcal-sub (untouched)
-today/LOWCARB/today-breakfast/dom17	#today-hero-kcal-sub-value text="968（-508）"
+today/LOWCARB/today-breakfast/dom17	#today-hero-kcal-sub-value text="1071（-405）"
 today/LOWCARB/today-breakfast/dom18	#today-hero-kcal-value text="1476"
 today/LOWCARB/today-breakfast/dom19	#today-hero-label text="接下來幾餐的建議熱量"
 today/LOWCARB/today-breakfast/dom20	#today-hero-nutrition (untouched)
@@ -2322,6 +2322,58 @@ picker/compose/lunch/protein_braised/quick/dom03	#meal-picker-gap html="<p>蛋�
 picker/compose/lunch/protein_braised/quick/dom04	#meal-picker-hint text="快煮不含「滷／燉」，請換成開伙或換掉它。"
 picker/compose/lunch/protein_braised/quick/dom06	#meal-picker-submit disabled
 picker/compose/lunch/protein_braised/quick/dom07	#meal-picker-summary html="還沒配好 · 約 434 kcal · 蛋白質 21g · 碳水 64g · 脂肪 10g · 纖維 7g · 鈉 約 758 mg · 未含滷汁拌飯"
+picker/compose/lunch/protein_veg_plate/s1/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/s1/dom04	#meal-picker-hint hidden text="快煮不含「滷／燉」，請換成開伙或換掉它。"
+picker/compose/lunch/protein_veg_plate/s1/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/s1/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/lunch/protein_veg_plate/s0.5/dom03	#meal-picker-gap html="<p>蛋白質缺口約 35.5g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/s0.5/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/s0.5/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/s0.5/dom07	#meal-picker-summary html="已配好 · 約 159 kcal（含用油約 5g） · 蛋白質 19g · 碳水 7g · 脂肪 7g · 纖維 3g · 鈉 約 746 mg"
+picker/compose/lunch/protein_veg_plate/s1.3/dom03	#meal-picker-gap html="<p>蛋白質缺口約 11.2g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/s1.3/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/s1.3/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/s1.3/dom07	#meal-picker-summary html="已配好 · 約 283 kcal（含用油約 5g） · 蛋白質 43g · 碳水 7g · 脂肪 9g · 纖維 3g · 鈉 約 798 mg"
+picker/compose/lunch/protein_veg_plate/s2/dom03	#meal-picker-gap html="<p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/s2/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/s2/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/s2/dom07	#meal-picker-summary html="已配好 · 約 391 kcal（含用油約 5g） · 蛋白質 64g · 碳水 7g · 脂肪 11g · 纖維 3g · 鈉 約 844 mg"
+picker/compose/lunch/protein_veg_plate/no-veg-sauce/dom03	#meal-picker-gap html="<p>蛋白質缺口約 23.7g</p><p>纖維缺口約 11.2g</p>"
+picker/compose/lunch/protein_veg_plate/no-veg-sauce/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/no-veg-sauce/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/no-veg-sauce/dom07	#meal-picker-summary html="已配好 · 約 199 kcal（含用油約 5g） · 蛋白質 30g · 碳水 0g · 脂肪 8g · 纖維 0g · 鈉 約 765 mg"
+picker/compose/lunch/protein_veg_plate/drink/dom03	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 7.4g</p>"
+picker/compose/lunch/protein_veg_plate/drink/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/drink/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/drink/dom07	#meal-picker-summary html="已配好 · 約 372 kcal（含用油約 5g） · 蛋白質 40g · 碳水 26g · 脂肪 12g · 纖維 4g · 鈉 約 778 mg（部分品項無資料）"
+picker/compose/lunch/protein_veg_plate/no-method/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/no-method/dom04	#meal-picker-hint text="請選烹調法"
+picker/compose/lunch/protein_veg_plate/no-method/dom06	#meal-picker-submit disabled
+picker/compose/lunch/protein_veg_plate/no-method/dom07	#meal-picker-summary html="還沒配好 · 約 192 kcal · 蛋白質 34g · 碳水 7g · 脂肪 3g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/lunch/protein_veg_plate/last-protein/dom03	#meal-picker-gap html="<p>蛋白質缺口約 36.2g</p><p>纖維缺口約 6g</p>"
+picker/compose/lunch/protein_veg_plate/last-protein/dom04	#meal-picker-hint hidden text="請選烹調法"
+picker/compose/lunch/protein_veg_plate/last-protein/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/last-protein/dom07	#meal-picker-summary html="已配好 · 約 182 kcal · 蛋白質 18g · 碳水 9g · 脂肪 9g · 纖維 5g · 鈉 約 723 mg"
+picker/compose/lunch/protein_veg_plate/two-proteins/dom03	#meal-picker-gap html="<p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/two-proteins/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/two-proteins/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/two-proteins/dom07	#meal-picker-summary html="已配好 · 約 451 kcal（含用油約 5g） · 蛋白質 59g · 碳水 7g · 脂肪 20g · 纖維 3g · 鈉 約 866 mg"
+picker/compose/lunch/protein_veg_plate/three-veg/dom03	#meal-picker-gap html="<p>蛋白質缺口約 16.8g</p><p>纖維缺口約 5.4g</p>"
+picker/compose/lunch/protein_veg_plate/three-veg/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/three-veg/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/three-veg/dom07	#meal-picker-summary html="已配好 · 約 278 kcal（含用油約 5g） · 蛋白質 37g · 碳水 14g · 脂肪 9g · 纖維 6g · 鈉 約 832 mg"
+picker/compose/lunch/protein_veg_plate/oil-10/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/oil-10/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/oil-10/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/oil-10/dom07	#meal-picker-summary html="已配好 · 約 281 kcal（含用油約 10g） · 蛋白質 34g · 碳水 7g · 脂肪 13g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/lunch/protein_veg_plate/light/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/light/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/light/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/light/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 378 mg"
+picker/compose/lunch/protein_veg_plate/quick/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/lunch/protein_veg_plate/quick/dom04	#meal-picker-hint hidden
+picker/compose/lunch/protein_veg_plate/quick/dom06	#meal-picker-submit (untouched)
+picker/compose/lunch/protein_veg_plate/quick/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 778 mg"
 picker/compose/dinner/egg_pan/s1/dom03	#meal-picker-gap html="<p>蛋白質缺口約 37.9g</p><p>纖維缺口約 8.4g</p>"
 picker/compose/dinner/egg_pan/s1/dom04	#meal-picker-hint hidden text="請先選餐型"
 picker/compose/dinner/egg_pan/s1/dom06	#meal-picker-submit (untouched)
@@ -2634,6 +2686,58 @@ picker/compose/dinner/protein_braised/quick/dom03	#meal-picker-gap html="<p>蛋�
 picker/compose/dinner/protein_braised/quick/dom04	#meal-picker-hint text="快煮不含「滷／燉」，請換成開伙或換掉它。"
 picker/compose/dinner/protein_braised/quick/dom06	#meal-picker-submit disabled
 picker/compose/dinner/protein_braised/quick/dom07	#meal-picker-summary html="還沒配好 · 約 434 kcal · 蛋白質 21g · 碳水 64g · 脂肪 10g · 纖維 7g · 鈉 約 758 mg · 未含滷汁拌飯"
+picker/compose/dinner/protein_veg_plate/s1/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/s1/dom04	#meal-picker-hint hidden text="快煮不含「滷／燉」，請換成開伙或換掉它。"
+picker/compose/dinner/protein_veg_plate/s1/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/s1/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/dinner/protein_veg_plate/s0.5/dom03	#meal-picker-gap html="<p>蛋白質缺口約 35.5g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/s0.5/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/s0.5/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/s0.5/dom07	#meal-picker-summary html="已配好 · 約 159 kcal（含用油約 5g） · 蛋白質 19g · 碳水 7g · 脂肪 7g · 纖維 3g · 鈉 約 746 mg"
+picker/compose/dinner/protein_veg_plate/s1.3/dom03	#meal-picker-gap html="<p>蛋白質缺口約 11.2g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/s1.3/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/s1.3/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/s1.3/dom07	#meal-picker-summary html="已配好 · 約 283 kcal（含用油約 5g） · 蛋白質 43g · 碳水 7g · 脂肪 9g · 纖維 3g · 鈉 約 798 mg"
+picker/compose/dinner/protein_veg_plate/s2/dom03	#meal-picker-gap html="<p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/s2/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/s2/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/s2/dom07	#meal-picker-summary html="已配好 · 約 391 kcal（含用油約 5g） · 蛋白質 64g · 碳水 7g · 脂肪 11g · 纖維 3g · 鈉 約 844 mg"
+picker/compose/dinner/protein_veg_plate/no-veg-sauce/dom03	#meal-picker-gap html="<p>蛋白質缺口約 23.7g</p><p>纖維缺口約 11.2g</p>"
+picker/compose/dinner/protein_veg_plate/no-veg-sauce/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/no-veg-sauce/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/no-veg-sauce/dom07	#meal-picker-summary html="已配好 · 約 199 kcal（含用油約 5g） · 蛋白質 30g · 碳水 0g · 脂肪 8g · 纖維 0g · 鈉 約 765 mg"
+picker/compose/dinner/protein_veg_plate/drink/dom03	#meal-picker-gap html="<p>蛋白質缺口約 14.3g</p><p>纖維缺口約 7.4g</p>"
+picker/compose/dinner/protein_veg_plate/drink/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/drink/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/drink/dom07	#meal-picker-summary html="已配好 · 約 372 kcal（含用油約 5g） · 蛋白質 40g · 碳水 26g · 脂肪 12g · 纖維 4g · 鈉 約 778 mg（部分品項無資料）"
+picker/compose/dinner/protein_veg_plate/no-method/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/no-method/dom04	#meal-picker-hint text="請選烹調法"
+picker/compose/dinner/protein_veg_plate/no-method/dom06	#meal-picker-submit disabled
+picker/compose/dinner/protein_veg_plate/no-method/dom07	#meal-picker-summary html="還沒配好 · 約 192 kcal · 蛋白質 34g · 碳水 7g · 脂肪 3g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/dinner/protein_veg_plate/last-protein/dom03	#meal-picker-gap html="<p>蛋白質缺口約 36.2g</p><p>纖維缺口約 6g</p>"
+picker/compose/dinner/protein_veg_plate/last-protein/dom04	#meal-picker-hint hidden text="請選烹調法"
+picker/compose/dinner/protein_veg_plate/last-protein/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/last-protein/dom07	#meal-picker-summary html="已配好 · 約 182 kcal · 蛋白質 18g · 碳水 9g · 脂肪 9g · 纖維 5g · 鈉 約 723 mg"
+picker/compose/dinner/protein_veg_plate/two-proteins/dom03	#meal-picker-gap html="<p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/two-proteins/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/two-proteins/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/two-proteins/dom07	#meal-picker-summary html="已配好 · 約 451 kcal（含用油約 5g） · 蛋白質 59g · 碳水 7g · 脂肪 20g · 纖維 3g · 鈉 約 866 mg"
+picker/compose/dinner/protein_veg_plate/three-veg/dom03	#meal-picker-gap html="<p>蛋白質缺口約 16.8g</p><p>纖維缺口約 5.4g</p>"
+picker/compose/dinner/protein_veg_plate/three-veg/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/three-veg/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/three-veg/dom07	#meal-picker-summary html="已配好 · 約 278 kcal（含用油約 5g） · 蛋白質 37g · 碳水 14g · 脂肪 9g · 纖維 6g · 鈉 約 832 mg"
+picker/compose/dinner/protein_veg_plate/oil-10/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/oil-10/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/oil-10/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/oil-10/dom07	#meal-picker-summary html="已配好 · 約 281 kcal（含用油約 10g） · 蛋白質 34g · 碳水 7g · 脂肪 13g · 纖維 3g · 鈉 約 778 mg"
+picker/compose/dinner/protein_veg_plate/light/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/light/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/light/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/light/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 378 mg"
+picker/compose/dinner/protein_veg_plate/quick/dom03	#meal-picker-gap html="<p>蛋白質缺口約 20.3g</p><p>纖維缺口約 8.4g</p>"
+picker/compose/dinner/protein_veg_plate/quick/dom04	#meal-picker-hint hidden
+picker/compose/dinner/protein_veg_plate/quick/dom06	#meal-picker-submit (untouched)
+picker/compose/dinner/protein_veg_plate/quick/dom07	#meal-picker-summary html="已配好 · 約 237 kcal（含用油約 5g） · 蛋白質 34g · 碳水 7g · 脂肪 8g · 纖維 3g · 鈉 約 778 mg"
 picker/estimate/lunch/L-only/dom02	#meal-picker-gap html="<p>這餐約 1200 kcal，這個時段配額約 738 kcal（+462），先記下來，其他餐會自動調整。</p><p>蛋白質：無資料</p><p>纖維：無資料</p>"
 picker/estimate/lunch/L-only/dom03	#meal-picker-hint hidden text="請至少選一個品項。"
 picker/estimate/lunch/L-only/dom05	#meal-picker-submit (untouched)
