@@ -703,8 +703,19 @@ function checkArchetypes(archetypes, ingredients) {
   ingredients.forEach((it) => { byId[it.id] = it; });
   const referenced = {};
   const AXIS_OF = { protein: "protein", staple: "staple", vegetable: "vegetable", seasoning: "seasoning" };
+  const seenIds = {};
   archetypes.forEach((a) => {
     const w = "餐型 " + a.id;
+    // 章程 B7.6：id 唯一與格式、name 非空、同軸 allow 不重複、id 不互為「加底線」的前綴（組合 id 用底線串接）
+    if (typeof a.id !== "string" || !/^[a-z][a-z0-9_]*$/.test(a.id)) err(w + "：id 格式要 ^[a-z][a-z0-9_]*$（章程 B7.6）");
+    if (seenIds[a.id]) err(w + "：骨架 id 重複（章程 B7.6）");
+    seenIds[a.id] = true;
+    if (typeof a.name !== "string" || a.name.trim() === "") err(w + "：name 不能空（章程 B7.6）");
+    archetypes.forEach((b) => { if (b !== a && typeof a.id === "string" && typeof b.id === "string" && b.id.indexOf(a.id + "_") === 0) err(w + "：id 是 " + b.id + " 的前綴，組合 id 會混淆（章程 B7.6）"); });
+    Object.keys(AXIS_OF).forEach((axis) => {
+      const list = (a[axis] && a[axis].allow) || [];
+      list.forEach((id, i) => { if (list.indexOf(id) !== i) err(w + "：" + axis + " 的 allow 重複 " + id + "（章程 B7.6）"); });
+    });
     if (!Array.isArray(a.valid_slots) || a.valid_slots.length === 0 || a.valid_slots.some((s) => SLOTS.indexOf(s) === -1)) err(w + "：valid_slots 不合法");
     Object.keys(AXIS_OF).forEach((axis) => {
       ((a[axis] && a[axis].allow) || []).forEach((id) => {
@@ -772,6 +783,16 @@ function checkToolRules(refs) {
   ["Google Ai 估算：鈉380mg", "ChatGPT 估算", "Claude依網路資料整理", "Gemini 回覆"].forEach((note) => {
     if (!reports(/B2\.6/, product({ note: note }))) err("工具自我檢查：note 寫「" + note + "」卻沒報錯");
   });
+  // B7.6：骨架 id 唯一、格式、前綴、allow 重複、name 非空
+  const arch = (o) => Object.assign({ id: "selftest_a", name: "測試", seasoned: true, valid_slots: ["lunch"], protein: { allow: ["egg"] }, staple: { allow: [] }, vegetable: { allow: [] }, seasoning: { allow: [] }, methods: ["method_pan_fry"] }, o);
+  const archIngredients = readJson("ingredients.json");
+  const archReports = (pattern, list) => reports(pattern, () => checkArchetypes(list, archIngredients));
+  if (!archReports(/id 重複/, [arch({}), arch({})])) err("工具自我檢查：骨架 id 重複卻沒報錯");
+  if (!archReports(/id 格式/, [arch({ id: "Bad-Id" })])) err("工具自我檢查：骨架 id 格式不對卻沒報錯");
+  if (!archReports(/前綴/, [arch({ id: "selftest" }), arch({ id: "selftest_a" })])) err("工具自我檢查：骨架 id 互為前綴卻沒報錯");
+  if (!archReports(/allow 重複/, [arch({ protein: { allow: ["egg", "egg"] } })])) err("工具自我檢查：同軸 allow 重複卻沒報錯");
+  if (!archReports(/name 不能空/, [arch({ name: " " })])) err("工具自我檢查：骨架 name 空白卻沒報錯");
+  if (archReports(/章程 B7\.6/, [arch({})])) err("工具自我檢查：正常的骨架不該被 B7.6 擋下");
   // B6.1：名稱含芒果要標芒果或未確認
   if (!reports(/芒果要標芒果/, product({ name: "芒果優格", allergen_tags: ["乳製品"], vegan: false, lacto_ovo: true }))) err("工具自我檢查：芒果優格沒標芒果卻沒報錯");
   if (reports(/芒果要標芒果/, product({ name: "芒果優格", allergen_tags: ["乳製品", "芒果"], vegan: false, lacto_ovo: true }))) err("工具自我檢查：芒果優格標了芒果不該報錯");

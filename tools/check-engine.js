@@ -130,6 +130,13 @@ async function main() {
     check(Object.keys(channels).length === 1, c.id + " 混了不同來源的品項");
   });
 
+  // 章程 B7.6：每個骨架的每個 valid_slot 至少產生一筆候選組合（自煮骨架的組合有 archetype_id）
+  readJson("dish_archetypes.json").forEach((a) => {
+    a.valid_slots.forEach((slot) => {
+      check(pool.some((c) => c.archetype_id === a.id && c.valid_slots.indexOf(slot) !== -1), "餐型 " + a.id + " 在 " + slot + " 沒有產生任何候選組合（章程 B7.6）");
+    });
+  });
+
   // ---------- 3. 各種使用者設定下的實際推薦 ----------
   console.log("[實際推薦]");
   const DIETS = ["一般", "全素", "蛋奶素"];
@@ -426,7 +433,9 @@ async function main() {
     // 溫沙拉未含沙拉醬：候選池與推薦結果都帶骨架的 not_included，畫面照它註明（decisions #38、章程 B7.5）
     const salads = composed.filter((c) => c.archetype_id === "warm_salad");
     check(salads.length > 0 && salads.every((c) => (c.not_included || []).join() === "沙拉醬"), "溫沙拉的候選要帶 not_included: [沙拉醬]");
-    check(composed.filter((c) => c.archetype_id !== "warm_salad").every((c) => c.not_included === null), "其他骨架不該有 not_included");
+    const declaredNot = {};
+    readJson("dish_archetypes.json").forEach((a) => { declaredNot[a.id] = a.not_included || null; });
+    check(composed.every((c) => JSON.stringify(c.not_included || null) === JSON.stringify(declaredNot[c.archetype_id])), "候選的 not_included 要等於骨架宣告的（沒宣告就是 null）");
     const perSlot = {}, prefs = {};
     SLOTS.forEach((s) => { perSlot[s] = 500; prefs[s] = "auto"; });
     const saladRecs = M.recommend.getTodayRecommendation({
