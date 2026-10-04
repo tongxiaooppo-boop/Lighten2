@@ -1897,6 +1897,25 @@ async function run() {
   await closePicker();
   await js(`(async () => { const m = ${DBW}; await m.updateSavedMeal(${JSON.stringify(savedHm.id)}, { archived: true }); })()`);
 
+  // ---------- 17. 使用說明入口（基本資料分頁，在 App 裡打開說明書） ----------
+  console.log("[17. 使用說明入口]");
+  await tab("profile");
+  check(await js(`document.getElementById('help-overlay').hidden && !!document.getElementById('help-open-btn')`), "17-1 基本資料沒有「打開使用說明」，或說明視窗一開始就是開的");
+  await click("#help-open-btn");
+  await until(`!document.getElementById('help-overlay').hidden`, "17-1 按「打開使用說明」沒有打開視窗");
+  await until(`(() => { const d = document.getElementById('help-frame').contentDocument; return !!d && !!d.querySelector('.tabbar') && d.body.textContent.indexOf('今日建議') !== -1; })()`, "17-1 說明書沒有在視窗裡載入");
+  await shot("使用說明-App內", "#help-overlay");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("使用說明-360寬", "#help-overlay");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await click("#help-close-btn");
+  await until(`document.getElementById('help-overlay').hidden`, "17-2 按「關閉」沒有關掉說明視窗");
+  await click("#help-open-btn");
+  await until(`!document.getElementById('help-overlay').hidden`, "17-2 再打開說明視窗失敗");
+  await js(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
+  await until(`document.getElementById('help-overlay').hidden`, "17-2 按 Esc 沒有關掉說明視窗");
+  await tab("today");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }
