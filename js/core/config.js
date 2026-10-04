@@ -121,4 +121,4 @@ export const EST_STAPLE_G_PER_PORTION = { white: 40, brown: 40, mixed: 40, noodl
 export const EST_SOUP_ML = 250;
 export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };
 export const EST_STAPLE_LABELS = { white: "白飯", brown: "糙米飯", mixed: "雜糧飯", noodle: "白麵", none: "不吃" };
-export const ESTIMATE_RECALL_GROUP ={ breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };
+export const ESTIMATE_RECALL_GROUP = { breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };

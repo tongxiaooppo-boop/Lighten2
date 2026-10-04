@@ -971,6 +971,7 @@ function onProductExtrasClick(e) {
   if ((el = at("[data-estimate-size]"))) {
     const nameEl = document.getElementById("meal-picker-estimate-name");
     addEstimate(el.getAttribute("data-estimate-size"), nameEl ? nameEl.value : "");
+    m.homeEst.name = ""; // 加完輸入框會重畫成空的，不讓下一筆沿用上一次的名稱
     return true;
   }
   if ((el = at("[data-estimate-remove]"))) {

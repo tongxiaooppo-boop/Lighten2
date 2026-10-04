@@ -600,7 +600,8 @@ export function homeEstimate(cfg, home) {
   if (cfg.soup) add(home.soup.per_100g, g.soup_ml);
   const snapshot = {};
   Object.keys(sum).forEach(function (k) { snapshot[k] = round1(sum[k]); });
-  return { size: null, name: homeEstimateName(cfg), snapshot: snapshot, est: copyEst(cfg) };
+  const est = { n: cfg.n, cats: cfg.cats.slice(), staple: cfg.staple, staple_size: cfg.staple_size, dish: cfg.dish, soup: cfg.soup };
+  return { size: null, name: homeEstimateName(cfg), snapshot: snapshot, est: est };
 }
 
 // ---------- 單品（food 元件，PRD 13.4） ----------
