@@ -227,14 +227,14 @@ module.exports = async function createV2Adapter(ROOT) {
     // 「主食＋家常菜」估算（decisions #151）：cfg 同 est；回傳加入後的合計，並可取估算卡的 HTML（pickerHomeCardHtml）
     pickerHomeEstimate(cfg, name) {
       picker.selectTab("delivery");
-      picker.mealPicker.homeEst.mode = "home";
+      picker.mealPicker.homeEst.open = true;
       picker.mealPicker.homeEst.cfg = JSON.parse(JSON.stringify(cfg));
       picker.addHomeEstimate(name || "");
       return picker.currentTotals();
     },
     pickerHomeCardHtml(cfg, mode) {
       picker.selectTab("delivery");
-      picker.mealPicker.homeEst.mode = mode || "home";
+      picker.mealPicker.homeEst.open = mode !== "plain";
       picker.mealPicker.homeEst.cfg = JSON.parse(JSON.stringify(cfg));
       return picker.estimateCardHtmlNow();
     },
