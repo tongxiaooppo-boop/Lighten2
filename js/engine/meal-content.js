@@ -592,6 +592,23 @@ export function homeEstimateDefaultDish(targets) {
   return perMeal > EST_DEFAULT_DISH_PROTEIN_CUTS[1] ? "L" : "M";
 }
 
+// 估算卡打開時的預設份量：菜量依蛋白質目標（homeEstimateDefaultDish），主食量選「整餐熱量最接近這個時段配額」的那一格
+// （預設 1 道菜肉、白飯）。kcalShare 是這個時段的配額（slotNutrientShare），沒有或 0 就主食選中。只決定預設，使用者隨時可改
+export function homeEstimateDefaults(targets, kcalShare, home) {
+  const dish = homeEstimateDefaultDish(targets);
+  let stapleSize = "M";
+  if (Number(kcalShare) > 0 && home && home.classes && home.classes.mixed && home.staples && home.staples.white) {
+    let best = null;
+    EST_SIZES.forEach(function (s) {
+      const e = homeEstimate({ n: 1, cats: ["mixed"], staple: "white", staple_size: s, dish: dish, soup: false }, home);
+      const gap = Math.abs(e.snapshot.kcal - kcalShare);
+      if (best === null || gap < best.gap) best = { size: s, gap: gap };
+    });
+    stapleSize = best.size;
+  }
+  return { dish: dish, staple_size: stapleSize };
+}
+
 export function homeEstimateName(cfg) {
   const dishes = cfg.n + " 道菜（" + cfg.cats.map(function (k) { return EST_CAT_LABELS[k]; }).join("、") + "）";
   return (cfg.staple === "none" ? "" : EST_STAPLE_LABELS[cfg.staple] + "＋") + dishes + (cfg.soup ? "＋湯" : "");
