@@ -1,15 +1,33 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-02 晚：日期切換與預約 切片 0、1、2 完成未推送，下一步使用者手機測短清單第 12 項、再做切片 3）
+# 給接手的 Opus：Lighten2 交接（2026-10-04：餐型擴充步驟 0–3 完成，家常菜估算設計定稿、等開工；全部未推送）
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
-**後續工作盤點（2026-10-02 深夜，照順序）**：
-1. **#145 隨餐飲料加進 App**：已完成（`429b1dc`，2026-10-04，未推送；decisions #146）。剩：請使用者手機看超商分頁的飲料小類、問是否推送（切片 0、1、2 與這個都還沒推送）。
-2. **使用說明更新**：任務檔 `collab/to-sonnet-manual.md`（日期切換、預約、這餐不吃、飲料分組、收合），使用者晚上請 Sonnet 做，Opus 360 寬驗收後 commit。
-3. **日期切換切片 3**：已完成（2026-10-04，decisions #147；未推送）：昨天的餐（`js/ui/today-yesterday.js`）、補記（本週總覽＋選擇器 backfill 模式）、`setLastShownRecs`（含 prev）。check-engine 49872、smoke 54、walkthrough 587（第 14 節）。**手機腳本短清單第 13 項**（第 69–77 行）等使用者測。**還沒做**：backup-v6 fixture 凍結（smoke 要先建預約與 skipped 再 `SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v6.json`）、`plan.txt` 快照（預約與昨天卡片由 check-engine 與 walkthrough 13、14 節涵蓋）。比對腳本 `collab/proofs/2026-10-04-verify-date-switch-3.py`（pool／matrix／tdee 逐字不變；recs、picker 只新增 setLastShownRecs；ui 只新增昨天卡片與補記區，另有彙總卡校正公告因多幾個 await 拍到寫完的樣子）。
-4. **餐型擴充步驟 0–3 已完成（2026-10-04，decisions #149、#150；未推送）**：`806bad1` 文件、`c7bc8c6` 檢查規則、`9f3068c` 擴充 allow、`0bab74b` 蒸＋蒸魚定食、`9414667` 滷燉＋滷燉定食、`ba55fe0` 低碳蔬菜盤（低碳預算 300 未達標，見 commit 訊息，可單獨 revert）。手機腳本短清單第 14 項。**還沒做**：`tools/sim-rotation.mjs`（14 天輪替模擬報告）、步 4 食材（豬里肌、豆干、青江菜或地瓜葉、胡蘿蔔、白飯；口味題已答「要」）。**家常菜估算**（共食與自助餐）設計 v1 已過兩輪審核（`docs/review/2026-10-04-家常菜估算-設計草案.md`、`collab/opus-review-log/2026-10-04-home-dish-estimate-review.md`），**等使用者看數字表並回答「不吃飯」**後照第二輪定稿清單 M-a–M-h 開工（decision 編號用 #151）。
-   （原文：）擴充餐型規格已定稿：`餐型claude.md`（v2，兩輪 Opus 審核，逐字 `collab/opus-review-log/2026-10-04-archetype-review.md`）；開工前先問使用者 §9 的 4＋6 題，再照 §10 驗收清單做（步 0 文件 → 0.5 檢查規則 → 1 擴充 allow → 2a 蒸＋protein_steamed → 2b 滷燉＋protein_braised → 3 protein_veg_plate → 4 食材）。四份外部參考（餐型.md／gpt／ds／gemini）只當參考。路線圖其餘照舊：（原：擴充餐型先問四個口味方向）→ 切片 9 我的料理 → 切片 10 沖泡 → 採買清單。
-5. 待使用者確認：decisions #95 三個預設（料理可用分層品項、對不到代換表的內建食材可當單品、燕麥奶歸飲品）。
-6. 日後討論新增一節「日期切換與飲料登記的日後項目」（配額下限、校正極低日、估算卡 S/M/L 統一、飲料再查、只有熱量的飲料）。
+## 0. 先讀這段（2026-10-04 收工狀態）
+
+**未推送的 commit（`git log` 從 `806bad1`～`1ada6fd` 之前還有切片 0、1、2、飲料、拿鐵、日期切換切片 3）**：全部在本機 master，**推送前先問使用者**。使用者還沒在手機測：短清單第 12 項（日期切換與預約，早就給過）、第 13 項（昨天的餐與補記，腳本第 69–77 行）、第 14 項（新自煮做法）、飲料小類（超商分頁）。
+
+**這個 session 做完的（都已 commit）**
+1. **#145 隨餐飲料**（`429b1dc`、拿鐵 `4f71eaf`→`9abbdd1`）：超商 conv_dr07–20、外食 tw_dr11–19；超商通路補上 `is_treat` 過濾（decisions #146）；我的品項熱量允許 0 但只限飲料；飲料組內小類標題（`drinkSubgroups`）；CITY CAFE 拿鐵依牛奶 250ml 估蛋白質 7.8、碳水 12、脂肪 9（estimate；飽和脂肪與鈉依章程 B5.8 維持空白）。`tools/add-drinks-2026-10.js` 已執行，**不要再跑**。
+2. **日期切換切片 3**（`8799e12`，decisions #147）：昨天的餐（`js/ui/today-yesterday.js`）、補記（本週總覽＋選擇器 backfill 模式）、`last_shown_recs` 的 `prev`（`nextLastShownRecs` 純函式）。比對腳本 `collab/proofs/2026-10-04-verify-date-switch-3.py`。**還沒做**：backup-v6 fixture 凍結（smoke 先建預約與 skipped 再 `SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v6.json`）、`plan.txt` 快照。
+3. **餐型擴充步驟 0–3**（decisions #149、#150；規格 `餐型claude.md` v2，兩輪 Opus 審核逐字 `collab/opus-review-log/2026-10-04-archetype-review.md`）：`806bad1` 文件、`c7bc8c6` 檢查規則（章程 B7.6）、`9f3068c` 擴充 allow、`0bab74b` method_steam＋`protein_steamed`、`9414667` method_braise＋`protein_braised`（not_included 未含滷汁拌飯）、`ba55fe0` `protein_veg_plate`。**低碳預算 300 的驗收沒過**（新平均 442 比舊 408 更超出預算；500、800 明顯改善；一般模式逐字不變），commit 訊息有寫，可單獨 revert，請在回報使用者時提醒。**還沒做**：`tools/sim-rotation.mjs`（14 天輪替模擬報告，規格見 `餐型claude.md` §6，審核者的 `sim.mjs`／`sim2.mjs` 在他當時的 scratchpad，已不在，要重寫）；步 4 食材（豬里肌、豆干、青江菜或地瓜葉、胡蘿蔔、白飯；使用者口味題已答「要」，#149）。
+4. **共食／自助餐**：使用者決定都用估算（decisions #148 更正、#151 最終模型）；`#132`、`#133` 的共食與自助餐部分作廢，切片 9 只剩「我的料理」。
+
+## 1. 下一步（照順序）
+
+**A. 家常菜估算開工（設計已定稿，使用者全部答完）**
+- 規格：`docs/review/2026-10-04-家常菜估算-設計草案.md`（**第 8 節 v1.1 優先**）＋審核 `collab/opus-review-log/2026-10-04-home-dish-estimate-review.md`（第二輪有 M-a–M-h 定稿清單與 27 格數字表）＋ decisions #151。**不需要第三輪審核**，照清單對照驗收。
+- 模型（#151）：**主食＋N 道菜（N＝1–4），菜全分量 小／中／大＝120／160／200g 分給 N 道（每道 1/N，4 道總量不比 1 道多）**，每道選 素菜／菜肉／純肉；湯獨立開關（250ml）；主食 白飯／糙米飯／雜糧飯／白麵（熟麵條）／不吃，大小＝2／4／6 熱量份（飯 80／160／240g、熟麵 120／240／360g）。
+- 步驟：**0 文件先行**（decisions 已有 #151；補 PRD 第 3 節〔est 說明、「新估算 size 是 null、份量在 est」、「預約與記下時估算快照不重算」〕、第 5 節 182 行、第 7 節 260 行、第 8 節 278 行〔我已加一句，要改成 #151 的內容〕、第 9 節 294 行估算表；章程 B1、B2、B4、B5.1〔加一列「調味料、脂肪 ≤0.5 → sat_fat_g 補 0」，C3〕、B12、C2、C4.17 ③；調料選樣表出處白名單：tfda、label，derived 只限食鹽與水）→ **1 先有斷言再接畫面（M-a、M-b）**：估算草稿帶快照與 est；`estimateComponent` 接受現成快照；`savedMealDraft`／`toPlanContent`（meal-content.js 約 965 行，審核發現它會丟掉 est）保留；db 驗證（`validateDailyLog` 248–251、預約 419–424）加 est 列舉與「七欄不能 null」；check-engine 加斷言：est 從預約一路到「記下」不變、`toSavedContent` 遇到 est 估算會丟錯（組合仍擋估算）；備份來回斷言（不升版）→ **2 來源檔、調料選樣表（醬油 P0700401、香油 M1500101、紅砂糖 N0100301、番茄醬 P1003501 補飽和脂肪 0、食鹽 derived 鈉 39,340、水 derived 0；太白粉拿掉；沙茶醬排除）、`tools/build-home-dishes.js`＋`tools/lib/home-dish-values.js`、產生檔 `data/home_dishes.json`（約 16 道：排除蒸蛋與沙茶牛肉，湯補到 3 道，兩道湯的水量與排骨可食比例寫進 note）、check-data（含自我檢查）→ **3 engine 估算函式（meal-content.js）＋config 常數＋產生檔接進 `loadCatalog`＋check-arch C4.17 ③ 識別字＋diff-recs 加估算快照（審核算 36 行，模型改成 N 道後要重算）→ **4 選擇器估算卡**（`js/ui/meal-picker/estimate-card.js` 第 15–17、24 行現在直接讀常數，要改成讀快照；log／plan／backfill 三模式都提供；昨天卡片的 S/M/L 不動；快照守則：只在選了新類型才碰新 DOM id）＋walkthrough 新一節＋手機腳本 → **5 使用說明（交 Sonnet）**。
+- 每個改 data／js 的 commit：`diff-recs --update`、`check-engine --freeze-draft-totals`（新增資料才需要）、`node tools/stamp-version.js`＋`git add index.html`；commit 訊息附差異報告。
+
+**B. `tools/sim-rotation.mjs`**（規格 `餐型claude.md` §6）；**C. 步 4 食材**（一個食材一個 commit，走 B2／B4／B6，兩步走）；**D. 使用說明更新**：任務檔 `collab/to-sonnet-manual.md`（日期切換、預約、這餐不吃、飲料分組、收合）＋之後的昨天的餐、補記、新自煮做法、家常菜估算，使用者晚上請 Sonnet 做、Opus 360 寬驗收；**E.** 切片 9 我的料理 → 切片 10 沖泡 → 採買清單；**F.** 待使用者確認 decisions #95 三個預設；**G.** 日後討論新增一節「日期切換與飲料登記的日後項目」（配額下限、校正極低日、估算卡 S/M/L 統一、飲料再查、只有熱量的飲料）與餐型的 N 項（牛腱移出炒類、調味等級「重」、設備勾選、鯖魚、麵食、早餐／下午茶／宵夜的自煮擴充、每餐只放 1 份蔬菜、纖維封頂）。
+
+## 2. 這個 session 學到、下一位要知道的事
+- **推薦是「評分取最高、同分依 id 排序」，不抽樣**（`recommend.js` 207–215）；新骨架進不進推薦由評分決定，評分凍結在 decisions #130。骨架 id 命名會影響同分誰贏。
+- **快照守則**：新 UI 只在需要時才 query 新 DOM id（fake DOM 的 domNN 會位移）；非同步畫面（彙總卡校正公告）多幾個 await 會讓快照拍到寫完的樣子，不是行為改變。
+- **改檔注意**：`today-plans.js` 等檔是 CRLF，Python 改檔要先轉 LF 再轉回；shell heredoc 內含引號或反引號會炸，多行內容用 Write 寫檔再執行；Windows 上 `sed` 改含中文的檔要小心。
+- 使用者週額度有限：查詢、整理、文件草稿、使用說明交 Sonnet，程式 Opus 寫；大架構決策找獨立 Opus 審核（本 session 兩次：餐型、家常菜估算），問答逐字存 `collab/opus-review-log/`。審核用 `SendMessage` 續用同一個 agent（它已認識程式）。
+- 使用者習慣：問題附建議、常回「照建議」「好」；只把產品決定交給使用者；用字中性（章程 C4.13）；手機測試要直接給腳本行號。
 
 **2026-10-02 深夜 隨餐飲料（2026-10-04 已完成，以下留作紀錄；腳本已執行，不要再跑）**：
 - 已完成並推送：飲料依通路分組（#143）、選擇器分類與飲料收合（#144）、飲料調查（Sonnet＋Gemini 比對，Cline 不採用，`collab/proofs/2026-10-02-drink-verdict.md`）。
