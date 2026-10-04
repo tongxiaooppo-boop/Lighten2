@@ -1,0 +1,20 @@
+{
+ "version": 1,
+ "note": "家常菜估算的調料選樣表（decisions #151、章程 B4「家常菜估算」）：配方裡的調味料一律從這裡選，每項七欄都有數字。衛福部缺值只能依章程 B5.1 補 0（調味料脂肪 ≤ 0.5 的飽和脂肪）；derived 只限食鹽與水。沙茶醬在查到市售標示前不收（沙茶牛肉先排除）；太白粉每盤只有 3–8g，不計。",
+ "items": [
+  { "id": "hs_soy_sauce", "name": "醬油", "source": { "type": "tfda", "ref": "P0700401", "note": "淡色醬油" } },
+  { "id": "hs_sesame_oil", "name": "香油", "source": { "type": "tfda", "ref": "M1500101", "note": "白芝麻油；纖維與鈉衛福部缺值，查詢檔已依章程 B5.1 油脂補 0" } },
+  { "id": "hs_brown_sugar", "name": "糖", "source": { "type": "tfda", "ref": "N0100301", "note": "紅砂糖" } },
+  { "id": "hs_oyster_sauce", "name": "蠔油", "source": { "type": "tfda", "ref": "P0800301" },
+    "field_sources": { "sat_fat_g": { "type": "derived", "value": 0, "ref": "調味料", "note": "衛福部此欄無資料；調味料脂肪 ≤0.5g/100g，飽和脂肪接近 0，填 0（章程 B5.1）" } } },
+  { "id": "hs_black_vinegar", "name": "烏醋", "source": { "type": "tfda", "ref": "P0600701" },
+    "field_sources": { "sat_fat_g": { "type": "derived", "value": 0, "ref": "調味料", "note": "衛福部此欄無資料；調味料脂肪 ≤0.5g/100g，飽和脂肪接近 0，填 0（章程 B5.1）" } } },
+  { "id": "hs_ketchup", "name": "番茄醬", "source": { "type": "tfda", "ref": "P1003501", "note": "蕃茄醬" },
+    "field_sources": { "sat_fat_g": { "type": "derived", "value": 0, "ref": "調味料", "note": "衛福部此欄無資料；調味料脂肪 ≤0.5g/100g，飽和脂肪接近 0，填 0（章程 B5.1）" } } },
+  { "id": "hs_doubanjiang", "name": "豆瓣醬", "source": { "type": "tfda", "ref": "P1004101" } },
+  { "id": "hs_salt", "name": "食鹽", "source": { "type": "derived", "ref": "NaCl 的鈉占 22.99／58.44＝39.3%，每 100g 鈉 39,340 mg；其餘欄位 0" },
+    "per_100g": { "kcal": 0, "protein_g": 0, "carb_g": 0, "fat_g": 0, "fiber_g": 0, "sat_fat_g": 0, "sodium_mg": 39340 }, "note": "衛福部沒有一般食鹽（只有岩鹽、低鈉鹽）" },
+  { "id": "hs_water", "name": "水", "source": { "type": "derived", "ref": "水不含營養素，七欄 0" },
+    "per_100g": { "kcal": 0, "protein_g": 0, "carb_g": 0, "fat_g": 0, "fiber_g": 0, "sat_fat_g": 0, "sodium_mg": 0 } }
+ ]
+}
