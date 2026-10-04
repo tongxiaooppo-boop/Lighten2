@@ -1,5 +1,5 @@
 // 輕盈計畫 — 外食分頁最上方的兩張卡（PRD 第 9 節、decisions #46、#151）：
-// ①「家庭共食／自助餐」：主食、道數（1–4）、每道的類別、菜量、湯 → 七欄營養由 engine 算（預設收合，按標題展開）；
+// ①「自助餐」：主食、道數（1–4）、每道的類別、菜量、湯 → 七欄營養由 engine 算（預設收合，按標題展開）；
 // ②「找不到？直接估算」：名稱（選填）＋ S/M/L → estimate 元件。
 // 只存在這一餐，不存成品項；估算是使用者自己宣告吃了什麼，不過硬性過濾。按鈕一律用 data 屬性＋事件委派（沒有新的 DOM id）。
 
@@ -68,11 +68,11 @@ function homeFormHtml(cfg, home) {
 // estimates：這一餐已加入的估算 [{ size, name, snapshot?, est? }]；homeEst：表單狀態（emptyHomeEst）；home：catalog.homeDishes
 export function estimateCardHtml(estimates, homeEst, home) {
   const st = homeEst || emptyHomeEst();
-  // ① 家庭共食／自助餐：標題是展開鈕，展開才有表單
-  let html = '<div class="meal-picker-estimate"><button type="button" class="compose-option' + (st.open ? " selected" : "") + '" data-home-toggle="1">' + escapeHtml("家庭共食／自助餐") + "</button>" +
-    '<p class="meal-picker-note">記你自己吃的那一份：選主食、幾道菜、每道是素菜／菜肉／純肉。</p>';
+  // ① 自助餐：標題是展開鈕，展開才有表單
+  let html = '<div class="meal-picker-estimate"><button type="button" class="compose-option' + (st.open ? " selected" : "") + '" data-home-toggle="1">' + escapeHtml("自助餐") + "</button>" +
+    '<p class="meal-picker-note">記你自己吃的那一份：選主食、夾了幾道菜、每道是素菜／菜肉／純肉。</p>';
   if (st.open) {
-    html += '<input type="text" id="meal-picker-home-name" class="meal-picker-input" maxlength="30" placeholder="名稱（選填，例：自助餐）" value="' + escapeHtml(st.name || "") + '">' + homeFormHtml(st.cfg, home);
+    html += '<input type="text" id="meal-picker-home-name" class="meal-picker-input" maxlength="30" placeholder="名稱（選填，例：吃到飽）" value="' + escapeHtml(st.name || "") + '">' + homeFormHtml(st.cfg, home);
   }
   html += "</div>";
   // ② 找不到？直接估算
