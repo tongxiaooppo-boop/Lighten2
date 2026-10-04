@@ -163,6 +163,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 - **配方**（`data/reference/home_dish_recipes.json`，手寫）：每道菜 `{ id, name, kind: "dish"|"soup", class: "veg"|"mixed"|"meat"（湯為 null）, recipe: [{ ref, g }], oil: { ref, g }, cooked_g, note, ntu_kcal_100g?, deviation_note? }`。`ref` 只能是四種：`ingredients.json` 食材 id、`food_tree` 的 `fx_` id、衛福部整合編號、調料選樣表的 id。類別**手動標**；自動規則（素菜＝沒有蛋豆魚肉；純肉＝蛋豆魚肉且蔬菜占食材重量 < 30%；其餘菜肉）只在 check-data 當警告對照。油用 `cooking_oil`，只做一個版本（不分家裡與店家）。
 - **調料選樣表**（`data/reference/home_dish_seasonings.json`）：每項七欄都有數字，出處只能是 `tfda`（整合編號）、`label`（市售標示，給日後的沙茶醬）、`derived`——`derived` 只限兩項：食鹽（鈉 39,340 mg/100g，NaCl 化學計量）與水（七欄 0）〔機：check-data 照這張白名單擋〕。缺值填 0 只准用 B5.1 表列的理由（調味料脂肪 ≤ 0.5 g/100g 的飽和脂肪補 0），選樣表不另開例外。
 - **產生檔**：每道菜每 100g ＝ Σ(食材每 100g × 克數) ÷ `cooked_g` × 100，七欄；`class` 平均為簡單平均（不加權）；帶 `veg_share`、`source`、`note`。湯的水量、骨頭可食比例這類假設要寫進 `note`。
+- **家庭共餐用的單品欄位**（decisions #152）：產生檔每道菜另帶 `allergen_tags`（配方食材過敏原的聯集再加「未確認」，B6.3）、`vegan` 與 `lacto_ovo` 一律 false、`composite` true、`state` cooked、`unit`（菜 g、湯 ml）、`seasons`（配方檔手標：春／夏／秋／冬，至少 1 個；共餐清單只列當季）；`hd_` id 凍結（`data/reference/home_dish_ids_frozen.json`，不得改名或重用）。
 - 算法放 `tools/lib/home-dish-values.js`（工具與 check-data 共用，C2）；改菜色只能改來源檔再跑 `build-home-dishes.js`。
 
 ## B5. 數值規則
@@ -248,7 +249,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 **家常菜估算**（`home_dishes.json`）：產生檔等於工具重算（逐筆逐欄）；配方 `ref` 都查得到且屬四種來源；調料選樣表七欄無 null、出處依 B4 白名單、`derived` 只限食鹽與水；每個類別至少 3 道、湯至少 3 道；有 NTU 對照的算出值差超過 25% 要寫 `deviation_note`；note 無 AI 字樣；缺值填 0 照 B5.1；檢查程式自身要有自我檢查。
 
-**警告**：食材沒被骨架引用；類別手動標與自動規則不一致；家常菜 `cooked_g` 低於食材總重 40%；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）；衛福部樣品描述的過敏原關鍵字跟標註對不上（B6.2）。
+**警告**：食材沒被骨架引用；類別手動標與自動規則不一致；家常菜 `cooked_g` 低於食材總重 40%；某個季節的素菜少於 2 道；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）；衛福部樣品描述的過敏原關鍵字跟標註對不上（B6.2）。
 
 ---
 
@@ -309,7 +310,7 @@ ui/  →  data/    →  core/
 5. 缺資料是 `null`，加總時 null 傳染，不當 0〔機〕。**例外：鈉與飽和脂肪**只用於顯示、不參與任何計算，加總時「有資料的部分照加，另外記下有幾項沒有資料」，畫面顯示「鈉 約 X mg（部分品項無資料）」〔機〕。
 6. 自組食譜：不對稱槽位、每個食材自己的 `serving_g`、只有主要槽位縮放且限 0.5–2.0 倍；用油與調味不縮放；`dish`、`food` 元件不參與縮放〔機〕。
 7. **推薦生成規則**：一餐恰好 1 main＋≤1 side＋≤1 drink＋≤1 snack、最多 3 件；下午茶不需要 main；飲料不單獨成一餐〔機〕。
-8. **手動記錄規則**比推薦寬：只限制每個角色的數量上限，不要求必須有主餐（一杯拿鐵可以記成一餐），也不套用低碳〔機〕。單品（`food` 元件）另有上限（一餐最多 `FOOD_MAX_PER_MEAL`＝4 項，`core/config.js`），不佔角色名額、不套 `valid_slots`，只有單品也可以成為一餐（PRD 13.4）〔機：`manualSelectionProblem` 在第 5 項單品時回傳原因、只有單品時回傳 null〕。
+8. **手動記錄規則**比推薦寬：只限制每個角色的數量上限，不要求必須有主餐（一杯拿鐵可以記成一餐），也不套用低碳〔機〕。單品（`food` 元件）另有上限（一餐最多 `FOOD_MAX_PER_MEAL`＝4 項，`core/config.js`；家庭共餐的家常菜另計：菜 ≤4、湯 ≤1，主食算 1 項單品，decisions #152），不佔角色名額、不套 `valid_slots`，只有單品也可以成為一餐（PRD 13.4）〔機：`manualSelectionProblem` 在第 5 項單品時回傳原因、只有單品時回傳 null〕。
 9. 近 7 天平均、纖維缺口、校正引擎的攝取檢查，只算完整記錄日且不含今天〔機〕。
 10. 計畫層不存依預算縮放的倍數或熱量；使用者自己選的主食倍數照存。只有 `daily_log` 進統計與校正，`meal_plan` 不進（今天的預約只當暫時紀錄影響剩餘預算與推薦）〔機〕。
 11. 自煮一律包含用油與調味兩個隱含成分（我的料理的用油與調味已含在 `dish` 元件的快照裡，那一餐的 `implicit` 記 0 與 null，PRD 12.5；只有單品的自煮一餐同樣記 0 與 null，單品快照不含烹調用油，PRD 13.4），推薦、自己選、計畫、採買清單都走 `engine/meal-content.js`〔機：check-engine 斷言隱含成分；check-arch 禁止 `ui/` 出現營養加總寫法（`kcal +=`、`protein_g +` 等；啟發式檢查，不是完整證明）；`data/db.js` 寫入驗證自煮紀錄必有 `implicit`〕。
