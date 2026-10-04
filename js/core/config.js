@@ -124,6 +124,8 @@ export const HOME_MEAL_DISH_MAX = 4;
 export const HOME_MEAL_SOUP_MAX = 1;
 export const HOME_MEAL_SLOTS = ["lunch", "dinner"];
 export const HOME_DISH_PREFIX = "hd_";
+// 共餐的主食（白飯、糙米飯、雜糧飯、白麵）在分層資料裡的 id；check-data 比對 home_dishes.json 的 staples
+export const HOME_STAPLE_REFS = ["fx_cooked_rice", "brown_rice_cooked", "mixed_grain_rice_cooked", "fx_cooked_noodles"];
 // 打開估算卡時「菜量」預設選哪一格：每餐蛋白質目標（一天目標 ÷ 3）低於第一個門檻選小、高於第二個選大，其餘中（使用者 2026-10-04）。只決定預設，估算的數字永遠等於畫面上選的量
 export const EST_DEFAULT_DISH_PROTEIN_CUTS = [30, 50];
 export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };
