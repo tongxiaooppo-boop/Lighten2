@@ -1725,9 +1725,12 @@ async function run() {
   await click(`#meal-picker-panel [data-estimate-mode=home]`);
   await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 切到「主食＋家常菜」沒有出現道數按鈕");
   const homePreview0 = await js(text("#meal-picker-panel .meal-picker-estimate"));
-  check(homePreview0.indexOf("白飯 160g") !== -1 && homePreview0.indexOf("菜 160g") !== -1 && homePreview0.indexOf("蛋白質") !== -1 && homePreview0.indexOf("鈉") !== -1 && homePreview0.indexOf("估計") !== -1 &&
+  check(/白飯 (80|160|240)g/.test(homePreview0) && /菜 (120|160|200)g/.test(homePreview0) && homePreview0.indexOf("蛋白質") !== -1 && homePreview0.indexOf("鈉") !== -1 && homePreview0.indexOf("估計") !== -1 &&
     homePreview0.indexOf("純肉＝肉、魚、蛋、豆腐為主") !== -1, "15-1 預設預覽沒有白飯 160g、菜 160g、蛋白質、鈉、估計、純肉說明：" + homePreview0);
   await shot("估算-主食加家常菜-預設", "#meal-picker-panel .meal-picker-estimate");
+  // 預設的主食量與菜量依個人目標與時段配額而不同，這裡固定成中份再比數字
+  await click(`#meal-picker-panel [data-home-staple-size=M]`);
+  await click(`#meal-picker-panel [data-home-dish=M]`);
   await click(`#meal-picker-panel [data-home-n="2"]`);
   await click(`#meal-picker-panel [data-home-cat="0:veg"]`);
   await click(`#meal-picker-panel [data-home-cat="1:meat"]`);
