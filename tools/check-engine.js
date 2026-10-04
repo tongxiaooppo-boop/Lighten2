@@ -2448,6 +2448,72 @@ function checkSavedMealsDb(catalog) {
   const heDraft = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd)], drink: null, qtyByUid: {}, foods: [] });
   check(!errOf(() => db.validateMealPlan(plan(mc.toPlanContent(heDraft, { keepImplicit: false })))) && mc.contentTotals(heDraft, catalog).kcal === mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd).snapshot.kcal,
     "engine 產生的估算草稿通過預約驗證、合計等於快照");
+  // ---- 家庭共餐（decisions #152）：自煮的 hd_ 家常菜單品 ----
+  console.log("[家庭共餐]");
+  const dates = M.dates;
+  check(["01", "02", "12"].every((m) => dates.seasonOfDate("2026-" + m + "-15") === "winter") && ["03", "04", "05"].every((m) => dates.seasonOfDate("2026-" + m + "-01") === "spring") &&
+    ["06", "07", "08"].every((m) => dates.seasonOfDate("2026-" + m + "-30") === "summer") && ["09", "10", "11"].every((m) => dates.seasonOfDate("2026-" + m + "-30") === "autumn"), "seasonOfDate：春 3–5、夏 6–8、秋 9–11、冬 12–2");
+  const SEASONS4 = ["spring", "summer", "autumn", "winter"];
+  const okProfile = { allergens: [], diet_restriction: "一般", disliked_ingredients: [] };
+  SEASONS4.forEach((se) => {
+    const ch = mc.homeMealChoices(catalog, se, okProfile);
+    check(ch.groups.length === 3 && ch.groups.every((g) => g.dishes.length >= 3 && g.dishes.every((x) => x.reason === null)) && ch.soups.length >= 1, "共餐清單 " + se + "：素菜、菜肉、純肉各至少 3 道、湯至少 1 道、沒被擋");
+  });
+  const names = (se) => mc.homeMealChoices(catalog, se, okProfile).groups.flatMap((g) => g.dishes.map((x) => x.item.name));
+  check(names("summer").indexOf("清炒絲瓜") !== -1 && names("summer").indexOf("蒜炒菠菜") === -1 && names("winter").indexOf("蒜炒菠菜") !== -1 && names("winter").indexOf("清炒絲瓜") === -1 &&
+    names("winter").indexOf("涼拌小黃瓜") === -1 && names("summer").indexOf("蒜炒茼蒿") === -1, "季節：夏天有絲瓜沒有菠菜、冬天有菠菜茼蒿沒有絲瓜與小黃瓜");
+  const eggAllergy = mc.homeMealChoices(catalog, "winter", Object.assign({}, okProfile, { allergens: ["蛋"] }));
+  check(eggAllergy.groups.every((g) => g.dishes.every((x) => x.reason === "成分未確認")) && eggAllergy.soups.every((x) => x.reason === "成分未確認"), "有設任何過敏原：家常菜是複合料理、成分未確認，全部照擋（章程 C4.1）");
+  const vegan = mc.homeMealChoices(catalog, "winter", Object.assign({}, okProfile, { diet_restriction: "全素" }));
+  check(vegan.groups.every((g) => g.dishes.every((x) => x.reason)) && vegan.soups.every((x) => x.reason), "全素：家常菜全部被擋（複合料理不標素食）");
+  const form = (o) => Object.assign({ staple: "white", staple_size: "M", dish: "M", dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg"], soup: "hd_seaweed_egg_soup" }, o || {});
+  const hg = mc.homeMealGrams(form());
+  check(hg.staple_g === 160 && hg.dish_total_g === 160 && hg.per_dish_g === 53 && hg.soup_ml === 250 && mc.homeMealGrams(form({ dishes: ["hd_garlic_cabbage"], soup: null })).per_dish_g === 160 &&
+    mc.homeMealGrams(form({ staple: "none", staple_size: null, dish: "L" })).staple_g === 0 && mc.homeMealGrams(form({ staple: "noodle", staple_size: "L" })).staple_g === 360, "共餐克數：每道＝round(全分量 ÷ N)、主食、湯");
+  const prob = (f, prof) => mc.homeMealProblem(f, catalog, prof || okProfile) || "";
+  check(prob(form()) === "" && prob(form({ dishes: [], soup: null })) === "" && /最多選 4/.test(prob(form({ dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg", "hd_mapo_tofu", "hd_pan_salmon"] }))) &&
+    /不用選兩次/.test(prob(form({ dishes: ["hd_garlic_cabbage", "hd_garlic_cabbage"] }))) && /已不提供/.test(prob(form({ dishes: ["hd_gone"] }))) && /放錯/.test(prob(form({ dishes: ["hd_seaweed_egg_soup"], soup: null }))) &&
+    /主食不對/.test(prob(form({ staple: "bread" }))) && /主食的量/.test(prob(form({ staple: "none", staple_size: "M" }))) && /菜的量/.test(prob(form({ dish: "XL" }))) &&
+    prob(form(), Object.assign({}, okProfile, { allergens: ["蛋"] })) !== "", "homeMealProblem：上限、重複、不存在、放錯位置、主食與菜量、過敏原");
+  // 表單 → 草稿 → 元件 → 預約 → 解析 → 記下 → 帶回，全程不變
+  const part = mc.homeMealDraftPart(form(), catalog, okProfile);
+  const hmDraft = { kind: "cook", meal_type: "cook_full", archetype: null, proteins: [], staple: null, vegetables: [], seasoning: null, method: null, primaryScale: 1, implicitOverride: {}, items: [], estimates: [], drink: null, qtyByUid: {}, foods: [], homeMeal: part };
+  const hmc = mc.buildDraftContent(hmDraft, { oilHabit: "normal" });
+  check(hmc.meal_type === "cook_full" && hmc.archetype_id === null && hmc.method_id === null && same(hmc.implicit, { oil_g: 0, seasoning: null }) &&
+    same(hmc.components.map((c) => c.ref + "=" + c.amount), ["fx_cooked_rice=160", "hd_garlic_cabbage=53", "hd_three_cup_chicken=53", "hd_chive_egg=53", "hd_seaweed_egg_soup=250"]) && hmc.components.every((c) => c.kind === "food" && Number.isInteger(c.amount)),
+    "共餐元件：自煮型態、沒有餐型與烹調法、implicit 0、順序固定（主食、各道、湯）、全是整數克的 food");
+  check(mc.draftLogName(hmDraft) === "共餐：蒜炒高麗菜＋三杯雞＋韭菜炒蛋＋紫菜蛋花湯", "記錄名稱「共餐：…」不寫克數：" + mc.draftLogName(hmDraft));
+  check(mc.homeMealFoodCount(part) === 1 && mc.homeMealFoodCount(mc.homeMealDraftPart(form({ staple: "none", staple_size: null }), catalog, okProfile)) === 0 && mc.homeMealDraftPart(form({ dishes: [], soup: null }), catalog, okProfile) === null, "主食算 1 項單品、不吃主食 0、沒選菜沒有共餐");
+  check(/最多選/.test(errOf(() => mc.homeMealDraftPart(form({ dishes: ["hd_garlic_cabbage", "hd_three_cup_chicken", "hd_chive_egg", "hd_mapo_tofu", "hd_pan_salmon"] }), catalog, okProfile)) || "") &&
+    /蛋/.test(errOf(() => mc.homeMealDraftPart(form(), catalog, Object.assign({}, okProfile, { allergens: ["蛋"] }))) || "") === false, "共餐草稿：超過上限丟錯");
+  const hmTotals = mc.contentTotals(hmc, catalog);
+  const dishKcal = (id, g) => hd.byId[id].per_100g.kcal * g / 100;
+  const wantKcal = 183.1 * 160 / 100 + dishKcal("hd_garlic_cabbage", 53) + dishKcal("hd_three_cup_chicken", 53) + dishKcal("hd_chive_egg", 53) + dishKcal("hd_seaweed_egg_soup", 250);
+  check(near(hmTotals.kcal, wantKcal, 1.5) && hmTotals.kcal > 0 && typeof hmTotals.sodium_mg === "number", "共餐合計＝各道每 100g × 克數：" + hmTotals.kcal + " vs " + wantKcal);
+  const hmPlan = mc.toPlanContent(hmc, { keepImplicit: false });
+  check(!errOf(() => db.validateMealPlan(plan(hmPlan))) && hmPlan.components.every((c) => !("snapshot" in c)) && !errOf(() => mc.toSavedContent(hmc, { keepImplicit: false })), "共餐的預約只存 ref＋amount、能存成組合：" + errOf(() => db.validateMealPlan(plan(hmPlan))));
+  const hmRes = rp(hmPlan, "dinner", { profile: okProfile });
+  check(hmRes.status === "ok" && near(hmRes.totals.kcal, hmTotals.kcal, 0.5), "預約重新解析的合計＝草稿的合計：" + (hmRes.totals && hmRes.totals.kcal));
+  const hmPseudo = mc.planPseudoLog(plan(hmPlan, { slot: "dinner", id: "2026-10-04|dinner" }), hmRes);
+  check(hmPseudo.totals.kcal === hmRes.totals.kcal, "今天的預約暫時紀錄的合計＝解析合計（M8）");
+  const back = mc.savedMealDraft(hmRes.resolved);
+  check(back.homeMeal && back.foods.length === 0 && same(mc.homeMealFormOf(back.homeMeal, catalog, { dish: "M" }), form()), "帶回選擇器：共餐表單還原（foods 是空的）：" + JSON.stringify(mc.homeMealFormOf(back.homeMeal, catalog, { dish: "M" })));
+  check(same(mc.buildDraftContent(back, { oilHabit: "normal" }).components, hmc.components), "預約 → 草稿 → 元件與當初完全相同");
+  const hmLog = mc.buildLogEntry({ date: "2026-10-04", slot: "dinner", source: "manual", name: mc.draftLogName(hmDraft), content: hmc, totals: hmTotals, createdAt: T0 });
+  check(!errOf(() => db.validateDailyLog(hmLog)), "共餐紀錄通過寫入驗證：" + errOf(() => db.validateDailyLog(hmLog)));
+  check(mc.savedMealDefaultName(hmPlan, catalog, pctx).indexOf("蒜炒高麗菜") !== -1, "組合預設名稱查得到 hd_ 的菜名");
+  // 解析時的上限與擋過敏
+  const five = clone(hmPlan); five.components.splice(4, 0, { kind: "food", ref: "hd_mapo_tofu", amount: 30 }, { kind: "food", ref: "hd_pan_salmon", amount: 30 });
+  const fiveRes = rp(five, "dinner", { profile: okProfile });
+  check(fiveRes.status === "invalid" && /最多選 4/.test(fiveRes.resolved.blocked.map((b) => b.reason).join()), "預約解析：共餐的菜超過 4 道＝失效");
+  const twoSoups = clone(hmPlan); twoSoups.components.push({ kind: "food", ref: "hd_daikon_rib_soup", amount: 250 });
+  check(rp(twoSoups, "dinner", { profile: okProfile }).status === "invalid", "預約解析：共餐的湯超過 1 道＝失效");
+  check(rp(hmPlan, "dinner", { profile: Object.assign({}, okProfile, { allergens: ["蛋"] }) }).status === "invalid", "預約解析：後來設了過敏原，含未確認的共餐菜＝失效（照擋）");
+  const gone = clone(hmPlan); gone.components[1].ref = "hd_deleted_dish";
+  check(rp(gone, "dinner", { profile: okProfile }).status === "invalid", "預約解析：已刪的 hd_＝已不提供、失效");
+  const withSingles = mc.buildDraftContent(Object.assign({}, hmDraft, { foods: [{ item: catalog.foodTree.byId.fx_banana, qty: 1 }, { item: catalog.foodTree.byId.fx_apple || catalog.foodTree.byId.fx_orange, qty: 1 }, { item: catalog.foodTree.byId.fx_orange, qty: 1 }] }), { oilHabit: "normal" });
+  check(rp(mc.toPlanContent(withSingles, { keepImplicit: false }), "dinner", { profile: okProfile }).status === "ok", "共餐加最多 3 個單品仍不超過單品上限（共餐的菜與湯另計）");
+  check(near(mc.homeMealDefaultForm({ protein_g: 180 }, 700, catalog).dish === "L" ? 1 : 0, 1, 0) && mc.homeMealDefaultForm({ protein_g: 90 }, 400, catalog).staple_size === "S" && same(mc.homeMealDefaultForm({ protein_g: 90 }, 550, catalog).dishes, []), "共餐預設：菜量看蛋白質目標、主食量看配額、沒選菜");
   const homeBackup = clone(v6); homeBackup.sections.meal_plan = [plan(homePc)]; homeBackup.manifest.meal_plan = 1;
   homeBackup.sections.logs.daily_log.push(Object.assign(clone(homeLogEntry), { id: "log_home1" })); homeBackup.manifest.daily_log += 1;
   const homeBackup2 = JSON.parse(JSON.stringify(homeBackup));
