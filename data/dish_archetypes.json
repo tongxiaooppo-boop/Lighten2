@@ -59,5 +59,17 @@
     "seasoning": { "allow": [] },
     "methods": ["method_pan_fry", "method_air_fry"],
     "note": "出自「蒜香嫩煎雞腿肉溫沙拉」；根莖類配蛋白質＋生菜，沒有鹹味醬料槽；seasoned 只代表煎肉的調味，未含沙拉醬（decisions #38）；2026-09-25 蔬菜擴充：溫沙拉多為生食類蔬菜，加了大部分新增的免煮熟蔬菜"
+  },
+  {
+    "id": "protein_steamed",
+    "name": "蒸魚定食",
+    "seasoned": true,
+    "valid_slots": ["lunch", "dinner"],
+    "protein": { "allow": ["tilapia_fillet", "salmon", "shrimp"] },
+    "staple": { "allow": ["brown_rice_cooked", "mixed_grain_rice_cooked", "sweet_potato", "pumpkin"] },
+    "vegetable": { "allow": ["spinach", "cabbage", "broccoli", "luffa", "eggplant", "okra", "snap_pea", "bamboo_shoot", "shiitake", "wood_ear"] },
+    "seasoning": { "allow": [] },
+    "methods": ["method_steam"],
+    "note": "餐型擴充步驟 2a（decisions #150、餐型claude.md）：清蒸魚蝦配飯與蒸菜，不加油；蔬菜拿掉 celery、加 shiitake／wood_ear（香菇蒸魚、木耳蒸魚是常見做法，也是讓纖維靠近封頂的選項，14 天輪替模擬）；出處見 collab/proofs/2026-10-01-workline-a-archetype-survey.md B1"
   }
 ]

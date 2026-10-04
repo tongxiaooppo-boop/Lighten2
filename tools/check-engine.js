@@ -411,6 +411,12 @@ async function main() {
     check(imp(stir, "protein_stir_fry", true, false, "normal").seasoning === "normal", "有調味的骨架、沒選醬料：預設一般");
     check(imp(stir, "protein_stir_fry", true, true, "normal").seasoning === "light", "有調味的骨架、選了醬料：預設清淡（decisions #28）");
     check(imp(nocook, "bowl_oat", false, false, "normal").seasoning === null, "燕麥碗不加調味");
+    // 蒸（餐型擴充 2a，decisions #150）：用油 0、預設調味一般、🟡 算快煮、沒有用油選項
+    const steam = byId("method_steam");
+    check(steam && steam.axis === "method" && steam.prep_tier === "🟡" && steam.implicit.length === 0 && steam.requires_cooking === false, "method_steam：烹調法、🟡、沒有隱含成分");
+    check(imp(steam, "protein_steamed", true, false, "normal").oil_g === 0 && imp(steam, "protein_steamed", true, false, "less").oil_g === 0, "蒸＋蔬菜：用油 0（少油習慣也是 0）");
+    check(imp(steam, "protein_steamed", true, false, "normal").seasoning === "normal", "蒸魚定食沒選醬料：預設調味一般");
+    check(mc.oilOptions({ method: steam, archetype: arch("protein_steamed"), vegetables: [1], proteins: [1], staple: null }, "normal").length === 0, "蒸：沒有用油選項");
     const ic = mc.implicitContribution({ oil_g: 10, seasoning: "normal" }, catalog.implicit);
     check(Math.abs(ic.kcal - 88.4) < 0.05 && ic.fat_g === 10 && ic.sodium_mg === 700, "10g 油＋一般調味 ＝ 88.4 kcal、脂肪 10g、鈉 700 mg（實際 " + JSON.stringify(ic) + "）");
 
