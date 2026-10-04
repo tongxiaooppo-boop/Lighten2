@@ -4,6 +4,8 @@
 
 一律用中文回覆使用者。使用者還沒在手機測：短清單第 12（日期切換與預約）、13（昨天的餐與補記）、14（新的自煮做法）、15（自助餐估算）、16（家庭共餐）項，以及超商分頁的飲料小類。手機腳本 `docs/手機實機腳本.md` 短清單第 84–96 行是 15、16 項。
 
+**採買相關決定已記（decisions #153）**：共餐人數由這一餐推算（選幾道菜預設幾人、可改、取消全域 household_size）、採買以一盤為單位、調味料不列、肉類先估算；採買清單本身仍未做。
+
 **這個 session 做完的（decisions #151、#152；設計與三輪審核紀錄都在 `collab/opus-review-log/`）**
 1. **自助餐估算**（#151）：外食分頁最上面「自助餐」卡（標題展開）：主食（白飯／糙米飯／雜糧飯／白麵／不吃）＋1–4 道菜（每道素菜／菜肉／純肉）＋湯開關；數字用 `data/home_dishes.json` 的**類別平均**；`estimate` 元件多一個 `est`，`size` null，快照七欄都有數字；預約與「記下」全程沿用快照不重算（`estimateFromDraft`、`toPlanContent`、`savedMealDraft`，db 的 `estProblems`）。「找不到？直接估算」S／M／L 照舊。
 2. **家庭共餐**（#152，使用者決定：共餐是**自煮**、選**真的家常菜**、採買用 B、自助餐維持估算）：自煮分頁（開伙、午晚餐）「選餐型」那排最後多「共餐」；選主食＋當季家常菜 1–4 樣＋湯至多 1 道；與餐型擇一。資料形狀是**方案 Y′**：主食、每道菜、湯都是 `food` 元件，`ref` 是 `hd_` 開頭（內建家常菜），只用 `amount`（克；湯的 ml 當克）；自煮型態、`archetype_id`／`method_id` null、`implicit` `{0,null}`；**不重用 `dish` 元件**（那是切片 9 我的料理）。預約只存 ref＋amount、**日後重新解析**（家常菜資料改了未來的預約跟著變，已記的紀錄不變；`hd_` id 凍結不重用）。記錄名稱「共餐：菜名＋菜名」不含主食、不寫克數。
@@ -15,7 +17,7 @@
 **程式地圖**：engine `js/engine/meal-content.js`（`homeEstimate*` 自助餐、`homeMeal*` 共餐、`treeById` 併入 `catalog.homeDishes.byId`、`composeProblem` 算共餐）；畫面 `js/ui/meal-picker/estimate-card.js`（自助餐卡＋共用的 `chip`／`group`）、`home-meal.js`（共餐區塊）、`cook-tab.js`、`index.js`（`onHomeEstimateClick`、`onHomeMealClick`、`homeMealActive`、`currentHomeMeal`）；常數 `js/core/config.js`（`EST_*`、`HOME_MEAL_*`、`HOME_STAPLE_REFS`）、`seasonOfDate` 在 `js/core/dates.js`。測試：check-engine 51988、check-arch 38044、smoke 54、walkthrough 636（第 15 節自助餐、第 16 節共餐）、diff-recs（picker 快照有 `home-estimate/*`、`home-meal/*`）。
 
 ## 1. 下一步（照順序）
-**A. 使用說明**（交 Sonnet、Opus 360 寬驗收）：任務檔 `collab/to-sonnet-manual.md` 第 1–10 點（日期切換、預約、這餐不吃、飲料分組、收合、新自煮做法、自助餐、共餐）；使用者晚上請 Sonnet 做。
+**A. 使用說明（已完成並推送）**：Sonnet 依 `collab/to-sonnet-manual.md` 更新 `docs/使用說明.html`（昨天的餐、補記、自助餐、共餐、新自煮做法、速查），並整合進 App：基本資料分頁「使用說明」→「打開使用說明」，用全螢幕視窗（iframe，`js/ui/help.js`）打開同一份說明書；walkthrough 第 17 節。**之後功能改了，記得回頭改 `docs/使用說明.html`**（用 Sonnet 寫、Opus 驗收）。
 **B. 使用者手機測完回報後修**（短清單 12–16）。
 **C. 採買清單（Phase 4）**：共餐元件已能讀出 `hd_` ref＋amount。反推算法與缺口已寫在 PRD 13.4 末「採買」：生重 g × 吃的克數 × 人數（`household_size`）÷ `cooked_g`；缺口＝可食重≠購買重（帶骨小排、鱸魚、去皮雞腿）、家裡一道菜煮一盤（建議以「盤」為單位）、配方裡的衛福部編號沒有採買品名、水鹽糖醬油油要分成不列或常備。配方不在執行時資料裡（`catalog` 只載 `home_dishes.json`），要用時另載或把生重量放進產生檔。`household_size`、`meal_plan.servings` 都還沒實作。
 **D. Opus 實作審核留下的建議（沒做，在審核紀錄與 `docs/日後討論.md`）**：記錄名稱要不要含主食（建議含，等使用者）、`pickedCount` 不含主食、單品上限訊息補「共餐的主食算 1 項」、有過敏原時共餐區塊加一行指路到自助餐、`savedMealDraft` 的主食歸屬改成元件上的明確標記、季節改成食材層級（菠菜可加秋、蘆筍可加夏）、營養精修（牛腱代表牛肉片偏低、去皮雞腿偏低、滷與三杯的鈉偏高）、每道各自調克數、家常菜常吃、早餐共餐。
