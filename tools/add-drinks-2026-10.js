@@ -91,7 +91,7 @@ const CONV = [
     source: official("https://www.citycafe.com.tw/file/ingredient.pdf", "7-ELEVEN CITY CAFE 飲品營養標示（2026/9/16 起）：美式咖啡 大杯（16oz 約 480ml）冰 總熱量 21.6 kcal、總糖量 0g（最高值）；熱 16.8 kcal"),
     note: "官網營養標示；官方只公告總熱量、總糖量與咖啡因，蛋白質、脂肪、鈉無資料" }),
   drink({ id: "conv_dr20", name: "CITY CAFE 拿鐵咖啡 大杯（冰，約480ml）", vendor: "7-ELEVEN", category: "咖啡", valid_slots: COFFEE,
-    kcal: 188.1, allergen_tags: ["乳製品"], vegan: false, lacto_ovo: true,
+    kcal: 188.1, allergen_tags: ["乳製品"], vegan: false, lacto_ovo: true, // 蛋白質、碳水、脂肪、纖維 2026-10-04 起依牛奶 225ml 估算（見 data 的 field_sources），腳本不再重跑
     source: official("https://www.citycafe.com.tw/file/ingredient.pdf", "7-ELEVEN CITY CAFE 飲品營養標示（2026/9/16 起）：拿鐵咖啡 大杯（16oz 約 480ml）冰 總熱量 188.1 kcal、總糖量 13.1g（最高值）；熱 254.4 kcal、16.7g"),
     note: "官網營養標示；不另加糖，糖是牛奶的乳糖；官方只公告總熱量、總糖量與咖啡因，蛋白質、脂肪、鈉無資料" }),
 ];
