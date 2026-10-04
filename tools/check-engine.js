@@ -2428,6 +2428,11 @@ function checkSavedMealsDb(catalog) {
   check(mc.homeEstimateDefaultDish({ protein_g: 60 }) === "S" && mc.homeEstimateDefaultDish({ protein_g: 90 }) === "M" && mc.homeEstimateDefaultDish({ protein_g: 150 }) === "M" && mc.homeEstimateDefaultDish({ protein_g: 151 }) === "L" &&
     mc.homeEstimateDefaultDish({ protein_g: 89 }) === "S" && mc.homeEstimateDefaultDish(null) === "M" && mc.homeEstimateDefaultDish({}) === "M" && mc.homeEstimateDefaultDish({ protein_g: 180 }) === "L",
     "菜量預設：每餐蛋白質目標（一天 ÷ 3）<30g 小、30–50g 中、>50g 大，沒有目標就中");
+  const tg90 = { protein_g: 90 };
+  check(mc.homeEstimateDefaults(tg90, 700, hd).staple_size === "L" && mc.homeEstimateDefaults(tg90, 550, hd).staple_size === "M" && mc.homeEstimateDefaults(tg90, 400, hd).staple_size === "S" &&
+    mc.homeEstimateDefaults(tg90, 0, hd).staple_size === "M" && mc.homeEstimateDefaults(tg90, null, hd).staple_size === "M" && mc.homeEstimateDefaults(tg90, 700, null).staple_size === "M" &&
+    mc.homeEstimateDefaults({ protein_g: 180 }, 700, hd).dish === "L" && mc.homeEstimateDefaults({ protein_g: 60 }, 700, hd).dish === "S",
+    "估算卡預設：菜量看蛋白質目標、主食量選整餐熱量最接近時段配額的那一格（700→大、550→中、400→小、沒配額→中）");
   const heDraft = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd)], drink: null, qtyByUid: {}, foods: [] });
   check(!errOf(() => db.validateMealPlan(plan(mc.toPlanContent(heDraft, { keepImplicit: false })))) && mc.contentTotals(heDraft, catalog).kcal === mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd).snapshot.kcal,
     "engine 產生的估算草稿通過預約驗證、合計等於快照");
