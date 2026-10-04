@@ -620,7 +620,38 @@ body {
 .modal-overlay[hidden] {
   display: none;
 }
+/* 每個畫面的「?」：直接打開說明書對應的那一段 */
+.help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin-left: 0.3rem;
+  padding: 0;
+  border: 1px solid #EFE3D2;
+  border-radius: 50%;
+  background-color: #FFFBF4;
+  color: #8A5A2B;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: pointer;
+}
+.meal-picker-head {
+  position: relative;
+}
+.help-btn.picker-help {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  margin: 0;
+}
 /* 使用說明：全螢幕視窗裡放說明書（iframe） */
+.modal-overlay#help-overlay {
+  z-index: 110; /* 從「自己選」視窗裡按「?」時，說明要蓋在選擇器上面 */
+}
 .modal.help-modal {
   background-color: #fff;
   border-radius: 16px;

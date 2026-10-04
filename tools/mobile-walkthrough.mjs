@@ -1914,6 +1914,29 @@ async function run() {
   await until(`!document.getElementById('help-overlay').hidden`, "17-2 再打開說明視窗失敗");
   await js(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`);
   await until(`document.getElementById('help-overlay').hidden`, "17-2 按 Esc 沒有關掉說明視窗");
+  // 17-3 每個畫面標題旁的「?」直接跳到對應那一段；「自己選」視窗的「?」跟著目前的分頁（說明蓋在選擇器上面）
+  const helpPane = (id) => `(() => { const d = document.getElementById('help-frame').contentDocument; const p = d && d.getElementById(${JSON.stringify(id)}); return !!p && p.classList.contains('active'); })()`;
+  for (const [tabName, pane] of [["today", "pane-today"], ["foods", "pane-foods"], ["week", "pane-week"], ["exercise", "pane-exercise"], ["profile", "pane-profile"]]) {
+    await tab(tabName);
+    await click(`#tab-${tabName} [data-help="${tabName}"]`);
+    await until(`!document.getElementById('help-overlay').hidden && ${helpPane(pane)}`, "17-3 " + tabName + " 分頁的「?」沒有跳到說明書對應的分頁");
+    await click("#help-close-btn");
+    await until(`document.getElementById('help-overlay').hidden`, "17-3 關閉說明失敗");
+  }
+  await tab("today");
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await click(`#meal-picker-overlay .picker-help`);
+  await until(`!document.getElementById('help-overlay').hidden && ${helpPane("sub-today-cook")}`, "17-3 自己選視窗在自煮分頁的「?」沒有跳到說明書的自煮那一段");
+  check(await js(`Number(getComputedStyle(document.getElementById('help-overlay')).zIndex) > Number(getComputedStyle(document.getElementById('meal-picker-overlay')).zIndex)`), "17-3 說明視窗沒有蓋在選擇器上面");
+  await shot("使用說明-自己選的問號", "#help-overlay");
+  await click("#help-close-btn");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await click(`#meal-picker-overlay .picker-help`);
+  await until(`!document.getElementById('help-overlay').hidden && ${helpPane("sub-today-delivery")}`, "17-3 自己選視窗在外食分頁的「?」沒有跳到外食那一段");
+  await click("#help-close-btn");
+  check(!(await js(`document.getElementById('meal-picker-overlay').hidden`)), "17-3 關掉說明後選擇器應該還在");
+  await closePicker();
   await tab("today");
 
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
