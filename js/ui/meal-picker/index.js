@@ -44,7 +44,7 @@ import { todayStr, nowIso } from "../clock.js";
 const LAST_PICKED_KEY = "picker_last_meal_type";
 
 const TABS = ["convenience", "delivery", "cook"];
-const TAB_LABELS = { convenience: "超商", delivery: "外食", cook: "自煮" };
+const TAB_LABELS = { convenience: "超商", delivery: "外食/共餐", cook: "自煮" };
 
 export const mealPicker = {
   slot: null, tab: "convenience", profile: null, targets: null, todayLogs: null, catalog: null, onLogged: null,

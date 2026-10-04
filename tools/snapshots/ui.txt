@@ -2866,7 +2866,7 @@ picker/saved/load/saved_s3/dinner/dom02	#meal-picker-gap html="<p>蛋白質缺�
 picker/saved/load/saved_s3/dinner/dom03	#meal-picker-hint hidden
 picker/saved/load/saved_s3/dinner/dom05	#meal-picker-submit (untouched)
 picker/saved/load/saved_s3/dinner/dom06	#meal-picker-summary html="已配好 · 約 475 kcal（含用油約 10g） · 蛋白質 32g · 碳水 46g · 脂肪 18g · 纖維 6g · 鈉 約 431 mg"
-picker/saved/load/replace/dom01	#meal-picker-gap html="<p>這組合約 956 kcal，這個時段配額約 711 kcal（+245），仍可送出。</p><p>纖維缺口約 6.4g</p><p>外食分頁還有 1 項沒有算進這餐</p>"
+picker/saved/load/replace/dom01	#meal-picker-gap html="<p>這組合約 956 kcal，這個時段配額約 711 kcal（+245），仍可送出。</p><p>纖維缺口約 6.4g</p><p>外食/共餐分頁還有 1 項沒有算進這餐</p>"
 picker/saved/load/replace/dom02	#meal-picker-hint hidden
 picker/saved/load/replace/dom04	#meal-picker-submit (untouched)
 picker/saved/load/replace/dom05	#meal-picker-summary html="已選 3 件 · 約 956 kcal · 蛋白質 57g · 碳水 103g · 脂肪 35g · 纖維 5g · 鈉 約 293 mg（部分品項無資料）"
