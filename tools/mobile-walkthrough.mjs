@@ -1723,7 +1723,7 @@ async function run() {
   await click(`#meal-picker-tabs [data-tab=delivery]`);
   check(!(await js(`!!document.querySelector('#meal-picker-panel [data-home-n]')`)), "15-1 沒選「主食＋家常菜」前不該顯示它的設定");
   await click(`#meal-picker-panel [data-home-toggle]`);
-  await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 展開「家庭共食／自助餐」沒有出現道數按鈕");
+  await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 展開「自助餐」沒有出現道數按鈕");
   const homePreview0 = await js(text("#meal-picker-panel .meal-picker-estimate"));
   check(/白飯 (80|160|240)g/.test(homePreview0) && /菜 (120|160|200)g/.test(homePreview0) && homePreview0.indexOf("蛋白質") !== -1 && homePreview0.indexOf("鈉") !== -1 && homePreview0.indexOf("估計") !== -1 &&
     homePreview0.indexOf("純肉＝肉、魚、蛋、豆腐為主") !== -1, "15-1 預設預覽沒有白飯 160g、菜 160g、蛋白質、鈉、估計、純肉說明：" + homePreview0);
