@@ -1714,6 +1714,86 @@ async function run() {
   await js(`(async () => { const m = ${DBW}; for (const d of [${dayStr(1)}, ${dayStr(2)}]) { const logs = await m.getDailyLogs({ start: d, end: d }); for (const l of logs) await m.undoDailyLog(l.id); } })()`);
   await tab("today");
 
+  // ---------- 15. 主食＋家常菜估算（decisions #151，設計草案 docs/review/2026-10-04-家常菜估算-設計草案.md 第 8 節） ----------
+  console.log("[15. 主食＋家常菜估算]");
+  const homeLogs = (date) => js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({ start: ${date}, end: ${date} })).map((l) => { const c = l.content.components[0]; return JSON.stringify({ slot: l.slot, source: l.source, name: l.name, kcal: l.totals.kcal, kind: c.kind, size: c.size, est: c.est || null, sodium: c.snapshot.sodium_mg }); }); })()`);
+  // 15-1 今天記錄：外食分頁 → 主食＋家常菜（預設值先看一次）→ 2 道菜（素菜、純肉）＋湯 → 加入 → 送出
+  await tab("today");
+  await openPicker("lunch");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-home-n]')`)), "15-1 沒選「主食＋家常菜」前不該顯示它的設定");
+  await click(`#meal-picker-panel [data-estimate-mode=home]`);
+  await until(`!!document.querySelector('#meal-picker-panel [data-home-n="2"]')`, "15-1 切到「主食＋家常菜」沒有出現道數按鈕");
+  const homePreview0 = await js(text("#meal-picker-panel .meal-picker-estimate"));
+  check(homePreview0.indexOf("白飯 160g") !== -1 && homePreview0.indexOf("菜 160g") !== -1 && homePreview0.indexOf("蛋白質") !== -1 && homePreview0.indexOf("鈉") !== -1 && homePreview0.indexOf("估計") !== -1 &&
+    homePreview0.indexOf("純肉＝肉、魚、蛋、豆腐為主") !== -1, "15-1 預設預覽沒有白飯 160g、菜 160g、蛋白質、鈉、估計、純肉說明：" + homePreview0);
+  await shot("估算-主食加家常菜-預設", "#meal-picker-panel .meal-picker-estimate");
+  await click(`#meal-picker-panel [data-home-n="2"]`);
+  await click(`#meal-picker-panel [data-home-cat="0:veg"]`);
+  await click(`#meal-picker-panel [data-home-cat="1:meat"]`);
+  await click(`#meal-picker-panel [data-home-soup=on]`);
+  const homePreview1 = await js(text("#meal-picker-panel .meal-picker-estimate"));
+  check(homePreview1.indexOf("每道約 80g") !== -1 && homePreview1.indexOf("湯 250ml") !== -1 && homePreview1.indexOf("白飯＋2 道菜（素菜、純肉）＋湯") !== -1, "15-1 2 道菜加湯的預覽不對：" + homePreview1);
+  await click(`#meal-picker-panel [data-home-staple=none]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-home-staple-size]')`)), "15-1 不吃主食時不該有主食量");
+  await click(`#meal-picker-panel [data-home-staple=white]`);
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-home-staple-size="M"].selected')`), "15-1 改回白飯後主食量要回到中份");
+  await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
+  await shot("估算-主食加家常菜-360寬", "#meal-picker-panel .meal-picker-estimate");
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  await click(`#meal-picker-panel [data-home-add]`);
+  await until(`${text("#meal-picker-panel .meal-picker-estimate-list")}.indexOf("白飯＋2 道菜（素菜、純肉）＋湯") !== -1 && ${text("#meal-picker-summary")}.indexOf("kcal") !== -1`, "15-1 加入後清單或摘要沒有出現");
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-home-add]')`), "15-1 加入後表單應仍在（可以再加一筆）");
+  await shot("估算-主食加家常菜-已加入", "#meal-picker-panel .meal-picker-estimate");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-lunch")}.indexOf("白飯＋2 道菜") !== -1`, "15-1 送出後午餐紀錄沒有出現家常菜估算");
+  const todayStr15 = `(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`;
+  const log15 = JSON.parse((await homeLogs(todayStr15)).filter((x) => /"slot":"lunch"/.test(x))[0] || "{}");
+  check(log15.kind === "estimate" && log15.size === null && log15.est && log15.est.n === 2 && log15.est.soup === true && log15.est.staple === "white" && log15.kcal > 300 && log15.kcal < 900 && typeof log15.sodium === "number",
+    "15-1 紀錄的元件不是帶 est 的估算：" + JSON.stringify(log15));
+  await click("#rec-lunch .rec-undo-btn");
+  await until(`!!document.querySelector('#rec-lunch .rec-log-btn') || !!document.querySelector('#rec-lunch .rec-pick-btn')`, "15-1 撤銷午餐沒有完成");
+  // 15-2 預約明天午餐：加入 3 道菜 → 排進預約 → 改（帶入）仍看得到、est 與快照存進預約
+  await click(`#today-dates [data-day-offset='1']`);
+  await until(`!document.getElementById('today-day-summary').hidden`, "15-2 切到明天失敗");
+  await click(`#rec-lunch [data-plan-pick=lunch]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "15-2 預約的選擇器沒有打開");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await click(`#meal-picker-panel [data-estimate-mode=home]`);
+  await click(`#meal-picker-panel [data-home-n="3"]`);
+  await click(`#meal-picker-panel [data-home-add]`);
+  await until(`${text("#meal-picker-panel .meal-picker-estimate-list")}.indexOf("3 道菜") !== -1`, "15-2 預約模式加入家常菜估算失敗");
+  await click("#meal-picker-submit");
+  await until(`${text("#today-day-summary")}.indexOf("已排 1 餐") !== -1`, "15-2 排完午餐沒有頂端合計");
+  const plan15 = await js(`(async () => { const m = ${DBW}; const d = new Date(); d.setDate(d.getDate() + 1); const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const p = (await m.getMealPlans({ start: ds, end: ds })).filter((x) => x.slot === 'lunch')[0]; const c = p.content.components[0]; return JSON.stringify({ n: c.est && c.est.n, size: c.size, kcal: c.snapshot.kcal, na: c.snapshot.sodium_mg }); })()`);
+  const p15 = JSON.parse(plan15);
+  check(p15.n === 3 && p15.size === null && p15.kcal > 300 && typeof p15.na === "number", "15-2 預約沒有存 est 與快照：" + plan15);
+  await shot("估算-主食加家常菜-預約", "#rec-lunch");
+  await click(`#rec-lunch [data-plan-edit=lunch]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && ${text("#meal-picker-panel")}.indexOf("3 道菜") !== -1`, "15-2 改預約沒有帶入家常菜估算");
+  await closePicker();
+  await click(`#rec-lunch [data-plan-cancel]`);
+  await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "15-2 取消預約後明天不是「還沒排」");
+  await click(`#today-dates [data-day-offset='0']`);
+  // 15-3 補記前天午餐：主食改糙米飯 → 補記這餐
+  await tab("week");
+  await until(`!!document.querySelector('#week-backfill [data-backfill-slot=lunch]')`, "15-3 本週總覽沒有補記區");
+  await js(`(() => { const el = document.getElementById('week-backfill-date'); el.value = ${dayStr(2)}; el.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await click(`#week-backfill [data-backfill-slot=lunch]`);
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "15-3 補記的選擇器沒有打開");
+  await click(`#meal-picker-tabs [data-tab=delivery]`);
+  await click(`#meal-picker-panel [data-estimate-mode=home]`);
+  await click(`#meal-picker-panel [data-home-staple=brown]`);
+  await click(`#meal-picker-panel [data-home-add]`);
+  await until(`${text("#meal-picker-panel .meal-picker-estimate-list")}.indexOf("糙米飯＋1 道菜") !== -1`, "15-3 補記模式加入家常菜估算失敗");
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden`, "15-3 補記送出後選擇器沒有關閉");
+  const log153 = JSON.parse((await homeLogs(dayStr(2))).filter((x) => /"slot":"lunch"/.test(x))[0] || "{}");
+  check(log153.source === "backfill" && log153.est && log153.est.staple === "brown" && log153.kcal > 300 && log153.kcal !== 700, "15-3 補記的紀錄不對：" + JSON.stringify(log153));
+  await js(`(async () => { const m = ${DBW}; const logs = await m.getDailyLogs({ start: ${dayStr(2)}, end: ${dayStr(2)} }); for (const l of logs) await m.undoDailyLog(l.id); })()`);
+  await tab("today");
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

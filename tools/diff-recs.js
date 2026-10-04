@@ -81,7 +81,7 @@ function normContent(c) {
     if (x.kind === "food" && x.amount != null) return "food:" + x.ref + "=" + x.amount + (x.snapshot ? x.snapshot.unit + "@" + n(Math.round(x.snapshot.kcal * 10) / 10) + "/" + n(x.snapshot.amount) : "");
     if (x.kind === "food" && !x.snapshot) return "food:" + x.ref + "x" + x.qty;
     if (x.kind === "food") return "food:" + x.ref + "x" + x.qty + "@" + n(x.snapshot.kcal) + "/" + n(x.snapshot.amount) + x.snapshot.unit;
-    return "estimate:" + x.name + "@" + n(x.snapshot.kcal);
+    return "estimate:" + x.name + "@" + n(x.snapshot.kcal) + (x.est ? "|est=" + stable(x.est) + "|" + normTotals(x.snapshot) : "");
   });
   return c.meal_type + "|" + (c.archetype_id || "-") + "/" + (c.method_id || "-") + "|" + comps.join(",") + "|implicit=" + stable(c.implicit);
 }
@@ -571,6 +571,38 @@ async function snapPicker() {
     await A.pickerSubmit();
     A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", k + "/submit" + i, normWrite(w)); });
     A.takeAlerts().forEach((m, i) => emit("picker", k + "/alert" + i, m));
+    A.takeDom(); A.takeEngineIO();
+  }
+
+  // 「主食＋家常菜」估算（decisions #151）：每個設定一行七欄合計；最後送出一筆看寫入（est 與快照）；估算卡 HTML 每個標籤一行
+  {
+    const hbase = { n: 1, cats: ["mixed"], staple: "white", staple_size: "M", dish: "M", soup: false };
+    const hcases = [];
+    ["veg", "mixed", "meat"].forEach((cat) => ["S", "M", "L"].forEach((dish) => hcases.push(["cat-" + cat + "/dish-" + dish, { cats: [cat], dish: dish }])));
+    ["white", "brown", "mixed", "noodle"].forEach((st) => ["S", "L"].forEach((sz) => hcases.push(["staple-" + st + "/" + sz, { staple: st, staple_size: sz }])));
+    hcases.push(["staple-none", { staple: "none", staple_size: null }]);
+    [2, 3, 4].forEach((n) => hcases.push(["n-" + n, { n: n, cats: ["veg", "mixed", "meat", "veg"].slice(0, n) }]));
+    hcases.push(["soup", { soup: true }]);
+    hcases.push(["full-meal", { n: 4, cats: ["veg", "veg", "mixed", "meat"], staple_size: "L", dish: "L", soup: true }]);
+    const cardLines = (html) => html.replace(/<(button|div|p|input)/g, " ¶ <$1").split(" ¶ ").filter(Boolean).join(" ¶ ");
+    for (const [name, patch] of hcases) {
+      env.setNow(NOW_DAY);
+      A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+      await A.pickerOpen("lunch");
+      A.takeDom();
+      emit("picker", "home-estimate/" + name, normTotals(A.pickerHomeEstimate(Object.assign({}, hbase, patch))));
+    }
+    emit("picker", "home-estimate/card-home", cardLines(A.pickerHomeCardHtml(hbase, "home")));
+    emit("picker", "home-estimate/card-plain", cardLines(A.pickerHomeCardHtml(hbase, "plain")));
+    A.takeDom(); A.takeEngineIO();
+    env.setNow(NOW_DAY);
+    A.setDb({ profile: P.M, dailyLogs: TODAY_LOGS.breakfast, customFoods: [], tdeeState: tdeeState({ goal_mode: null }) });
+    await A.pickerOpen("lunch");
+    A.takeDom();
+    A.pickerHomeEstimate(Object.assign({}, hbase, { n: 2, cats: ["veg", "meat"], soup: true }), "共食");
+    await A.pickerSubmit();
+    A.takeWrites().forEach((w, i) => { if (w.op === "addDailyLog") emit("picker", "home-estimate/submit" + i, normWrite(w)); });
+    A.takeAlerts().forEach((m, i) => emit("picker", "home-estimate/alert" + i, m));
     A.takeDom(); A.takeEngineIO();
   }
 
