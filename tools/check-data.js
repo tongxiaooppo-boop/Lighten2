@@ -9,6 +9,7 @@ const path = require("path");
 const { loadReferences, computePer100g, FIELDS, DERIVED_REF } = require("./lib/ingredient-values");
 const FT = require("./lib/food-tree-values");
 const TL = require("./lib/tfda-lookup-values");
+const HD = require("./lib/home-dish-values");
 const { exchangeNames, loadExchange } = FT;
 
 const ROOT = path.join(__dirname, "..");
@@ -370,6 +371,68 @@ function checkTfdaLookup(ctx, fileText) {
     const gaps = sampleAllergenGaps(it.allergen_tags, it.name + " " + it.desc, it.id);
     if (gaps.length) err(w + "：名稱或描述提到「" + gaps.join("、") + "」，要標出來或未確認（章程 B6.2）");
   });
+}
+
+// 家常菜估算資料（章程 B4「家常菜估算」、B12；decisions #151）：產生檔等於重算、配方與調料選樣表的規則
+function checkHomeDishes(ctx, fileText) {
+  const built = HD.buildHomeDishes(ctx);
+  built.problems.forEach((m) => err("家常菜估算：" + m));
+  built.warnings.forEach((m) => warn(m));
+  if (fileText !== null && HD.stringifyHomeDishes(built.data) !== fileText) err("data/home_dishes.json 跟重算結果不同（不手改，跑 node tools/build-home-dishes.js）");
+  const texts = [];
+  (ctx.recipes.dishes || []).forEach((d) => { texts.push([d.id, d.note]); });
+  (ctx.seasonings.items || []).forEach((e) => {
+    texts.push([e.id, e.note]);
+    texts.push([e.id, e.source && e.source.note]);
+    Object.keys(e.field_sources || {}).forEach((k) => texts.push([e.id, e.field_sources[k].note]));
+  });
+  texts.forEach(([id, t]) => { if (/AI|Claude|GPT|Gemini/i.test(t || "")) err("家常菜估算 " + id + "：note 不得出現 AI 回答的內容（章程 B2.6）"); });
+}
+
+// 家常菜估算的工具自我檢查：每條規則一個刻意改壞的例子要被擋、原資料不被擋
+function selfTestHomeDishes(reports) {
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const ctx0 = HD.loadHomeDishContext(readJson);
+  const bad = (what) => err("工具自我檢查（家常菜）：" + what);
+  const run = (mutate) => () => {
+    const ctx = Object.assign({}, ctx0, { recipes: clone(ctx0.recipes), seasonings: clone(ctx0.seasonings) });
+    mutate(ctx);
+    checkHomeDishes(ctx, null);
+  };
+  const dish = (c, id) => c.recipes.dishes.find((d) => d.id === id);
+  const seas = (c, id) => c.seasonings.items.find((e) => e.id === id);
+  const cases = [
+    ["原資料", /./, () => {}, false],
+    ["ref 不存在", /不是食材 id/, (c) => { dish(c, "hd_garlic_cabbage").recipe[0].ref = "no_such_food"; }],
+    ["ref 有 null（沒補 0 的醬）", /是 null/, (c) => { dish(c, "hd_garlic_cabbage").recipe[0].ref = "P0800301"; }],
+    ["調料 derived 不是鹽與水", /derived 只限食鹽與水/, (c) => { seas(c, "hs_soy_sauce").source = { type: "derived", ref: "x" }; }],
+    ["食鹽的鈉被改", /hs_salt|derived 的 sodium_mg/, (c) => { seas(c, "hs_salt").per_100g.sodium_mg = 38000; }],
+    ["出處種類不在白名單", /出處只能是/, (c) => { seas(c, "hs_soy_sauce").source = { type: "estimate", ref: "x" }; }],
+    ["衛福部有值卻補 0", /不能再補 0/, (c) => { seas(c, "hs_soy_sauce").field_sources = { sat_fat_g: { type: "derived", value: 0, ref: "調味料", note: "x" } }; }],
+    ["缺值補 0 沒寫理由", /要在 field_sources/, (c) => { delete seas(c, "hs_oyster_sauce").field_sources; }],
+    ["缺值補 0 的理由不合食品分類", /食品分類/, (c) => { seas(c, "hs_oyster_sauce").field_sources.sat_fat_g.ref = "油脂"; }],
+    ["缺值補非 0", /要在 field_sources/, (c) => { seas(c, "hs_oyster_sauce").field_sources.sat_fat_g.value = 1; }],
+    ["類別不合法", /class/, (c) => { dish(c, "hd_garlic_cabbage").class = "fish"; }],
+    ["湯的類別不是 null", /class/, (c) => { dish(c, "hd_seaweed_egg_soup").class = "veg"; }],
+    ["某類別少於 3 道", /至少要 3 道/, (c) => { dish(c, "hd_cold_cucumber").class = "mixed"; dish(c, "hd_garlic_qingjiang").class = "mixed"; }],
+    ["湯少於 3 道", /湯至少要 3 道/, (c) => { c.recipes.dishes = c.recipes.dishes.filter((d) => d.id !== "hd_seaweed_egg_soup"); }],
+    ["跟 NTU 差超過 25% 沒寫理由", /deviation_note/, (c) => { dish(c, "hd_garlic_cabbage").ntu_kcal_100g = 150; }],
+    ["note 有 AI 字樣", /AI/, (c) => { dish(c, "hd_garlic_cabbage").note = "Gemini 估計"; }],
+    ["油用錯 ref", /cooking_oil/, (c) => { dish(c, "hd_garlic_cabbage").oil.ref = "hs_sesame_oil"; }],
+    ["id 重複", /重複/, (c) => { dish(c, "hd_garlic_qingjiang").id = "hd_garlic_cabbage"; }],
+    ["id 格式", /hd_ 開頭/, (c) => { dish(c, "hd_garlic_cabbage").id = "garlic"; }],
+    ["id 格式（調料）", /hs_ 開頭/, (c) => { seas(c, "hs_soy_sauce").id = "soy"; }],
+  ];
+  cases.forEach(([what, re, mutate, expect]) => {
+    if (expect === false) { if (reports(/./, run(mutate))) bad("原資料卻報錯"); return; }
+    if (!reports(re, run(mutate))) bad(what + "卻沒報錯");
+  });
+  // 類別手動標與自動規則不一致只是警告
+  const before = warnings.length;
+  checkHomeDishes((() => { const c = Object.assign({}, ctx0, { recipes: clone(ctx0.recipes), seasonings: clone(ctx0.seasonings) }); dish(c, "hd_mapo_tofu").class = "mixed"; return c; })(), null);
+  const warned = warnings.slice(before).some((m) => /自動規則/.test(m));
+  warnings.length = before;
+  if (!warned) bad("手動類別與自動規則不一致卻沒警告");
 }
 
 // 分層規則的工具自我檢查：每條規則一個刻意改壞的例子要被擋、原資料不被擋
@@ -834,6 +897,7 @@ function checkToolRules(refs) {
   }
   if (reports(/素食依據/, product({ name: "牛蒡絲", allergen_tags: [], vegan: true, lacto_ovo: true }))) err("工具自我檢查：牛蒡標全素卻被當成肉類");
   selfTestFoodTree(refs, reports);
+  selfTestHomeDishes(reports);
   // 芒果同義字（衛福部標註審查第 4 點）與衛福部查詢檔
   if (MANGO_WORDS.test("檸檬果乾")) err("工具自我檢查：檸檬果乾被當成芒果");
   if (!MANGO_WORDS.test("樣仔青") || !MANGO_WORDS.test("檬果乾")) err("工具自我檢查：芒果同義字沒認出來");
@@ -879,6 +943,10 @@ function main() {
   const treeText = fs.existsSync(path.join(ROOT, "data", "food_tree.json")) ? fs.readFileSync(path.join(ROOT, "data", "food_tree.json"), "utf8") : "";
   const catalogUids = readJson("convenience_items.json").map((p) => p.id).concat(readJson("taiwan_items.json").map((p) => "tw_" + p.id));
   checkFoodTree(treeCtx, treeText, readJson("reference/food_tree_ids_frozen.json"), catalogUids);
+
+  console.log("[家常菜估算]");
+  const homeFile = path.join(ROOT, "data", "home_dishes.json");
+  checkHomeDishes(HD.loadHomeDishContext(readJson), fs.existsSync(homeFile) ? fs.readFileSync(homeFile, "utf8") : "");
 
   console.log("[衛福部查詢檔]");
   const lookupFile = path.join(ROOT, "data", "tfda_lookup.json");
