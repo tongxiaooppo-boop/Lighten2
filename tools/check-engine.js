@@ -2425,6 +2425,9 @@ function checkSavedMealsDb(catalog) {
     /菜的量/.test(thrown(ecfg({ dish: "XL" }))) && /湯/.test(thrown(ecfg({ soup: 1 }))) && /缺少菜的類別|還沒載入/.test(thrown(ecfg(), { staples: {}, classes: {}, soup: null, dishes: [], byId: {} })), "設定不完整或資料沒載入要丟錯");
   check(mc.homeEstimateName(ecfg({ n: 2, cats: ["veg", "meat"], soup: true })) === "白飯＋2 道菜（素菜、純肉）＋湯" && mc.homeEstimateName(ecfg({ staple: "none", staple_size: null, n: 2, cats: ["mixed", "meat"] })) === "2 道菜（菜肉、純肉）" &&
     mc.homeEstimateName(ecfg({ staple: "noodle" })) === "白麵＋1 道菜（素菜）", "預設名稱");
+  check(mc.homeEstimateDefaultDish({ protein_g: 60 }) === "S" && mc.homeEstimateDefaultDish({ protein_g: 90 }) === "M" && mc.homeEstimateDefaultDish({ protein_g: 150 }) === "M" && mc.homeEstimateDefaultDish({ protein_g: 151 }) === "L" &&
+    mc.homeEstimateDefaultDish({ protein_g: 89 }) === "S" && mc.homeEstimateDefaultDish(null) === "M" && mc.homeEstimateDefaultDish({}) === "M" && mc.homeEstimateDefaultDish({ protein_g: 180 }) === "L",
+    "菜量預設：每餐蛋白質目標（一天 ÷ 3）<30g 小、30–50g 中、>50g 大，沒有目標就中");
   const heDraft = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd)], drink: null, qtyByUid: {}, foods: [] });
   check(!errOf(() => db.validateMealPlan(plan(mc.toPlanContent(heDraft, { keepImplicit: false })))) && mc.contentTotals(heDraft, catalog).kcal === mc.homeEstimate(ecfg({ n: 2, cats: ["veg", "meat"], soup: true }), hd).snapshot.kcal,
     "engine 產生的估算草稿通過預約驗證、合計等於快照");

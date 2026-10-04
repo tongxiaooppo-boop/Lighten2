@@ -119,6 +119,8 @@ export const EST_DISH_GRAMS = { S: 120, M: 160, L: 200 };
 export const EST_STAPLE_PORTIONS = { S: 2, M: 4, L: 6 };
 export const EST_STAPLE_G_PER_PORTION = { white: 40, brown: 40, mixed: 40, noodle: 60 };
 export const EST_SOUP_ML = 250;
+// 打開估算卡時「菜量」預設選哪一格：每餐蛋白質目標（一天目標 ÷ 3）低於第一個門檻選小、高於第二個選大，其餘中（使用者 2026-10-04）。只決定預設，估算的數字永遠等於畫面上選的量
+export const EST_DEFAULT_DISH_PROTEIN_CUTS = [30, 50];
 export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };
 export const EST_STAPLE_LABELS = { white: "白飯", brown: "糙米飯", mixed: "雜糧飯", noodle: "白麵", none: "不吃" };
 export const ESTIMATE_RECALL_GROUP = { breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };

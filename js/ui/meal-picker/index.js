@@ -21,7 +21,7 @@ import {
   buildDraftContent, contentTotals, buildLogEntry, manualSelectionProblem, canAddManualItem, slotGaps,
   composeProblem, oilOptions, draftLogName, copyFromBuiltin,
   resolveSavedMeal, savedMealDraft, savedMealTotals, savedMealDefaultName, savedMealUnavailableLine, toSavedContent, savedMealForSave,
-  toPlanContent, homeEstimate,
+  toPlanContent, homeEstimate, homeEstimateDefaultDish,
 } from "../../engine/meal-content.js";
 import {
   resolveDefaultMealType, tabOfMealType, partitionByMealType, partitionAllChannels, groupForTab, placeNewCustom, fillableReason, splitDisliked,
@@ -205,7 +205,7 @@ export async function openMealPicker(slotArg, opts) {
     m.tabs[t] = { items: parts[t], reasons: reasonsFor(parts[t], profile), codes: codesFor(parts[t], profile), selected: [] };
   });
   m.tabs.delivery.estimates = [];
-  m.homeEst = emptyHomeEst(); // 「主食＋家常菜」估算表單（decisions #151），關掉選擇器再開回到預設
+  m.homeEst = emptyHomeEst(homeEstimateDefaultDish(targets)); // 「主食＋家常菜」估算表單（decisions #151），關掉選擇器再開回到預設
   m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile), codes: codesFor(parts.drinks, profile) };
   m.drinkUid = null;
   m.qtyByUid = {}; // 份量倍數（PRD 12.3）：uid → 0.5／1.5／2，缺＝1；商品分頁的品項與飲料共用

@@ -14,7 +14,7 @@
 import {
   PRIMARY_SLOT_SCALE_RANGE, COOKING_OIL_ID, OIL_HABIT_FACTOR, SEASONING_IDS, OIL_TSP_OPTIONS_G, NO_COOK_METHOD_ID, COMPOSE_MAX, ESTIMATE_SIZE_KCAL, ESTIMATE_RECALL_KCAL, ESTIMATE_RECALL_GROUP,
   ROLE_LABELS, tierRank, isQuickTier, manualRoleMax, QTY_OPTIONS, UNVERIFIED_ALLERGEN, FOOD_MAX_PER_MEAL,
-  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_CAT_LABELS, EST_STAPLE_LABELS,
+  EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, EST_DISH_GRAMS, EST_STAPLE_PORTIONS, EST_STAPLE_G_PER_PORTION, EST_SOUP_ML, EST_DEFAULT_DISH_PROTEIN_CUTS, EST_CAT_LABELS, EST_STAPLE_LABELS,
 } from "../core/config.js";
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
@@ -582,6 +582,14 @@ export function homeEstimateProblem(cfg, home) {
   if (cfg.staple !== "none" && !(home.staples[cfg.staple] && home.staples[cfg.staple].per_100g)) return "家常菜估算：缺少主食資料。";
   if (cfg.soup && !(home.soup && home.soup.per_100g)) return "家常菜估算：缺少湯的資料。";
   return null;
+}
+
+// 估算卡打開時菜量的預設：依一天的蛋白質目標（身高、體重、目標模式算出的）換成每餐，沒有目標就中份
+export function homeEstimateDefaultDish(targets) {
+  const perMeal = targets && Number(targets.protein_g) > 0 ? Number(targets.protein_g) / 3 : null;
+  if (perMeal === null) return "M";
+  if (perMeal < EST_DEFAULT_DISH_PROTEIN_CUTS[0]) return "S";
+  return perMeal > EST_DEFAULT_DISH_PROTEIN_CUTS[1] ? "L" : "M";
 }
 
 export function homeEstimateName(cfg) {
