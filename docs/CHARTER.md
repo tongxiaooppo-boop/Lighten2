@@ -45,6 +45,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 | `data/reference/` | TFDA 資料庫等參考資料（檢查程式依賴，版本管理） | 是（B10） |
 | `data/tfda_lookup.json` | 衛福部全表的精簡查詢檔（由 `tools/` 從 `data/reference/` 產生，PRD 12.2） | 是（數值必須跟參考資料算出來的完全相等） |
 | `data/food_tree.json` | 代換表分層品項（由 `tools/` 從 `data/reference/` 的代換表轉錄、對應表、標註產生，PRD 13.3） | 是（B4「分層品項」、B6、B12）。代換表完整轉錄搬進 `data/reference/` 時取代舊的部分轉錄 `food_exchange_table.json`，decisions #35 引用的欄位要相容 |
+| `data/home_dishes.json` | 家常菜估算的資料（由 `tools/build-home-dishes.js` 從 `data/reference/home_dish_recipes.json`（手寫配方）與 `data/reference/home_dish_seasonings.json`（調料選樣表）產生，decisions #151）：每道菜每 100g 的七欄、三個類別的平均、湯平均、主食每 100g | 是（B4「家常菜」、B12；數值必須跟來源重算完全相等）。只供外食分頁「主食＋家常菜」估算，不供逐道選擇，推薦不得讀（C4.17 ③） |
 | 使用者的「我的品項」（`custom_foods` store） | 使用者自建 | 否，只受 B8 的最低驗證 |
 | 使用者的「我的食材」「我的料理」（`custom_ingredients`、`custom_dishes` store，PRD 12.4、12.5） | 使用者自建 | 否，只受 B8 的最低驗證；B6.8 不適用 |
 
@@ -157,6 +158,13 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 - `tfda_id` 只有 `builtin_only` 且內建出處是 `usda` 的可以是 null（希臘優格）；這種品項跳過同樣本、狀態、描述關鍵字的檢查〔機〕。
 - **資料檔不排序**：`items` 照對應表的順序（代換表原順序）；「組內依名稱排序」是顯示的事，由 engine 以 `Intl.Collator` 排、同名以 id 為次要鍵（decisions #111：不同機器的 ICU 排序不同，資料檔排序會讓 CI 誤報）。
 
+### 家常菜估算（`home_dishes.json`，decisions #151）
+
+- **配方**（`data/reference/home_dish_recipes.json`，手寫）：每道菜 `{ id, name, kind: "dish"|"soup", class: "veg"|"mixed"|"meat"（湯為 null）, recipe: [{ ref, g }], oil: { ref, g }, cooked_g, note, ntu_kcal_100g?, deviation_note? }`。`ref` 只能是四種：`ingredients.json` 食材 id、`food_tree` 的 `fx_` id、衛福部整合編號、調料選樣表的 id。類別**手動標**；自動規則（素菜＝沒有蛋豆魚肉；純肉＝蛋豆魚肉且蔬菜占食材重量 < 30%；其餘菜肉）只在 check-data 當警告對照。油用 `cooking_oil`，只做一個版本（不分家裡與店家）。
+- **調料選樣表**（`data/reference/home_dish_seasonings.json`）：每項七欄都有數字，出處只能是 `tfda`（整合編號）、`label`（市售標示，給日後的沙茶醬）、`derived`——`derived` 只限兩項：食鹽（鈉 39,340 mg/100g，NaCl 化學計量）與水（七欄 0）〔機：check-data 照這張白名單擋〕。缺值填 0 只准用 B5.1 表列的理由（調味料脂肪 ≤ 0.5 g/100g 的飽和脂肪補 0），選樣表不另開例外。
+- **產生檔**：每道菜每 100g ＝ Σ(食材每 100g × 克數) ÷ `cooked_g` × 100，七欄；`class` 平均為簡單平均（不加權）；帶 `veg_share`、`source`、`note`。湯的水量、骨頭可食比例這類假設要寫進 `note`。
+- 算法放 `tools/lib/home-dish-values.js`（工具與 check-data 共用，C2）；改菜色只能改來源檔再跑 `build-home-dishes.js`。
+
 ## B5. 數值規則
 
 1. **未知寫 `null`，不寫 0**；0 代表「確定沒有」〔機：格式；計算規則見 C4.5〕。例外：TFDA 值是 null、但實際上接近 0 的（例如油的鈉、蔬菜的飽和脂肪），可以用 `field_sources` 標 `derived` 填 0，並在 `note` 說明理由〔機：填 0 必有說明〕。理由只能是下表四類，條件看衛福部樣品的「食品分類」，不看代換表分組（decisions #107）；加工調理食品類一律不准填〔機：`ingredients.json` 與 `food_tree.json` 都驗〕：
@@ -167,6 +175,7 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 | 蔬菜 | 蔬菜類、菇類，且脂肪 ≤ 0.5 g/100g | `sat_fat_g` |
 | 水果 | 水果類，且脂肪 ≤ 0.5 g/100g | `sat_fat_g` |
 | 油脂 | 油脂類 | `fiber_g`、`sodium_mg` |
+| 調味料 | 調味料及香辛料類，且脂肪 ≤ 0.5 g/100g | `sat_fat_g`（家常菜調料選樣表用，蠔油、烏醋、番茄醬；decisions #151） |
 2. **熱量非負**；除了 `method` 和調味程度以外的食材熱量必須大於 0〔機〕。
 3. **生熟**：`basis` 必須跟來源樣品一致；TFDA 沒有熟樣品時，熟重數值用 `derived` 並寫公式〔機：`cooked` 必有 `cooked_to_raw` 與公式〕。**蔬菜一律用生重**，不做蔬菜的生熟換算〔機〕。
 4. **巨量營養素驗算**：出處是 `tfda`／`usda`／`label`／`official_web` 的數字，`蛋白質×4＋(碳水−纖維)×4＋纖維×2＋脂肪×9` 跟熱量差距超過 15% 要在 `note` 說明，否則視為抄錯〔機〕。`derived`／`estimate` 不驗（反推值必然通過）。
@@ -237,7 +246,9 @@ v1 重來的根本原因是「概念一改再改」，所以概念層的規則�
 
 **錯誤**：格式與必填欄位、列舉值、id 唯一；熱量非負（B5.2）；null 規則；TFDA 食材數值與參考資料完全相等；`tfda_lookup.json` 逐筆與參考資料算出來的值完全相等（現行編號比對最新版；標了已下架的編號比對它最後出現的那一版，B10）；出處順位（B2.1、B2.2）；`label_unsourced` 凍結清單只減不增；`cooked` 有 `cooked_to_raw` 與公式；蔬菜為 `raw`；烹調法有 `implicit`；骨架有 `seasoned`、`allow` 引用正確、骨架 id 唯一與格式、同軸 allow 不重複、每個時段至少一筆組合、id 不互為前綴（B7.6）；過敏原詞彙、複合料理未確認規則（B6.3）、飲食限制與過敏原一致（B6.8）；巨量營養素驗算（B5.4）；`kcal_range` 低 ≤ 代表值 ≤ 高。**分層品項**（`food_tree.json`）：對應表 374 個代換表品名齊全不重複、`merge` 的目標是 `item`、被併入者標註相同、`exclude` 有理由；`data/food_tree.json` 等於工具重算的結果（逐筆逐欄、含順序）；`tfda_id` 存在（B4 的 USDA 例外）；樣品狀態：在衛福部「樣品狀態」去掉括號內的成分清單後找關鍵字（濕→wet；熟→cooked；乾貨、果乾、乾麵條→dry；生、未烹調→raw；冷凍包裝、包裝產品、罐頭、瓶裝、糖漬、醃漬、鹽漬→as_is；生熟乾濕優先於包裝型態；有樣品狀態但沒有關鍵字的水果、蔬菜、菇類→raw；生熟等值推算的品項不比），推得出時跟對應表記的狀態一致，推不出的對應表要有理由欄〔機：理由非空；理由對不對〔人〕〕；共用內建 id 的狀態等於內建 `basis`；含糖：`sugar: none` 的樣品描述不得有加糖字眼、`sugar: added` 的必須有；缺值填 0 照 B5.1 白名單；1 份熱量超出代換表名目熱量（含附註的碳水、脂肪）0.6–1.6 倍的，對應表要有 `nominal_reason`；主要營養素（豆魚蛋肉的蛋白質 7g、全穀雜糧與水果的碳水 15g 加附註、油脂的脂肪 5g）超出 0.6–1.6 倍的也一樣（decisions #112）；果乾標 `sugar: none` 要衛福部樣品寫「無加糖」「無糖」（decisions #109、#112）；1 份與每 100g 的營養跟參考資料算出來的完全相等（兩條路徑見 B4）；`fx_` id 格式 `^fx_[a-z0-9_]+$`、凍結、`retired` 不重用（B10）；烹調法、隱含成分、醬料的 id 不得出現在分層；唯一性：分層 id 不等於任何 catalog uid、`fx_` id 不等於任何內建食材 id、分層 id 等於內建食材 id 時必須 `builtin: true` 且只出現一次、分層 id 不用 `custom_`／`cdish_`／`cing_`／`saved_` 前綴；B6.2、B6.3、B6.8、B6.9 與芒果規則（B6.1）照常適用；沒有重複品項（同一個 `tfda_id` 加同一個可食克數，或同一大類下同一個畫面名稱）；`same_sample_products` 跟現成品項的出處公式一致；decisions #35 引用的代換表數字在轉錄檔裡仍成立。
 
-**警告**：食材沒被骨架引用；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）；衛福部樣品描述的過敏原關鍵字跟標註對不上（B6.2）。
+**家常菜估算**（`home_dishes.json`）：產生檔等於工具重算（逐筆逐欄）；配方 `ref` 都查得到且屬四種來源；調料選樣表七欄無 null、出處依 B4 白名單、`derived` 只限食鹽與水；每個類別至少 3 道、湯至少 3 道；`cooked_g` 與食材總重合理；有 NTU 對照的算出值差超過 25% 要寫 `deviation_note`；note 無 AI 字樣；缺值填 0 照 B5.1；檢查程式自身要有自我檢查。
+
+**警告**：食材沒被骨架引用；類別手動標與自動規則不一致；列出所有 `label_unsourced`、`estimate` 欄位（查證優先順序用）；衛福部樣品描述的過敏原關鍵字跟標註對不上（B6.2）。
 
 ---
 
@@ -268,6 +279,7 @@ ui/  →  data/    →  core/
 | IndexedDB 存取 | `data/db.js` |
 | 過敏原／飲食限制／不吃清單判斷 | `engine/filters.js` |
 | 一餐內容的營養計算（含用油、調味、縮放、null 傳染）、驗證、快照 | `engine/meal-content.js` |
+| 家常菜估算（`est`）的七欄營養與克數換算 | `engine/meal-content.js`（估算函式）；常數（菜量 120／160／200g、主食 2／4／6 份、湯 250ml）在 `core/config.js`；每 100g 數字來自 `data/home_dishes.json`（`tools/lib/home-dish-values.js` 產生，前端不重算配方） |
 | 代換表分層品項的 1 份營養（預先算好，前端不換算） | `tools/` 產生 `data/food_tree.json`；`data/catalog.js` 載入、正規化 `diet_tags` |
 
 「不吃清單」「倒讚紀錄」一律以 id 為 key，不用名稱〔機：check-engine 斷言——把食材改名後，不吃清單仍然命中〕。
@@ -308,7 +320,7 @@ ui/  →  data/    →  core/
 14. 鈉只中性顯示「鈉 約 X mg（參考 2400 mg）」：不上色、不警告、不做頻率統計、不參與推薦評分、不跟某天體重連在一起提示；用油選項只寫克數或茶匙〔機：顯示欄位（鈉、飽和脂肪）只在 `engine/meal-content.js` 處理，其他 engine 模組只能把 `displayFields(...)` 原封併進輸出物件；啟發式檢查；〔人〕：畫面〕。
 15. `picker_last_meal_type` 只有「自己選」modal 能讀，推薦、統計、hero 不得讀取；只有今天記錄（log 模式）會寫，預約（plan）與補記（backfill）模式不寫〔機：check-arch grep——這個 key 只允許出現在 `data/db.js` 與「自己選」modal 的檔案〕。
 16. 「我的組合」（`saved_meals`）只供手動引用，推薦、統計、hero 不得讀取〔機：check-arch——`data/db.js` 的讀取函式 `listSavedMeals`、`getSavedMeal`（以及之後任何會回傳 `saved_meals` 內容的函式，包括整批匯出）只允許白名單檔案 import；白名單寫在 `tools/check-arch.js` 的設定裡，只能加入負責「選擇器、組合管理區、今日建議日期切換的預選編輯（decisions #119，取代餐點日曆；預約解析與預選編輯在 `js/ui/today-plans.js`）、食物資料頁（「我的食物」主分頁）、備份匯出匯入」這五類職責的檔案，檔名調整不算修改本章程；寫入函式不限〕。每次引用都經過 `engine/meal-content.js` 的 `resolveSavedMeal`（元件級的硬性過濾、依目前骨架重新驗證含免開火與軸上限、下架與隱藏處理）〔機：check-engine 對 `resolveSavedMeal` 斷言；〔人〕：ui 引用時都呼叫它〕。
-17. 「我的食材」「我的料理」（`custom_ingredients`、`custom_dishes`）只供手動使用，推薦、統計、hero 不得讀取內容；推薦不產生 `food` 元件、不依 `food` 的 `ref` 做任何判斷，預算與統計只經由 `totals`，或用「不是 `ingredient` 就用快照」的泛用寫法加總（不寫字面量 `"food"`）；推薦不讀 `meal_plan` 的元件種類（engine 只看暫時紀錄的 `totals`，由 `ui/today-plans.js` 解析後傳入，不依 `dish`、`food` 等 `kind` 判斷）；常吃清單（`settings.favorite_refs`）只能用來排序（「自己選」與「我的食物」）〔機：check-arch——① `data/db.js` 裡凡是會回傳這兩個 store 內容的函式（包括整批匯出）都列進讀取函式清單，只允許白名單檔案 import，白名單寫在 `tools/check-arch.js`，只能加入負責「選擇器、料理編輯器、食物資料頁（「我的食物」主分頁）、組合管理區、今日建議日期切換的預選編輯、計畫顯示模組、備份匯出匯入」的檔案，`js/ui/tab-today.js`、`js/ui/today-hero.js` 與 `engine/` 一律不得 import；② 常吃清單只能用 `data/db.js` 的 `getFavoriteRefs`／`addFavoriteRef`／`removeFavoriteRef` 讀寫（decisions #127 取代 #81 寫的 `setFavoriteRefs`），`favorite_refs` 字串只准出現在 `data/db.js`（掃原始碼含字串）；`getFavoriteRefs` 只准 `js/data/db.js`、`js/ui/meal-picker/`、`js/ui/tab-foods.js` import，料理編輯器到切片 9 再加（備份走 `exportAllData`，由 ① 管）；engine 的參數名 `favoriteRefs` 只准出現在 `engine/picker.js`（只做排序與分組）；推薦（`recommend.js`、`today.js`、`pool.js`、`matcher.js`）不讀常吃（decisions #128 取消切片 6）；③ 啟發式輔助：`engine/pool.js`、`recommend.js`、`today.js`、`matcher.js` 的原始碼（不去掉字串）不得出現字面量 `"dish"`、`"food"`，也不得出現識別字 `foodTree`（分層資料掛在 `catalog.foodTree`，推薦候選池不讀）〕（PRD 12.1、12.5、12.7、13.4、13.6；decisions #81、#82、#92）。
+17. 「我的食材」「我的料理」（`custom_ingredients`、`custom_dishes`）只供手動使用，推薦、統計、hero 不得讀取內容；推薦不產生 `food` 元件、不依 `food` 的 `ref` 做任何判斷，預算與統計只經由 `totals`，或用「不是 `ingredient` 就用快照」的泛用寫法加總（不寫字面量 `"food"`）；推薦不讀 `meal_plan` 的元件種類（engine 只看暫時紀錄的 `totals`，由 `ui/today-plans.js` 解析後傳入，不依 `dish`、`food` 等 `kind` 判斷）；常吃清單（`settings.favorite_refs`）只能用來排序（「自己選」與「我的食物」）〔機：check-arch——① `data/db.js` 裡凡是會回傳這兩個 store 內容的函式（包括整批匯出）都列進讀取函式清單，只允許白名單檔案 import，白名單寫在 `tools/check-arch.js`，只能加入負責「選擇器、料理編輯器、食物資料頁（「我的食物」主分頁）、組合管理區、今日建議日期切換的預選編輯、計畫顯示模組、備份匯出匯入」的檔案，`js/ui/tab-today.js`、`js/ui/today-hero.js` 與 `engine/` 一律不得 import；② 常吃清單只能用 `data/db.js` 的 `getFavoriteRefs`／`addFavoriteRef`／`removeFavoriteRef` 讀寫（decisions #127 取代 #81 寫的 `setFavoriteRefs`），`favorite_refs` 字串只准出現在 `data/db.js`（掃原始碼含字串）；`getFavoriteRefs` 只准 `js/data/db.js`、`js/ui/meal-picker/`、`js/ui/tab-foods.js` import，料理編輯器到切片 9 再加（備份走 `exportAllData`，由 ① 管）；engine 的參數名 `favoriteRefs` 只准出現在 `engine/picker.js`（只做排序與分組）；推薦（`recommend.js`、`today.js`、`pool.js`、`matcher.js`）不讀常吃（decisions #128 取消切片 6）；③ 啟發式輔助：`engine/pool.js`、`recommend.js`、`today.js`、`matcher.js` 的原始碼（不去掉字串）不得出現字面量 `"dish"`、`"food"`，也不得出現識別字 `foodTree`（分層資料掛在 `catalog.foodTree`，推薦候選池不讀）與 `homeDishes`（家常菜估算資料掛在 `catalog.homeDishes`，推薦不讀，decisions #151）〕（PRD 12.1、12.5、12.7、13.4、13.6；decisions #81、#82、#92）。
 
 ## C5. 修 bug 的規則
 
