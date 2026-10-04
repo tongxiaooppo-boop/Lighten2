@@ -1,4 +1,37 @@
-# 給接手的 Opus：Lighten2 交接（2026-10-04：餐型擴充步驟 0–3 完成，家常菜估算設計定稿、等開工；全部未推送）
+# 給接手的 Opus：Lighten2 交接（2026-10-04 晚：家常菜估算與家庭共餐完成並推送；餐型擴充 0–3 已完成；下一步見第 0 節）
+
+## 0. 先讀這段（2026-10-04 晚收工狀態；**全部已 commit 並推送到 origin/master，最新 `ee73488`**）
+
+一律用中文回覆使用者。使用者還沒在手機測：短清單第 12（日期切換與預約）、13（昨天的餐與補記）、14（新的自煮做法）、15（自助餐估算）、16（家庭共餐）項，以及超商分頁的飲料小類。手機腳本 `docs/手機實機腳本.md` 短清單第 84–96 行是 15、16 項。
+
+**這個 session 做完的（decisions #151、#152；設計與三輪審核紀錄都在 `collab/opus-review-log/`）**
+1. **自助餐估算**（#151）：外食分頁最上面「自助餐」卡（標題展開）：主食（白飯／糙米飯／雜糧飯／白麵／不吃）＋1–4 道菜（每道素菜／菜肉／純肉）＋湯開關；數字用 `data/home_dishes.json` 的**類別平均**；`estimate` 元件多一個 `est`，`size` null，快照七欄都有數字；預約與「記下」全程沿用快照不重算（`estimateFromDraft`、`toPlanContent`、`savedMealDraft`，db 的 `estProblems`）。「找不到？直接估算」S／M／L 照舊。
+2. **家庭共餐**（#152，使用者決定：共餐是**自煮**、選**真的家常菜**、採買用 B、自助餐維持估算）：自煮分頁（開伙、午晚餐）「選餐型」那排最後多「共餐」；選主食＋當季家常菜 1–4 樣＋湯至多 1 道；與餐型擇一。資料形狀是**方案 Y′**：主食、每道菜、湯都是 `food` 元件，`ref` 是 `hd_` 開頭（內建家常菜），只用 `amount`（克；湯的 ml 當克）；自煮型態、`archetype_id`／`method_id` null、`implicit` `{0,null}`；**不重用 `dish` 元件**（那是切片 9 我的料理）。預約只存 ref＋amount、**日後重新解析**（家常菜資料改了未來的預約跟著變，已記的紀錄不變；`hd_` id 凍結不重用）。記錄名稱「共餐：菜名＋菜名」不含主食、不寫克數。
+3. **家常菜資料 36 道**（素菜 12、菜肉 12、純肉 8、湯 4）：`data/reference/home_dish_recipes.json`（手寫配方，每道標 `seasons`：春 3–5、夏 6–8、秋 9–11、冬 12–2 月）、`home_dish_seasonings.json`（調料選樣表，derived 只限食鹽與水）、`tools/lib/home-dish-values.js`＋`tools/build-home-dishes.js` 產生 `data/home_dishes.json`（含每道的單品欄位：過敏原＝配方聯集＋「未確認」、素食一律不標、cooked、`components` 給不吃清單）、`data/reference/home_dish_ids_frozen.json`。**改菜只能改配方檔再跑 `node tools/build-home-dishes.js`**，check-data 會比對。每季素菜／菜肉／純肉各至少 3 道、湯至少 1 道由 check-data 擋。
+4. **共餐的擋法**：有設任何過敏原或素食時，家常菜**全部不能選**（成分未確認，章程 C4.1 沒有例外），改用自助餐估算；「不吃」清單有效。非當季但已選的菜（夏天存的組合秋天帶入）標「非當季」、可取消；編輯含共餐的組合、帶入到午晚餐以外的時段，共餐照樣顯示並算進去（`homeMealAllowed`、`carried`）。
+5. **預設份量**（#151）：打開估算卡或共餐時，菜量依一天蛋白質目標 ÷ 3（<30g 小、30–50g 中、>50g 大），主食量選「1 道菜肉＋白飯」整餐熱量最接近這個時段配額的一格；只決定預設，記下的數字等於畫面上選的量。
+6. **餐型擴充**步驟 0–3（上個 session）：`protein_steamed`、`protein_braised`、`protein_veg_plate`；低碳預算 300 的驗收沒過（見 git 訊息 `ba55fe0`），可單獨 revert。
+
+**程式地圖**：engine `js/engine/meal-content.js`（`homeEstimate*` 自助餐、`homeMeal*` 共餐、`treeById` 併入 `catalog.homeDishes.byId`、`composeProblem` 算共餐）；畫面 `js/ui/meal-picker/estimate-card.js`（自助餐卡＋共用的 `chip`／`group`）、`home-meal.js`（共餐區塊）、`cook-tab.js`、`index.js`（`onHomeEstimateClick`、`onHomeMealClick`、`homeMealActive`、`currentHomeMeal`）；常數 `js/core/config.js`（`EST_*`、`HOME_MEAL_*`、`HOME_STAPLE_REFS`）、`seasonOfDate` 在 `js/core/dates.js`。測試：check-engine 51988、check-arch 38044、smoke 54、walkthrough 636（第 15 節自助餐、第 16 節共餐）、diff-recs（picker 快照有 `home-estimate/*`、`home-meal/*`）。
+
+## 1. 下一步（照順序）
+**A. 使用說明**（交 Sonnet、Opus 360 寬驗收）：任務檔 `collab/to-sonnet-manual.md` 第 1–10 點（日期切換、預約、這餐不吃、飲料分組、收合、新自煮做法、自助餐、共餐）；使用者晚上請 Sonnet 做。
+**B. 使用者手機測完回報後修**（短清單 12–16）。
+**C. 採買清單（Phase 4）**：共餐元件已能讀出 `hd_` ref＋amount。反推算法與缺口已寫在 PRD 13.4 末「採買」：生重 g × 吃的克數 × 人數（`household_size`）÷ `cooked_g`；缺口＝可食重≠購買重（帶骨小排、鱸魚、去皮雞腿）、家裡一道菜煮一盤（建議以「盤」為單位）、配方裡的衛福部編號沒有採買品名、水鹽糖醬油油要分成不列或常備。配方不在執行時資料裡（`catalog` 只載 `home_dishes.json`），要用時另載或把生重量放進產生檔。`household_size`、`meal_plan.servings` 都還沒實作。
+**D. Opus 實作審核留下的建議（沒做，在審核紀錄與 `docs/日後討論.md`）**：記錄名稱要不要含主食（建議含，等使用者）、`pickedCount` 不含主食、單品上限訊息補「共餐的主食算 1 項」、有過敏原時共餐區塊加一行指路到自助餐、`savedMealDraft` 的主食歸屬改成元件上的明確標記、季節改成食材層級（菠菜可加秋、蘆筍可加夏）、營養精修（牛腱代表牛肉片偏低、去皮雞腿偏低、滷與三杯的鈉偏高）、每道各自調克數、家常菜常吃、早餐共餐。
+**E. 其他（沿用）**：`tools/sim-rotation.mjs`（規格 `餐型claude.md` §6）、餐型步 4 食材（豬里肌、豆干、青江菜或地瓜葉、胡蘿蔔、白飯；#149）、切片 9 我的料理（`dish` 元件，PRD 12.5）→ 切片 10 沖泡、decisions #95 三個預設待使用者確認、`docs/日後討論.md`。
+**F. backup-v6 fixture 凍結**（日期切換用，smoke 先建預約與 skipped 再 `SMOKE_FREEZE_BACKUP=tools/fixtures/backup-v6.json`）與 `plan.txt` 快照還沒做。
+
+## 2. 這個 session 學到的事
+- **使用者會中途改設計**：共餐從外食估算改到自煮、採買從 A 改 B、季節、家常菜擴充到 32 道以上都是對話中提的；先用一句話確認、大架構照慣例先寫草案送獨立 Opus 審核（本 session 三次：家常菜估算、共餐設計、共餐實作；`SendMessage` 續用同一個 agent 或開新的，問答逐字存 `collab/opus-review-log/`）。使用者說「先審再說」「你有更好的想法就去做」。
+- **推送前我曾在 walkthrough 有 1 項失敗時就推了**（預設份量改成依個人後測試寫死 160g），之後補修；**推送前一定先看 walkthrough 結尾是「全部通過」**。
+- 改檔：`docs/PRD.md`、`CHARTER.md`、`js/data/db.js`、`tools/check-engine.js` 等是 CRLF，用 Python 讀成 LF、改完再轉回；含反引號或引號的多行內容一律 Write 成檔案再執行，不放 shell heredoc（`git checkout` 還原檔案會把未 commit 的改動一起丟掉，先確認）。
+- 快照守則：新 UI 只在用到時才碰新 DOM id（用 data 屬性＋事件委派）；diff-recs 的 picker 快照只准新增行（本輪自助餐類別平均因菜單擴充而改變，已逐條說明在 commit）。
+- 使用者習慣：問題附建議、常回「照建議」；只把產品決定交給使用者；用字中性（章程 C4.13）；手機測試直接給腳本行號；問題要用例子講，不要太抽象（使用者曾說「你寫的我看不太懂」）。
+
+---
+（以下是 2026-10-04 早上的舊交接，其中「家常菜估算開工」「餐型擴充」已完成，保留作紀錄。）
+
 
 一律用中文回覆使用者。這份交接讓你不必重讀前一個 session 的對話就能接手。
 
