@@ -144,9 +144,17 @@ function normalizeFoodTree(tree) {
 // 推薦不讀（章程 C4.17 ③）；沒傳（測試合成的 catalog）就是空的，估算函式會報錯
 function normalizeHomeDishes(h) {
   if (!h) return { staples: {}, classes: {}, soup: null, dishes: [], byId: {} };
+  // 家庭共餐（decisions #152）：每道菜正規化成單品（food 元件）的形狀——每 100g、uid＝id、cooked、複合料理（過敏原未確認、不標素食）
+  const dishes = (h.dishes || []).map(function (d) {
+    return Object.assign({}, d, {
+      uid: d.id, group: "home_dish", per_100g: d.per_100g, per_serving: d.per_100g,
+      serving: { amount: null, unit: d.unit || "g", household: null, display: null, builtin_meal: false },
+      allergen_tags: Array.isArray(d.allergen_tags) ? d.allergen_tags : [UNVERIFIED], diet_tags: dietTags(d),
+    });
+  });
   const byId = {};
-  (h.dishes || []).forEach(function (d) { byId[d.id] = d; });
-  return { staples: h.staples || {}, classes: h.classes || {}, soup: h.soup || null, dishes: h.dishes || [], byId: byId };
+  dishes.forEach(function (d) { byId[d.id] = d; });
+  return { staples: h.staples || {}, classes: h.classes || {}, soup: h.soup || null, dishes: dishes, byId: byId };
 }
 
 export function buildCatalog(raw) {

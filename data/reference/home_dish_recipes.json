@@ -1,73 +1,1597 @@
 {
  "version": 1,
- "note": "家常菜估算的配方（手寫，decisions #151）：recipe 的 g 是生重，role 標 veg（蔬菜）、protein（蛋豆魚肉）、other（調料、油、水、辛香料）；oil 是烹調用油（cooking_oil，只做一個版本，不分家裡與店家）；cooked_g 是成品重。類別 class 手動標（素菜 veg／菜肉 mixed／純肉 meat，湯是 null）。配比與成品重來自 collab/proofs/2026-10-01-home-dishes-survey.md 第 7 節（估計）、國健署高齡食譜（白菜燉雞湯）；NTU 營養表有對照的列 ntu_kcal_100g。排除：蒸蛋（拉低純肉平均）、沙茶牛肉炒空心菜（沙茶醬鈉待查市售標示）；太白粉不計。",
+ "note": "家常菜估算的配方（手寫，decisions #151）：recipe 的 g 是生重，role 標 veg（蔬菜）、protein（蛋豆魚肉）、other（調料、油、水、辛香料）；oil 是烹調用油（cooking_oil，只做一個版本，不分家裡與店家）；cooked_g 是成品重。類別 class 手動標（素菜 veg／菜肉 mixed／純肉 meat，湯是 null）。配比與成品重來自 collab/proofs/2026-10-01-home-dishes-survey.md 第 7 節（估計）、國健署高齡食譜（白菜燉雞湯）；NTU 營養表有對照的列 ntu_kcal_100g。擴充（decisions #152）：每道標 seasons（春 3–5、夏 6–8、秋 9–11、冬 12–2 月），共餐清單只列當季；每個季節素菜、菜肉、純肉各至少 3 道。排除：蒸蛋（拉低純肉平均）、沙茶牛肉炒空心菜（沙茶醬鈉待查市售標示）；太白粉不計。",
  "dishes": [
-  { "id": "hd_garlic_cabbage", "name": "蒜炒高麗菜", "kind": "dish", "class": "veg", "cooked_g": 282, "ntu_kcal_100g": 75,
-    "recipe": [ { "ref": "cabbage", "g": 400, "role": "veg" }, { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 10 }, "note": "配比與成品重為估計；NTU 營養表對照 75 kcal/100g。" },
-  { "id": "hd_garlic_qingjiang", "name": "蒜炒青江菜", "kind": "dish", "class": "veg", "cooked_g": 250, "ntu_kcal_100g": 62,
-    "recipe": [ { "ref": "fx_qingjiang", "g": 350, "role": "veg" }, { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 10 }, "note": "配比與成品重為估計；NTU 營養表對照 62 kcal/100g。" },
-  { "id": "hd_garlic_sweet_potato_leaves", "name": "蒜蓉地瓜葉", "kind": "dish", "class": "veg", "cooked_g": 217, "ntu_kcal_100g": 70,
-    "recipe": [ { "ref": "fx_sweet_potato_leaves", "g": 300, "role": "veg" }, { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 10 }, "note": "配比與成品重為估計；NTU 營養表對照 70 kcal/100g。" },
-  { "id": "hd_cold_cucumber", "name": "涼拌小黃瓜", "kind": "dish", "class": "veg", "cooked_g": 282,
-    "recipe": [ { "ref": "cucumber", "g": 300, "role": "veg" }, { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "hs_soy_sauce", "g": 10, "role": "other" },
-      { "ref": "hs_black_vinegar", "g": 10, "role": "other" }, { "ref": "hs_brown_sugar", "g": 5, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" }, { "ref": "hs_sesame_oil", "g": 5, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "配比與成品重為估計；用香油，不另加烹調油。" },
-  { "id": "hd_tomato_egg", "name": "番茄炒蛋", "kind": "dish", "class": "mixed", "cooked_g": 391, "ntu_kcal_100g": 123,
-    "recipe": [ { "ref": "egg", "g": 165, "role": "protein" }, { "ref": "tomato", "g": 250, "role": "veg" }, { "ref": "E23001", "g": 10, "role": "other" },
-      { "ref": "hs_brown_sugar", "g": 5, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" }, { "ref": "hs_ketchup", "g": 10, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 15 }, "note": "配比與成品重為估計；NTU 營養表對照 123 kcal/100g。" },
-  { "id": "hd_green_pepper_pork", "name": "青椒肉絲", "kind": "dish", "class": "mixed", "cooked_g": 353,
-    "recipe": [ { "ref": "fx_pork_loin", "g": 150, "role": "protein" }, { "ref": "fx_green_pepper", "g": 200, "role": "veg" }, { "ref": "bell_pepper", "g": 50, "role": "veg" },
-      { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "hs_soy_sauce", "g": 10, "role": "other" }, { "ref": "hs_brown_sugar", "g": 2, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 15 }, "note": "配比與成品重為估計；太白粉不計。" },
-  { "id": "hd_kung_pao_chicken", "name": "宮保雞丁", "kind": "dish", "class": "mixed", "cooked_g": 347,
-    "recipe": [ { "ref": "chicken_thigh", "g": 200, "role": "protein" }, { "ref": "fx_peanut", "g": 30, "role": "protein" }, { "ref": "cucumber", "g": 100, "role": "veg" },
-      { "ref": "E7510101", "g": 5, "role": "other" }, { "ref": "E23001", "g": 15, "role": "other" }, { "ref": "E2100101", "g": 10, "role": "other" },
-      { "ref": "hs_soy_sauce", "g": 15, "role": "other" }, { "ref": "hs_brown_sugar", "g": 10, "role": "other" }, { "ref": "hs_black_vinegar", "g": 10, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 20 }, "note": "配比與成品重為估計；太白粉不計。蔬菜占（蔬菜＋蛋豆魚肉）重量約 30%，在菜肉與純肉的分界上，類別手動標菜肉。" },
-  { "id": "hd_oyster_kailan_beef", "name": "蠔油芥蘭牛肉", "kind": "dish", "class": "mixed", "cooked_g": 361,
-    "recipe": [ { "ref": "beef_shank", "g": 150, "role": "protein" }, { "ref": "fx_kailan", "g": 300, "role": "veg" }, { "ref": "E2100101", "g": 10, "role": "other" },
-      { "ref": "hs_oyster_sauce", "g": 20, "role": "other" }, { "ref": "hs_brown_sugar", "g": 3, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 15 }, "note": "配比與成品重為估計；牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）；太白粉不計。" },
-  { "id": "hd_braised_napa", "name": "白菜滷", "kind": "dish", "class": "mixed", "cooked_g": 500,
-    "recipe": [ { "ref": "fx_napa_cabbage", "g": 500, "role": "veg" }, { "ref": "fx_pork_belly", "g": 50, "role": "protein" }, { "ref": "J2300201", "g": 10, "role": "protein" },
-      { "ref": "fx_carrot", "g": 40, "role": "veg" }, { "ref": "shiitake", "g": 20, "role": "veg" }, { "ref": "wood_ear", "g": 20, "role": "veg" },
-      { "ref": "hs_soy_sauce", "g": 15, "role": "other" }, { "ref": "hs_salt", "g": 3, "role": "other" }, { "ref": "hs_water", "g": 150, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 15 }, "note": "配比與成品重為估計；NTU 的蝦米炒大白菜類比本配方高約一倍（店家用油與蝦米較多），偏差大，本配方照一般家常配比，不往店家校準，保留。" },
-  { "id": "hd_mapo_tofu", "name": "麻婆豆腐", "kind": "dish", "class": "meat", "cooked_g": 480, "ntu_kcal_100g": 163,
-    "recipe": [ { "ref": "firm_tofu", "g": 300, "role": "protein" }, { "ref": "I03104", "g": 80, "role": "protein" }, { "ref": "hs_doubanjiang", "g": 25, "role": "other" },
-      { "ref": "E2100101", "g": 10, "role": "other" }, { "ref": "E23001", "g": 15, "role": "other" }, { "ref": "hs_soy_sauce", "g": 10, "role": "other" }, { "ref": "hs_water", "g": 150, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 20 }, "note": "配比與成品重為估計；太白粉不計；NTU 營養表對照 163 kcal/100g。" },
-  { "id": "hd_steamed_perch", "name": "清蒸鱸魚", "kind": "dish", "class": "meat", "cooked_g": 330,
-    "recipe": [ { "ref": "J0404301", "g": 350, "role": "protein" }, { "ref": "E23001", "g": 30, "role": "other" }, { "ref": "E1900101", "g": 15, "role": "other" },
-      { "ref": "hs_soy_sauce", "g": 25, "role": "other" }, { "ref": "hs_brown_sugar", "g": 3, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 10 }, "note": "配比與成品重為估計；魚重為去頭尾內臟骨刺的可食部分。" },
-  { "id": "hd_braised_dried_tofu_egg", "name": "滷豆干滷蛋", "kind": "dish", "class": "meat", "cooked_g": 480, "ntu_kcal_100g": 154,
-    "recipe": [ { "ref": "fx_small_dried_tofu", "g": 200, "role": "protein" }, { "ref": "egg", "g": 220, "role": "protein" }, { "ref": "hs_soy_sauce", "g": 60, "role": "other" },
-      { "ref": "hs_brown_sugar", "g": 15, "role": "other" }, { "ref": "hs_water", "g": 600, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "配比與成品重為估計（滷汁收乾後的成品重）；NTU 營養表對照 154 kcal/100g。" },
-  { "id": "hd_braised_tofu", "name": "紅燒豆腐", "kind": "dish", "class": "meat", "cooked_g": 300,
-    "recipe": [ { "ref": "firm_tofu", "g": 300, "role": "protein" }, { "ref": "E23001", "g": 15, "role": "other" }, { "ref": "hs_soy_sauce", "g": 20, "role": "other" },
-      { "ref": "hs_brown_sugar", "g": 5, "role": "other" }, { "ref": "hs_water", "g": 100, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 20 }, "note": "配比與成品重為估計。" },
-  { "id": "hd_braised_chicken_leg", "name": "滷雞腿", "kind": "dish", "class": "meat", "cooked_g": 400, "ntu_kcal_100g": 205,
-    "recipe": [ { "ref": "chicken_thigh", "g": 400, "role": "protein" }, { "ref": "hs_soy_sauce", "g": 50, "role": "other" }, { "ref": "hs_brown_sugar", "g": 15, "role": "other" },
-      { "ref": "E23001", "g": 20, "role": "other" }, { "ref": "E1900101", "g": 10, "role": "other" }, { "ref": "hs_water", "g": 400, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "配比與成品重為估計；雞腿用去皮的內建食材代表；NTU 營養表對照 205 kcal/100g。假設滷汁全部吃進去，鈉可能偏高。" },
-  { "id": "hd_daikon_rib_soup", "name": "蘿蔔排骨湯", "kind": "soup", "class": null, "cooked_g": 1500,
-    "recipe": [ { "ref": "fx_pork_rib", "g": 195, "role": "protein" }, { "ref": "daikon", "g": 500, "role": "veg" }, { "ref": "E1900101", "g": 15, "role": "other" },
-      { "ref": "hs_salt", "g": 5, "role": "other" }, { "ref": "hs_water", "g": 1200, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計。若把帶骨重全算會是約 64 kcal/100g，這道湯的數字取決於這兩個假設。" },
-  { "id": "hd_napa_chicken_soup", "name": "白菜燉雞湯", "kind": "soup", "class": null, "cooked_g": 1150,
-    "recipe": [ { "ref": "fx_napa_cabbage", "g": 250, "role": "veg" }, { "ref": "daikon", "g": 150, "role": "veg" }, { "ref": "shiitake", "g": 40, "role": "veg" },
-      { "ref": "chicken_thigh", "g": 200, "role": "protein" }, { "ref": "E1900101", "g": 10, "role": "other" }, { "ref": "hs_salt", "g": 2, "role": "other" }, { "ref": "hs_water", "g": 600, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "食材克數來自國健署高齡食譜 #12（官方食譜只寫「加水淹過食材」）；水量 600g、成品重 1150g 是本設計的假設。若不加水（成品重 648g）會是約 64 kcal/100g。" },
-  { "id": "hd_seaweed_egg_soup", "name": "紫菜蛋花湯", "kind": "soup", "class": null, "cooked_g": 700,
-    "recipe": [ { "ref": "egg", "g": 55, "role": "protein" }, { "ref": "F0210101", "g": 5, "role": "other" }, { "ref": "E23001", "g": 10, "role": "other" },
-      { "ref": "hs_salt", "g": 3, "role": "other" }, { "ref": "hs_sesame_oil", "g": 3, "role": "other" }, { "ref": "hs_water", "g": 700, "role": "other" } ],
-    "oil": { "ref": "cooking_oil", "g": 0 }, "note": "配比與成品重為估計。" }
+  {
+   "id": "hd_garlic_cabbage",
+   "name": "蒜炒高麗菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 282,
+   "ntu_kcal_100g": 75,
+   "recipe": [
+    {
+     "ref": "cabbage",
+     "g": 400,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計；NTU 營養表對照 75 kcal/100g。"
+  },
+  {
+   "id": "hd_garlic_qingjiang",
+   "name": "蒜炒青江菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 250,
+   "ntu_kcal_100g": 62,
+   "recipe": [
+    {
+     "ref": "fx_qingjiang",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計；NTU 營養表對照 62 kcal/100g。"
+  },
+  {
+   "id": "hd_garlic_sweet_potato_leaves",
+   "name": "蒜蓉地瓜葉",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 217,
+   "ntu_kcal_100g": 70,
+   "recipe": [
+    {
+     "ref": "fx_sweet_potato_leaves",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計；NTU 營養表對照 70 kcal/100g。"
+  },
+  {
+   "id": "hd_cold_cucumber",
+   "name": "涼拌小黃瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 282,
+   "recipe": [
+    {
+     "ref": "cucumber",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_black_vinegar",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_sesame_oil",
+     "g": 5,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "配比與成品重為估計；用香油，不另加烹調油。"
+  },
+  {
+   "id": "hd_tomato_egg",
+   "name": "番茄炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 391,
+   "ntu_kcal_100g": 123,
+   "recipe": [
+    {
+     "ref": "egg",
+     "g": 165,
+     "role": "protein"
+    },
+    {
+     "ref": "tomato",
+     "g": 250,
+     "role": "veg"
+    },
+    {
+     "ref": "E23001",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_ketchup",
+     "g": 10,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計；NTU 營養表對照 123 kcal/100g。"
+  },
+  {
+   "id": "hd_green_pepper_pork",
+   "name": "青椒肉絲",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 353,
+   "recipe": [
+    {
+     "ref": "fx_pork_loin",
+     "g": 150,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_green_pepper",
+     "g": 200,
+     "role": "veg"
+    },
+    {
+     "ref": "bell_pepper",
+     "g": 50,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計；太白粉不計。"
+  },
+  {
+   "id": "hd_kung_pao_chicken",
+   "name": "宮保雞丁",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 347,
+   "recipe": [
+    {
+     "ref": "chicken_thigh",
+     "g": 200,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_peanut",
+     "g": 30,
+     "role": "protein"
+    },
+    {
+     "ref": "cucumber",
+     "g": 100,
+     "role": "veg"
+    },
+    {
+     "ref": "E7510101",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_black_vinegar",
+     "g": 10,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 20
+   },
+   "note": "配比與成品重為估計；太白粉不計。蔬菜占（蔬菜＋蛋豆魚肉）重量約 30%，在菜肉與純肉的分界上，類別手動標菜肉。"
+  },
+  {
+   "id": "hd_oyster_kailan_beef",
+   "name": "蠔油芥蘭牛肉",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 361,
+   "recipe": [
+    {
+     "ref": "beef_shank",
+     "g": 150,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_kailan",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_oyster_sauce",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計；牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）；太白粉不計。"
+  },
+  {
+   "id": "hd_braised_napa",
+   "name": "白菜滷",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 500,
+   "recipe": [
+    {
+     "ref": "fx_napa_cabbage",
+     "g": 500,
+     "role": "veg"
+    },
+    {
+     "ref": "fx_pork_belly",
+     "g": 50,
+     "role": "protein"
+    },
+    {
+     "ref": "J2300201",
+     "g": 10,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 40,
+     "role": "veg"
+    },
+    {
+     "ref": "shiitake",
+     "g": 20,
+     "role": "veg"
+    },
+    {
+     "ref": "wood_ear",
+     "g": 20,
+     "role": "veg"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 3,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 150,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計；NTU 的蝦米炒大白菜類比本配方高約一倍（店家用油與蝦米較多），偏差大，本配方照一般家常配比，不往店家校準，保留。"
+  },
+  {
+   "id": "hd_mapo_tofu",
+   "name": "麻婆豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 480,
+   "ntu_kcal_100g": 163,
+   "recipe": [
+    {
+     "ref": "firm_tofu",
+     "g": 300,
+     "role": "protein"
+    },
+    {
+     "ref": "I03104",
+     "g": 80,
+     "role": "protein"
+    },
+    {
+     "ref": "hs_doubanjiang",
+     "g": 25,
+     "role": "other"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 150,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 20
+   },
+   "note": "配比與成品重為估計；太白粉不計；NTU 營養表對照 163 kcal/100g。"
+  },
+  {
+   "id": "hd_steamed_perch",
+   "name": "清蒸鱸魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 330,
+   "recipe": [
+    {
+     "ref": "J0404301",
+     "g": 350,
+     "role": "protein"
+    },
+    {
+     "ref": "E23001",
+     "g": 30,
+     "role": "other"
+    },
+    {
+     "ref": "E1900101",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 25,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計；魚重為去頭尾內臟骨刺的可食部分。"
+  },
+  {
+   "id": "hd_braised_dried_tofu_egg",
+   "name": "滷豆干滷蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 480,
+   "ntu_kcal_100g": 154,
+   "recipe": [
+    {
+     "ref": "fx_small_dried_tofu",
+     "g": 200,
+     "role": "protein"
+    },
+    {
+     "ref": "egg",
+     "g": 220,
+     "role": "protein"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 60,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 600,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "配比與成品重為估計（滷汁收乾後的成品重）；NTU 營養表對照 154 kcal/100g。"
+  },
+  {
+   "id": "hd_braised_tofu",
+   "name": "紅燒豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 300,
+   "recipe": [
+    {
+     "ref": "firm_tofu",
+     "g": 300,
+     "role": "protein"
+    },
+    {
+     "ref": "E23001",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 100,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 20
+   },
+   "note": "配比與成品重為估計。"
+  },
+  {
+   "id": "hd_braised_chicken_leg",
+   "name": "滷雞腿",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 400,
+   "ntu_kcal_100g": 205,
+   "recipe": [
+    {
+     "ref": "chicken_thigh",
+     "g": 400,
+     "role": "protein"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 50,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "E1900101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 400,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "配比與成品重為估計；雞腿用去皮的內建食材代表；NTU 營養表對照 205 kcal/100g。假設滷汁全部吃進去，鈉可能偏高。"
+  },
+  {
+   "id": "hd_daikon_rib_soup",
+   "name": "蘿蔔排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 1500,
+   "recipe": [
+    {
+     "ref": "fx_pork_rib",
+     "g": 195,
+     "role": "protein"
+    },
+    {
+     "ref": "daikon",
+     "g": 500,
+     "role": "veg"
+    },
+    {
+     "ref": "E1900101",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 1200,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計。若把帶骨重全算會是約 64 kcal/100g，這道湯的數字取決於這兩個假設。"
+  },
+  {
+   "id": "hd_napa_chicken_soup",
+   "name": "白菜燉雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 1150,
+   "recipe": [
+    {
+     "ref": "fx_napa_cabbage",
+     "g": 250,
+     "role": "veg"
+    },
+    {
+     "ref": "daikon",
+     "g": 150,
+     "role": "veg"
+    },
+    {
+     "ref": "shiitake",
+     "g": 40,
+     "role": "veg"
+    },
+    {
+     "ref": "chicken_thigh",
+     "g": 200,
+     "role": "protein"
+    },
+    {
+     "ref": "E1900101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 600,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "食材克數來自國健署高齡食譜 #12（官方食譜只寫「加水淹過食材」）；水量 600g、成品重 1150g 是本設計的假設。若不加水（成品重 648g）會是約 64 kcal/100g。"
+  },
+  {
+   "id": "hd_seaweed_egg_soup",
+   "name": "紫菜蛋花湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 700,
+   "recipe": [
+    {
+     "ref": "egg",
+     "g": 55,
+     "role": "protein"
+    },
+    {
+     "ref": "F0210101",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 3,
+     "role": "other"
+    },
+    {
+     "ref": "hs_sesame_oil",
+     "g": 3,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 700,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "配比與成品重為估計。"
+  },
+  {
+   "id": "hd_garlic_water_spinach",
+   "name": "蒜炒空心菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 230,
+   "recipe": [
+    {
+     "ref": "fx_water_spinach",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 12
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_stirfry_luffa",
+   "name": "清炒絲瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer"
+   ],
+   "cooked_g": 340,
+   "recipe": [
+    {
+     "ref": "luffa",
+     "g": 400,
+     "role": "veg"
+    },
+    {
+     "ref": "E1900101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 30,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。絲瓜出水多，成品重取約 85%。"
+  },
+  {
+   "id": "hd_stirfry_bitter_melon",
+   "name": "清炒苦瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer"
+   ],
+   "cooked_g": 260,
+   "recipe": [
+    {
+     "ref": "fx_bitter_melon",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E1900101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 5,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 12
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_spinach",
+   "name": "蒜炒菠菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "cooked_g": 220,
+   "recipe": [
+    {
+     "ref": "spinach",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_broccoli",
+   "name": "蒜炒青花菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "cooked_g": 330,
+   "recipe": [
+    {
+     "ref": "broccoli",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 30,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_crown_daisy",
+   "name": "蒜炒茼蒿",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "winter"
+   ],
+   "cooked_g": 230,
+   "recipe": [
+    {
+     "ref": "fx_crown_daisy",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_asparagus",
+   "name": "蒜炒蘆筍",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring"
+   ],
+   "cooked_g": 300,
+   "recipe": [
+    {
+     "ref": "fx_green_asparagus",
+     "g": 350,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_stirfry_cauliflower",
+   "name": "清炒花椰菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 380,
+   "recipe": [
+    {
+     "ref": "fx_cauliflower",
+     "g": 400,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 40,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_chive_egg",
+   "name": "韭菜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 300,
+   "recipe": [
+    {
+     "ref": "egg",
+     "g": 165,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_chives",
+     "g": 200,
+     "role": "veg"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_luffa_egg",
+   "name": "絲瓜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 380,
+   "recipe": [
+    {
+     "ref": "luffa",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "egg",
+     "g": 110,
+     "role": "protein"
+    },
+    {
+     "ref": "E1900101",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 12
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_broccoli_shrimp",
+   "name": "青花菜炒蝦仁",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 380,
+   "recipe": [
+    {
+     "ref": "broccoli",
+     "g": 250,
+     "role": "veg"
+    },
+    {
+     "ref": "shrimp",
+     "g": 150,
+     "role": "protein"
+    },
+    {
+     "ref": "E2100101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 30,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 12
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_water_spinach_beef",
+   "name": "空心菜炒牛肉",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 350,
+   "recipe": [
+    {
+     "ref": "fx_water_spinach",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "beef_shank",
+     "g": 150,
+     "role": "protein"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 12,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表。"
+  },
+  {
+   "id": "hd_eggplant_pork",
+   "name": "茄子肉末",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 360,
+   "recipe": [
+    {
+     "ref": "eggplant",
+     "g": 300,
+     "role": "veg"
+    },
+    {
+     "ref": "I03104",
+     "g": 80,
+     "role": "protein"
+    },
+    {
+     "ref": "E2100101",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_doubanjiang",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 3,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 80,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 25
+   },
+   "note": "配比與成品重為估計（家常做法）。茄子吸油，用油量取較高。"
+  },
+  {
+   "id": "hd_spinach_tofu",
+   "name": "菠菜燴板豆腐",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "cooked_g": 430,
+   "recipe": [
+    {
+     "ref": "spinach",
+     "g": 250,
+     "role": "veg"
+    },
+    {
+     "ref": "firm_tofu",
+     "g": 250,
+     "role": "protein"
+    },
+    {
+     "ref": "E2100101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 1,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 50,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_wood_ear_pork",
+   "name": "木耳炒肉絲",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 280,
+   "recipe": [
+    {
+     "ref": "wood_ear",
+     "g": 150,
+     "role": "veg"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 60,
+     "role": "veg"
+    },
+    {
+     "ref": "fx_pork_loin",
+     "g": 120,
+     "role": "protein"
+    },
+    {
+     "ref": "E2100101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 12
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_three_cup_chicken",
+   "name": "三杯雞",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 350,
+   "recipe": [
+    {
+     "ref": "chicken_thigh",
+     "g": 400,
+     "role": "protein"
+    },
+    {
+     "ref": "E1900101",
+     "g": 30,
+     "role": "other"
+    },
+    {
+     "ref": "E2100101",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 40,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_sesame_oil",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 30,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 10
+   },
+   "note": "配比與成品重為估計（家常做法）。雞腿用去皮的內建食材代表；九層塔與米酒不計。"
+  },
+  {
+   "id": "hd_pan_salmon",
+   "name": "煎鮭魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 260,
+   "recipe": [
+    {
+     "ref": "salmon",
+     "g": 300,
+     "role": "protein"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 8
+   },
+   "note": "配比與成品重為估計（家常做法）。煎後水分流失，成品重取約 85%。"
+  },
+  {
+   "id": "hd_scallion_beef",
+   "name": "蔥爆牛肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 230,
+   "recipe": [
+    {
+     "ref": "beef_shank",
+     "g": 200,
+     "role": "protein"
+    },
+    {
+     "ref": "E23001",
+     "g": 60,
+     "role": "other"
+    },
+    {
+     "ref": "E2100101",
+     "g": 8,
+     "role": "other"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "hs_brown_sugar",
+     "g": 5,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 15
+   },
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）。"
+  },
+  {
+   "id": "hd_winter_melon_rib_soup",
+   "name": "冬瓜排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "cooked_g": 1500,
+   "recipe": [
+    {
+     "ref": "fx_pork_rib",
+     "g": 195,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_winter_melon",
+     "g": 500,
+     "role": "veg"
+    },
+    {
+     "ref": "E1900101",
+     "g": 15,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 5,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 1200,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 0
+   },
+   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計（同蘿蔔排骨湯的假設）。"
+  }
  ]
 }

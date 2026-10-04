@@ -374,11 +374,24 @@ function checkTfdaLookup(ctx, fileText) {
 }
 
 // 家常菜估算資料（章程 B4「家常菜估算」、B12；decisions #151）：產生檔等於重算、配方與調料選樣表的規則
-function checkHomeDishes(ctx, fileText) {
+function checkHomeDishes(ctx, fileText, frozen) {
   const built = HD.buildHomeDishes(ctx);
   built.problems.forEach((m) => err("家常菜估算：" + m));
   built.warnings.forEach((m) => warn(m));
   if (fileText !== null && HD.stringifyHomeDishes(built.data) !== fileText) err("data/home_dishes.json 跟重算結果不同（不手改，跑 node tools/build-home-dishes.js）");
+  // 家庭共餐的單品欄位（decisions #152）：過敏原要在詞彙內並含「未確認」、素食一律 false、composite true
+  built.data.dishes.forEach((d) => {
+    const w = "家常菜 " + d.id;
+    if (!Array.isArray(d.allergen_tags) || d.allergen_tags.indexOf(UNVERIFIED) === -1 || d.allergen_tags.some((t) => t !== UNVERIFIED && ALLERGENS.indexOf(t) === -1)) err("家常菜估算：" + w + " 的過敏原要在詞彙內且含「未確認」（章程 B6.3）");
+    if (d.vegan !== false || d.lacto_ovo !== false || d.composite !== true) err("家常菜估算：" + w + " 複合料理不得標素食、composite 要是 true");
+  });
+  // hd_ id 凍結：凍結清單裡的都要還在（或在 retired）；新的要加進清單；retired 不重用
+  if (frozen) {
+    const ids = built.data.dishes.map((d) => d.id);
+    frozen.ids.forEach((id) => { if (ids.indexOf(id) === -1 && !(frozen.retired || []).some((r) => r.id === id)) err("家常菜估算：hd_ id「" + id + "」已凍結，不得改名；要下架請移到 data/reference/home_dish_ids_frozen.json 的 retired 並說明"); });
+    ids.forEach((id) => { if (frozen.ids.indexOf(id) === -1) err("家常菜估算：新的 hd_ id「" + id + "」要加進 data/reference/home_dish_ids_frozen.json"); });
+    (frozen.retired || []).forEach((r) => { if (ids.indexOf(r.id) !== -1) err("家常菜估算：已下架的 hd_ id「" + r.id + "」不得重用"); });
+  }
   const texts = [];
   (ctx.recipes.dishes || []).forEach((d) => { texts.push([d.id, d.note]); });
   (ctx.seasonings.items || []).forEach((e) => {
@@ -394,10 +407,13 @@ function selfTestHomeDishes(reports) {
   const clone = (o) => JSON.parse(JSON.stringify(o));
   const ctx0 = HD.loadHomeDishContext(readJson);
   const bad = (what) => err("工具自我檢查（家常菜）：" + what);
-  const run = (mutate) => () => {
+  const frozen0 = readJson("reference/home_dish_ids_frozen.json");
+  const run = (mutate, frozenMutate) => () => {
     const ctx = Object.assign({}, ctx0, { recipes: clone(ctx0.recipes), seasonings: clone(ctx0.seasonings) });
     mutate(ctx);
-    checkHomeDishes(ctx, null);
+    const fr = clone(frozen0);
+    if (frozenMutate) frozenMutate(fr);
+    checkHomeDishes(ctx, null, fr);
   };
   const dish = (c, id) => c.recipes.dishes.find((d) => d.id === id);
   const seas = (c, id) => c.seasonings.items.find((e) => e.id === id);
@@ -414,8 +430,15 @@ function selfTestHomeDishes(reports) {
     ["缺值補非 0", /要在 field_sources/, (c) => { seas(c, "hs_oyster_sauce").field_sources.sat_fat_g.value = 1; }],
     ["類別不合法", /class/, (c) => { dish(c, "hd_garlic_cabbage").class = "fish"; }],
     ["湯的類別不是 null", /class/, (c) => { dish(c, "hd_seaweed_egg_soup").class = "veg"; }],
-    ["某類別少於 3 道", /至少要 3 道/, (c) => { dish(c, "hd_cold_cucumber").class = "mixed"; dish(c, "hd_garlic_qingjiang").class = "mixed"; }],
-    ["湯少於 3 道", /湯至少要 3 道/, (c) => { c.recipes.dishes = c.recipes.dishes.filter((d) => d.id !== "hd_seaweed_egg_soup"); }],
+    ["某類別少於 3 道", /至少要 3 道/, (c) => { c.recipes.dishes = c.recipes.dishes.filter((d) => d.class !== "meat" || d.id === "hd_mapo_tofu"); }],
+    ["某季節素菜少於 3 道", /季節 winter 的 veg/, (c) => { c.recipes.dishes.forEach((d) => { if (d.class === "veg") d.seasons = d.seasons.filter((x) => x !== "winter"); }); dish(c, "hd_garlic_cabbage").seasons = ["spring", "summer", "autumn", "winter"]; }],
+    ["某季節沒有湯", /季節 summer 沒有湯/, (c) => { c.recipes.dishes.forEach((d) => { if (d.kind === "soup") d.seasons = d.seasons.filter((x) => x !== "summer"); }); }],
+    ["seasons 不合法", /seasons/, (c) => { dish(c, "hd_garlic_cabbage").seasons = ["rainy"]; }],
+    ["seasons 缺", /seasons/, (c) => { delete dish(c, "hd_garlic_cabbage").seasons; }],
+    ["新的 hd_ id 沒進凍結清單", /要加進/, () => {}, true, (f) => { f.ids = f.ids.filter((x) => x !== "hd_garlic_cabbage"); }],
+    ["凍結的 hd_ id 消失", /已凍結/, (c) => { dish(c, "hd_garlic_cabbage").id = "hd_garlic_cabbage_2"; }, true, (f) => { f.ids.push("hd_garlic_cabbage_2"); }],
+    ["已下架的 hd_ id 被重用", /不得重用/, () => {}, true, (f) => { f.retired = [{ id: "hd_garlic_cabbage", reason: "x" }]; }],
+    ["湯少於 3 道", /湯至少要 3 道/, (c) => { c.recipes.dishes = c.recipes.dishes.filter((d) => d.id !== "hd_seaweed_egg_soup" && d.id !== "hd_winter_melon_rib_soup"); }],
     ["跟 NTU 差超過 25% 沒寫理由", /deviation_note/, (c) => { dish(c, "hd_garlic_cabbage").ntu_kcal_100g = 150; }],
     ["note 有 AI 字樣", /AI/, (c) => { dish(c, "hd_garlic_cabbage").note = "Gemini 估計"; }],
     ["油用錯 ref", /cooking_oil/, (c) => { dish(c, "hd_garlic_cabbage").oil.ref = "hs_sesame_oil"; }],
@@ -423,13 +446,13 @@ function selfTestHomeDishes(reports) {
     ["id 格式", /hd_ 開頭/, (c) => { dish(c, "hd_garlic_cabbage").id = "garlic"; }],
     ["id 格式（調料）", /hs_ 開頭/, (c) => { seas(c, "hs_soy_sauce").id = "soy"; }],
   ];
-  cases.forEach(([what, re, mutate, expect]) => {
+  cases.forEach(([what, re, mutate, expect, frozenMutate]) => {
     if (expect === false) { if (reports(/./, run(mutate))) bad("原資料卻報錯"); return; }
-    if (!reports(re, run(mutate))) bad(what + "卻沒報錯");
+    if (!reports(re, run(mutate, frozenMutate))) bad(what + "卻沒報錯");
   });
   // 類別手動標與自動規則不一致只是警告
   const before = warnings.length;
-  checkHomeDishes((() => { const c = Object.assign({}, ctx0, { recipes: clone(ctx0.recipes), seasonings: clone(ctx0.seasonings) }); dish(c, "hd_mapo_tofu").class = "mixed"; return c; })(), null);
+  checkHomeDishes((() => { const c = Object.assign({}, ctx0, { recipes: clone(ctx0.recipes), seasonings: clone(ctx0.seasonings) }); dish(c, "hd_mapo_tofu").class = "mixed"; return c; })(), null, frozen0);
   const warned = warnings.slice(before).some((m) => /自動規則/.test(m));
   warnings.length = before;
   if (!warned) bad("手動類別與自動規則不一致卻沒警告");
@@ -946,7 +969,7 @@ function main() {
 
   console.log("[家常菜估算]");
   const homeFile = path.join(ROOT, "data", "home_dishes.json");
-  checkHomeDishes(HD.loadHomeDishContext(readJson), fs.existsSync(homeFile) ? fs.readFileSync(homeFile, "utf8") : "");
+  checkHomeDishes(HD.loadHomeDishContext(readJson), fs.existsSync(homeFile) ? fs.readFileSync(homeFile, "utf8") : "", readJson("reference/home_dish_ids_frozen.json"));
 
   console.log("[衛福部查詢檔]");
   const lookupFile = path.join(ROOT, "data", "tfda_lookup.json");

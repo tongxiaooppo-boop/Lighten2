@@ -30,6 +30,8 @@ const ZERO_FILL_REASONS = {
   "油脂": { category: "油脂類", fields: ["fiber_g", "sodium_mg"], maxFat: null },
 };
 const NTU_DEVIATION_LIMIT = 0.25;
+const SEASONS = ["spring", "summer", "autumn", "winter"]; // 春 3–5、夏 6–8、秋 9–11、冬 12–2 月（共餐清單只列當季）
+const UNVERIFIED = "未確認";
 const VEG_SHARE_MEAT_MAX = 0.3;
 
 function loadHomeDishContext(readJson) {
@@ -116,15 +118,20 @@ function seasoningMap(ctx) {
 
 // ref → 每 100g 的七欄；找不到或有 null 回傳 { problem }
 function resolveRef(ref, ctx, seas) {
-  let per = null, kind = null;
-  if (/^hs_/.test(ref)) { kind = "seasoning"; per = seas[ref] ? seas[ref].per_100g : null; }
-  else if (ctx.ingredients[ref]) { kind = "ingredient"; per = ctx.ingredients[ref].per_100g; }
-  else if (ctx.tree[ref]) { kind = "food_tree"; per = ctx.tree[ref].per_100g; }
-  else if (ctx.lookup[ref]) { kind = "tfda"; per = ctx.lookup[ref].per_100g; }
+  let per = null, kind = null, tags = null;
+  const arr = (a) => (Array.isArray(a) ? a : [UNVERIFIED]); // 缺欄＝未確認（decisions #77）
+  if (/^hs_/.test(ref)) {
+    kind = "seasoning"; per = seas[ref] ? seas[ref].per_100g : null;
+    const src = seas[ref] && seas[ref].entry.source;
+    tags = src && src.type === "tfda" && ctx.lookup[src.ref] ? arr(ctx.lookup[src.ref].allergen_tags) : [];
+  }
+  else if (ctx.ingredients[ref]) { kind = "ingredient"; per = ctx.ingredients[ref].per_100g; tags = arr(ctx.ingredients[ref].allergen_tags); }
+  else if (ctx.tree[ref]) { kind = "food_tree"; per = ctx.tree[ref].per_100g; tags = arr(ctx.tree[ref].allergen_tags); }
+  else if (ctx.lookup[ref]) { kind = "tfda"; per = ctx.lookup[ref].per_100g; tags = arr(ctx.lookup[ref].allergen_tags); }
   if (!per) return { problem: "ref「" + ref + "」不是食材 id、fx_ id、衛福部編號或調料選樣表 id（或沒有每 100g 營養）" };
   const nulls = FIELDS.filter((k) => typeof per[k] !== "number");
   if (nulls.length) return { problem: "ref「" + ref + "」的 " + nulls.join("、") + " 是 null（家常菜估算要七欄都有數字）" };
-  return { per_100g: per, kind: kind };
+  return { per_100g: per, kind: kind, tags: tags || [] };
 }
 
 // 一道菜 → { per_100g, veg_share, problems }
@@ -134,6 +141,7 @@ function computeDish(d, ctx, seas) {
   const sum = {};
   FIELDS.forEach((k) => { sum[k] = 0; });
   let veg = 0, protein = 0;
+  const tagSet = {};
   const items = (d.recipe || []).concat(d.oil && d.oil.g > 0 ? [Object.assign({ role: "other" }, d.oil)] : []);
   if (!(d.recipe || []).length) problems.push(w + "：recipe 不能空");
   if (!(d.cooked_g > 0)) problems.push(w + "：cooked_g 要大於 0");
@@ -143,6 +151,7 @@ function computeDish(d, ctx, seas) {
     const r = resolveRef(it.ref, ctx, seas);
     if (r.problem) { problems.push(w + "：" + r.problem); return; }
     FIELDS.forEach((k) => { sum[k] += r.per_100g[k] * it.g / 100; });
+    r.tags.forEach((t) => { tagSet[t] = true; });
     if (it.role === "veg") veg += it.g;
     else if (it.role === "protein") protein += it.g;
   });
@@ -150,7 +159,8 @@ function computeDish(d, ctx, seas) {
   const per = {};
   FIELDS.forEach((k) => { per[k] = d.cooked_g > 0 ? round1(sum[k] / d.cooked_g * 100) : null; });
   const share = veg + protein > 0 ? Math.round(veg / (veg + protein) * 1000) / 1000 : 0;
-  return { per_100g: per, veg_share: share, protein_g: protein, problems };
+  tagSet[UNVERIFIED] = true; // 複合料理各家做法不同，一律未確認（章程 B6.3）
+  return { per_100g: per, veg_share: share, protein_g: protein, allergen_tags: Object.keys(tagSet).sort(), problems };
 }
 
 // 自動規則（只當警告對照）：沒有蛋豆魚肉＝素菜；蛋豆魚肉且蔬菜占（蔬菜＋蛋豆魚肉）重量 < 30%＝純肉；其餘菜肉
@@ -187,7 +197,13 @@ function buildHomeDishes(ctx) {
     const total = (d.recipe || []).reduce((a, it) => a + (it.g || 0), 0) + (d.oil ? d.oil.g || 0 : 0);
     if (d.cooked_g > 0 && total > 0 && d.cooked_g < total * 0.4) warnings.push("家常菜 " + d.id + "：cooked_g（" + d.cooked_g + "）低於食材總重（" + total + "）的 40%，確認沒抄錯");
     if (d.kind === "dish" && c.per_100g.kcal != null && autoClass(c) !== d.class) warnings.push("家常菜 " + d.id + "：手動類別 " + d.class + " 與自動規則 " + autoClass(c) + " 不一致");
-    const row = { id: d.id, name: d.name, kind: d.kind, class: d.class, per_100g: c.per_100g, veg_share: c.veg_share, cooked_g: d.cooked_g,
+    if (!Array.isArray(d.seasons) || d.seasons.length === 0 || d.seasons.some((x) => SEASONS.indexOf(x) === -1) || new Set(d.seasons).size !== d.seasons.length) {
+      problems.push("家常菜 " + d.id + "：seasons 要是非空、不重複的 spring／summer／autumn／winter");
+    }
+    const row = { id: d.id, name: d.name, kind: d.kind, class: d.class, seasons: SEASONS.filter((x) => (d.seasons || []).indexOf(x) !== -1),
+      per_100g: c.per_100g, veg_share: c.veg_share, cooked_g: d.cooked_g,
+      // 家庭共餐的單品欄位（decisions #152）：複合料理，過敏原＝配方聯集＋未確認，素食一律不標
+      state: "cooked", unit: d.kind === "soup" ? "ml" : "g", allergen_tags: c.allergen_tags, vegan: false, lacto_ovo: false, composite: true,
       source: d.source || { type: "assumption", ref: "配方與成品重為估計（見 note）" }, note: d.note };
     if (d.ntu_kcal_100g != null) {
       row.ntu_kcal_100g = d.ntu_kcal_100g;
@@ -208,6 +224,12 @@ function buildHomeDishes(ctx) {
   });
   const soups = dishes.filter((x) => x.kind === "soup");
   if (soups.length < 3) problems.push("湯至少要 3 道（目前 " + soups.length + "）");
+  // 每個季節都要有菜可選（共餐清單只列當季）：素菜、菜肉各至少 3 道，純肉至少 3 道，湯至少 1 道
+  SEASONS.forEach((se) => {
+    const inSeason = (cl) => dishes.filter((x) => x.kind === "dish" && x.class === cl && x.seasons.indexOf(se) !== -1).length;
+    ["veg", "mixed", "meat"].forEach((cl) => { if (inSeason(cl) < 3) problems.push("季節 " + se + " 的 " + cl + " 少於 3 道（目前 " + inSeason(cl) + "）"); });
+    if (!soups.some((x) => x.seasons.indexOf(se) !== -1)) problems.push("季節 " + se + " 沒有湯");
+  });
   const soup = { n: soups.length, per_100g: soups.length ? average(soups) : null, dishes: soups.map((x) => x.id) };
   const staples = {};
   STAPLES.forEach((s) => {
@@ -232,6 +254,6 @@ function stringifyHomeDishes(data) {
 }
 
 module.exports = {
-  CLASSES, ROLES, STAPLES, DERIVED_SEASONINGS, ZERO_FILL_REASONS, NTU_DEVIATION_LIMIT,
+  CLASSES, ROLES, SEASONS, STAPLES, DERIVED_SEASONINGS, ZERO_FILL_REASONS, NTU_DEVIATION_LIMIT,
   loadHomeDishContext, seasoningValues, seasoningMap, resolveRef, computeDish, autoClass, buildHomeDishes, stringifyHomeDishes,
 };

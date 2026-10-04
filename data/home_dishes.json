@@ -57,77 +57,96 @@
  },
  "classes": {
   "veg": {
-   "n": 4,
+   "n": 12,
    "per_100g": {
-    "kcal": 64.6,
-    "protein_g": 2.5,
-    "carb_g": 6.5,
-    "fat_g": 3.7,
-    "fiber_g": 2.3,
+    "kcal": 65,
+    "protein_g": 2.6,
+    "carb_g": 5.9,
+    "fat_g": 4,
+    "fiber_g": 2.6,
     "sat_fat_g": 0.7,
-    "sodium_mg": 406
+    "sodium_mg": 366.3
    },
    "dishes": [
     "hd_garlic_cabbage",
     "hd_garlic_qingjiang",
     "hd_garlic_sweet_potato_leaves",
-    "hd_cold_cucumber"
+    "hd_cold_cucumber",
+    "hd_garlic_water_spinach",
+    "hd_stirfry_luffa",
+    "hd_stirfry_bitter_melon",
+    "hd_garlic_spinach",
+    "hd_garlic_broccoli",
+    "hd_garlic_crown_daisy",
+    "hd_garlic_asparagus",
+    "hd_stirfry_cauliflower"
    ]
   },
   "mixed": {
-   "n": 5,
+   "n": 12,
    "per_100g": {
-    "kcal": 142.4,
-    "protein_g": 8.9,
-    "carb_g": 6,
-    "fat_g": 9.4,
-    "fiber_g": 1.5,
-    "sat_fat_g": 2.4,
-    "sodium_mg": 328.9
+    "kcal": 127.8,
+    "protein_g": 8.2,
+    "carb_g": 5.5,
+    "fat_g": 8.4,
+    "fiber_g": 2,
+    "sat_fat_g": 2.1,
+    "sodium_mg": 309.7
    },
    "dishes": [
     "hd_tomato_egg",
     "hd_green_pepper_pork",
     "hd_kung_pao_chicken",
     "hd_oyster_kailan_beef",
-    "hd_braised_napa"
+    "hd_braised_napa",
+    "hd_chive_egg",
+    "hd_luffa_egg",
+    "hd_broccoli_shrimp",
+    "hd_water_spinach_beef",
+    "hd_eggplant_pork",
+    "hd_spinach_tofu",
+    "hd_wood_ear_pork"
    ]
   },
   "meat": {
-   "n": 5,
+   "n": 8,
    "per_100g": {
-    "kcal": 161.9,
-    "protein_g": 15.3,
-    "carb_g": 4.5,
-    "fat_g": 9.1,
-    "fiber_g": 1,
-    "sat_fat_g": 2.1,
-    "sodium_mg": 539.7
+    "kcal": 190.2,
+    "protein_g": 17.8,
+    "carb_g": 4.2,
+    "fat_g": 11.1,
+    "fiber_g": 0.8,
+    "sat_fat_g": 2.7,
+    "sodium_mg": 532.1
    },
    "dishes": [
     "hd_mapo_tofu",
     "hd_steamed_perch",
     "hd_braised_dried_tofu_egg",
     "hd_braised_tofu",
-    "hd_braised_chicken_leg"
+    "hd_braised_chicken_leg",
+    "hd_three_cup_chicken",
+    "hd_pan_salmon",
+    "hd_scallion_beef"
    ]
   }
  },
  "soup": {
-  "n": 3,
+  "n": 4,
   "per_100g": {
-   "kcal": 32.1,
+   "kcal": 34.4,
    "protein_g": 2.5,
-   "carb_g": 1.1,
-   "fat_g": 1.9,
+   "carb_g": 1,
+   "fat_g": 2.2,
    "fiber_g": 0.4,
-   "sat_fat_g": 0.6,
-   "sodium_mg": 144.8
+   "sat_fat_g": 0.8,
+   "sodium_mg": 144
   },
   "dishes": [
    "hd_daikon_rib_soup",
    "hd_napa_chicken_soup",
-   "hd_seaweed_egg_soup"
+   "hd_seaweed_egg_soup",
+   "hd_winter_melon_rib_soup"
   ]
  },
  "dishes": [
@@ -136,6 +155,12 @@
    "name": "蒜炒高麗菜",
    "kind": "dish",
    "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 68.6,
     "protein_g": 2.1,
@@ -147,6 +172,14 @@
    },
    "veg_share": 1,
    "cooked_g": 282,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -160,6 +193,11 @@
    "name": "蒜炒青江菜",
    "kind": "dish",
    "class": "veg",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 58.3,
     "protein_g": 1.9,
@@ -171,6 +209,14 @@
    },
    "veg_share": 1,
    "cooked_g": 250,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -184,6 +230,12 @@
    "name": "蒜蓉地瓜葉",
    "kind": "dish",
    "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 84.8,
     "protein_g": 4.7,
@@ -195,6 +247,14 @@
    },
    "veg_share": 1,
    "cooked_g": 217,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -208,6 +268,11 @@
    "name": "涼拌小黃瓜",
    "kind": "dish",
    "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
    "per_100g": {
     "kcal": 46.7,
     "protein_g": 1.4,
@@ -219,6 +284,17 @@
    },
    "veg_share": 1,
    "cooked_g": 282,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -230,6 +306,11 @@
    "name": "番茄炒蛋",
    "kind": "dish",
    "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 111.5,
     "protein_g": 5.9,
@@ -241,6 +322,15 @@
    },
    "veg_share": 0.602,
    "cooked_g": 391,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -254,6 +344,12 @@
    "name": "青椒肉絲",
    "kind": "dish",
    "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 156.8,
     "protein_g": 9.2,
@@ -265,6 +361,16 @@
    },
    "veg_share": 0.625,
    "cooked_g": 353,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -276,6 +382,11 @@
    "name": "宮保雞丁",
    "kind": "dish",
    "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
    "per_100g": {
     "kcal": 224.2,
     "protein_g": 15,
@@ -287,6 +398,17 @@
    },
    "veg_share": 0.303,
    "cooked_g": 347,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "花生",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -298,6 +420,11 @@
    "name": "蠔油芥蘭牛肉",
    "kind": "dish",
    "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 126.3,
     "protein_g": 10.2,
@@ -309,6 +436,15 @@
    },
    "veg_share": 0.667,
    "cooked_g": 361,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "軟體動物"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -320,6 +456,11 @@
    "name": "白菜滷",
    "kind": "dish",
    "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 93.1,
     "protein_g": 4.3,
@@ -331,6 +472,17 @@
    },
    "veg_share": 0.906,
    "cooked_g": 500,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "甲殼類",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -342,6 +494,12 @@
    "name": "麻婆豆腐",
    "kind": "dish",
    "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 146.3,
     "protein_g": 10.2,
@@ -353,6 +511,17 @@
    },
    "veg_share": 0,
    "cooked_g": 480,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -366,6 +535,12 @@
    "name": "清蒸鱸魚",
    "kind": "dish",
    "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 153.5,
     "protein_g": 21.4,
@@ -377,6 +552,17 @@
    },
    "veg_share": 0,
    "cooked_g": 330,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -388,6 +574,12 @@
    "name": "滷豆干滷蛋",
    "kind": "dish",
    "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 150.9,
     "protein_g": 14,
@@ -399,6 +591,17 @@
    },
    "veg_share": 0,
    "cooked_g": 480,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -412,6 +615,12 @@
    "name": "紅燒豆腐",
    "kind": "dish",
    "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 167.8,
     "protein_g": 10.1,
@@ -423,6 +632,16 @@
    },
    "veg_share": 0,
    "cooked_g": 300,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -434,6 +653,12 @@
    "name": "滷雞腿",
    "kind": "dish",
    "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 190.9,
     "protein_g": 20.8,
@@ -445,6 +670,16 @@
    },
    "veg_share": 0,
    "cooked_g": 400,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -458,6 +693,11 @@
    "name": "蘿蔔排骨湯",
    "kind": "soup",
    "class": null,
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 43.4,
     "protein_g": 2.5,
@@ -469,6 +709,14 @@
    },
    "veg_share": 0.719,
    "cooked_g": 1500,
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -480,6 +728,10 @@
    "name": "白菜燉雞湯",
    "kind": "soup",
    "class": null,
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 36.1,
     "protein_g": 3.9,
@@ -491,6 +743,14 @@
    },
    "veg_share": 0.688,
    "cooked_g": 1150,
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
@@ -502,6 +762,12 @@
    "name": "紫菜蛋花湯",
    "kind": "soup",
    "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
    "per_100g": {
     "kcal": 16.8,
     "protein_g": 1.2,
@@ -513,11 +779,695 @@
    },
    "veg_share": 0,
    "cooked_g": 700,
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
    "source": {
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計。"
+  },
+  {
+   "id": "hd_garlic_water_spinach",
+   "name": "蒜炒空心菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 81.9,
+    "protein_g": 2.9,
+    "carb_g": 6.5,
+    "fat_g": 5.5,
+    "fiber_g": 4.6,
+    "sat_fat_g": 1,
+    "sodium_mg": 514.1
+   },
+   "veg_share": 1,
+   "cooked_g": 230,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_stirfry_luffa",
+   "name": "清炒絲瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer"
+   ],
+   "per_100g": {
+    "kcal": 48.5,
+    "protein_g": 1.3,
+    "carb_g": 4.7,
+    "fat_g": 3.1,
+    "fiber_g": 1.2,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 232
+   },
+   "veg_share": 1,
+   "cooked_g": 340,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。絲瓜出水多，成品重取約 85%。"
+  },
+  {
+   "id": "hd_stirfry_bitter_melon",
+   "name": "清炒苦瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "summer"
+   ],
+   "per_100g": {
+    "kcal": 69.1,
+    "protein_g": 1.3,
+    "carb_g": 5.9,
+    "fat_g": 4.8,
+    "fiber_g": 3.8,
+    "sat_fat_g": 0.9,
+    "sodium_mg": 408.9
+   },
+   "veg_share": 1,
+   "cooked_g": 260,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_spinach",
+   "name": "蒜炒菠菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 74.2,
+    "protein_g": 3.8,
+    "carb_g": 5,
+    "fat_g": 5,
+    "fiber_g": 3.2,
+    "sat_fat_g": 0.9,
+    "sodium_mg": 427
+   },
+   "veg_share": 1,
+   "cooked_g": 220,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_broccoli",
+   "name": "蒜炒青花菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 70.7,
+    "protein_g": 3.8,
+    "carb_g": 7.7,
+    "fat_g": 3.5,
+    "fiber_g": 3.1,
+    "sat_fat_g": 0.7,
+    "sodium_mg": 252.4
+   },
+   "veg_share": 1,
+   "cooked_g": 330,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_crown_daisy",
+   "name": "蒜炒茼蒿",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 67.6,
+    "protein_g": 2.9,
+    "carb_g": 4.5,
+    "fat_g": 4.8,
+    "fiber_g": 2.6,
+    "sat_fat_g": 0.9,
+    "sodium_mg": 447.4
+   },
+   "veg_share": 1,
+   "cooked_g": 230,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_garlic_asparagus",
+   "name": "蒜炒蘆筍",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring"
+   ],
+   "per_100g": {
+    "kcal": 59.1,
+    "protein_g": 3.4,
+    "carb_g": 5,
+    "fat_g": 3.6,
+    "fiber_g": 1.5,
+    "sat_fat_g": 0.7,
+    "sodium_mg": 267.4
+   },
+   "veg_share": 1,
+   "cooked_g": 300,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_stirfry_cauliflower",
+   "name": "清炒花椰菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 50.9,
+    "protein_g": 2.1,
+    "carb_g": 5.4,
+    "fat_g": 2.7,
+    "fiber_g": 2.2,
+    "sat_fat_g": 0.4,
+    "sodium_mg": 222.3
+   },
+   "veg_share": 1,
+   "cooked_g": 380,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_chive_egg",
+   "name": "韭菜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 134,
+    "protein_g": 8.3,
+    "carb_g": 3.5,
+    "fat_g": 10.2,
+    "fiber_g": 1.6,
+    "sat_fat_g": 2.6,
+    "sodium_mg": 339.7
+   },
+   "veg_share": 0.548,
+   "cooked_g": 300,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_luffa_egg",
+   "name": "絲瓜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 82.1,
+    "protein_g": 4.5,
+    "carb_g": 3.6,
+    "fat_g": 5.8,
+    "fiber_g": 0.8,
+    "sat_fat_g": 1.5,
+    "sodium_mg": 247.4
+   },
+   "veg_share": 0.732,
+   "cooked_g": 380,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_broccoli_shrimp",
+   "name": "青花菜炒蝦仁",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 81.9,
+    "protein_g": 7.8,
+    "carb_g": 5.1,
+    "fat_g": 3.7,
+    "fiber_g": 1.9,
+    "sat_fat_g": 0.8,
+    "sodium_mg": 426.1
+   },
+   "veg_share": 0.625,
+   "cooked_g": 380,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "甲殼類",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_water_spinach_beef",
+   "name": "空心菜炒牛肉",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 124.1,
+    "protein_g": 10.4,
+    "carb_g": 5,
+    "fat_g": 7.1,
+    "fiber_g": 2.6,
+    "sat_fat_g": 1.9,
+    "sodium_mg": 311.8
+   },
+   "veg_share": 0.667,
+   "cooked_g": 350,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表。"
+  },
+  {
+   "id": "hd_eggplant_pork",
+   "name": "茄子肉末",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 142.8,
+    "protein_g": 5.9,
+    "carb_g": 6.6,
+    "fat_g": 10.6,
+    "fiber_g": 2.5,
+    "sat_fat_g": 2.4,
+    "sodium_mg": 272.1
+   },
+   "veg_share": 0.789,
+   "cooked_g": 360,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。茄子吸油，用油量取較高。"
+  },
+  {
+   "id": "hd_spinach_tofu",
+   "name": "菠菜燴板豆腐",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 90.7,
+    "protein_g": 7.2,
+    "carb_g": 3.3,
+    "fat_g": 5.7,
+    "fiber_g": 2.1,
+    "sat_fat_g": 1,
+    "sodium_mg": 243.5
+   },
+   "veg_share": 0.5,
+   "cooked_g": 430,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_wood_ear_pork",
+   "name": "木耳炒肉絲",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 166.2,
+    "protein_g": 9.4,
+    "carb_g": 8.5,
+    "fat_g": 10.6,
+    "fiber_g": 4.7,
+    "sat_fat_g": 3,
+    "sodium_mg": 231.5
+   },
+   "veg_share": 0.636,
+   "cooked_g": 280,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。"
+  },
+  {
+   "id": "hd_three_cup_chicken",
+   "name": "三杯雞",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 278.3,
+    "protein_g": 23.7,
+    "carb_g": 5.7,
+    "fat_g": 17.4,
+    "fiber_g": 0.4,
+    "sat_fat_g": 3.9,
+    "sodium_mg": 681.8
+   },
+   "veg_share": 0,
+   "cooked_g": 350,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。雞腿用去皮的內建食材代表；九層塔與米酒不計。"
+  },
+  {
+   "id": "hd_pan_salmon",
+   "name": "煎鮭魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 227.6,
+    "protein_g": 23.9,
+    "carb_g": 0,
+    "fat_g": 14,
+    "fiber_g": 0,
+    "sat_fat_g": 3.5,
+    "sodium_mg": 348.2
+   },
+   "veg_share": 0,
+   "cooked_g": 260,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。煎後水分流失，成品重取約 85%。"
+  },
+  {
+   "id": "hd_scallion_beef",
+   "name": "蔥爆牛肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 206.1,
+    "protein_g": 18.4,
+    "carb_g": 5.8,
+    "fat_g": 11.8,
+    "fiber_g": 0.8,
+    "sat_fat_g": 3.4,
+    "sodium_mg": 528.2
+   },
+   "veg_share": 0,
+   "cooked_g": 230,
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）。"
+  },
+  {
+   "id": "hd_winter_melon_rib_soup",
+   "name": "冬瓜排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 41.2,
+    "protein_g": 2.5,
+    "carb_g": 0.8,
+    "fat_g": 3.1,
+    "fiber_g": 0.4,
+    "sat_fat_g": 1.2,
+    "sodium_mg": 141.5
+   },
+   "veg_share": 0.719,
+   "cooked_g": 1500,
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計（同蘿蔔排骨湯的假設）。"
   }
  ],
  "seasonings": [

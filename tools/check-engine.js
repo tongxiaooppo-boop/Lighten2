@@ -2390,19 +2390,31 @@ function checkSavedMealsDb(catalog) {
   const hd = catalog.homeDishes, hdata = readJson("home_dishes.json");
   const ecfg = (o) => Object.assign({ n: 1, cats: ["veg"], staple: "white", staple_size: "M", dish: "S", soup: false }, o || {});
   const near = (a, b, tol) => Math.abs(a - b) <= (tol == null ? 1 : tol);
-  check(hd.dishes.length === 17 && hd.classes.veg.n === 4 && hd.classes.mixed.n === 5 && hd.classes.meat.n === 5 && hd.soup.n === 3 && hd.staples.white.per_100g.kcal === 183.1 && hd.byId.hd_mapo_tofu.class === "meat",
-    "catalog.homeDishes 載入：17 道（菜 14＋湯 3）、三類 4／5／5、湯 3、主食每 100g");
-  check(hdata.classes.veg.per_100g.kcal === 64.6 && hdata.classes.mixed.per_100g.kcal === 142.4 && hdata.classes.meat.per_100g.kcal === 161.9 && hdata.soup.per_100g.kcal === 32.1,
-    "類別平均對照審核第二輪 Q4：素菜 64.6、菜肉 142.4、純肉 161.9、湯 32.1");
+  // 審核第二輪 Q4 的基準：只用最初的 17 道（之後擴充到 36 道，類別平均會變）
+  const ORIG17 = ["hd_garlic_cabbage", "hd_garlic_qingjiang", "hd_garlic_sweet_potato_leaves", "hd_cold_cucumber", "hd_tomato_egg", "hd_green_pepper_pork", "hd_kung_pao_chicken", "hd_oyster_kailan_beef", "hd_braised_napa",
+    "hd_mapo_tofu", "hd_steamed_perch", "hd_braised_dried_tofu_egg", "hd_braised_tofu", "hd_braised_chicken_leg", "hd_daikon_rib_soup", "hd_napa_chicken_soup", "hd_seaweed_egg_soup"];
+  const avg1 = (rows) => Math.round(rows.reduce((a, r) => a + r.per_100g.kcal, 0) / rows.length * 10) / 10;
+  const baseKcal = (pick) => avg1(ORIG17.map((id) => hd.byId[id]).filter(pick));
+  check(hd.dishes.length === 36 && hd.classes.veg.n === 12 && hd.classes.mixed.n === 12 && hd.classes.meat.n === 8 && hd.soup.n === 4 && hd.staples.white.per_100g.kcal === 183.1 && hd.byId.hd_mapo_tofu.class === "meat",
+    "catalog.homeDishes 載入：36 道（素菜 12、菜肉 12、純肉 8、湯 4）、主食每 100g");
+  check(baseKcal((d) => d.class === "veg") === 64.6 && baseKcal((d) => d.class === "mixed") === 142.4 && baseKcal((d) => d.class === "meat") === 161.9 && baseKcal((d) => d.kind === "soup") === 32.1,
+    "最初 17 道的類別平均仍對照審核第二輪 Q4：素菜 64.6、菜肉 142.4、純肉 161.9、湯 32.1");
+  const avgOf = (cl) => avg1(hdata.dishes.filter((d) => (cl === "soup" ? d.kind === "soup" : d.kind === "dish" && d.class === cl)));
+  check(hdata.classes.veg.per_100g.kcal === avgOf("veg") && hdata.classes.mixed.per_100g.kcal === avgOf("mixed") && hdata.classes.meat.per_100g.kcal === avgOf("meat") && hdata.soup.per_100g.kcal === avgOf("soup"),
+    "產生檔的類別平均＝各道每 100g 熱量的簡單平均")
   // 審核第二輪 Q4 的「白飯＋1 樣」表（飯 小／中／大＝80／160／240g；菜 120g＝菜量 S、160g＝菜量 M）：熱量、蛋白質、鈉
   const q4 = {
     "veg|S": { S: [224, 5.5, 489], M: [371, 8.0, 490], L: [517, 10.4, 492] }, "veg|M": { M: [396, 9.0, 653] },
     "mixed|S": { S: [317, 13.2, 396], M: [464, 15.6, 398], L: [610, 18.1, 400] }, "mixed|M": { M: [521, 19.2, 529] },
     "meat|S": { S: [341, 20.8, 649], M: [487, 23.3, 651], L: [634, 25.8, 652] }, "meat|M": { M: [552, 29.4, 867] },
   };
+  const avgRows = (rows) => { const per = {}; Object.keys(rows[0].per_100g).forEach((k) => { per[k] = Math.round(rows.reduce((a, r) => a + r.per_100g[k], 0) / rows.length * 10) / 10; }); return per; };
+  const origRows = ORIG17.map((id) => hd.byId[id]);
+  const hdBase = Object.assign({}, hd, { classes: {
+    veg: { per_100g: avgRows(origRows.filter((d) => d.class === "veg")) }, mixed: { per_100g: avgRows(origRows.filter((d) => d.class === "mixed")) }, meat: { per_100g: avgRows(origRows.filter((d) => d.class === "meat")) } } });
   Object.keys(q4).forEach((key) => Object.keys(q4[key]).forEach((rice) => {
     const [cat, dsh] = key.split("|");
-    const e = mc.homeEstimate(ecfg({ cats: [cat], staple_size: rice, dish: dsh }), hd), want = q4[key][rice];
+    const e = mc.homeEstimate(ecfg({ cats: [cat], staple_size: rice, dish: dsh }), hdBase), want = q4[key][rice];
     check(near(e.snapshot.kcal, want[0]) && near(e.snapshot.protein_g, want[1], 0.15) && near(e.snapshot.sodium_mg, want[2]), "白飯＋1 道" + cat + "（飯 " + rice + "、菜 " + dsh + "）對照審核表 " + want.join("／") + "：" + JSON.stringify(e.snapshot));
   }));
   const e1 = mc.homeEstimate(ecfg({ cats: ["meat"] }), hd);
@@ -2416,7 +2428,7 @@ function checkSavedMealsDb(catalog) {
   const veg1 = kc({ staple: "none", staple_size: null, cats: ["veg"], dish: "M" }), meat1 = kc({ staple: "none", staple_size: null, cats: ["meat"], dish: "M" });
   const four = kc({ staple: "none", staple_size: null, n: 4, cats: ["veg", "veg", "meat", "meat"], dish: "M" });
   check(near(four, (veg1 + meat1) / 2, 0.2) && four < meat1, "4 道的總量不比 1 道多：2 素＋2 純肉＝（全量素菜＋全量純肉）的一半，且低於全量純肉");
-  check(near(kc({ soup: true }) - kc({ soup: false }), 250 * 32.1 / 100, 0.2), "湯＝湯類平均 × 250ml");
+  check(near(kc({ soup: true }) - kc({ soup: false }), 250 * hd.soup.per_100g.kcal / 100, 0.2), "湯＝湯類平均 × 250ml");
   check(near(kc({ staple: "noodle", staple_size: "M" }) - kc({ staple: "none", staple_size: null }), 240 * 116.7 / 100, 0.3) && near(kc({ staple: "brown" }) - kc({ staple: "none", staple_size: null }), 160 * hd.staples.brown.per_100g.kcal / 100, 0.3),
     "主食：麵 240g × 116.7、糙米飯 160g × 182");
   const thrown = (cfg, home) => errOf(() => mc.homeEstimate(cfg, home === undefined ? hd : home)) || "";
