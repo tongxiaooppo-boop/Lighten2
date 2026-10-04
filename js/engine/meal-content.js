@@ -541,6 +541,22 @@ export function estimateComponent(size, name) {
   };
 }
 
+// 估算草稿 → 元件。草稿帶 snapshot（與 est）時照用、不重算（預約與「記下」都走這裡，PRD 第 3 節）；
+// 沒有 snapshot 的是剛按下的一般外食 S/M/L，用常數
+export function estimateFromDraft(e) {
+  if (!e.snapshot) return estimateComponent(e.size, e.name);
+  const comp = {
+    kind: "estimate", name: e.name && e.name.trim() ? e.name.trim() : "外食估算", size: e.size != null ? e.size : null,
+    snapshot: Object.assign({}, e.snapshot),
+  };
+  if (e.est) comp.est = copyEst(e.est);
+  return comp;
+}
+
+function copyEst(est) {
+  return Object.assign({}, est, { cats: est.cats.slice() });
+}
+
 // ---------- 單品（food 元件，PRD 13.4） ----------
 // 品項形狀：{ uid, name, group?, state?, serving: { amount, unit: "g"|"ml" }, per_serving: { kcal, …七個欄位 } }。
 // 分層品項（catalog.foodTree.items）本來就是這個形狀；我的食材由 my-ingredients.js 的 ingredientItem 轉成同一形狀
@@ -620,7 +636,7 @@ export function buildDraftContent(draft, opts) {
     return content;
   }
   const comps = (draft.items || []).map(function (p) { return productComponent(p, draftQty(draft, p.uid)); })
-    .concat((draft.estimates || []).map(function (e) { return estimateComponent(e.size, e.name); }))
+    .concat((draft.estimates || []).map(estimateFromDraft))
     .concat(foods, drink);
   return { meal_type: draft.meal_type, archetype_id: null, method_id: null, components: comps, implicit: null };
 }
@@ -930,7 +946,10 @@ export function savedMealDraft(resolved) {
     } else if (c.kind === "food") {
       d.foods.push(c.amount != null ? { item: a.item, amount: c.amount } : { item: a.item, qty: c.qty });
     } else if (c.kind === "estimate") {
-      d.estimates.push({ size: c.size, name: c.name });
+      const draftEst = { size: c.size, name: c.name };
+      if (c.snapshot) draftEst.snapshot = Object.assign({}, c.snapshot);
+      if (c.est) draftEst.est = copyEst(c.est);
+      d.estimates.push(draftEst);
     } else {
       if (a.item.role === "drink") d.drink = a.item; else d.items.push(a.item);
       if (c.qty !== 1) d.qtyByUid[a.item.uid] = c.qty;
@@ -962,7 +981,11 @@ export function toPlanContent(content, opts) {
   const base = toSavedContent(Object.assign({}, content, { components: rest }), opts);
   let i = 0;
   const comps = content.components.map(function (c) {
-    if (c.kind === "estimate") return { kind: "estimate", name: c.name, size: c.size != null ? c.size : null, snapshot: Object.assign({}, c.snapshot) };
+    if (c.kind === "estimate") {
+      const o = { kind: "estimate", name: c.name, size: c.size != null ? c.size : null, snapshot: Object.assign({}, c.snapshot) };
+      if (c.est) o.est = copyEst(c.est);
+      return o;
+    }
     const o = base.components[i++];
     if (o.kind === "ingredient" && o.is_primary === true && isNum(c.scale) && c.scale !== 1) o.scale = c.scale;
     return o;

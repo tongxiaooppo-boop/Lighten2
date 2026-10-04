@@ -2341,6 +2341,55 @@ function checkSavedMealsDb(catalog) {
     withSkip.remainingBudget.perSlotSuggestion.lunch > base8.remainingBudget.perSlotSuggestion.lunch, "planToday：預約不吃晚餐，配額分給其他餐");
   const realDinner = Object.assign(clone(skipLog), { log_date: "2026-10-04", slot: "dinner", id: "log_d" });
   check(M.today.effectiveTodayLogs([realDinner], [estPseudo]).length === 1 && pt([estPseudo], [realDinner]).plannedKcal === undefined, "已有紀錄的時段，預約不算（紀錄優先）");
+  // ---- 家常菜估算（decisions #151）：est 與快照從草稿 → 預約 → 暫時紀錄 → 記下全程不變（M-a、M-b） ----
+  console.log("[家常菜估算：快照路徑與驗證]");
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const homeEstSnap = { kcal: 612.3, protein_g: 21.4, carb_g: 80.2, fat_g: 20.1, fiber_g: 3.3, sat_fat_g: 4.4, sodium_mg: 1234 };
+  const homeEst = { n: 2, cats: ["veg", "meat"], staple: "white", staple_size: "M", dish: "M", soup: false };
+  const homeDraftEst = { size: null, name: "白飯＋2 道菜（素菜、純肉）", snapshot: homeEstSnap, est: homeEst };
+  const homeDraft = { kind: "products", meal_type: "delivery", items: [], estimates: [homeDraftEst], drink: null, qtyByUid: {}, foods: [] };
+  const homeContent = mc.buildDraftContent(homeDraft);
+  const hc = homeContent.components[0];
+  check(hc.kind === "estimate" && hc.size === null && same(hc.snapshot, homeEstSnap) && same(hc.est, homeEst) && hc.snapshot !== homeEstSnap && hc.est !== homeEst,
+    "buildDraftContent：帶快照與 est 的估算原樣保留（複製、不重算）");
+  const homePc = mc.toPlanContent(homeContent, { keepImplicit: false });
+  check(same(homePc.components[0].est, homeEst) && same(homePc.components[0].snapshot, homeEstSnap) && homePc.components[0].size === null &&
+    !errOf(() => db.validateMealPlan(plan(homePc))), "toPlanContent 保留 est 與快照（M-a）：" + errOf(() => db.validateMealPlan(plan(homePc))));
+  const homeRes = rp(homePc);
+  check(homeRes.status === "ok" && homeRes.totals.kcal === 612.3 && homeRes.totals.protein_g === 21.4 && homeRes.totals.sodium_mg === 1234, "resolvePlan：est 估算用快照合計");
+  const homeBack = mc.savedMealDraft(homeRes.resolved);
+  check(same(homeBack.estimates[0].est, homeEst) && same(homeBack.estimates[0].snapshot, homeEstSnap) && homeBack.estimates[0].size === null, "savedMealDraft 保留 est 與快照");
+  const homeLog = mc.buildDraftContent(homeBack, { oilHabit: "normal" });
+  check(same(homeLog.components[0], hc), "預約 → 記下：元件與當初完全相同（est、快照不變）");
+  const homeLogEntry = mc.buildLogEntry({ date: "2026-10-04", slot: "lunch", source: "from_plan", name: "家常菜", content: homeLog, totals: mc.contentTotals(homeLog, catalog), createdAt: T0 });
+  check(!errOf(() => db.validateDailyLog(homeLogEntry)) && homeLogEntry.totals.kcal === 612.3, "含 est 的紀錄通過寫入驗證：" + errOf(() => db.validateDailyLog(homeLogEntry)));
+  const homePseudo = mc.planPseudoLog(plan(homePc), homeRes);
+  check(homePseudo.totals.kcal === 612.3 && homePseudo.content.components[0].est.n === 2, "暫時紀錄也帶 est 與快照");
+  // 常數之後改了，已存快照不重算：舊的一般外食估算（無 est）仍用自己存的快照
+  const oldEst = mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "M", name: "舊估算", snapshot: Object.assign({}, estPlan.components[0].snapshot, { kcal: 555 }) }], drink: null, qtyByUid: {}, foods: [] });
+  check(oldEst.components[0].snapshot.kcal === 555 && oldEst.components[0].size === "M" && !("est" in oldEst.components[0]), "帶快照的舊式估算（無 est）照快照，不重算");
+  check(mc.buildDraftContent({ kind: "products", meal_type: "delivery", items: [], estimates: [{ size: "M", name: "" }], drink: null, qtyByUid: {}, foods: [] }).components[0].snapshot.kcal === 700, "沒有快照的 S/M/L 估算仍用常數");
+  check(/estimate/.test(errOf(() => mc.toSavedContent(homeContent, { keepImplicit: false })) || ""), "含 est 的估算 toSavedContent 要丟錯（組合仍擋估算）");
+  const estBad = (patch, snapPatch) => {
+    const c = clone(homePc);
+    Object.assign(c.components[0], patch || {});
+    if (snapPatch) Object.assign(c.components[0].snapshot, snapPatch);
+    return errOf(() => db.validateMealPlan(plan(c)));
+  };
+  const estBadEst = (patch) => estBad({ est: Object.assign(clone(homeEst), patch) });
+  check(/size/.test(estBad({ size: "M" }) || "") && /snapshot/.test(estBad({}, { sodium_mg: null }) || "") && /snapshot/.test(estBad({}, { fiber_g: null }) || ""), "est 驗證：size 必須是 null、七欄快照不能是 null");
+  check(/est\.n/.test(estBadEst({ n: 5 }) || "") && /est\.n/.test(estBadEst({ n: 0 }) || "") && /est\.cats/.test(estBadEst({ cats: ["veg"] }) || "") && /est\.cats/.test(estBadEst({ cats: ["veg", "fish"] }) || ""),
+    "est 驗證：n 在 1–4、cats 長度等於 n、值要在列舉內");
+  check(/est\.staple\b/.test(estBadEst({ staple: "bread" }) || "") && /staple_size/.test(estBadEst({ staple_size: null }) || "") && /staple_size/.test(estBadEst({ staple: "none", staple_size: "M" }) || "") &&
+    !estBadEst({ staple: "none", staple_size: null }) && /est\.dish/.test(estBadEst({ dish: "XL" }) || "") && /est\.soup/.test(estBadEst({ soup: "yes" }) || "") && /est/.test(estBadEst({ extra: 1 }) || ""),
+    "est 驗證：staple、staple_size（不吃時必須 null）、dish、soup、不得有多餘欄位");
+  const homeLogBad = clone(homeLogEntry); homeLogBad.content.components[0].snapshot.protein_g = null;
+  check(/snapshot/.test(errOf(() => db.validateDailyLog(homeLogBad)) || ""), "紀錄的 est 估算：快照七欄不能是 null");
+  const homeBackup = clone(v6); homeBackup.sections.meal_plan = [plan(homePc)]; homeBackup.manifest.meal_plan = 1;
+  homeBackup.sections.logs.daily_log.push(Object.assign(clone(homeLogEntry), { id: "log_home1" })); homeBackup.manifest.daily_log += 1;
+  const homeBackup2 = JSON.parse(JSON.stringify(homeBackup));
+  check(db.validateBackup(homeBackup).length === 0 && same(homeBackup2.sections.meal_plan[0].content.components[0].est, homeEst) &&
+    same(db.migrateBackup(homeBackup2).sections.meal_plan[0].content.components[0], homePc.components[0]), "含 est 的預約與紀錄備份來回不變（不升版）：" + db.validateBackup(homeBackup).slice(0, 2).join("；"));
   // ---- 日期切換：昨天的餐與補記（切片 3） ----
   console.log("[日期切換：昨天的餐與補記]");
   const YD = "2026-10-03";

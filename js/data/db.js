@@ -4,7 +4,7 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty, isFoodAmount, INGREDIENT_GROUPS } from "../core/config.js";
+import { EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty, isFoodAmount, INGREDIENT_GROUPS } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
@@ -185,6 +185,26 @@ function snapshotProblem(snap) {
   return !snap || typeof snap !== "object" || !isNum(snap.kcal);
 }
 
+// 估算元件的 est 欄位（PRD 第 3 節、decisions #151）：沒有 est 的是一般外食 S/M/L（size 有值、只有熱量）。
+// 有 est 的是「主食＋家常菜」：size 是 null、快照七欄都要是數字、n 與 cats 長度一致、staple 是 none 時 staple_size 是 null
+const EST_SNAPSHOT_FIELDS = ["kcal", "protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
+function estProblems(comp, at) {
+  if (!("est" in comp)) return [];
+  const e = comp.est;
+  const problems = [];
+  if (!isPlainObject(e)) return [at + ".est"];
+  if (comp.size !== null) problems.push(at + ".size");
+  if (!Number.isInteger(e.n) || e.n < 1 || e.n > EST_DISH_MAX) problems.push(at + ".est.n");
+  if (!Array.isArray(e.cats) || e.cats.length !== e.n || e.cats.some(function (k) { return EST_CATS.indexOf(k) === -1; })) problems.push(at + ".est.cats");
+  if (EST_STAPLES.indexOf(e.staple) === -1) problems.push(at + ".est.staple");
+  if (e.staple === "none" ? e.staple_size !== null : EST_SIZES.indexOf(e.staple_size) === -1) problems.push(at + ".est.staple_size");
+  if (EST_SIZES.indexOf(e.dish) === -1) problems.push(at + ".est.dish");
+  if (typeof e.soup !== "boolean") problems.push(at + ".est.soup");
+  if (Object.keys(e).length !== 6) problems.push(at + ".est");
+  if (!isPlainObject(comp.snapshot) || EST_SNAPSHOT_FIELDS.some(function (k) { return !isNum(comp.snapshot[k]); })) problems.push(at + ".snapshot");
+  return problems;
+}
+
 const FOOD_SNAPSHOT_NUTRIENTS = ["protein_g", "carb_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"];
 
 // 單品的快照（PRD 13.4）：1 份的量（amount、unit）與七個營養欄位都要有，熱量是數字、其餘是數字或 null；partial 選填（切片 8 的我的食材）
@@ -248,6 +268,7 @@ function contentProblems(c, mealType) {
     } else {
       if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
+      Array.prototype.push.apply(problems, estProblems(comp, at));
     }
   });
   return problems;
@@ -421,6 +442,7 @@ function savedContentProblems(c, plan) {
       if (["S", "M", "L", null].indexOf(comp.size) === -1) problems.push(at + ".size");
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
       if ("ref" in comp) problems.push(at + ".ref");
+      Array.prototype.push.apply(problems, estProblems(comp, at));
       return;
     }
     if (!isPlainObject(comp) || ["ingredient", "product", "food"].indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
