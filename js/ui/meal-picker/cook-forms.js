@@ -26,7 +26,8 @@ const COMPLETE_TABS = [["青菜", "青菜"], ["湯", "湯"]];
 const PROTEIN_GROUPS = ["雞", "豬", "牛", "魚海鮮", "豆蛋"];
 
 export function newCookState() {
-  return { entry: null, forms: {}, more: {}, role: "主菜", q: "", recent: [], msg: "" };
+  // filled：這個入口已經帶入過建議（不再自動帶）；sugIdx：「換一個」輪到第幾個；sugOk：這個入口有建議可換
+  return { entry: null, forms: {}, more: {}, role: "主菜", q: "", recent: [], msg: "", filled: {}, sugIdx: {}, sugOk: {} };
 }
 
 // 沒有表單就建一個（入口第一次打開）
@@ -192,6 +193,11 @@ function homeHtml(form, catalog, st) {
     return opt("hd", a("uid", d.id), d.name, picked(d), hardWhy(d, pf) || (free ? null : slowWhy(d, quick)),
       (d.passive ? "預約電鍋・" : "") + (d.method || "") + (homeDishKind(d) === "pot" ? "・一鍋" : "") + (d.mins ? "・" + d.mins + "分" : ""));
   };
+  // 常吃（☆）放最前面：跨角色一列，被擋的灰在列尾（decisions #127④、#81）；分頁裡不再重複
+  const favSet = st.fav || {};
+  const favs = h0.dishes.filter(function (d) { return favSet[d.id] && allowed(d); });
+  favs.sort(function (x, y) { return (hardWhy(x, pf) ? 1 : 0) - (hardWhy(y, pf) ? 1 : 0); });
+  if (favs.length) dh += '<div class="compose-axis-label">常吃</div>' + optRow(favs.map(function (d) { return dopt(d); }).join(""));
   const rec = nc.recent.map(function (id) { return homeDishById(catalog, id); }).filter(function (d) { return d && allowed(d); });
   if (rec.length) dh += '<div class="compose-axis-label">最近煮過</div>' + optRow(rec.map(function (d) { return dopt(d, true); }).join(""));
   dh += '<input id="nc-home-q" type="search" class="meal-picker-search" placeholder="搜尋菜名" value="' + escapeHtml(nc.q || "") + '">';
@@ -200,7 +206,7 @@ function homeHtml(form, catalog, st) {
     dh += optRow(L.length ? L.map(function (d) { return dopt(d); }).join("") : '<span class="meal-picker-note">找不到「' + escapeHtml(nc.q) + "」</span>");
   } else {
     const tabs = complete ? COMPLETE_TABS : ROLE_TABS;
-    const roleOf = function (t) { return function (d) { return allowed(d) && (t === "湯" ? d.kind === "soup" : d.kind !== "soup" && d.role === t); }; };
+    const roleOf = function (t) { return function (d) { return allowed(d) && !favSet[d.id] && (t === "湯" ? d.kind === "soup" : d.kind !== "soup" && d.role === t); }; };
     const role = tabs.some(function (t) { return t[0] === nc.role; }) ? nc.role : tabs[0][0];
     dh += optRow(tabs.map(function (t) { return opt("hrole", a("v", t[0]), t[1] + "（" + h0.dishes.filter(roleOf(t[0])).length + "）", role === t[0]); }).join(""));
     const L0 = h0.dishes.filter(roleOf(role));

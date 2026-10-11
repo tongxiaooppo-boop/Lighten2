@@ -65,19 +65,24 @@ function setStatus(msg) {
 // 這個時段已經記錄過：顯示記了什麼＋撤銷，不再推薦新的組合。
 // 撤銷按鈕跟著卡片一起渲染（用 daily_log 的 id），所以任何重新整理都不會把它吃掉。
 // 「存成組合」：含估算的那一餐不提供（PRD 11.2 入口 2）；只在今天的卡片（decisions #124）
-function loggedHtml(logs) {
+function loggedHtml(logs, slot) {
+  const imgSrc = MEAL_DEFAULT_IMAGE[slot];
+  const img = imgSrc ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(SLOT_LABELS[slot] || "") + '" loading="lazy">' : "";
   if (logs.length === 1 && logs[0].source === "skipped") {
-    return '<p class="rec-logged-note">這餐沒吃</p><button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(logs[0].id) + '">撤銷</button>';
+    return img + '<p class="rec-logged-note">這餐沒吃</p><button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(logs[0].id) + '">撤銷</button>';
   }
   const total = logsKcal(logs);
   const names = logs.map(function (l) { return l.name || "已記錄的餐點"; }).join("、");
-  let html = '<p class="rec-logged-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
+  let html = img + '<p class="rec-logged-note">已記錄：' + escapeHtml(names) + "（約 " + Math.round(total) + " kcal）</p>";
   logs.forEach(function (l) {
     const which = logs.length > 1 ? "「" + escapeHtml(l.name || "") + "」" : "";
-    html += '<button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' + which + "</button>";
+    // 一筆時同一排、同高（改、撤銷、存成組合）；多筆時各自一個按鈕帶品名
+    let row = '<button type="button" class="undo-btn rec-logedit-btn" data-edit-log-id="' + escapeHtml(l.id) + '">改' + which + "</button>" +
+      '<button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(l.id) + '">撤銷' + which + "</button>";
     if (canSaveLog(l)) {
-      html += '<button type="button" class="undo-btn rec-save-btn" data-save-log-id="' + escapeHtml(l.id) + '">存成組合' + which + "</button>";
+      row += '<button type="button" class="undo-btn rec-save-btn" data-save-log-id="' + escapeHtml(l.id) + '">存成組合' + which + "</button>";
     }
+    html += logs.length === 1 ? '<div class="rec-actions">' + row + "</div>" : row;
     if (saveForm && saveForm.logId === l.id) html += saveFormHtml(saveForm);
   });
   return html;
@@ -107,7 +112,7 @@ function findTodayLog(logId) {
 function rerenderLoggedSlot(slot) {
   const body = $("#rec-" + slot);
   const logs = lastLogsBySlot[slot];
-  if (body && logs && logs.length > 0) body.innerHTML = loggedHtml(logs);
+  if (body && logs && logs.length > 0) body.innerHTML = loggedHtml(logs, slot);
 }
 
 // 組合的 ctx 一律從 saved-ctx.js 拿（含我的食材，切片 8b 審核 M6）
@@ -208,7 +213,7 @@ function renderRecs(recs, profile, logsBySlot, plan, catalog) {
     const isEnabled = !profile || isSlotEnabled(profile.enabled_slots, slot);
     const slotLogs = logsBySlot && logsBySlot[slot];
     if (slotLogs && slotLogs.length > 0) {
-      body.innerHTML = loggedHtml(slotLogs);
+      body.innerHTML = loggedHtml(slotLogs, slot);
       return;
     }
     const entry = todayPlans[slot];
@@ -629,9 +634,17 @@ export function initTodayTab() {
         openMealPicker(editBtn.getAttribute("data-slot"), { onLogged: buildRecommendation, todayPlans: todayPseudo, cookPreset: currentRecs[editBtn.getAttribute("data-slot")] });
         return;
       }
+      const logEditBtn = e.target.closest(".rec-logedit-btn");
+      if (logEditBtn) {
+        // 改已記錄的這一餐：把記下的內容帶進自己選，送出後取代原本那筆
+        const log = findTodayLog(logEditBtn.getAttribute("data-edit-log-id"));
+        if (log) openMealPicker(log.slot, { onLogged: buildRecommendation, todayPlans: todayPseudo, editLog: log });
+        return;
+      }
       const pickBtn = e.target.closest(".rec-pick-btn");
       if (pickBtn && pickBtn.getAttribute("data-slot")) {
-        openMealPicker(pickBtn.getAttribute("data-slot"), { onLogged: buildRecommendation, todayPlans: todayPseudo });
+        const pslot = pickBtn.getAttribute("data-slot");
+        openMealPicker(pslot, { onLogged: buildRecommendation, todayPlans: todayPseudo, todayRec: currentRecs[pslot] || null });
         return;
       }
       const chipBtn = e.target.closest(".dislike-chip");

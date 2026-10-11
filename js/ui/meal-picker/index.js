@@ -9,7 +9,7 @@ import { getCustomIngredients,
   getProfile, getDailyLogs, getCustomFoods, addDailyLog, addCustomFood, getSetting, setSetting,
   getHiddenCatalogUids, copyBuiltinToCustom, updateCustomFood, addDislikedIngredient, removeDislikedIngredient,
   getFavoriteRefs, addFavoriteRef, removeFavoriteRef, removeFavoriteFrom,
-  listSavedMeals, addDailyLogWithSavedMeal, updateSavedMeal, setMealPlan, setMealPlanWithSavedMeal,
+  listSavedMeals, addDailyLogWithSavedMeal, updateSavedMeal, setMealPlan, setMealPlanWithSavedMeal, undoDailyLog,
 } from "../../data/db.js";
 import { loadTfdaLookup, loadCatalog, fromCustomFood } from "../../data/catalog.js";
 import { passesHardFilters } from "../../engine/filters.js";
@@ -184,7 +184,7 @@ export async function openMealPicker(slotArg, opts) {
   const mode = editing ? "edit" : o.mode === "plan" ? "plan" : o.mode === "backfill" ? "backfill" : "log";
   const today = todayStr();
   const day = (mode === "plan" || mode === "backfill") && o.date ? o.date : today;
-  const todayLogs = mode === "log" ? effectiveTodayLogs(await getDailyLogs({ start: today, end: today }), o.todayPlans) : [];
+  const todayLogs = mode === "log" ? effectiveTodayLogs(await getDailyLogs({ start: today, end: today }), o.todayPlans).filter(function (l) { return !o.editLog || l.id !== o.editLog.id; }) : []; // 改已記錄的一餐時，原本那筆不算進已吃的
   const catalog = await loadCatalog();
   const rawCustoms = await getCustomFoods();
   const customs = rawCustoms.map(fromCustomFood);
@@ -207,6 +207,8 @@ export async function openMealPicker(slotArg, opts) {
   m.onLogged = o.onLogged || null; m.lastPicked = lastPicked;
   m.editing = editing; m.onSaved = o.onSaved || null; m.inserted = {}; m.savedNotice = null;
   m.mode = mode; m.date = day;
+  m.todayRec = o.todayRec || null; // 今日建議這一餐的卡片：點到同一個入口時第一個建議就是它
+  m.replaceLogId = !editing && o.editLog ? o.editLog.id : null; // 改已記錄的一餐：送出後取代這一筆
   m.saveAs = { on: false, name: "", nameEdited: false };
   m.savedRecords = savedList.filter(function (r) { return !r.archived; });
   // B-1a：隱藏、復原、複製、補填之後要重新分頁，所以留著我的品項（原始紀錄與轉好的品項）與隱藏清單
@@ -259,17 +261,24 @@ export async function openMealPicker(slotArg, opts) {
     m.cook.tier = pre.cook_content.meal_type;
     m.cook.nc.entry = pre.cook_form.entry;
     m.cook.nc.forms[pre.cook_form.entry] = cleanCookForm(pre.cook_form);
+    m.cook.nc.filled[pre.cook_form.entry] = true;
   }
   if (editing) applySaved(editing);
+  else if (m.replaceLogId) applySaved({ name: o.editLog.name || "", content: o.editLog.content });
   else if ((mode === "plan" || mode === "backfill") && o.planPreset) applySaved(o.planPreset);
   // 標題與送出鈕只在打開時寫（render 路徑不寫，快照的 domNN 才不會位移，審核第 4 節）
   const titleEl = $("#meal-picker-title");
   if (titleEl) {
-    titleEl.innerHTML = (editing ? "編輯組合：" : mode === "plan" ? "排進 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : mode === "backfill" ? "補記 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : "自己選這一餐：") + '<span id="meal-picker-slot-label">' +
+    titleEl.innerHTML = (editing ? "編輯組合：" : mode === "plan" ? "排進 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : mode === "backfill" ? "補記 " + shortDate(day) + "（" + weekdayLabel(day) + "）：" : (m.replaceLogId ? "改這一餐：" : "自己選這一餐：")) + '<span id="meal-picker-slot-label">' +
       escapeHtml(editing ? editing.name : SLOT_LABELS[slot] || slot) + "</span>";
   }
   const submitEl = $("#meal-picker-submit");
-  if (submitEl) submitEl.textContent = editing ? "存回組合" : mode === "plan" ? "排進預約" : mode === "backfill" ? "補記這餐" : "記下這餐";
+  if (submitEl) submitEl.textContent = editing ? "存回組合" : mode === "plan" ? "排進預約" : mode === "backfill" ? "補記" : m.replaceLogId ? "存回這餐" : "記下";
+  const saveBtnEl = $("#meal-picker-submit-save");
+  if (saveBtnEl) {
+    saveBtnEl.hidden = !!editing;
+    saveBtnEl.textContent = (mode === "plan" ? "排進預約" : mode === "backfill" ? "補記" : m.replaceLogId ? "存回這餐" : "記下") + "並存成組合";
+  }
   renderMealPicker();
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = false;
@@ -360,6 +369,7 @@ function applySaved(rec) {
     if (d.cook) {
       m.cook.nc.entry = d.cook.form.entry;
       m.cook.nc.forms[d.cook.form.entry] = cleanCookForm(d.cook.form);
+      m.cook.nc.filled[d.cook.form.entry] = true;
       m.cook.home.open = false;
     } else {
       m.cook.nc.entry = null;
@@ -480,24 +490,30 @@ function renderTabs() {
   }).join("");
 }
 
-// 自己選的自煮分頁上方的「建議自煮」：跟今日建議同一批候選（☆ 與預設決定池子），依這個時段的配額挑，每天換（cook-rec.js 的 cookRecSuggest）；
-// 打開選擇器之後同一個設定只算一次（候選本身有記憶，今日建議已經建好）
-function cookSuggestions() {
+// 點餐型時帶入的建議（decisions #157）：跟今日建議同一批候選（☆ 與預設決定池子），只看這個入口，依這個時段的配額挑；
+// idx＝第幾個（0＝今日建議這一餐的卡片是同入口、同快煮／開伙時就用它，其餘依日期輪轉；「換一個」加 1）。回傳 form 或 null
+function entrySuggestion(entry, idx) {
   const m = mealPicker;
-  if (!m.slot || m.editing || !m.slotShare) return [];
-  const key = [m.slot, m.cook.tier, m.date, m.favorites.join(","), JSON.stringify(m.profile.disliked_ingredients || [])].join("|");
-  if (m.cook.sugKey === key) return m.cook.sugList;
+  if (!m.slot || m.editing || m.replaceLogId || !m.slotShare) return null;
+  const rec = m.todayRec;
+  if (idx === 0 && rec && rec.cook_form && rec.cook_form.entry === entry && rec.cook_content && rec.cook_content.meal_type === m.cook.tier) return rec.cook_form;
   const oilHabit = m.profile.oil_habit || "normal";
   const cands = cookRecCandidates({ catalog: m.catalog, profile: m.profile, favoriteRefs: m.favorites, oilHabit: oilHabit, date: m.date });
-  const rows = cookRecSuggest({ candidates: cands, slot: m.slot, budget: m.slotShare, quick: m.cook.tier === "cook_quick", date: m.date, n: 3 });
-  const list = rows.map(function (r) {
-    const rec = Object.assign({}, r.cand, { cook_variant: r.key, source_pref: m.cook.tier });
-    const fin = cookRecFinalize(rec, { catalog: m.catalog, profile: m.profile, oilHabit: oilHabit });
-    return fin ? { name: fin.name, kcal: Math.round(fin.kcal), form: fin.cook_form } : null;
-  }).filter(Boolean);
-  m.cook.sugKey = key;
-  m.cook.sugList = list;
-  return list;
+  const rows = cookRecSuggest({ candidates: cands, slot: m.slot, budget: m.slotShare, quick: m.cook.tier === "cook_quick", date: m.date, n: 1, entry: entry, offset: idx, poolSize: 8 });
+  if (!rows.length) return null;
+  const rc = Object.assign({}, rows[0].cand, { cook_variant: rows[0].key, source_pref: m.cook.tier });
+  const fin = cookRecFinalize(rc, { catalog: m.catalog, profile: m.profile, oilHabit: oilHabit });
+  return fin ? fin.cook_form : null;
+}
+
+// 這個入口第一次點開就帶入建議；沒有建議（沒配額、全被擋）就維持空白表單
+function fillEntrySuggestion(entry, idx) {
+  const nc = mealPicker.cook.nc;
+  const f = entrySuggestion(entry, idx);
+  nc.filled[entry] = true;
+  nc.sugIdx[entry] = idx;
+  nc.sugOk[entry] = !!f;
+  if (f) nc.forms[entry] = cleanCookForm(f);
 }
 
 function renderPanel() {
@@ -506,7 +522,6 @@ function renderPanel() {
   const m = mealPicker;
   const top = m.editing ? (m.savedNotice ? '<p class="meal-picker-note">' + escapeHtml(m.savedNotice) + "</p>" : "") : savedRowHtml(m.savedCards, m.savedNotice);
   if (m.tab === "cook") {
-    m.cook.sugList = m.cook.nc.entry || m.cook.draft.archetype || (m.cook.home && m.cook.home.open) ? [] : cookSuggestions();
     const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), homeMealAllowed() ? { season: m.season } : null);
     m.cookSteps = r.steps;
     panel.innerHTML = top + r.html;
@@ -1002,6 +1017,8 @@ export function updateSummary() {
   const problem = submitProblem(d);
   const submitBtn = $("#meal-picker-submit");
   if (submitBtn) submitBtn.disabled = problem != null;
+  const submitSaveBtn = $("#meal-picker-submit-save");
+  if (submitSaveBtn) submitSaveBtn.disabled = problem != null || (d.estimates || []).length > 0;
   const hint = $("#meal-picker-hint");
   if (hint) {
     hint.hidden = problem == null;
@@ -1069,17 +1086,15 @@ function onNewCookClick(e) {
   const p = {};
   ["uid", "i", "v", "m", "k"].forEach(function (k) { if (el.hasAttribute("data-" + k)) p[k] = el.getAttribute("data-" + k); });
   const act = el.getAttribute("data-nc");
-  if (act === "sug") { // 帶入一個建議：表單照它填好，之後可以再改
-    const sg = (m.cook.sugList || [])[Number(p.i)];
-    if (!sg) return true;
-    m.cook.draft = emptyCookDraft();
-    m.cook.home.open = false;
-    m.cook.nc.msg = "";
-    m.cook.nc.entry = sg.form.entry;
-    m.cook.nc.forms[sg.form.entry] = cleanCookForm(sg.form);
-    renderPanel();
-    renderDrinks();
-    updateSummary();
+  if (act === "sugnext" && m.cook.nc.entry) { // 換一個建議：同一個入口往後輪一個
+    fillEntrySuggestion(m.cook.nc.entry, (m.cook.nc.sugIdx[m.cook.nc.entry] || 0) + 1);
+    renderPanel(); renderDrinks(); updateSummary();
+    return true;
+  }
+  if (act === "sugclear" && m.cook.nc.entry) { // 清空：回到空白表單（不再自動帶入）
+    delete m.cook.nc.forms[m.cook.nc.entry];
+    m.cook.nc.filled[m.cook.nc.entry] = true;
+    renderPanel(); renderDrinks(); updateSummary();
     return true;
   }
   if (act === "entry") { // 選新入口：舊餐型與舊共餐讓位
@@ -1087,6 +1102,7 @@ function onNewCookClick(e) {
     m.cook.home.open = false;
   }
   if (!cookFormAction(m.cook.nc, act, p, { catalog: m.catalog, tier: m.cook.tier })) return false;
+  if (act === "entry" && m.cook.nc.entry && !m.cook.nc.filled[m.cook.nc.entry]) fillEntrySuggestion(m.cook.nc.entry, 0);
   renderPanel();
   renderDrinks();
   updateSummary();
@@ -1408,10 +1424,29 @@ export async function onMealSubmit() {
     alert(savedRec ? "記錄失敗，請重試。取消勾選「存成組合」就只記這一餐。" : "記錄失敗，請重試。");
     return;
   }
+  // 改已記錄的一餐：新的寫成功之後才拿掉原本那筆（寫失敗時原本的還在）
+  if (m.replaceLogId) {
+    try { await undoDailyLog(m.replaceLogId); } catch (err) { console.error(err); }
+    m.replaceLogId = null;
+  }
   if (!backfill) await rememberMealType(m.slot, content.meal_type); // 補記不算「上次選過」（章程 C4.15）
   const overlay = $("#meal-picker-overlay");
   if (overlay) overlay.hidden = true;
   if (m.onLogged) await m.onLogged();
+}
+
+// 底部「記下並存成組合」：等於勾了「存成組合」再送出；名稱預填品名，被擋下時視窗還開著就還原勾選（名稱是空的就留著勾選讓使用者填）
+export async function onMealSubmitSave() {
+  const m = mealPicker;
+  if ((currentDraft().estimates || []).length > 0) { alert("估算的一餐不能存成組合。"); return; }
+  const before = m.saveAs.on;
+  m.saveAs.on = true;
+  if (!m.saveAs.nameEdited || !(m.saveAs.name || "").trim()) m.saveAs.name = currentSaveName();
+  await onMealSubmit();
+  const overlay = $("#meal-picker-overlay");
+  if (overlay && !overlay.hidden) {
+    if (!(m.saveAs.name || "").trim()) { renderDrinks(); updateSummary(); } else { m.saveAs.on = before; }
+  }
 }
 
 // 關閉（取消）：選擇器裡改過不吃清單的話，今日建議馬上重算，不用切分頁（計畫 S7）
@@ -1481,4 +1516,6 @@ export function initMealPicker() {
   if (cancel) cancel.addEventListener("click", closePicker);
   const submit = $("#meal-picker-submit");
   if (submit) submit.addEventListener("click", onMealSubmit);
+  const submitSave = $("#meal-picker-submit-save");
+  if (submitSave) submitSave.addEventListener("click", onMealSubmitSave);
 }

@@ -70,7 +70,12 @@ const passUids = (role) => js(`(async () => { const m = await import('./js/data/
     .filter((u) => (c.productsByUid[u] || {}).role === ${JSON.stringify(role)}); })()`);
 // 自煮分頁（新結構，cook-forms.js）：點 data-nc 的按鈕；ncFirst 點第一個可選、還沒選的；ncFillBox 把餐盒填到可送出
 const ncClick = (act, extra) => click(`#meal-picker-panel [data-nc=${act}]${extra || ""}`);
-const ncEntry = (k) => ncClick("entry", `[data-v=${k}]`);
+// 點餐型會自動帶入建議（2026-10-11）；舊測試要從空白開始，所以點完入口就「清空」。要測自動帶入用 ncEntryRaw
+const ncEntryRaw = (k) => ncClick("entry", `[data-v=${k}]`);
+const ncEntry = async (k) => {
+  await ncEntryRaw(k);
+  if (await js(`!!document.querySelector('#meal-picker-panel [data-nc=sugclear]')`)) await ncClick("sugclear");
+};
 const ncFirst = (act, extra) => ncClick(act, ":not([disabled]):not(.selected)" + (extra || ""));
 const ncFillBox = async () => { await ncFirst("p"); await ncFirst("pm", '[data-i="0"]'); await ncFirst("c"); await ncFirst("v"); };
 const ncSelectedUids = (act) => js(`[...new Set([...document.querySelectorAll('#meal-picker-panel [data-nc=${act}].selected')].map((b) => b.dataset.uid))]`);
@@ -205,6 +210,14 @@ async function run() {
   await click("#rec-breakfast .rec-log-btn");
   await until(`${text("#rec-breakfast")}.indexOf("已記錄") !== -1 && !!document.querySelector('#rec-breakfast .rec-undo-btn')`, "2-2 記錄這餐後早餐沒有變成「已記錄＋撤銷」");
   check((await js(text("#today-hero-kcal-value"))) !== "1896", "2-2 記錄早餐後彙總卡熱量沒變");
+  // 2-2a 已記錄的卡片：有圖，按鈕同一排「改、撤銷、存成組合」；按「改」把記下的內容帶回自己選，送出後取代原本那筆（還是一筆）
+  check(await js(`!!document.querySelector('#rec-breakfast .rec-card-img') && !!document.querySelector('#rec-breakfast .rec-actions .rec-logedit-btn')`), "2-2a 已記錄的早餐沒有圖或沒有「改」");
+  await shot("今日建議-已記錄卡片", "#rec-breakfast");
+  await click("#rec-breakfast .rec-logedit-btn");
+  await until(`!document.getElementById('meal-picker-overlay').hidden && ${text("#meal-picker-title")}.indexOf("改這一餐") !== -1 && ${text("#meal-picker-submit")} === "存回這餐"`, "2-2a 按「改」沒有打開選擇器或標題、送出鍵不對");
+  await until(`!document.getElementById('meal-picker-submit').disabled`, "2-2a 帶回已記錄的內容後不能送出：" + (await js(text("#meal-picker-hint"))));
+  await click("#meal-picker-submit");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-breakfast")}.indexOf("已記錄") !== -1 && document.querySelectorAll('#rec-breakfast .rec-undo-btn').length === 1`, "2-2a 改完送出後早餐不是剛好一筆已記錄");
   check((await js(`['lunch', 'dinner'].map((s) => document.querySelector('#rec-' + s + ' .rec-name').innerText).join('|')`)) === lunchDinnerBefore, "2-7 記錄早餐後午晚餐推薦變了");
   const bfItems = breakfastName.split(/\s*[＋+]\s*/);
   check(!bfItems.some((n) => lunchDinnerBefore.indexOf(n) !== -1), "2-7 午晚餐出現早餐吃過的品項：" + breakfastName);
@@ -286,6 +299,7 @@ async function run() {
   check(await js(`(() => { const r = document.getElementById('meal-picker-submit').getBoundingClientRect(); return r.bottom <= window.innerHeight && r.top >= 0; })()`),
     "3-1 剛打開時「記下這餐」不在視窗內（要捲動才看得到）");
   await checkStepNumbers("3-1");
+  check(await js(`(() => { const b = ['meal-picker-submit', 'meal-picker-submit-save', 'meal-picker-cancel'].map((i) => document.getElementById(i)); return b.every((x) => x && !x.hidden) && b[1].innerText === '記下並存成組合' && b[0].getBoundingClientRect().left < b[1].getBoundingClientRect().left && b[1].getBoundingClientRect().left < b[2].getBoundingClientRect().left && b[0].getBoundingClientRect().top === b[2].getBoundingClientRect().top; })()`), "3-1 底部不是「記下、記下並存成組合、取消」同一排");
   await shot("自己選-午餐超商");
   // 3-2 選一個主餐 → 摘要；午餐主餐可以選 2 個，第 3 個出現提示（decisions #41）
   const lunchMains = await passUids("main");
@@ -1511,9 +1525,10 @@ async function run() {
   await tab("today");
   await until(`document.querySelectorAll('#today-dates [data-day-offset]').length === 7`, "13-1 日期列不是七個日子");
   check((await js(text("#today-dates [data-day-offset='0']"))).indexOf("今天") !== -1, "13-1 第一個日子不是「今天」");
-  // 13-1 明天：不跑推薦、不顯示目標，只有「還沒排」與自己選
+  // 13-1 明天：不跑推薦、不顯示目標，只有「還沒排」與自己選（先等今天的推薦算完，不然點到一半被舊的結果蓋掉）
+  await until(`document.querySelectorAll('#today-recs .rec-name, #today-recs .rec-logged-note').length >= 1 && ${text("#today-status")}.indexOf("載入中") === -1`, "13-1 今天的推薦沒有算完");
   await click(`#today-dates [data-day-offset='1']`);
-  await until(`!document.getElementById('today-day-summary').hidden && ${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "13-1 明天沒有「還沒排任何一餐」");
+  await until(`!document.getElementById('today-day-summary').hidden && ${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "13-1 明天沒有「還沒排任何一餐」：" + (await js(text("#today-day-summary"))));
   check(await js(`document.getElementById('today-hero').hidden`), "13-1 未來日子不該顯示彙總卡（PRD 6.2）");
   check(!(await js(`!!document.querySelector('#today-recs .rec-log-btn')`)), "13-1 未來日子出現了推薦的「記錄這餐」");
   check(!!(await js(`!!document.querySelector('#rec-dinner [data-plan-pick=dinner]')`)), "13-1 明天晚餐沒有「自己選」");
@@ -1666,7 +1681,7 @@ async function run() {
   const lastPicked0 = await js(`(async () => { const m = ${DBW}; return JSON.stringify(await m.getSetting('picker_last_meal_type')); })()`);
   await click(`#week-backfill [data-backfill-slot=lunch]`);
   await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "14-6 補記的選擇器沒有打開");
-  check((await js(text("#meal-picker-title"))).indexOf("補記") !== -1 && (await js(text("#meal-picker-submit"))) === "補記這餐", "14-6 補記模式的標題或送出鍵不對：" + (await js(text("#meal-picker-title"))));
+  check((await js(text("#meal-picker-title"))).indexOf("補記") !== -1 && (await js(text("#meal-picker-submit"))) === "補記", "14-6 補記模式的標題或送出鍵不對：" + (await js(text("#meal-picker-title"))));
   await click(`#meal-picker-tabs [data-tab=delivery]`);
   await until(`!!document.querySelector('[data-estimate-size=M]')`, "14-6 補記模式的外食分頁沒有估算卡");
   await click(`[data-estimate-size=M]`);
@@ -1885,14 +1900,20 @@ async function run() {
   check((await js(text("#meal-picker-summary"))).indexOf("已配好") !== -1 && !(await js(`document.getElementById('meal-picker-submit').disabled`)), "16b-2 帶進來的建議摘要不是已配好或不能送出：" + (await js(text("#meal-picker-hint"))));
   await shot("今日建議-改一下", "#meal-picker-panel");
   await closePicker();
-  // 16b-3 自己選的自煮分頁：沒選入口時列「建議自煮」三個，點了帶進表單
+  // 16b-3 自己選的自煮分頁：不再列「建議自煮」；點餐型就自動帶入一個建議，有「換一個建議」「清空」
   await openPicker("dinner");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  check((await js(`document.querySelectorAll('#meal-picker-panel [data-nc=sug]').length`)) === 3, "16b-3 自己選的自煮分頁沒有三個「建議自煮」");
-  await shot("自己選-建議自煮", "#meal-picker-panel");
-  await click(`#meal-picker-panel [data-nc=sug][data-i="0"]`);
-  await until(`!!document.querySelector('#meal-picker-panel [data-nc=entry].selected')`, "16b-3 點「建議自煮」沒有帶進表單");
-  check((await js(text("#meal-picker-summary"))).indexOf("已配好") !== -1 && (await js(`document.querySelectorAll('#meal-picker-panel [data-nc=sug]').length`)) === 0, "16b-3 帶進建議後摘要不是已配好、或建議列沒有收起");
+  check((await js(`document.querySelectorAll('#meal-picker-panel [data-nc=sug]').length`)) === 0, "16b-3 自煮分頁不該再有最上面的「建議自煮」");
+  await ncEntryRaw("box");
+  await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1`, "16b-3 點餐盒沒有自動帶入建議");
+  check(!!(await js(`!!document.querySelector('#meal-picker-panel [data-nc=sugnext]') && !!document.querySelector('#meal-picker-panel [data-nc=sugclear]')`)) && !(await js(`document.getElementById('meal-picker-submit').disabled`)), "16b-3 帶入建議後沒有「換一個建議」「清空」或不能送出");
+  await shot("自己選-自動帶入建議", "#meal-picker-panel");
+  const sugBefore = await js(`document.querySelector('#meal-picker-panel .compose-step:last-child').innerText`);
+  await ncClick("sugnext");
+  const sugAfter = await js(`document.querySelector('#meal-picker-panel .compose-step:last-child').innerText`);
+  check(sugBefore !== sugAfter && (await js(text("#meal-picker-summary"))).indexOf("已配好") !== -1, "16b-3 「換一個建議」沒有換成別的組合");
+  await ncClick("sugclear");
+  check(await js(`document.getElementById('meal-picker-submit').disabled`), "16b-3 「清空」之後還能送出");
   await closePicker();
   // 16b-4 「我的食物」自煮：家常菜在裡面，可以標常吃（今日建議的自煮從標的挑）、取消
   await tab("foods");
@@ -1905,6 +1926,14 @@ async function run() {
   await until(`${text("#foods-status")}.indexOf("今日建議的自煮也會優先從你標的食物裡挑") !== -1`, "16b-4 標常吃後沒有說明會影響今日建議");
   check(!!(await js(`!!document.querySelector('#foods-body .foods-favorites [data-foods-unfavorite=hd_garlic_cabbage]')`)), "16b-4 標了常吃的家常菜沒有出現在常吃組");
   await shot("我的食物-家常菜常吃", "#foods-body .foods-favorites");
+  // 16b-4a 標了常吃的家常菜：自己選的家常餐最前面多一列「常吃」（原分頁不再重複）
+  await tab("today");
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  await ncEntry("home");
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel .compose-axis-label')].some((e) => e.innerText === '常吃' && e.nextElementSibling.innerText.indexOf('蒜炒高麗菜') !== -1)`), "16b-4a 家常餐自己選沒有「常吃」列或列裡沒有標的菜");
+  await closePicker();
+  await tab("foods");
   await inFoodRow("蒜炒高麗菜", "[data-foods-unfavorite]");
   await until(`!document.querySelector('#foods-body .foods-favorites [data-foods-unfavorite=hd_garlic_cabbage]')`, "16b-4 取消常吃後這道菜還在常吃組");
   await tab("today");

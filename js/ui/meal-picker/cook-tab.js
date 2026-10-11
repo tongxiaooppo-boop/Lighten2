@@ -82,14 +82,12 @@ export function cookTabHtml(catalog, slot, st, profile, favSet, homeCtx) {
   const showHome = !!homeCtx && !!st.home && st.home.open;
   if (showHome) html += homeMealToggleHtml(true);
   html += "</div></div>";
-  const sug = st.sugList || [];
-  if (!nc.entry && sug.length > 0 && !d.archetype && !showHome) {
-    html += '<div class="compose-step"><div class="compose-axis-label">建議自煮（每天換，點了帶進下面改）</div><div class="compose-options">' +
-      sug.map(function (x, i) {
-        return '<button type="button" class="compose-option" data-nc="sug" data-i="' + i + '">' + escapeHtml(x.name) + '<span class="item-card-kcal">約 ' + x.kcal + " kcal</span></button>";
-      }).join("") + "</div></div>";
-  }
   if (nc.entry) {
+    // 點餐型時已經帶入一個建議（index.js）；這裡給「換一個」和「清空」
+    if (nc.sugOk && nc.sugOk[nc.entry]) {
+      html += '<div class="compose-step"><div class="compose-options"><button type="button" class="compose-option" data-nc="sugnext">換一個建議</button>' +
+        '<button type="button" class="compose-option" data-nc="sugclear">清空</button></div></div>';
+    }
     html += cookFormsHtml(catalog, { nc: nc, tier: st.tier, pf: profile, fav: favSet }, n + 1 + ". " + (nc.entry === "home" ? "選主食與菜" : "填格子"));
     return { html: html, steps: n + 1 };
   }

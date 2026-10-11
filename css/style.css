@@ -1687,6 +1687,24 @@ div.food-row-main {
   font-size: 0.9rem;
   white-space: nowrap;
 }
+/* 自己選視窗底部：記下、記下並存成組合、取消 */
+.meal-picker-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+.meal-picker-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  white-space: nowrap;
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+}
+.meal-picker-actions #meal-picker-submit-save {
+  flex: 2.2 1 0;
+}
+.meal-picker-actions button[hidden] {
+  display: none;
+}
 .rec-extra:empty {
   display: none;
 }

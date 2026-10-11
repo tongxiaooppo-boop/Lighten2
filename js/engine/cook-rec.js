@@ -427,7 +427,8 @@ export function isCookRecId(id) {
 // ---------- 自己選的「建議自煮」 ----------
 // 自己選的自煮分頁上方列幾個建議（每天換）。沒有回饋與近期顯示的資料可用，改用日期輪轉：
 // 先取最貼近這一餐配額的一批候選，主蛋白質（主菜）各取一個，再依「第幾天」從中轉著取 n 個。同一天打開幾次都一樣。
-// o = { candidates（cookRecCandidates 的結果）, slot, budget（這個時段的配額 kcal）, quick（true＝快煮、false＝開伙）, date, n }
+// o = { candidates（cookRecCandidates 的結果）, slot, budget（這個時段的配額 kcal）, quick（true＝快煮、false＝開伙）, date, n,
+//       entry（選填：只看這個入口，點餐型時帶入一個建議用）, offset（選填：往後輪幾個，「換一個」用）, poolSize（選填：輪轉的範圍，預設 n×4） }
 // 回傳 [{ cand, key（份量組合）, kcal }]；要顯示名稱、帶入表單再用 cookRecFinalize
 export function cookRecSuggest(o) {
   const n = o.n || 3;
@@ -435,6 +436,7 @@ export function cookRecSuggest(o) {
   const rows = [];
   o.candidates.forEach(function (c) {
     if (c.valid_slots.indexOf(o.slot) === -1) return;
+    if (o.entry && c.entry !== o.entry) return;
     if (o.quick ? !isQuickTier(c.tier_rank) : c.quick_pool_only) return;
     const v = c.pickVariant(budget, null);
     if (v) rows.push({ cand: c, key: v.key, kcal: v.kcal, gap: budget > 0 && v.kcal > 0 ? Math.abs(budget / v.kcal - 1) : 0 });
@@ -442,15 +444,18 @@ export function cookRecSuggest(o) {
   rows.sort(function (a, b) { return a.gap - b.gap || (a.cand.id < b.cand.id ? -1 : a.cand.id > b.cand.id ? 1 : 0); });
   const mains = {};
   const pool = [];
-  for (let i = 0; i < rows.length && pool.length < n * 4; i++) {
+  const size = o.poolSize || n * 4;
+  for (let i = 0; i < rows.length && pool.length < size; i++) {
     const m = rows[i].cand.main_protein_ref || rows[i].cand.id;
     if (mains[m]) continue;
     mains[m] = true;
     pool.push(rows[i]);
   }
-  if (pool.length <= n) return pool;
+  const offset = o.offset || 0;
+  if (pool.length <= n && !offset) return pool;
+  if (!pool.length) return pool;
   const day = o.date ? Math.floor(Date.UTC(Number(o.date.slice(0, 4)), Number(o.date.slice(5, 7)) - 1, Number(o.date.slice(8, 10))) / 86400000) : 0;
   const out = [];
-  for (let i = 0; i < n; i++) out.push(pool[(day * n + i) % pool.length]);
+  for (let i = 0; i < n; i++) out.push(pool[(day * n + i + offset) % pool.length]);
   return out;
 }
