@@ -1,0 +1,1794 @@
+{
+  "_by": "Cline（Claude Sonnet）",
+  "_date": "2026-10-11",
+  "items": [
+    {
+      "id": "hd_garlic_cabbage",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，備料加炒共約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_qingjiang",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_sweet_potato_leaves",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_cold_cucumber",
+      "by": "cline",
+      "tier": "🟢",
+      "minutes": 10,
+      "equipment": [
+        "免開火"
+      ],
+      "reason": "小黃瓜涼拌、免開火",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_tomato_egg",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒蛋加番茄燴，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_green_pepper_pork",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_kung_pao_chicken",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "醃後爆炒，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_oyster_kailan_beef",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_braised_napa",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白菜燉煮至軟爛需 40 分鐘以上",
+      "confidence": "high",
+      "note": "與「滷白菜」應為同一道，燉煮需時"
+    },
+    {
+      "id": "hd_mapo_tofu",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒肉末燴豆腐，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_steamed_perch",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋或蒸籠蒸一次，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_braised_dried_tofu_egg",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "豆干與滷蛋需滷入味，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_braised_tofu",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "先煎豆腐再紅燒，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_braised_chicken_leg",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷雞腿需入味，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_daikon_rib_soup",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "排骨與蘿蔔熬煮至軟，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "hd_napa_chicken_soup",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉雞湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "hd_seaweed_egg_soup",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "清湯、食材少，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_water_spinach",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_stirfry_luffa",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_stirfry_bitter_melon",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_spinach",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_broccoli",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒（可先燙），約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_crown_daisy",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_garlic_asparagus",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_stirfry_cauliflower",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_chive_egg",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_luffa_egg",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_broccoli_shrimp",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_water_spinach_beef",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_eggplant_pork",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "茄子炒肉末，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_spinach_tofu",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燴煮，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_wood_ear_pork",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_three_cup_chicken",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 30,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒後燜，約 30 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_pan_salmon",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎一次，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_scallion_beef",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "hd_winter_melon_rib_soup",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熬湯至排骨軟，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_001",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎蛋，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_002",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎蛋，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_003",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎蛋，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_004",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎蛋，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_006",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎魚，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_007",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎豆腐，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_009",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_010",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_011",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_012",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_013",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_015",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熱炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_019",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "絲瓜蛤蜊快煮，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_020",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "清湯，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_021",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "排骨與蘿蔔熬煮至軟，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_022",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "熬湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_023",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "清湯、食材少，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_024",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "清湯，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_026",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白菜燉煮至軟爛需 40 分鐘以上",
+      "confidence": "high",
+      "note": "與「白菜滷」應為同一道"
+    },
+    {
+      "id": "d12_027",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "各料需燉煮入味，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_028",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_029",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_030",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_031",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 30,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 30 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_032",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_033",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 30,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 30 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_034",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 25,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 25 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_035",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 25,
+      "equipment": [
+        "油炸"
+      ],
+      "reason": "需油炸與善後，約 25 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_037",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷肉臊燉煮，約 60 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_039",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷蛋需入味，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_040",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 25,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "豆腐易入味，約 20–25 分鐘",
+      "confidence": "low",
+      "note": "接近 30 分鐘邊界；滷久更入味但非必要"
+    },
+    {
+      "id": "d12_042",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "豬腳需久燉軟爛，約 90 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_043",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "牛腱需久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_044",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 35,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷入味需 30 分鐘以上",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_045",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 35,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷入味需 30 分鐘以上",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_046",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "蒸一次、不用顧火，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_047",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋或蒸籠蒸一次，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_048",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋蒸，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_049",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋蒸，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_050",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋蒸，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_051",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 25,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋蒸熟，約 25 分鐘",
+      "confidence": "medium",
+      "note": ""
+    },
+    {
+      "id": "d12_052",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電鍋蒸，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_053",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_054",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_055",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_056",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_057",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白蘿蔔與肉燉軟，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_058",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白菜燉軟，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_062",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_063",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "魚片清湯，約 20 分鐘",
+      "confidence": "medium",
+      "note": "若以魚骨熬高湯約 40 分鐘、應標🔴；本判斷以魚片清湯為準"
+    },
+    {
+      "id": "d12_064",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "筍子與排骨燉軟，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_065",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白菜燉煮，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_067",
+      "by": "cline",
+      "tier": "🟢",
+      "minutes": 10,
+      "equipment": [
+        "免開火"
+      ],
+      "reason": "海帶芽泡發後涼拌，免開火",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_068",
+      "by": "cline",
+      "tier": "🟢",
+      "minutes": 5,
+      "equipment": [
+        "免開火"
+      ],
+      "reason": "嫩豆腐直接加醬，免開火",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_069",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "菠菜需先燙熟再涼拌",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_070",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "木耳需先燙熟再涼拌",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_071",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "過貓需先燙熟再涼拌",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_072",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "雞胸煮熟後撕絲，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_073",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "烤箱"
+      ],
+      "reason": "需烤箱，約 50 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_074",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "烤箱"
+      ],
+      "reason": "需烤箱，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_077",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 25,
+      "equipment": [
+        "烤箱"
+      ],
+      "reason": "需烤箱（特殊器具），約 25 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_078",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "烤箱"
+      ],
+      "reason": "需烤箱，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_079",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "low",
+      "note": "大腸若需先燙煮去腥會更久；以市售已處理大腸計"
+    },
+    {
+      "id": "d12_081",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 25,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮五花肉加蒜泥醬，約 25 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_082",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "麻油爆香後燉煮，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_083",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "medium",
+      "note": "腰花前處理較費工"
+    },
+    {
+      "id": "d12_084",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 10,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 10 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_085",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快炒，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_087",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 40,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "先煎魚再紅燒，約 40 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_088",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 70,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "連續燉煮，約 70 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_089",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎定型後燉煮，約 60 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_090",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "牛腩久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_091",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "藥材燉雞湯，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_092",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_093",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_094",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_095",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "蓮藕花生久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_096",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "薏仁蓮子久煮，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_097",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "藥膳久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_098",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_099",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_100",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 60 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_101",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "藥材久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_102",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "豬腳花生久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_103",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉湯，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_104",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 120,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "蹄膀久燉軟爛，約 120 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_105",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煎定型後燉煮，約 60 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_106",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "燉煮至馬鈴薯軟，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_107",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "冬瓜蛤蜊快煮，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_108",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "白蘿蔔貢丸煮，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_109",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "快煮，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_110",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮到馬鈴薯軟，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_111",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 45,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮到馬鈴薯軟，約 45 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_112",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "牛腩久煮，約 60 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_113",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 30,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮到馬鈴薯軟、咖哩濃稠，約 30 分鐘",
+      "confidence": "medium",
+      "note": "無肉故較快，接近 30 分鐘邊界"
+    },
+    {
+      "id": "d12_114",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 35,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮到馬鈴薯軟，約 35 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_016",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 25,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "泡米粉後炒，約 25 分鐘",
+      "confidence": "medium",
+      "note": ""
+    },
+    {
+      "id": "d12_017",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒麵，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_038",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 60,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "滷肉臊燉煮，約 60 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_059",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮粥，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_060",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮粥，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_061",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮粥，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "d12_075",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "烤箱"
+      ],
+      "reason": "需烤箱，約 50 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "d12_076",
+      "by": "cline",
+      "tier": "🟢",
+      "minutes": 5,
+      "equipment": [
+        "免開火"
+      ],
+      "reason": "烤麵包機即可、免開火",
+      "confidence": "high",
+      "note": "設備清單無「烤麵包機」，暫以「免開火」標示"
+    },
+    {
+      "id": "wb_friedrice",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 20,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒飯，約 20 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_eggrice",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "炒飯，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_beefnoodle",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 90,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "牛腱久燉，約 90 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_sesamenoodle",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮麵後拌麻醬，約 15 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_dumpling",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 15,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮水餃，約 15 分鐘",
+      "confidence": "medium",
+      "note": "以現成冷凍水餃下水煮計；若自製包餡則更久"
+    },
+    {
+      "id": "wb_fishcongee",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "煮粥，約 50 分鐘",
+      "confidence": "high",
+      "note": "電鍋可預約"
+    },
+    {
+      "id": "wb_chickencurry",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "咖哩燉煮加飯，約 50 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_porkcurry",
+      "by": "cline",
+      "tier": "🔴",
+      "minutes": 50,
+      "equipment": [
+        "瓦斯爐"
+      ],
+      "reason": "咖哩燉煮加飯，約 50 分鐘",
+      "confidence": "high",
+      "note": ""
+    },
+    {
+      "id": "wb_chickenrice",
+      "by": "cline",
+      "tier": "🟡",
+      "minutes": 35,
+      "equipment": [
+        "電鍋"
+      ],
+      "reason": "電子鍋一鍋炊熟，約 35 分鐘",
+      "confidence": "low",
+      "note": "免顧火但略超 30 分鐘邊界，供審核參考"
+    }
+  ]
+}
