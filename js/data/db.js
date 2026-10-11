@@ -4,7 +4,7 @@
 // - 寫入前先驗證（驗證不過直接丟錯，不會碰到資料庫）；傳入陣列一律報錯。
 // - 其他模組只能透過這裡的函式讀寫，不得直接開 IndexedDB。
 
-import { EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty, isFoodAmount, INGREDIENT_GROUPS } from "../core/config.js";
+import { EST_SIZES, EST_CATS, EST_STAPLES, EST_DISH_MAX, MEAL_TYPES, LOG_SOURCES, ALLERGEN_OPTIONS, UNVERIFIED_ALLERGEN, QTY_OPTIONS, isFoodQty, isFoodAmount, INGREDIENT_GROUPS, COOK_ENTRIES, COOK_METHODS } from "../core/config.js";
 import { SLOTS } from "../core/slots.js";
 import { isNum } from "../core/num.js";
 import { fmtDate } from "../core/dates.js";
@@ -230,11 +230,30 @@ function foodAmountProblems(comp, at) {
 }
 
 // 自煮的一餐沒有食材（只有單品、飲料）：沒有餐型與烹調法，implicit 恰好 { oil_g: 0, seasoning: null }（decisions #123、章程 C4.11）
+// 新自煮（餐盒、早餐盤、早餐碗、家常餐，2026-10-11）帶 content.form：下鍋油合計放 implicit.oil_g（不一定是 0），調味 null
 function noIngredientCookProblems(c) {
   const problems = [];
   if (c.archetype_id !== null || c.method_id !== null) problems.push("content.archetype_id/method_id");
   const imp = c.implicit;
-  if (!imp || Object.keys(imp).length !== 2 || imp.oil_g !== 0 || imp.seasoning !== null) problems.push("content.implicit");
+  if (isPlainObject(c.form)) {
+    if (!imp || Object.keys(imp).length !== 2 || !isNum(imp.oil_g) || imp.oil_g < 0 || imp.seasoning !== null) problems.push("content.implicit");
+  } else if (!imp || Object.keys(imp).length !== 2 || imp.oil_g !== 0 || imp.seasoning !== null) problems.push("content.implicit");
+  return problems;
+}
+
+// 新自煮的設定與零件欄位（cook.js）：form 只驗結構，語意由 engine 驗；零件的 part／role／method 是選填
+function cookFormProblems(c) {
+  if (!("form" in c)) return [];
+  const f = c.form;
+  if (!isPlainObject(f) || COOK_ENTRIES.indexOf(f.entry) === -1) return ["content.form"];
+  return [];
+}
+
+function cookPartProblems(comp, at) {
+  const problems = [];
+  if ("part" in comp && COOK_ENTRIES.indexOf(comp.part) === -1) problems.push(at + ".part");
+  if ("role" in comp && (typeof comp.role !== "string" || comp.role === "")) problems.push(at + ".role");
+  if ("method" in comp && !COOK_METHODS.hasOwnProperty(comp.method)) problems.push(at + ".method");
   return problems;
 }
 
@@ -250,6 +269,7 @@ function contentProblems(c, mealType) {
   else if (COOK_TYPES.indexOf(mealType) !== -1 && !c.components.some(function (comp) { return comp && comp.kind === "ingredient"; })) {
     Array.prototype.push.apply(problems, noIngredientCookProblems(c));
   }
+  Array.prototype.push.apply(problems, cookFormProblems(c));
   c.components.forEach(function (comp, i) {
     const at = "content.components[" + i + "]";
     if (!comp || COMPONENT_KINDS.indexOf(comp.kind) === -1) { problems.push(at + ".kind"); return; }
@@ -265,6 +285,7 @@ function contentProblems(c, mealType) {
       if (typeof comp.ref !== "string" || comp.ref === "") problems.push(at + ".ref");
       Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
       Array.prototype.push.apply(problems, foodSnapshotProblems(comp.snapshot, at));
+      Array.prototype.push.apply(problems, cookPartProblems(comp, at));
     } else {
       if (typeof comp.name !== "string" || comp.name === "") problems.push(at + ".name");
       if (snapshotProblem(comp.snapshot)) problems.push(at + ".snapshot");
@@ -432,8 +453,9 @@ function savedContentProblems(c, plan) {
   if (!("implicit" in c)) problems.push("content.implicit");
   else if (c.implicit !== null) {
     if (!cook || implicitProblem(c.implicit)) problems.push("content.implicit");
-    else if (!hasIngredient && (Object.keys(c.implicit).length !== 2 || c.implicit.oil_g !== 0 || c.implicit.seasoning !== null)) problems.push("content.implicit");
+    else if (!hasIngredient && (Object.keys(c.implicit).length !== 2 || c.implicit.seasoning !== null || (isPlainObject(c.form) ? false : c.implicit.oil_g !== 0))) problems.push("content.implicit");
   }
+  Array.prototype.push.apply(problems, cookFormProblems(c));
   if (cook && !hasIngredient && (c.archetype_id !== null || c.method_id !== null)) problems.push("content.archetype_id/method_id");
   c.components.forEach(function (comp, i) {
     const at = "content.components[" + i + "]";
@@ -455,7 +477,10 @@ function savedContentProblems(c, plan) {
     } else if (comp.kind === "product") {
       if (QTY_OPTIONS.indexOf(comp.qty) === -1) problems.push(at + ".qty");
       if ("role" in comp) problems.push(at + ".role");
-    } else Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
+    } else {
+      Array.prototype.push.apply(problems, foodAmountProblems(comp, at));
+      Array.prototype.push.apply(problems, cookPartProblems(comp, at));
+    }
   });
   return problems;
 }
