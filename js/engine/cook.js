@@ -461,7 +461,7 @@ export function cookFormParts(form, catalog, oilHabit) {
 // 記錄名稱：餐型＋各零件名稱（沒有克數，decisions #152）
 export function cookFormName(form, catalog) {
   const names = cookFormParts(form, catalog, "normal").parts.map(function (p) { return p.item.name; });
-  return COOK_ENTRY_LABELS[form.entry] + "：" + names.join("＋");
+  return COOK_ENTRY_LABELS[form.entry] + "（" + names.join("＋") + "）";
 }
 
 // 從存下來的 form 取出乾淨的副本（只留合法欄位，帶回選擇器用）
