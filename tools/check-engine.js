@@ -930,7 +930,7 @@ function checkCook(catalog) {
   const cookOf = (form, tier) => mc.cookDraftPart(form, catalog, okProfile, tier || "cook_full", "normal");
   const mkDraft = (form, tier) => ({ kind: "cook", meal_type: tier || "cook_full", archetype: null, proteins: [], vegetables: [], items: [], estimates: [], drink: null, qtyByUid: {}, foods: [], cook: cookOf(form, tier) });
   const bd = mkDraft(oilBox);
-  check(mc.composeProblem(bd) === null && /^餐盒＋/.test(mc.draftLogName(bd)), "草稿：合法的餐盒 composeProblem 通過、記錄名稱以「餐盒」開頭");
+  check(mc.composeProblem(bd) === null && /^餐盒（.+）$/.test(mc.draftLogName(bd)), "草稿：合法的餐盒 composeProblem 通過、記錄名稱以「餐盒」開頭");
   const content = mc.buildDraftContent(bd, { oilHabit: "normal" });
   check(content.form.entry === "box" && content.archetype_id === null && content.implicit.oil_g === 10 && content.components.every((c) => c.kind === "food" && c.part === "box" && c.role) && content.components.some((c) => c.method === "pan"), "內容：form、food 零件（part／role／method）、implicit.oil_g");
   const totals = mc.contentTotals(content, catalog);
@@ -958,7 +958,7 @@ function checkCook(catalog) {
   const rg = mc.resolveSavedMeal(gone, catalog, ctx);
   check(rg.gone.length >= 1 && mc.resolvePlan({ date: "2026-10-12", slot: "dinner", content: gone }, catalog, ctx, "normal").status === "invalid", "食材已不提供：組合解析回報、預約失效");
   const hd = mkDraft(f3); const hc = mc.buildDraftContent(hd, { oilHabit: "normal" });
-  check(hc.form.entry === "home" && hc.implicit.oil_g === 0 && mc.contentTotals(hc, catalog).kcal > 400 && /^家常餐＋/.test(mc.draftLogName(hd)), "家常餐內容：整碗炒飯加炒青菜半盤");
+  check(hc.form.entry === "home" && hc.implicit.oil_g === 0 && mc.contentTotals(hc, catalog).kcal > 400 && /^家常餐（.+）$/.test(mc.draftLogName(hd)), "家常餐內容：整碗炒飯加炒青菜半盤");
   let t4 = null; try { db.validateDailyLog(Object.assign({ id: "y" }, mc.buildLogEntry({ date: "2026-10-11", slot: "dinner", source: "manual", name: "x", content: hc, totals: mc.contentTotals(hc, catalog), createdAt: "2026-10-11T12:00:00.000Z" }))); } catch (e) { t4 = e; }
   check(t4 === null, "daily_log 驗證接受家常餐內容" + (t4 ? "：" + t4.message : ""));
 }

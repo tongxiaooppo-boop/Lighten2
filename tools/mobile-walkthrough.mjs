@@ -1131,7 +1131,7 @@ async function run() {
   await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
   check(!(await js(`document.getElementById('meal-picker-submit').disabled`)), "9-4 完整餐型＋單品＋飲料不能送出：" + (await js(text("#meal-picker-hint"))));
   const fullName = await submitAndUndo("dinner", "9-4 完整");
-  check(new RegExp("^" + archName + "＋.+＋白飯 40g＋全脂奶（自己倒） 480ml＋[^＋]+$").test(fullName), "9-4 完整餐型＋單品＋飲料的名稱順序不對：" + fullName);
+  check(new RegExp("^" + archName + "（.+）＋白飯 40g＋全脂奶（自己倒） 480ml＋[^＋]+$").test(fullName), "9-4 完整餐型＋單品＋飲料的名稱順序不對：" + fullName);
 
   // 9-5 上限：第 5 項 alert；4 項單品＋主餐＋配菜＋飲料可以送出
   await openPicker("lunch");
@@ -1806,7 +1806,7 @@ async function run() {
   await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("家常餐") !== -1`, "16-1 送出後晚餐紀錄沒有「家常餐」");
   const todayStr16 = `(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`;
   const log16 = JSON.parse((await hmLogs(todayStr16)).filter((x) => /"slot":"dinner"/.test(x))[0] || "{}");
-  check(log16.type === "cook_full" && log16.arch === null && log16.form === "home" && log16.imp && log16.imp.oil_g === 0 && log16.comps.length >= 5 && log16.comps.every((c) => /^food:/.test(c)) && log16.comps.filter((c) => /^food:hd_/.test(c)).length >= 5 && log16.name.indexOf("家常餐＋") === 0 && !/\d+g/.test(log16.name),
+  check(log16.type === "cook_full" && log16.arch === null && log16.form === "home" && log16.imp && log16.imp.oil_g === 0 && log16.comps.length >= 5 && log16.comps.every((c) => /^food:/.test(c)) && log16.comps.filter((c) => /^food:hd_/.test(c)).length >= 5 && log16.name.indexOf("家常餐（") === 0 && !/\d+g/.test(log16.name),
     "16-1 家常餐紀錄不是自煮的 hd_ 單品＋form、或名稱帶克數：" + JSON.stringify(log16));
   await click("#rec-dinner .rec-undo-btn");
   await until(`!!document.querySelector('#rec-dinner .rec-log-btn') || !!document.querySelector('#rec-dinner .rec-pick-btn')`, "16-1 撤銷晚餐沒有完成");

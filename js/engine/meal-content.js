@@ -934,7 +934,8 @@ export function draftLogName(d) {
   const homeNames = homeMealParts(d.homeMeal).filter(function (f) { return isHomeDishRef(f.item.uid); }).map(function (f) { return f.item.name; });
   if (homeNames.length > 0) tail.unshift("共餐：" + homeNames.join("＋")); // 記錄名稱不寫克數（decisions #152）
   if (d.kind === "cook" && d.cook) {
-    return [COOK_ENTRY_LABELS[d.cook.form.entry]].concat(d.cook.parts.map(function (p) { return p.item.name; }), tail).join("＋");
+    // 餐型（零件＋零件）＋單品＋飲料：零件放在括號裡，單品與飲料在括號外
+    return [COOK_ENTRY_LABELS[d.cook.form.entry] + "（" + d.cook.parts.map(function (p) { return p.item.name; }).join("＋") + "）"].concat(tail).join("＋");
   }
   if (d.kind === "cook") {
     return (d.archetype ? [d.archetype.name] : []).concat(draftIngredients(d).map(function (it) { return it.name; }), tail).join("＋");
@@ -1367,7 +1368,7 @@ export function savedMealDefaultName(content, catalog, ctx) {
   const own = customsByUid(ctx);
   const tree = treeById(catalog);
   const names = [];
-  if (content.form && COOK_ENTRY_LABELS[content.form.entry]) names.push(COOK_ENTRY_LABELS[content.form.entry]);
+  const inside = [];
   if (isCookType(content.meal_type) && content.archetype_id) {
     const a = catalog.archetypes.filter(function (x) { return x.id === content.archetype_id; })[0];
     if (a && content.components.some(function (c) { return c.kind === "ingredient"; })) names.push(a.name);
@@ -1375,8 +1376,10 @@ export function savedMealDefaultName(content, catalog, ctx) {
   content.components.forEach(function (c) {
     const it = c.kind === "ingredient" ? ingIdx[c.ref] : c.kind === "food" ? (tree[c.ref] || (isMyIngredientRef(c.ref) ? myIngredientRec(ctx, c.ref) : null))
       : catalog.productsByUid[c.ref] || own[c.ref];
-    if (it) names.push(it.name);
+    if (it) (c.part ? inside : names).push(it.name);
   });
+  // 新自煮：餐型（零件＋零件），其餘單品、飲料接在括號後
+  if (content.form && COOK_ENTRY_LABELS[content.form.entry]) names.unshift(COOK_ENTRY_LABELS[content.form.entry] + (inside.length ? "（" + inside.join("＋") + "）" : ""));
   return names.join("＋");
 }
 
