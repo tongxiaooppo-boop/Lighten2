@@ -639,6 +639,9 @@ body {
   vertical-align: middle;
   cursor: pointer;
 }
+.help-btn .help-icon {
+  display: block;
+}
 .meal-picker-head {
   position: relative;
 }
