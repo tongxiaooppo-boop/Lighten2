@@ -76,6 +76,7 @@ async function main() {
     picker: await imp("js/engine/picker.js"),
     foods: await imp("js/engine/foods.js"),
     myIng: await imp("js/engine/my-ingredients.js"),
+    cook: await imp("js/engine/cook.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -858,8 +859,108 @@ async function main() {
   checkMyIngredients(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
+  // ---------- 15. 新自煮（餐盒、早餐盤、早餐碗、家常餐；2026-10-11，js/engine/cook.js） ----------
+  console.log("[新自煮]");
+  checkCook(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+function checkCook(catalog) {
+  const ck = M.cook, mc = M.mc, db = M.db;
+  const okProfile = { allergens: [], diet_restriction: "一般", disliked_ingredients: [], oil_habit: "normal" };
+  const opts = ck.cookOptions(catalog);
+  const opt = (u) => ck.cookOptionByUid(catalog, u);
+  check(opts.protein.length >= 60 && opts.carb.length >= 15 && opts.veg.length >= 50 && opts.plateCarb.length === 5 && opts.drink.length >= 3, "選項清單：蛋白質、碳水、蔬菜、早餐盤碳水、飲品都有（" + [opts.protein.length, opts.carb.length, opts.veg.length].join("／") + "）");
+  check(opt("chicken_breast").g === 130 && opt("egg").g === 100 && !opts.carb.some((e) => /白飯|麵|吐司/.test(e.name)) && opt("fx_cheese_slice").plateOnly === true, "一餐份量：內建食材用自己的份量；餐盒碳水不收白飯、麵、吐司；起司片只給早餐盤");
+  check(opt("cucumber").rank === 0 && opt("broccoli").rank >= 1 && opt("beef_shank").g > 0, "小黃瓜 🟢、青花菜 🟡（內建青花菜標「不用煮」，但生吃只認白名單，不採用那個值）");
+  // 做法能不能用
+  const mp = (u, k, veg, quick) => ck.cookMethodProblem(opt(u), k, veg, quick);
+  check(mp("cucumber", "raw", true) === null && /不能生吃/.test(mp("broccoli", "raw", true)) && /不能生吃/.test(mp("cucumber", "raw", false)), "生：只有白名單蔬菜放在蔬菜格才能生");
+  check(/快煮不做舒肥/.test(mp("chicken_breast", "sous", false, true)) && mp("chicken_breast", "sous", false, false) === null && mp("chicken_breast", "boil", false, true) === null, "快煮擋舒肥（🔴）、水煮可以");
+  check(mp("fx_tuna", "cold", false) === null && /要加熱/.test(mp("chicken_breast", "cold", false)) && mp("fx_cheese_slice", "cold", false) === null && /直接吃/.test(mp("fx_cheese_slice", "pan", false)), "直接吃：現成食物才能；起司片只能直接吃");
+  // 餐盒
+  const box = () => { const f = ck.newBoxForm("box"); f.ps = [{ uid: "chicken_breast", m: "sous" }]; f.carb = "sweet_potato"; f.veg = [{ uid: "broccoli", m: "boil" }]; return f; };
+  const bp = ck.boxParts(box(), catalog, "normal");
+  const amt = (r, role) => r.parts.filter((p) => p.role === role).map((p) => p.amount);
+  check(JSON.stringify(amt(bp, "protein")) === "[130]" && JSON.stringify(amt(bp, "carb")) === "[75]" && JSON.stringify(amt(bp, "veg")) === "[100]" && bp.oil_g === 0, "餐盒預設（減糖）：雞胸 130g、地瓜半份 75g、青花菜 100g、水煮舒肥不用油");
+  const mus = ck.applyGoal(box(), "muscle");
+  check(mus.pamt === 1.5 && mus.carbAmt === "one" && amt(ck.boxParts(mus, catalog, "normal"), "protein")[0] === 195 && amt(ck.boxParts(mus, catalog, "normal"), "carb")[0] === 150, "增肌：蛋白質一份半（195g）、碳水一份（150g）");
+  const two = box(); two.ps = [{ uid: "chicken_breast", m: "sous" }, { uid: "egg", m: "boil", n: 2 }, { uid: "salmon", m: "air" }];
+  const tp = ck.boxParts(two, catalog, "normal");
+  check(tp.parts.find((p) => p.item.uid === "egg").amount === 100 && tp.parts.find((p) => p.item.uid === "chicken_breast").amount === 65 && tp.parts.find((p) => p.item.uid === "salmon").amount === 60, "多種蛋白質：肉類平分一份（各 1/2）、蛋用顆數（2 顆 100g）不平分");
+  const oilBox = box(); oilBox.ps = [{ uid: "chicken_breast", m: "pan" }]; oilBox.veg = [{ uid: "broccoli", m: "stir" }];
+  check(ck.boxParts(oilBox, catalog, "normal").oil_g === 10 && ck.boxParts(oilBox, catalog, "less").oil_g === 5, "用油：煎蛋白質 5g＋炒蔬菜 5g＝10g；少油習慣減半");
+  const bprob = (f, prof, tier) => ck.boxProblem(f, catalog, prof || okProfile, tier || "cook_full") || "";
+  check(bprob(box()) === "" && /請選蛋白質/.test(bprob(ck.newBoxForm("box"))), "餐盒：完整可送出、沒選蛋白質擋下");
+  const f4 = box(); f4.ps = ["chicken_breast", "salmon", "egg", "tilapia_fillet"].map((u) => ({ uid: u, m: "boil" }));
+  check(/最多選 3/.test(bprob(f4)), "蛋白質最多 3 種");
+  const nm = box(); nm.ps[0].m = null; check(/請選做法/.test(bprob(nm)), "每個蛋白質都要選做法");
+  const nv = box(); nv.veg[0].m = null; check(/請選做法/.test(bprob(nv)), "每個蔬菜都要選做法");
+  const nc = box(); nc.carb = null; check(/請選碳水/.test(bprob(nc)) && bprob(Object.assign(box(), { carbAmt: "none", carb: null })) === "", "碳水沒選要擋，選「不要」可以");
+  check(/快煮不做舒肥/.test(bprob(box(), null, "cook_quick")) && /快煮不收/.test(bprob(Object.assign(box(), { ps: [{ uid: "salmon", m: "boil" }] }), null, "cook_quick")), "快煮：擋舒肥與 🔴 食材（鮭魚）");
+  check(bprob(Object.assign(box(), { ps: [{ uid: "egg", m: "boil", n: 1 }] }), { allergens: ["蛋"], diet_restriction: "一般", disliked_ingredients: [] }) !== "", "過敏原：蛋過敏選雞蛋要擋");
+  check(bprob(Object.assign(box(), { ps: [{ uid: "chicken_breast", m: "cold" }] })) !== "", "餐盒不能選「直接吃」（早餐盤才有）");
+  const plate = ck.newBoxForm("plate"); plate.ps = [{ uid: "egg", m: "pan", n: 2 }, { uid: "fx_cheese_slice", m: "cold" }]; plate.carb = "fx_whole_wheat_toast"; plate.drink = "soy_milk";
+  const pp = ck.boxParts(plate, catalog, "normal");
+  check(bprob(plate) === "" && pp.parts.find((p) => p.item.uid === "fx_cheese_slice").amount === 20 && pp.parts.find((p) => p.role === "carb").amount === 60 && pp.oil_g === 5, "早餐盤：吐司＋煎蛋 2 顆＋起司片＋豆漿可送出（起司 20g、吐司 60g、煎油 5g）");
+  check(bprob(Object.assign(ck.newBoxForm("box"), { ps: [{ uid: "fx_cheese_slice", m: "cold" }], carb: "sweet_potato" })) !== "", "起司片只能放早餐盤");
+  // 早餐碗
+  const bowl = ck.newBowlForm(); bowl.base = ck.cookOptions(catalog).bowlBase[0].uid;
+  check(ck.bowlProblem(bowl, catalog, okProfile) === null && ck.bowlProblem(ck.newBowlForm(), catalog, okProfile) !== null && ck.bowlParts(bowl, catalog).parts.length === 1, "早餐碗：選了碗底就能送出");
+  // 家常餐
+  const home = (o) => Object.assign(ck.newHomeForm(), o || {});
+  const hp = (f) => ck.homeParts(f, catalog);
+  const dish = (u) => catalog.homeDishes.byId[u];
+  const f1 = home({ dishes: [{ uid: "hd_garlic_cabbage" }, { uid: "hd_tomato_egg" }, { uid: "hd_seaweed_egg_soup" }] });
+  check(ck.homePeople(f1, catalog) === 2 && hp(f1).parts.find((p) => p.item.uid === "hd_garlic_cabbage").amount === Math.round(dish("hd_garlic_cabbage").cooked_g / 2) && hp(f1).parts.find((p) => p.role === "soup").amount === 250, "家常餐：預設人數＝炒煎蒸拌這類菜的道數（湯不算）；整盤÷人數；湯一碗 250g");
+  const f2 = home({ dishes: [{ uid: "hd_d12_104" }] });
+  check(ck.homePeople(f2, catalog) === 1 && hp(f2).parts.find((p) => p.role === "dish").amount === Math.round(dish("hd_d12_104").cooked_g / dish("hd_d12_104").serv), "一鍋菜（燉蹄膀）：配方一人份，不看人數");
+  const f2b = home({ dishes: [{ uid: "hd_d12_104", amt: 1.5 }] });
+  check(hp(f2b).parts.find((p) => p.role === "dish").amount === Math.round(dish("hd_d12_104").cooked_g / dish("hd_d12_104").serv * 1.5), "一鍋菜可選一份半");
+  const f3 = home({ staple: "hd_wb_friedrice", dishes: [{ uid: "hd_garlic_cabbage" }] });
+  check(ck.homePeople(f3, catalog) === 2 && hp(f3).parts[0].amount === dish("hd_wb_friedrice").cooked_g && ck.homeProblem(f3, catalog, okProfile, "cook_full") === null, "整碗主食：人數固定 2（加的菜取半盤），整碗一份");
+  check(ck.homeProblem(home({ staple: "hd_wb_friedrice" }), catalog, okProfile, "cook_full") === null && /至少選一道菜/.test(ck.homeProblem(home(), catalog, okProfile, "cook_full")), "選了整碗可以不配菜；什麼都沒選要擋");
+  check(hp(home({ staple: "hd_d12_059" })).parts[0].amount === 300, "粥：一碗 300g");
+  check(/快煮不做/.test(ck.homeProblem(home({ dishes: [{ uid: "hd_d12_088" }] }), catalog, okProfile, "cook_quick") || "") && ck.homeProblem(home({ dishes: [{ uid: "hd_d12_104" }] }), catalog, okProfile, "cook_quick") === null, "快煮：紅燒肉（要顧火）擋、燉蹄膀（電鍋可預約）不擋");
+  check(/最多 4/.test(ck.homeProblem(home({ dishes: ["hd_garlic_cabbage", "hd_tomato_egg", "hd_chive_egg", "hd_mapo_tofu", "hd_pan_salmon"].map((u) => ({ uid: u })) }), catalog, okProfile, "cook_full") || ""), "家常餐菜最多 4 道");
+  // 內容與記錄格式
+  const cookOf = (form, tier) => mc.cookDraftPart(form, catalog, okProfile, tier || "cook_full", "normal");
+  const mkDraft = (form, tier) => ({ kind: "cook", meal_type: tier || "cook_full", archetype: null, proteins: [], vegetables: [], items: [], estimates: [], drink: null, qtyByUid: {}, foods: [], cook: cookOf(form, tier) });
+  const bd = mkDraft(oilBox);
+  check(mc.composeProblem(bd) === null && /^餐盒＋/.test(mc.draftLogName(bd)), "草稿：合法的餐盒 composeProblem 通過、記錄名稱以「餐盒」開頭");
+  const content = mc.buildDraftContent(bd, { oilHabit: "normal" });
+  check(content.form.entry === "box" && content.archetype_id === null && content.implicit.oil_g === 10 && content.components.every((c) => c.kind === "food" && c.part === "box" && c.role) && content.components.some((c) => c.method === "pan"), "內容：form、food 零件（part／role／method）、implicit.oil_g");
+  const totals = mc.contentTotals(content, catalog);
+  const sum = content.components.reduce((a, c) => a + c.snapshot.kcal * c.amount / c.snapshot.amount, 0);
+  const oilItem = catalog.implicit.cooking_oil;
+  const oilKcal = 10 * oilItem.per_100g.kcal / 100;
+  check(Math.abs(totals.kcal - (sum + oilKcal)) < 1.5, "營養合計＝各零件快照 ÷ 份量 × 克數＋下鍋油（" + totals.kcal + " vs " + (sum + oilKcal).toFixed(1) + "）");
+  const entry = mc.buildLogEntry({ date: "2026-10-11", slot: "lunch", source: "manual", name: mc.draftLogName(bd), content: content, totals: totals, createdAt: "2026-10-11T12:00:00.000Z" });
+  let thrown = null; try { db.validateDailyLog(Object.assign({ id: "x" }, entry)); } catch (e) { thrown = e; }
+  check(thrown === null, "daily_log 驗證接受新自煮的內容" + (thrown ? "：" + thrown.message : ""));
+  const saved = mc.toSavedContent(content, { keepImplicit: false });
+  check(saved.form && saved.components.every((c) => c.kind === "food" && c.amount != null && !c.snapshot), "組合內容：帶 form、零件只存 ref 與克數");
+  let t2 = null; try { db.validateSavedMeal({ id: "s1", name: "測試", archived: false, created_at: "2026-10-11T00:00:00.000Z", updated_at: "2026-10-11T00:00:00.000Z", content: saved }); } catch (e) { t2 = e; }
+  check(t2 === null, "saved_meals 驗證接受新自煮的內容" + (t2 ? "：" + t2.message : ""));
+  const ctx = { hidden: [], customs: [], slot: "lunch", profile: okProfile, customIngredients: [] };
+  const rs = mc.resolveSavedMeal(saved, catalog, ctx);
+  check(rs.blocked.length === 0 && rs.gone.length === 0 && rs.notes.length === 0 && rs.cook && rs.cook.problem === null, "組合解析：新自煮的內容可用、沒有被擋");
+  const back = mc.buildDraftContent(mc.savedMealDraft(rs), { oilHabit: "normal" });
+  check(Math.abs(mc.contentTotals(back, catalog).kcal - totals.kcal) < 0.2 && mc.savedMealTotals(rs, catalog, "normal").kcal === mc.contentTotals(back, catalog).kcal, "組合帶回選擇器：還原後熱量一致");
+  const plan = mc.toPlanContent(content, { keepImplicit: false });
+  let t3 = null; try { db.validateMealPlan({ id: "2026-10-12|dinner", date: "2026-10-12", slot: "dinner", name: "預約", created_at: "2026-10-11T00:00:00.000Z", updated_at: "2026-10-11T00:00:00.000Z", content: plan }); } catch (e) { t3 = e; }
+  check(t3 === null && mc.resolvePlan({ date: "2026-10-12", slot: "dinner", content: plan }, catalog, ctx, "normal").status === "ok", "預約：新自煮可存、可解析" + (t3 ? "：" + t3.message : ""));
+  // 食材不見了
+  const gone = JSON.parse(JSON.stringify(saved)); gone.form.ps[0].uid = "no_such_food"; gone.components[0].ref = "no_such_food";
+  const rg = mc.resolveSavedMeal(gone, catalog, ctx);
+  check(rg.gone.length >= 1 && mc.resolvePlan({ date: "2026-10-12", slot: "dinner", content: gone }, catalog, ctx, "normal").status === "invalid", "食材已不提供：組合解析回報、預約失效");
+  const hd = mkDraft(f3); const hc = mc.buildDraftContent(hd, { oilHabit: "normal" });
+  check(hc.form.entry === "home" && hc.implicit.oil_g === 0 && mc.contentTotals(hc, catalog).kcal > 400 && /^家常餐＋/.test(mc.draftLogName(hd)), "家常餐內容：整碗炒飯加炒青菜半盤");
+  let t4 = null; try { db.validateDailyLog(Object.assign({ id: "y" }, mc.buildLogEntry({ date: "2026-10-11", slot: "dinner", source: "manual", name: "x", content: hc, totals: mc.contentTotals(hc, catalog), createdAt: "2026-10-11T12:00:00.000Z" }))); } catch (e) { t4 = e; }
+  check(t4 === null, "daily_log 驗證接受家常餐內容" + (t4 ? "：" + t4.message : ""));
 }
 
 function checkMyIngredients(catalog) {

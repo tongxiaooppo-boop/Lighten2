@@ -20,6 +20,8 @@ import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { passesHardFilters, ingredientFilterResult } from "./filters.js";
 import { round1, isNum } from "../core/num.js";
 import { ingredientItem } from "./my-ingredients.js";
+import { cookFormParts, cookFormProblem } from "./cook.js";
+import { COOK_ENTRY_LABELS } from "../core/config.js";
 
 export const NUTRIENT_FIELDS = ["protein_g", "carb_g", "fat_g", "fiber_g"];
 const CONTRIB_FIELDS = ["kcal"].concat(NUTRIENT_FIELDS);
@@ -307,6 +309,7 @@ export function composeProblem(d, opts) {
   const foods = (d.foods || []).length + homeMealFoodCount(d.homeMeal); // 共餐的主食算 1 項單品，菜與湯另計（decisions #152）
   const limit = foodLimitProblem(foods);
   if (limit) return limit;
+  if (d.cook) return d.cook.problem || null; // 新自煮：規則在 cook.js（cookFormProblem）
   if (!a) return foods > 0 || d.drink || homeMealParts(d.homeMeal).length > 0 ? null : "請先選餐型";
   if (onAxis(d, "protein").length === 0) return "請選蛋白質";
   if (archetypeHasStaple(a) && !d.staple) return "請選主食";
@@ -745,6 +748,25 @@ export function homeMealDefaultForm(targets, kcalShare, catalog) {
   return { staple: "white", staple_size: d.staple_size, dish: d.dish, dishes: [], soup: null };
 }
 
+// ---------- 新自煮（2026-10-11，cook.js）：form → draft.cook → food 元件 ----------
+// draft.cook：{ form, parts: [{ item, amount, role, method? }], oil_g, problem }；問題非 null 時不能送出（composeProblem）。
+// 元件多帶 part（餐型）、role、method；用油合計放 content.implicit.oil_g；編輯用的設定放 content.form。
+export function cookDraftPart(form, catalog, profile, tier, oilHabit) {
+  if (!form) return null;
+  const r = cookFormParts(form, catalog, oilHabit);
+  return { form: form, parts: r.parts, oil_g: r.oil_g, problem: cookFormProblem(form, catalog, profile, tier) };
+}
+
+function cookPartComponents(cook) {
+  return cook.parts.map(function (p) {
+    const c = foodComponent(p.item, null, p.amount);
+    c.part = cook.form.entry;
+    c.role = p.role;
+    if (p.method) c.method = p.method;
+    return c;
+  });
+}
+
 // ---------- 單品（food 元件，PRD 13.4） ----------
 // 品項形狀：{ uid, name, group?, state?, serving: { amount, unit: "g"|"ml" }, per_serving: { kcal, …七個欄位 } }。
 // 分層品項（catalog.foodTree.items）本來就是這個形狀；我的食材由 my-ingredients.js 的 ingredientItem 轉成同一形狀
@@ -813,6 +835,13 @@ function componentFactor(c) {
 export function buildDraftContent(draft, opts) {
   const drink = draft.drink ? [productComponent(draft.drink, draftQty(draft, draft.drink.uid))] : [];
   const foods = homeMealParts(draft.homeMeal).concat(draft.foods || []).map(function (f) { return foodComponent(f.item, f.qty, f.amount); });
+  if (draft.kind === "cook" && draft.cook) {
+    return {
+      meal_type: draft.meal_type, archetype_id: null, method_id: null,
+      components: cookPartComponents(draft.cook).concat(foods, drink),
+      implicit: { oil_g: draft.cook.oil_g, seasoning: null }, form: JSON.parse(JSON.stringify(draft.cook.form)),
+    };
+  }
   if (draft.kind === "cook") {
     const content = contentFromCompose(draft, composePrimary(draft), composeImplicit(draft, opts && opts.oilHabit), draft.meal_type);
     if (content.components.length === 0) {
@@ -863,7 +892,7 @@ export function contentTotals(content, catalog) {
     }
   });
   // 隱含成分只跟著食材（decisions #123）：只有單品、飲料的自煮一餐不加，跟同樣內容的超商紀錄合計相同
-  if (content.implicit && ingredientParts.length > 0) ingredientParts.push(implicitContribution(content.implicit, catalog.implicit));
+  if (content.implicit && (ingredientParts.length > 0 || content.form)) ingredientParts.push(implicitContribution(content.implicit, catalog.implicit));
   const groups = [];
   if (ingredientParts.length > 0) groups.push(addContributions(ingredientParts));
   if (productParts.length > 0) groups.push(addContributions(productParts));
@@ -904,6 +933,9 @@ export function draftLogName(d) {
   const tail = (d.foods || []).map(function (f) { return foodLogName(f.item, f.qty, f.amount); }).concat(d.drink ? [withQty(d.drink)] : []);
   const homeNames = homeMealParts(d.homeMeal).filter(function (f) { return isHomeDishRef(f.item.uid); }).map(function (f) { return f.item.name; });
   if (homeNames.length > 0) tail.unshift("共餐：" + homeNames.join("＋")); // 記錄名稱不寫克數（decisions #152）
+  if (d.kind === "cook" && d.cook) {
+    return [COOK_ENTRY_LABELS[d.cook.form.entry]].concat(d.cook.parts.map(function (p) { return p.item.name; }), tail).join("＋");
+  }
   if (d.kind === "cook") {
     return (d.archetype ? [d.archetype.name] : []).concat(draftIngredients(d).map(function (it) { return it.name; }), tail).join("＋");
   }
@@ -960,14 +992,20 @@ export function toSavedContent(content, opts) {
     }
     if (c.kind === "product") return { kind: c.kind, ref: c.ref, qty: c.qty != null ? c.qty : 1 };
     // 單品原樣帶 qty 或 amount，不補預設（審核 M3）
-    if (c.kind === "food") return c.amount != null ? { kind: "food", ref: c.ref, amount: c.amount } : { kind: "food", ref: c.ref, qty: c.qty };
+    if (c.kind === "food") {
+      const o = c.amount != null ? { kind: "food", ref: c.ref, amount: c.amount } : { kind: "food", ref: c.ref, qty: c.qty };
+      ["part", "role", "method"].forEach(function (k) { if (c[k] != null) o[k] = c[k]; }); // 新自煮的零件（cook.js）
+      return o;
+    }
     throw new Error("[meal-content.js] 我的組合不能含「" + c.kind + "」元件");
   });
   const imp = opts && opts.keepImplicit && content.implicit ? { oil_g: content.implicit.oil_g, seasoning: content.implicit.seasoning } : null;
-  return {
+  const out = {
     meal_type: content.meal_type, archetype_id: content.archetype_id || null, method_id: content.method_id || null,
     components: comps, implicit: imp,
   };
+  if (content.form) out.form = JSON.parse(JSON.stringify(content.form));
+  return out;
 }
 
 function customsByUid(ctx) {
@@ -1106,6 +1144,7 @@ export function resolveSavedMeal(saved, catalog, ctx) {
       if (c.amount == null && it.serving.amount == null) { block(c, it, "沒有設一份，請改用克數"); return; }
       const f = passesHardFilters(it, profile);
       if (!f.ok) { block(c, it, f.reason); return; }
+      if (c.part) { available.push({ component: c, item: it }); return; } // 新自煮的零件：上限由 cook.js 的驗證管（form）
       if (isHomeDishRef(c.ref)) {
         // 家庭共餐的菜與湯另計上限（decisions #152），不佔單品的名額
         if (it.kind === "soup" ? homeSoups >= HOME_MEAL_SOUP_MAX : homeDishes >= HOME_MEAL_DISH_MAX) { block(c, it, it.kind === "soup" ? "共餐的湯最多選 " + HOME_MEAL_SOUP_MAX + " 道" : "共餐的菜最多選 " + HOME_MEAL_DISH_MAX + " 道"); return; }
@@ -1127,10 +1166,13 @@ export function resolveSavedMeal(saved, catalog, ctx) {
     roleItems.push(p);
     available.push({ component: c, item: p });
   });
+  // 新自煮：form 是編輯用的設定，由它重新算零件與用油；資料不在、被擋、做法不合時進 notes（預約失效、組合卡片灰階）
+  const cookForm = content.form && isCookType(content.meal_type) ? cookDraftPart(content.form, catalog, profile, content.meal_type, profile.oil_habit) : null;
+  if (cookForm && cookForm.problem) notes.push(cookForm.problem);
   return {
     meal_type: content.meal_type, archetype: archetype, method: method,
     implicit: content.implicit ? { oil_g: content.implicit.oil_g, seasoning: content.implicit.seasoning } : null,
-    available: available, blocked: blocked, gone: r.dropped, notes: notes,
+    available: available, blocked: blocked, gone: r.dropped, notes: notes, form: content.form || null, cook: cookForm,
   };
 }
 
@@ -1146,9 +1188,11 @@ export function savedMealDraft(resolved) {
       implicitOverride: resolved.implicit ? { oil_g: resolved.implicit.oil_g, seasoning: resolved.implicit.seasoning } : {},
     });
   }
+  if (resolved.cook) d.cook = resolved.cook;
   const firstHome = resolved.available.findIndex(function (a) { return a.component.kind === "food" && isHomeDishRef(a.component.ref); });
   resolved.available.forEach(function (a, idx) {
     const c = a.component;
+    if (c.part) return; // 新自煮的零件由 resolved.cook（form）重算，不放進單品
     if (c.kind === "food" && isHomeDishRef(c.ref)) {
       // 共餐：菜與湯進 homeMeal，緊接在第一道菜前的主食元件也歸共餐（元件順序固定：主食、各道菜、湯）
       d.homeMeal = d.homeMeal || { staple: null, dishes: [], soup: null };
@@ -1323,6 +1367,7 @@ export function savedMealDefaultName(content, catalog, ctx) {
   const own = customsByUid(ctx);
   const tree = treeById(catalog);
   const names = [];
+  if (content.form && COOK_ENTRY_LABELS[content.form.entry]) names.push(COOK_ENTRY_LABELS[content.form.entry]);
   if (isCookType(content.meal_type) && content.archetype_id) {
     const a = catalog.archetypes.filter(function (x) { return x.id === content.archetype_id; })[0];
     if (a && content.components.some(function (c) { return c.kind === "ingredient"; })) names.push(a.name);

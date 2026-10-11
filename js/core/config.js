@@ -131,3 +131,44 @@ export const EST_DEFAULT_DISH_PROTEIN_CUTS = [30, 50];
 export const EST_CAT_LABELS = { veg: "素菜", mixed: "菜肉", meat: "純肉" };
 export const EST_STAPLE_LABELS = { white: "白飯", brown: "糙米飯", mixed: "雜糧飯", noodle: "白麵", none: "不吃" };
 export const ESTIMATE_RECALL_GROUP = { breakfast: "breakfast", lunch: "main", dinner: "main", afternoon_tea: "light", snack: "light" };
+
+// ---------- 新自煮（2026-10-11）：餐盒、早餐盤、早餐碗、家常餐 ----------
+// 入口名稱；舊的餐型骨架（dish_archetypes.json）只保留給歷史紀錄與推薦線解析
+export const COOK_ENTRIES = ["box", "plate", "bowl", "home"];
+export const COOK_ENTRY_LABELS = { box: "餐盒", plate: "早餐盤", bowl: "早餐碗", home: "家常餐" };
+// 做法（組裝類每個元件各選一個）：oil＝蛋白質用這個做法的下鍋油 g、vegOil＝蔬菜用的；rank＝難度（0🟢 1🟡 2🔴）。
+// 用油量照章程 B5.6（煎、炒各 5g；蔬菜另加 5g；其餘 0）；水煮／燙、舒肥、生、直接吃是 2026-10-11 新增的做法
+export const COOK_METHODS = {
+  pan: { name: "煎", oil: 5, vegOil: 5, rank: 1 },
+  stir: { name: "炒", oil: 5, vegOil: 5, rank: 1 },
+  air: { name: "烤／氣炸", oil: 0, vegOil: 0, rank: 2 },
+  steam: { name: "蒸", oil: 0, vegOil: 0, rank: 1 },
+  braise: { name: "滷燉", oil: 0, vegOil: 0, rank: 2 },
+  boil: { name: "水煮／燙", oil: 0, vegOil: 0, rank: 1 },
+  sous: { name: "舒肥", oil: 0, vegOil: 0, rank: 2 },
+  raw: { name: "生", oil: 0, vegOil: 0, rank: 0 },
+  mw: { name: "微波", oil: 0, vegOil: 0, rank: 0 },
+  cold: { name: "直接吃", oil: 0, vegOil: 0, rank: 0 },
+};
+export const COOK_BOX_PROTEIN_METHODS = ["pan", "air", "sous", "steam", "boil"];
+export const COOK_PLATE_PROTEIN_METHODS = ["boil", "pan", "stir", "mw", "steam", "cold"];
+export const COOK_VEG_METHODS = ["boil", "stir", "air", "raw"];
+// 目標只是帶入預設（碳水份量、蛋白質份量），不是餐型
+export const COOK_GOALS = { low: { label: "減糖", carbAmt: "half", pamt: 1 }, normal: { label: "一般", carbAmt: "one", pamt: 1 }, muscle: { label: "增肌", carbAmt: "one", pamt: 1.5 } };
+export const COOK_PAMTS = [1, 1.5, 2];
+export const COOK_CARB_AMTS = { half: 0.5, one: 1 };
+export const COOK_PROTEIN_MAX = 3;
+export const COOK_VEG_MAX = 3;
+export const COOK_EGG_G = 50;
+export const COOK_EGG_MAX = 3;
+// 家常餐：非湯的菜最多 4 道；湯一碗 250g、粥一碗 300g；選了整碗主食後加的菜取半盤
+export const COOK_HOME_DISH_MAX = 4;
+export const COOK_SOUP_G = 250;
+export const COOK_CONGEE_G = 300;
+export const COOK_HOME_SIDE_PEOPLE = 2;
+export const COOK_POT_AMTS = [0.5, 1, 1.5];
+// 組裝類食材的一餐份量規則（由代換表一份換算；高脂肉減半、上限 250g）
+export const COOK_MEAL_SERVINGS = { protein: 4, staple: 3 };
+export const COOK_VEG_G = 100;
+export const COOK_ITEM_CAP_G = 250;
+export const COOK_FAT_HEAVY_PER_100 = 15;
