@@ -14,7 +14,7 @@ const { round1, FIELDS } = require("./ingredient-values");
 const CLASSES = ["veg", "mixed", "meat"];
 // 2026-10-11 新家常餐用的欄位（選填，但填了就要合法）：role＝選菜畫面的角色分頁、method＝烹飪法標籤、serv＝配方人數、
 // pot＝一鍋菜（燉滷紅燒咖哩，份量算「配方一人份」）、tier／mins／passive＝快煮／開伙難度與電鍋可預約、in_class_avg＝要不要算進類別平均
-const DISH_ROLES = ["主菜", "蛋豆菜", "青菜", "小菜", "湯"];
+const DISH_ROLES = ["主菜", "蛋豆菜", "青菜", "小菜", "湯", "整碗", "粥"]; // 整碗＝本身就是一餐的主食（炒飯、麵、水餃…，serv 1）；粥＝一碗 300g
 const DISH_METHODS = ["煎", "炒", "煮", "炸", "滷", "蒸", "燉", "拌", "烤", "紅燒"];
 const DISH_TIERS = ["🟢", "🟡", "🔴"];
 const ROLES = ["veg", "protein", "other"];

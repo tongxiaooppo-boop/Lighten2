@@ -111,7 +111,20 @@
   "hd_d12_111",
   "hd_d12_112",
   "hd_d12_113",
-  "hd_d12_114"
+  "hd_d12_114",
+  "hd_wb_friedrice",
+  "hd_wb_eggrice",
+  "hd_wb_beefnoodle",
+  "hd_wb_sesamenoodle",
+  "hd_wb_dumpling",
+  "hd_wb_fishcongee",
+  "hd_wb_chickenrice",
+  "hd_wb_chickencurry",
+  "hd_wb_porkcurry",
+  "hd_d12_017",
+  "hd_d12_059",
+  "hd_d12_060",
+  "hd_d12_061"
  ],
  "retired": []
 }

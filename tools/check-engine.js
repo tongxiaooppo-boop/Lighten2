@@ -2395,8 +2395,8 @@ function checkSavedMealsDb(catalog) {
     "hd_mapo_tofu", "hd_steamed_perch", "hd_braised_dried_tofu_egg", "hd_braised_tofu", "hd_braised_chicken_leg", "hd_daikon_rib_soup", "hd_napa_chicken_soup", "hd_seaweed_egg_soup"];
   const avg1 = (rows) => Math.round(rows.reduce((a, r) => a + r.per_100g.kcal, 0) / rows.length * 10) / 10;
   const baseKcal = (pick) => avg1(ORIG17.map((id) => hd.byId[id]).filter(pick));
-  check(hd.dishes.length === 111 && hd.dishes.filter((d) => d.in_class_avg).length === 36 && hd.classes.veg.n === 12 && hd.classes.mixed.n === 12 && hd.classes.meat.n === 8 && hd.soup.n === 4 && hd.staples.white.per_100g.kcal === 183.1 && hd.byId.hd_mapo_tofu.class === "meat",
-    "catalog.homeDishes 載入：111 道（原 36 道算類別平均：素菜 12、菜肉 12、純肉 8、湯 4；新增 75 道 in_class_avg=false）、主食每 100g");
+  check(hd.dishes.length === 124 && hd.dishes.filter((d) => d.in_class_avg).length === 36 && hd.classes.veg.n === 12 && hd.classes.mixed.n === 12 && hd.classes.meat.n === 8 && hd.soup.n === 4 && hd.staples.white.per_100g.kcal === 183.1 && hd.byId.hd_mapo_tofu.class === "meat",
+    "catalog.homeDishes 載入：124 道（原 36 道算類別平均：素菜 12、菜肉 12、純肉 8、湯 4；新增 88 道 in_class_avg=false）、主食每 100g");
   check(baseKcal((d) => d.class === "veg") === 64.6 && baseKcal((d) => d.class === "mixed") === 142.4 && baseKcal((d) => d.class === "meat") === 161.9 && baseKcal((d) => d.kind === "soup") === 32.1,
     "最初 17 道的類別平均仍對照審核第二輪 Q4：素菜 64.6、菜肉 142.4、純肉 161.9、湯 32.1");
   const avgOf = (cl) => avg1(hdata.dishes.filter((d) => d.in_class_avg && (cl === "soup" ? d.kind === "soup" : d.kind === "dish" && d.class === cl)));
