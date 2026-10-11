@@ -961,6 +961,57 @@ function checkCook(catalog) {
   check(hc.form.entry === "home" && hc.implicit.oil_g === 0 && mc.contentTotals(hc, catalog).kcal > 400 && /^家常餐（.+）$/.test(mc.draftLogName(hd)), "家常餐內容：整碗炒飯加炒青菜半盤");
   let t4 = null; try { db.validateDailyLog(Object.assign({ id: "y" }, mc.buildLogEntry({ date: "2026-10-11", slot: "dinner", source: "manual", name: "x", content: hc, totals: mc.contentTotals(hc, catalog), createdAt: "2026-10-11T12:00:00.000Z" }))); } catch (e) { t4 = e; }
   check(t4 === null, "daily_log 驗證接受家常餐內容" + (t4 ? "：" + t4.message : ""));
+
+  // ---------- 預設清單（COOK_DEFAULTS，唯一來源）、難度與快煮判斷、餐盒蛋白質選項 ----------
+  const D = M.config.COOK_DEFAULTS, MIN = M.config.COOK_POOL_MIN;
+  const hdById = (u) => ck.homeDishById(catalog, u);
+  const stapleRefs = Object.values(catalog.homeDishes.staples).map((x) => x.ref);
+  const dup = (a) => new Set(a).size !== a.length;
+  Object.keys(D).forEach((k) => check(Array.isArray(D[k]) && D[k].length > 0 && !dup(D[k]), "預設清單 " + k + "：要有項目且不重複"));
+  ["box_protein", "plate_protein", "carb", "veg", "bowl_base", "bowl_grain", "bowl_fruit", "bowl_nut"].forEach((k) => {
+    const gone = D[k].filter((u) => !opt(u));
+    check(gone.length === 0, "預設清單 " + k + " 有不存在的品項：" + gone.join("、"));
+  });
+  check(D.box_protein.every((u) => ck.boxProteinOptions(catalog, "box").some((e) => e.uid === u)), "預設的餐盒蛋白質都能在餐盒選（不含只能滷燉的、起司片）");
+  check(D.plate_protein.every((u) => ck.boxProteinOptions(catalog, "plate").some((e) => e.uid === u)), "預設的早餐盤蛋白質都能在早餐盤選");
+  const braiseOnly = opts.protein.filter((e) => e.only && e.only.indexOf("braise") !== -1);
+  check(braiseOnly.length > 0 && braiseOnly.every((e) => !ck.boxProteinOptions(catalog, "box").includes(e) && !ck.boxProteinOptions(catalog, "plate").includes(e)) && !ck.boxProteinOptions(catalog, "box").some((e) => e.uid === "fx_cheese_slice") && ck.boxProteinOptions(catalog, "plate").some((e) => e.uid === "fx_cheese_slice"),
+    "餐盒蛋白質選項：只能滷燉的部位兩邊都不列；起司片只有早餐盤");
+  check(D.carb.every((u) => opts.carb.some((e) => e.uid === u)) && D.veg.every((u) => opts.veg.some((e) => e.uid === u)), "預設的碳水、蔬菜都在對應的選項清單裡");
+  check(D.home_staple.every((r) => stapleRefs.indexOf(r) !== -1), "預設主食都是家常餐的主食格");
+  check(D.home_complete.every((u) => hdById(u) && hdById(u).role === "整碗"), "預設整碗都存在且角色是整碗");
+  [["home_main", (d) => (d.role === "主菜" || d.role === "蛋豆菜") && d.kind !== "soup"], ["home_veg", (d) => (d.role === "青菜" || d.role === "小菜") && d.kind !== "soup"], ["home_soup", (d) => d.kind === "soup"]].forEach((x) => {
+    check(D[x[0]].every((u) => hdById(u) && x[1](hdById(u))), "預設 " + x[0] + " 的菜都存在、角色對");
+  });
+  // 涵蓋度：每軸夠多、快煮與素食都有、家常菜每季都有
+  const passesHard = (item, prof) => M.filters.passesHardFilters(item, prof).ok;
+  const quickProtein = D.box_protein.filter((u) => ck.cookItemProblem(opt(u), true) === null);
+  check(D.box_protein.length >= MIN.protein && quickProtein.length >= MIN.protein && D.carb.filter((u) => ck.cookItemProblem(opt(u), true) === null).length >= MIN.carb && D.veg.filter((u) => ck.cookItemProblem(opt(u), true) === null).length >= MIN.veg,
+    "預設涵蓋度：快煮下蛋白質 ≥" + MIN.protein + "、碳水 ≥" + MIN.carb + "、蔬菜 ≥" + MIN.veg + "（蛋白質 " + quickProtein.length + "）");
+  const veg1 = { allergens: [], diet_restriction: "蛋奶素", disliked_ingredients: [] }, vegan = { allergens: [], diet_restriction: "全素", disliked_ingredients: [] };
+  check(D.box_protein.filter((u) => opt(u) && passesHard(opt(u).item, veg1)).length >= 2 && D.box_protein.filter((u) => opt(u) && passesHard(opt(u).item, vegan)).length >= 2,
+    "預設涵蓋度：蛋奶素、全素的餐盒蛋白質各至少 2 種（蛋奶素 " + D.box_protein.filter((u) => passesHard(opt(u).item, veg1)).length + "、全素 " + D.box_protein.filter((u) => passesHard(opt(u).item, vegan)).length + "）");
+  check(D.veg.filter((u) => passesHard(opt(u).item, vegan)).length >= MIN.veg && D.carb.filter((u) => passesHard(opt(u).item, vegan)).length >= MIN.carb, "預設涵蓋度：全素也有足夠的碳水、蔬菜");
+  const quickHome = (axis) => D[axis].filter((u) => { const d = hdById(u); return d.tier !== "🔴" || d.passive; });
+  check(quickHome("home_main").length >= MIN.home_main && quickHome("home_veg").length >= MIN.home_veg && quickHome("home_soup").length >= MIN.home_soup, "預設涵蓋度：快煮下家常菜的主菜、青菜、湯都夠（" + [quickHome("home_main").length, quickHome("home_veg").length, quickHome("home_soup").length].join("／") + "）");
+  ["spring", "summer", "autumn", "winter"].forEach((season) => {
+    const inSeason = (axis) => D[axis].filter((u) => (hdById(u).seasons || []).indexOf(season) !== -1).length;
+    check(inSeason("home_main") >= MIN.home_main && inSeason("home_veg") >= MIN.home_veg && inSeason("home_soup") >= MIN.home_soup, "預設涵蓋度：" + season + " 家常菜的主菜、青菜、湯都夠");
+  });
+  // 原本畫面「常見的」名單裡對不到資料的三個名稱已補成存在的 id（紫米、紅蘿蔔、四季豆）
+  check(!D.carb.includes("purple_rice") && D.veg.includes("fx_carrot") && D.veg.includes("snap_pea"), "常見名單：紅蘿蔔（胡蘿蔔）、荷蘭豆補回，查不到的紫米不列");
+  // uid 索引與原本的線性掃結果一致
+  check(opt("egg") === opts.protein.find((e) => e.uid === "egg") && opt("fx_toast") === opts.plateCarb.find((e) => e.uid === "fx_toast") && opt("no_such") === null, "uid 索引：結果與清單一致、查不到回 null");
+  // 難度與快煮判斷
+  const rk = (f) => ck.cookFormRank(f, catalog);
+  const bq = box(); // 雞胸舒肥（🔴）
+  check(rk(bq) === 2 && !ck.cookFormQuickOk(bq, catalog, okProfile), "餐盒難度：舒肥＝🔴、不能快煮");
+  bq.ps[0].m = "boil"; bq.carb = "sweet_potato";
+  check(rk(bq) === 1 && ck.cookFormQuickOk(bq, catalog, okProfile), "餐盒難度：水煮雞胸、地瓜、水煮青花菜＝🟡、可以快煮");
+  const hf = ck.newHomeForm(); hf.dishes = [{ uid: "hd_garlic_cabbage", amt: 1 }];
+  check(rk(hf) === 1 && ck.cookFormQuickOk(hf, catalog, okProfile), "家常餐難度：蒜炒高麗菜＝🟡、可以快煮");
+  hf.dishes.push({ uid: "hd_braised_chicken_leg", amt: 1 });
+  check(rk(hf) === 2 && !ck.cookFormQuickOk(hf, catalog, okProfile), "家常餐難度：加滷雞腿（🔴、不能預約）＝🔴、不能快煮");
 }
 
 function checkMyIngredients(catalog) {

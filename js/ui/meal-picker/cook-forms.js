@@ -5,12 +5,12 @@
 import { escapeHtml } from "../../core/html.js";
 import {
   COOK_ENTRIES, COOK_ENTRY_LABELS, COOK_GOALS, COOK_PAMTS, COOK_PROTEIN_MAX, COOK_VEG_MAX, COOK_EGG_MAX, COOK_HOME_DISH_MAX,
-  COOK_VEG_METHODS, COOK_POT_AMTS,
+  COOK_VEG_METHODS, COOK_POT_AMTS, COOK_DEFAULTS,
 } from "../../core/config.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import {
-  cookOptions, cookOptionByUid, cookMethodProblem, cookItemProblem, cookMethodName, boxProteinMethods, boxSplitCount, newBoxForm, newBowlForm, newHomeForm,
-  applyGoal, homeDishById, homeDishKind, homeStapleIsComplete, homeShareCount, homePeople, homeDishProtein, COOK_COMMON,
+  cookOptions, cookOptionByUid, cookMethodProblem, cookItemProblem, cookMethodName, boxProteinMethods, boxProteinOptions, boxSplitCount, newBoxForm, newBowlForm, newHomeForm,
+  applyGoal, homeDishById, homeDishKind, homeStapleIsComplete, homeShareCount, homePeople, homeDishProtein,
 } from "../../engine/cook.js";
 
 const NEW_METHODS = ["boil", "sous", "raw", "cold"]; // 這一輪新增的做法，名稱後面加＊
@@ -89,15 +89,14 @@ function boxHtml(form, catalog, st) {
   const o = cookOptions(catalog);
   const ctx = { nc: st.nc, quick: st.quick, pf: st.pf, fav: st.fav };
   const plate = form.entry === "plate";
-  const isBraise = function (e) { return !!e.only && e.only.indexOf("braise") !== -1; };
   let h = box("目標" + req("（只帶入預設，可再改）"), optRow(Object.keys(COOK_GOALS).map(function (g) {
     const gg = COOK_GOALS[g];
     return opt("goal", a("v", g), gg.label, form.goal === g, null, "碳水" + CARB_LABELS[gg.carbAmt] + "・蛋白質" + PAMT_LABELS[gg.pamt]);
   }).join("")));
 
-  const pc = o.protein.filter(function (e) { return !isBraise(e) && (plate || !e.plateOnly); });
-  const common = plate ? COOK_COMMON.plateProtein : COOK_COMMON.protein;
-  let ph = pickList("protein", pc, form.ps.map(function (p) { return p.uid; }), "p", ctx, function (e) { return common.indexOf(e.name) !== -1; });
+  const pc = boxProteinOptions(catalog, form.entry);
+  const common = plate ? COOK_DEFAULTS.plate_protein : COOK_DEFAULTS.box_protein;
+  let ph = pickList("protein", pc, form.ps.map(function (p) { return p.uid; }), "p", ctx, function (e) { return common.indexOf(e.uid) !== -1; });
   const allowed = boxProteinMethods(form.entry);
   form.ps.forEach(function (p, i) {
     const e = cookOptionByUid(catalog, p.uid);
@@ -118,11 +117,11 @@ function boxHtml(form, catalog, st) {
   if (form.carbAmt !== "none") {
     const cands = plate ? o.plateCarb.concat(o.carb) : o.carb;
     const plateNames = o.plateCarb.map(function (e) { return e.uid; });
-    ch += pickList("carb", cands, form.carb ? [form.carb] : [], "c", ctx, function (e) { return plateNames.indexOf(e.uid) !== -1 || COOK_COMMON.carb.indexOf(e.name) !== -1; });
+    ch += pickList("carb", cands, form.carb ? [form.carb] : [], "c", ctx, function (e) { return plateNames.indexOf(e.uid) !== -1 || COOK_DEFAULTS.carb.indexOf(e.uid) !== -1; });
   }
   h += box(plate ? "碳水" : "原型碳水", ch, plate ? "吐司一份 2 片、饅頭半顆；其餘是代換表一份的份量。" : "不收白飯、麵、粉類；半份約半碗。");
 
-  let vh = pickList("veg", o.veg, form.veg.map(function (v) { return v.uid; }), "v", ctx, function (e) { return COOK_COMMON.veg.indexOf(e.name) !== -1; });
+  let vh = pickList("veg", o.veg, form.veg.map(function (v) { return v.uid; }), "v", ctx, function (e) { return COOK_DEFAULTS.veg.indexOf(e.uid) !== -1; });
   form.veg.forEach(function (v, i) {
     const e = cookOptionByUid(catalog, v.uid);
     if (e) vh += '<div class="compose-axis-label">' + escapeHtml(e.name) + " 的做法：</div>" + methodRow(e, COOK_VEG_METHODS, v.m, "vm", i, true, st.quick);

@@ -172,3 +172,41 @@ export const COOK_MEAL_SERVINGS = { protein: 4, staple: 3 };
 export const COOK_VEG_G = 100;
 export const COOK_ITEM_CAP_G = 250;
 export const COOK_FAT_HEAVY_PER_100 = 15;
+
+// 自煮的預設清單（2026-10-11，唯一來源）：畫面「常見的」、推薦的建議池（☆ 不足時補預設）都讀這裡。每軸是有序的 id 清單，前面的優先。
+// 食材用 cook.js 的選項 uid（內建食材原 id 或代換表 fx_ id）；家常菜是 hd_ id；主食格用 homeDishes.staples 的 ref 與整碗 hd_ id。
+// 家常菜預設＝原 36 道加上非 🔴 的新菜（開伙才做的滷燉、烤不預設；要的人自己 ☆）。每個 id 是否存在、能不能用由 check-engine 檢查。
+export const COOK_DEFAULTS = {
+  box_protein: ["chicken_breast", "egg", "firm_tofu", "salmon", "shrimp", "tilapia_fillet", "chicken_thigh", "fx_pork_ham_lean", "edamame"],
+  plate_protein: ["egg", "firm_tofu", "chicken_breast", "fx_five_spice_tofu", "fx_tuna", "fx_cheese_slice", "fx_ham"],
+  carb: ["sweet_potato", "brown_rice_cooked", "mixed_grain_rice_cooked", "pumpkin", "fx_corn", "quinoa", "fx_potato", "cauliflower_rice"],
+  veg: ["broccoli", "cabbage", "fx_sweet_potato_leaves", "spinach", "fx_carrot", "baby_corn", "bell_pepper", "cucumber", "tomato", "lettuce_a", "snap_pea"],
+  bowl_base: ["greek_yogurt", "soy_milk", "fx_lowfat_milk"],
+  bowl_grain: ["oats", "quinoa"],
+  bowl_fruit: ["fx_banana", "fx_fuji_apple", "fx_kiwi", "fx_strawberry", "fx_native_guava", "fx_papaya", "fx_orange", "fx_pineapple"],
+  bowl_nut: ["fx_almond", "fx_walnut", "fx_cashew", "fx_peanut"],
+  home_staple: ["brown_rice_cooked", "mixed_grain_rice_cooked", "fx_cooked_rice", "fx_cooked_noodles"],
+  home_complete: ["hd_wb_friedrice", "hd_wb_eggrice", "hd_wb_sesamenoodle", "hd_wb_dumpling", "hd_d12_017"],
+  home_main: [
+    "hd_tomato_egg", "hd_green_pepper_pork", "hd_kung_pao_chicken", "hd_oyster_kailan_beef", "hd_braised_napa",
+    "hd_mapo_tofu", "hd_steamed_perch", "hd_braised_dried_tofu_egg", "hd_braised_tofu", "hd_braised_chicken_leg",
+    "hd_chive_egg", "hd_luffa_egg", "hd_broccoli_shrimp", "hd_water_spinach_beef", "hd_eggplant_pork", "hd_spinach_tofu",
+    "hd_wood_ear_pork", "hd_three_cup_chicken", "hd_pan_salmon", "hd_scallion_beef", "hd_d12_001", "hd_d12_003",
+    "hd_d12_004", "hd_d12_006", "hd_d12_007", "hd_d12_010", "hd_d12_011", "hd_d12_012", "hd_d12_013", "hd_d12_040",
+    "hd_d12_046", "hd_d12_047", "hd_d12_048", "hd_d12_049", "hd_d12_050", "hd_d12_068", "hd_d12_072", "hd_d12_081",
+    "hd_d12_084", "hd_d12_085", "hd_d12_087",
+  ],
+  home_veg: [
+    "hd_garlic_cabbage", "hd_garlic_qingjiang", "hd_garlic_sweet_potato_leaves", "hd_cold_cucumber", "hd_garlic_water_spinach",
+    "hd_stirfry_luffa", "hd_stirfry_bitter_melon", "hd_garlic_spinach", "hd_garlic_broccoli", "hd_garlic_crown_daisy",
+    "hd_garlic_asparagus", "hd_stirfry_cauliflower", "hd_d12_009", "hd_d12_015", "hd_d12_044", "hd_d12_069",
+    "hd_d12_070",
+  ],
+  home_soup: [
+    "hd_daikon_rib_soup", "hd_napa_chicken_soup", "hd_seaweed_egg_soup", "hd_winter_melon_rib_soup", "hd_d12_019",
+    "hd_d12_020", "hd_d12_023", "hd_d12_024", "hd_d12_063", "hd_d12_107", "hd_d12_109",
+  ],
+};
+// 早餐盤的碳水預設＝早餐碳水（吐司、饅頭、蘿蔔糕、油麵，cook.js 的 PLATE_CARBS）加上上面的 carb
+// 建議池每軸至少幾樣（☆ 不足時用預設補到這個數；推薦用，畫面不用）
+export const COOK_POOL_MIN = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };

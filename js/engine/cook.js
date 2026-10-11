@@ -34,14 +34,6 @@ const CHEESE_ID = "fx_cheese_slice";
 
 export function cookMethodName(key) { return COOK_METHODS[key] ? COOK_METHODS[key].name : key; }
 
-// 畫面「常見的先列、其餘收在更多」用的名單（之後由「我的食物」☆ 與預設清單取代）
-export const COOK_COMMON = {
-  protein: ["雞胸肉", "去皮雞腿肉", "蝦仁", "鮭魚", "牛腱", "瘦豬後腿肉", "鯛魚片", "板豆腐", "雞蛋"],
-  plateProtein: ["雞蛋", "板豆腐", "雞胸肉", "五香豆干", "鮪魚", "起司片", "火腿"],
-  carb: ["地瓜", "糙米飯", "雜糧飯", "南瓜", "玉米粒", "藜麥", "馬鈴薯", "紫米"],
-  veg: ["青花菜", "高麗菜", "地瓜葉", "菠菜", "紅蘿蔔", "玉米筍", "紅甜椒", "小黃瓜", "番茄", "萵苣（A菜）", "四季豆"],
-};
-
 // 家常菜主菜的主料分組（畫面分組用）
 export function homeDishProtein(d) {
   if (/雞/.test(d.name)) return "雞";
@@ -124,14 +116,26 @@ function leafyNo(it) {
   return it.subgroup === "leafy" && !LEAFY_OK.test(it.name) ? ["braise", "air"] : [];
 }
 
+const _index = new WeakMap();
+
 export function cookOptionByUid(catalog, uid) {
-  const o = cookOptions(catalog);
-  const lists = ["protein", "carb", "veg", "plateCarb", "drink", "bowlBase", "bowlGrain", "bowlFruit", "bowlNut"];
-  for (let i = 0; i < lists.length; i++) {
-    const hit = o[lists[i]].filter(function (e) { return e.uid === uid; })[0];
-    if (hit) return hit;
+  let idx = _index.get(catalog);
+  if (!idx) {
+    const o = cookOptions(catalog);
+    idx = {};
+    ["protein", "carb", "veg", "plateCarb", "drink", "bowlBase", "bowlGrain", "bowlFruit", "bowlNut"].forEach(function (k) {
+      o[k].forEach(function (e) { if (!idx[e.uid]) idx[e.uid] = e; }); // 同一個 uid 在多個清單時取前面的清單
+    });
+    _index.set(catalog, idx);
   }
-  return null;
+  return idx[uid] || null;
+}
+
+// 餐盒、早餐盤能選的蛋白質（只能滷燉的部位兩邊的做法都沒有滷燉，不列；起司片只給早餐盤）。畫面與推薦共用（章程 C2）
+export function boxProteinOptions(catalog, entry) {
+  return cookOptions(catalog).protein.filter(function (e) {
+    return !(e.only && e.only.indexOf("braise") !== -1) && (entry === "plate" || !e.plateOnly);
+  });
 }
 
 // ---------- 做法能不能用 ----------
@@ -444,6 +448,35 @@ export function homeProblem(form, catalog, profile, tier) {
 }
 
 // ---------- 共用 ----------
+// 這一餐的難度（0🟢 1🟡 2🔴）：組裝類＝食材與做法裡最高的；家常餐＝主食與菜裡最高的（🔴 但能預約電鍋的算 🟡）。推薦卡的 🟢🟡🔴 用它
+export function cookFormRank(form, catalog) {
+  let r = 0;
+  const up = function (v) { if (v > r) r = v; };
+  if (form.entry === "home") {
+    const tierRank = function (d) { return d.tier === "🔴" ? (d.passive ? 1 : 2) : d.tier === "🟢" ? 0 : 1; };
+    const items = form.dishes.map(function (x) { return x.uid; }).concat(form.staple && form.staple !== "none" ? [form.staple] : []);
+    items.forEach(function (u) { const d = homeDishById(catalog, u); if (d) up(tierRank(d)); });
+    return r;
+  }
+  const ents = [];
+  if (form.entry === "box" || form.entry === "plate") {
+    form.ps.forEach(function (p) { ents.push([p.uid, p.m]); });
+    form.veg.forEach(function (v) { ents.push([v.uid, v.m]); });
+    if (form.carb && form.carbAmt !== "none") ents.push([form.carb, null]);
+  }
+  ents.forEach(function (x) {
+    const e = cookOptionByUid(catalog, x[0]);
+    if (e) up(e.rank);
+    if (x[1] && COOK_METHODS[x[1]]) up(COOK_METHODS[x[1]].rank);
+  });
+  return r;
+}
+
+// 能不能當快煮送出（推薦的快煮來源過濾用）
+export function cookFormQuickOk(form, catalog, profile) {
+  return cookFormProblem(form, catalog, profile, "cook_quick") === null;
+}
+
 export function cookFormProblem(form, catalog, profile, tier) {
   if (!form) return null;
   if (form.entry === "box" || form.entry === "plate") return boxProblem(form, catalog, profile, tier);
