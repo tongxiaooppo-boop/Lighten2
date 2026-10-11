@@ -1809,6 +1809,9 @@ async function run() {
   await hdPick(1);
   await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1 && ${text("#meal-picker-summary")}.indexOf("kcal") !== -1`, "16-1 選了 3 道菜加湯後摘要沒有已配好：" + (await js(text("#meal-picker-hint"))));
   await shot("家常餐-已選", "#meal-picker-panel");
+  // 說明書的圖：每道菜的「一份＝…」與半份／一份／一份半、菜合計
+  await js(`(() => { const el = [...document.querySelectorAll('#meal-picker-panel .compose-axis-label')].find((e) => e.innerText.indexOf("一份＝") !== -1); if (el) el.scrollIntoView({ block: "start" }); })()`);
+  await shot("家常餐-份量");
   await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
   await shot("家常餐-360寬", "#meal-picker-panel");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
