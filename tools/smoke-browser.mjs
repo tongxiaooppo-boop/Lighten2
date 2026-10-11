@@ -104,8 +104,8 @@ async function run() {
   await js(`document.querySelector('#rec-breakfast .rec-pick-btn').click()`);
   await until(`!document.getElementById('meal-picker-overlay').hidden`, "早餐自己選沒有打開");
   await js(`document.querySelector('#meal-picker-tabs [data-tab=cook]').click()`);
-  await js(`document.querySelector('#meal-picker-panel .compose-option[data-axis=archetype]').click()`);
-  await js(`['protein', 'staple', 'method'].forEach((ax) => { const b = document.querySelector('#meal-picker-panel .compose-option[data-axis=' + ax + ']:not([disabled])'); if (b) b.click(); })`);
+  await js(`document.querySelector('#meal-picker-panel [data-nc=entry][data-v=bowl]').click()`);
+  await js(`document.querySelector('#meal-picker-panel [data-nc=wb]:not([disabled])').click()`);
   await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1 && !document.getElementById('meal-picker-submit').disabled`, "自煮選好後不能送出");
   await js(`document.getElementById('meal-picker-submit').click()`);
   await until(`${text("#rec-breakfast")}.indexOf("已記錄") !== -1`, "自煮送出後早餐沒有變成已記錄");

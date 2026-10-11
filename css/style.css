@@ -1716,3 +1716,15 @@ div.food-row-main {
   color: #6B5B45;
   border-color: #D9CBB2;
 }
+
+.meal-picker-search {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  margin: 0.4rem 0;
+  padding: 0.4rem 0.6rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  border: 1px solid #EFE3D2;
+  border-radius: 8px;
+}
