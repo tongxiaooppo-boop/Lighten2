@@ -8,6 +8,7 @@ import { ingredientFilterResult } from "../../engine/filters.js";
 import { composeOptionProblem, composePrimary, archetypeHasStaple, oilOptions, composeImplicit } from "../../engine/meal-content.js";
 import { favoritesFirst } from "../../engine/picker.js";
 import { homeMealToggleHtml, homeMealStepHtml } from "./home-meal.js";
+import { cookEntryHtml, cookFormsHtml } from "./cook-forms.js";
 
 export const TIER_LABELS = { cook_quick: "快煮（簡單料理）", cook_full: "開伙" };
 
@@ -62,7 +63,7 @@ function axisHtml(label, axis, catalog, st, profile, withNone, favSet) {
 }
 
 // st = { tier, draft }；favSet：常吃（可省略）；回傳 { html, steps }（steps：這個分頁用掉的步驟數，飲料步驟接在後面）
-// homeCtx（選填）：{ season }，午餐與晚餐的開伙才有「共餐」（decisions #152）
+// homeCtx（選填）：{ season }，帶入舊共餐（decisions #152）時才顯示舊畫面；新入口在 st.nc（cook-forms.js）
 export function cookTabHtml(catalog, slot, st, profile, favSet, homeCtx) {
   const d = st.draft;
   let n = 0;
@@ -73,18 +74,19 @@ export function cookTabHtml(catalog, slot, st, profile, favSet, homeCtx) {
   });
   html += "</div></div>";
 
-  html += '<div class="compose-step">' + step("選餐型") +
-    '<p class="meal-picker-note">只記單品可以不選餐型，直接到下面加點單品。</p><div class="compose-options">';
-  // 沒有時段（編輯組合）列出全部；帶入的餐型不在這個時段也列出，才能點掉（PRD 11.3 第 6 點）
-  catalog.archetypes.filter(function (a) {
-    return slot === null || (a.valid_slots || []).indexOf(slot) !== -1 || !!(d.archetype && d.archetype.id === a.id);
-  }).forEach(function (a) {
-    html += optionHtml("archetype", a.id, a.name, { selected: !!(d.archetype && d.archetype.id === a.id) });
-  });
-  const showHome = !!homeCtx && st.tier === "cook_full" && !!st.home;
-  if (showHome) html += homeMealToggleHtml(st.home.open);
+  // 新的四個入口（餐盒、早餐盤、早餐碗、家常餐）；舊餐型與舊共餐只在帶入舊組合、預約或推薦時顯示成已選，點掉就回到新入口
+  const nc = st.nc;
+  html += '<div class="compose-step">' + step("怎麼吃") +
+    '<p class="meal-picker-note">只記單品可以不選，直接到下面加點單品。</p><div class="compose-options">' + cookEntryHtml(slot, nc);
+  if (d.archetype) html += optionHtml("archetype", d.archetype.id, d.archetype.name, { selected: true });
+  const showHome = !!homeCtx && !!st.home && st.home.open;
+  if (showHome) html += homeMealToggleHtml(true);
   html += "</div></div>";
-  if (showHome && st.home.open && !d.archetype) {
+  if (nc.entry) {
+    html += cookFormsHtml(catalog, { nc: nc, tier: st.tier, pf: profile, fav: favSet }, n + 1 + ". " + (nc.entry === "home" ? "選主食與菜" : "填格子"));
+    return { html: html, steps: n + 1 };
+  }
+  if (showHome && !d.archetype) {
     html += homeMealStepHtml(st.home, { catalog: catalog, profile: profile, season: homeCtx.season }, n + 1 + ". 選家常菜");
     return { html: html, steps: n + 1 };
   }

@@ -34,6 +34,23 @@ const CHEESE_ID = "fx_cheese_slice";
 
 export function cookMethodName(key) { return COOK_METHODS[key] ? COOK_METHODS[key].name : key; }
 
+// 畫面「常見的先列、其餘收在更多」用的名單（之後由「我的食物」☆ 與預設清單取代）
+export const COOK_COMMON = {
+  protein: ["雞胸肉", "去皮雞腿肉", "蝦仁", "鮭魚", "牛腱", "瘦豬後腿肉", "鯛魚片", "板豆腐", "雞蛋"],
+  plateProtein: ["雞蛋", "板豆腐", "雞胸肉", "五香豆干", "鮪魚", "起司片", "火腿"],
+  carb: ["地瓜", "糙米飯", "雜糧飯", "南瓜", "玉米粒", "藜麥", "馬鈴薯", "紫米"],
+  veg: ["青花菜", "高麗菜", "地瓜葉", "菠菜", "紅蘿蔔", "玉米筍", "紅甜椒", "小黃瓜", "番茄", "萵苣（A菜）", "四季豆"],
+};
+
+// 家常菜主菜的主料分組（畫面分組用）
+export function homeDishProtein(d) {
+  if (/雞/.test(d.name)) return "雞";
+  if (/牛/.test(d.name)) return "牛";
+  if (/魚|蝦|蛤|花枝|蚵|鮭|鱸|海鮮/.test(d.name)) return "魚海鮮";
+  if (/豆腐|豆干|蛋|蔬菜/.test(d.name)) return "豆蛋";
+  return "豬";
+}
+
 // ---------- 選項清單（每個 catalog 建一次） ----------
 // 回傳 { protein, carb, veg, plateCarb, drink, bowlBase, bowlGrain, bowlFruit, bowlNut }
 // 每一項：{ uid, name, item（單品形狀）, g（一餐的量）, rank（難度）, rc（需要煮熟）, only（只適合的做法）, no（不適合的做法）, ready, sub }
@@ -159,6 +176,36 @@ const isFixedProtein = function (e) { return e.uid === "egg" || !!e.plateOnly; }
 // 肉／豆類平分一份（蛋與起司片固定，不平分）
 function splitCount(form, opts) {
   return form.ps.filter(function (p) { const e = cookOptionByUid(opts.catalog, p.uid); return e && !isFixedProtein(e); }).length;
+}
+
+export function boxSplitCount(form, catalog) {
+  return splitCount(form, { catalog: catalog });
+}
+
+// 切到快煮：把做不了快煮的選項拿掉（做法清成未選、食材與菜移除），回傳有沒有動到
+export function cookPruneForQuick(form, catalog) {
+  let changed = false;
+  if (form.entry === "box" || form.entry === "plate") {
+    form.ps = form.ps.filter(function (p) {
+      const e = cookOptionByUid(catalog, p.uid);
+      if (!e || cookItemProblem(e, true)) { changed = true; return false; }
+      if (p.m && cookMethodProblem(e, p.m, false, true)) { p.m = null; changed = true; }
+      return true;
+    });
+    if (form.carb) {
+      const e = cookOptionByUid(catalog, form.carb);
+      if (!e || cookItemProblem(e, true)) { form.carb = null; changed = true; }
+    }
+    form.veg.forEach(function (v) {
+      const e = cookOptionByUid(catalog, v.uid);
+      if (e && v.m && cookMethodProblem(e, v.m, true, true)) { v.m = null; changed = true; }
+    });
+  } else if (form.entry === "home") {
+    const slow = function (d) { return d && d.tier === "🔴" && !d.passive; };
+    form.dishes = form.dishes.filter(function (x) { if (slow(homeDishById(catalog, x.uid))) { changed = true; return false; } return true; });
+    if (slow(homeDishById(catalog, form.staple))) { form.staple = "brown_rice_cooked"; changed = true; }
+  }
+  return changed;
 }
 
 // 組裝類的零件 [{ item, amount, role, method? }] 與下鍋油合計；資料不在的零件丟掉（驗證另外擋）

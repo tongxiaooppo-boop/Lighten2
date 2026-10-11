@@ -68,11 +68,12 @@ const currentTab = () => js(`(document.querySelector('#meal-picker-tabs [aria-se
 const passUids = (role) => js(`(async () => { const m = await import('./js/data/catalog.js'); const c = await m.loadCatalog();
   return [...document.querySelectorAll('#meal-picker-panel .item-card:not([disabled])')].map((b) => b.dataset.uid)
     .filter((u) => (c.productsByUid[u] || {}).role === ${JSON.stringify(role)}); })()`);
-// 自煮分頁：點某個軸的選項（沒給 id 就點第一個可選、還沒選的）；cookFill 依序點有的軸（沒有主食槽的餐型不點主食）
-const cookPick = (axis, id) => click(`#meal-picker-panel .compose-option[data-axis=${axis}]${id ? `[data-id=${id}]` : ":not([disabled]):not(.selected)"}`);
-const cookFill = async (axes) => { for (const ax of axes) {
-  if (await js(`!!document.querySelector('#meal-picker-panel .compose-option[data-axis=${ax}]:not([disabled]):not(.selected)')`)) await cookPick(ax);
-} };
+// 自煮分頁（新結構，cook-forms.js）：點 data-nc 的按鈕；ncFirst 點第一個可選、還沒選的；ncFillBox 把餐盒填到可送出
+const ncClick = (act, extra) => click(`#meal-picker-panel [data-nc=${act}]${extra || ""}`);
+const ncEntry = (k) => ncClick("entry", `[data-v=${k}]`);
+const ncFirst = (act, extra) => ncClick(act, ":not([disabled]):not(.selected)" + (extra || ""));
+const ncFillBox = async () => { await ncFirst("p"); await ncFirst("pm", '[data-i="0"]'); await ncFirst("c"); await ncFirst("v"); };
+const ncSelectedUids = (act) => js(`[...new Set([...document.querySelectorAll('#meal-picker-panel [data-nc=${act}].selected')].map((b) => b.dataset.uid))]`);
 // 快速新增表單：填名稱與熱量（觸發 input 事件，預告會跟著更新）
 const fillQuickAdd = (name, kcal) => js(`(() => {
   const set = (sel, v) => { const el = document.querySelector('#quick-add-form ' + sel); el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
@@ -378,75 +379,51 @@ async function run() {
   await setField("meal_pref_afternoon_tea", "off");
   await submitProfile();
   await until(`${text("#target-kcal")} === "1896.1"`, "3-2b 取消過敏原後按計算沒有完成");
-  // 3-4 自煮分頁：晚餐偏好是開伙 → 停在自煮分頁、子切換是開伙；溫沙拉「未含沙拉醬」、其他餐型沒有；份量滑桿
+  // 3-4 自煮分頁（新結構）：晚餐偏好是開伙 → 停在自煮分頁、子切換是開伙；四個入口；餐盒填好才能送出
   await openPicker("dinner");
   check((await currentTab()) === "cook", "3-4 晚餐（偏好開伙）打開沒有停在自煮分頁，停在 " + (await currentTab()));
   check(await js(`!!document.querySelector('#meal-picker-panel [data-tier=cook_full].selected')`), "3-4 晚餐的子切換不是「開伙」");
+  check((await js(`[...document.querySelectorAll('#meal-picker-panel [data-nc=entry]')].map((b) => b.dataset.v).sort().join(',')`)) === "bowl,box,home,plate", "3-4 自煮沒有餐盒、早餐盤、早餐碗、家常餐四個入口");
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-axis=archetype]')`)), "3-4 不該再列出舊餐型按鈕");
   await checkStepNumbers("3-4 剛打開");
-  await shot("自煮-選餐型");
-  await cookPick("archetype", "warm_salad");
-  await cookFill(["protein", "staple", "method"]);
-  await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1 && ${text("#meal-picker-summary")}.indexOf("未含沙拉醬") !== -1`, "3-4a 溫沙拉的摘要沒有「已配好」「未含沙拉醬」");
-  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)), "3-4 自煮選好後不能送出");
-  await checkStepNumbers("3-4 溫沙拉");
-  await shot("自煮-溫沙拉", "#meal-picker-panel .compose-step:last-child");
-  const other = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=archetype]')].map((b) => b.dataset.id).find((id) => id !== 'warm_salad' && id !== 'egg_pan')`);
-  await cookPick("archetype", other);
-  await cookFill(["protein", "staple", "method"]);
-  await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1`, "3-4a 換成 " + other + " 後沒有配好");
-  check((await js(text("#meal-picker-summary"))).indexOf("未含沙拉醬") === -1, "3-4a 換成 " + other + " 還顯示「未含沙拉醬」");
-  const hasSlider = await js(`!!document.querySelector('#meal-picker-panel input[type=range]')`);
-  check(hasSlider, "3-4 " + other + " 沒有份量滑桿");
-  if (hasSlider) {
-    const s1 = await js(text("#meal-picker-summary"));
-    await js(`(() => { const r = document.querySelector('#meal-picker-panel input[type=range]'); r.value = r.max; r.dispatchEvent(new Event('input', { bubbles: true })); })()`);
-    await until(`${text("#meal-picker-summary")} !== ${JSON.stringify(s1)}`, "3-4 拖份量滑桿後摘要沒變");
-  }
-  // 3-4b 蛋白質最多 2 個：第三個灰掉並寫「最多選 2 個」
-  const proteins = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein]:not([disabled])')].map((b) => b.dataset.id)`);
-  const selectedProteins = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein].selected')].map((b) => b.dataset.id)`);
-  const extra = proteins.find((id) => selectedProteins.indexOf(id) === -1);
-  if (extra && proteins.length >= 3) {
-    await cookPick("protein", extra);
-    check(await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein][disabled]')].some((b) => b.innerText.indexOf("最多選 2 個") !== -1)`), "3-4b 選了 2 個蛋白質後，其他蛋白質沒有灰掉寫「最多選 2 個」");
-    await shot("自煮-兩個蛋白質", "#meal-picker-panel .compose-option[data-axis=protein]");
-  } else warnings.push("3-4b " + other + " 可選的蛋白質不到 3 個，沒測到上限");
-  // 3-4c 煎蛋：用油選項（預設／約 2 茶匙；預設 5g 跟 1 茶匙相同只列一次）、改 2 茶匙後摘要「含用油約 10g」；調味清淡／一般
-  await cookPick("archetype", "egg_pan");
-  await cookFill(["protein"]);
-  await cookPick("method", "method_pan_fry");
-  const oils = await js(`[...document.querySelectorAll('#meal-picker-panel [data-oil]')].map((b) => b.innerText.trim())`);
-  check(oils.length === 2 && oils[0].indexOf("預設（5g") === 0 && oils[1].indexOf("約 2 茶匙") === 0, "3-4c 煎蛋的用油選項不是「預設（5g…）／約 2 茶匙」：" + oils.join("、"));
-  await click(`#meal-picker-panel [data-oil="10"]`);
-  await until(`${text("#meal-picker-summary")}.indexOf("含用油約 10g") !== -1`, "3-4c 改用 2 茶匙後摘要沒有「含用油約 10g」");
-  check(await js(`document.querySelectorAll('#meal-picker-panel [data-seasoning-level]').length === 2`), "3-4c 煎蛋沒有「清淡／一般」調味選項");
-  await shot("自煮-煎蛋用油與調味", "#meal-picker-panel [data-oil]");
-  // 3-9 快煮：🔴 的烹調法與食材灰掉寫原因；開伙時已選的 🔴 切到快煮仍可以取消，送出被擋並提示
-  await cookPick("archetype", "grain_bowl_baked");
-  await cookFill(["protein", "staple"]);
-  await cookPick("method", "method_air_fry");
+  await shot("自煮-選入口");
+  await ncEntry("box");
+  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))).indexOf("請選蛋白質") !== -1, "3-4 餐盒什麼都沒選時沒有擋下或沒有「請選蛋白質」");
+  await ncFillBox();
+  await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1`, "3-4a 餐盒填好後摘要沒有「已配好」：" + (await js(text("#meal-picker-hint"))));
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)), "3-4 餐盒填好後不能送出：" + (await js(text("#meal-picker-hint"))));
+  check((await js(text("#meal-picker-summary"))).indexOf("含用油約") !== -1, "3-4 餐盒煎蛋白質的摘要沒有「含用油」");
+  await checkStepNumbers("3-4 餐盒");
+  await shot("自煮-餐盒", "#meal-picker-panel .compose-step:last-child");
+  // 3-4b 蛋白質最多 3 種：選第 4 種出現說明（不會多選進去）
+  await ncFirst("p"); await ncFirst("p"); await ncFirst("p");
+  check((await js(text("#meal-picker-panel"))).indexOf("蛋白質最多 3 種") !== -1 && (await ncSelectedUids("p")).length === 3, "3-4b 選第 4 種蛋白質沒有擋下或沒寫「蛋白質最多 3 種」");
+  await shot("自煮-三種蛋白質", "#meal-picker-panel [data-nc=pm]");
+  for (const u of (await ncSelectedUids("p")).slice(1)) await click(`#meal-picker-panel [data-nc=p][data-uid="${u}"]`); // 留回第一種
+  // 3-9 快煮：🔴 的做法灰掉寫原因；開伙時已選的 🔴 做法切到快煮會被拿掉並說明，送出被擋，改選煎就能送出
+  await ncClick("pm", '[data-i="0"][data-m=air]:not([disabled])');
   await click(`#meal-picker-panel [data-tier=cook_quick]`);
   await until(`!!document.querySelector('#meal-picker-panel [data-tier=cook_quick].selected')`, "3-9 切到快煮沒有反應");
-  check(await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein][disabled]')].some((b) => b.innerText.indexOf("快煮不含這個食材") !== -1)`), "3-9 快煮時 🔴 的蛋白質（鮭魚、雞腿）沒有灰掉寫「快煮不含這個食材」");
-  check(await js(`(() => { const b = document.querySelector('#meal-picker-panel [data-axis=method][data-id=method_air_fry]'); return b.classList.contains('selected') && !b.disabled; })()`), "3-9 開伙時選的氣炸，切到快煮後不能取消");
-  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && /快煮不含「/.test(await js(text("#meal-picker-hint"))), "3-9 快煮下選著氣炸，送出沒有被擋或沒有提示");
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel [data-nc=pm][data-m=air][disabled]')].some((b) => b.innerText.indexOf("快煮不做") !== -1)`), "3-9 快煮時「烤／氣炸」沒有灰掉寫「快煮不做」");
+  check((await js(text("#meal-picker-panel"))).indexOf("切到快煮：已拿掉") !== -1, "3-9 切到快煮沒有說明拿掉了什麼");
+  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))).indexOf("請選做法") !== -1, "3-9 快煮下氣炸被拿掉後，送出沒有被擋或沒有「請選做法」");
   await checkStepNumbers("3-9");
   await shot("自煮-快煮灰階", "#meal-picker-hint");
-  await cookPick("method", "method_air_fry");
-  await cookPick("method", "method_pan_fry");
-  await until(`!document.getElementById('meal-picker-submit').disabled`, "3-9 快煮換成煎之後還是不能送出");
+  await ncClick("pm", '[data-i="0"][data-m=pan]');
+  await until(`!document.getElementById('meal-picker-submit').disabled`, "3-9 快煮改選煎之後還是不能送出：" + (await js(text("#meal-picker-hint"))));
   // 3-4d 送出自煮 → 已記錄（型態＝子切換值），撤銷
   await click("#meal-picker-submit");
   await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("已記錄") !== -1`, "3-4d 自煮記下這餐後晚餐沒有變成已記錄");
   await click("#rec-dinner .rec-undo-btn");
   await until(`!!document.querySelector('#rec-dinner .rec-log-btn')`, "3-4d 撤銷晚餐沒有完成");
-  // 3-5 早餐碗：免開火、微波都能選
+  // 3-5 早餐碗：免開火，碗底必選
   await openPicker("breakfast");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  await cookPick("archetype", "bowl_oat");
-  const methods = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=method]')].map((b) => b.innerText.trim() + (b.disabled ? '(不可選)' : ''))`);
-  check(methods.some((m) => m.indexOf("免開火") === 0) && methods.some((m) => m.indexOf("微波") === 0) && methods.every((m) => m.indexOf("不可選") === -1),
-    "3-5 早餐碗的烹調法不是免開火、微波都可選：" + methods.join(","));
+  await ncEntry("bowl");
+  check((await js(`document.getElementById('meal-picker-submit').disabled`)) && (await js(text("#meal-picker-hint"))).indexOf("請選碗底") !== -1, "3-5 早餐碗沒選碗底時沒有擋下或沒有「請選碗底」");
+  await ncFirst("wb");
+  check(!(await js(`document.getElementById('meal-picker-submit').disabled`)) && !(await js(`!!document.querySelector('#meal-picker-panel [data-nc=pm]')`)), "3-5 早餐碗選了碗底還不能送出，或出現做法按鈕");
+  await shot("自煮-早餐碗", "#meal-picker-panel .compose-step:last-child");
   // 3-5a 自煮分頁什麼都沒選 → 請先選餐型；只選飲料 → 可以送出（decisions #122 修正 #45，不再提示到超商或外食分頁）
   await closePicker();
   await openPicker("breakfast");
@@ -1058,9 +1035,9 @@ async function run() {
   await checkStepNumbers("9-1 外食");
   await click(`#meal-picker-tabs [data-tab=cook]`);
   await checkStepNumbers("9-1 自煮沒選餐型");
-  check((await js(text("#meal-picker-panel"))).indexOf("只記單品可以不選餐型，直接到下面加點單品") !== -1, "9-1 自煮「選餐型」上方沒有只記單品的說明");
+  check((await js(text("#meal-picker-panel"))).indexOf("只記單品可以不選，直接到下面加點單品") !== -1, "9-1 自煮「怎麼吃」上方沒有只記單品的說明");
   check(/3\. 加飲品・水果（選填）\|4\. 加點單品（選填）$/.test(await stepLabels()), "9-1 自煮沒選餐型的步驟不是 3、4：" + (await stepLabels()));
-  await cookPick("archetype");
+  await ncEntry("box");
   await checkStepNumbers("9-1 自煮選了餐型");
   check(/加飲品・水果（選填）\|\d+\. 加點單品（選填）$/.test(await stepLabels()), "9-1 自煮選了餐型後兩個共用步驟不在最後");
   await shot("單品-步驟編號", "#meal-picker-panel");
@@ -1138,17 +1115,17 @@ async function run() {
   check((await submitAndUndo("dinner", "9-4")) === "白飯 160g", "9-4 自煮只記單品的名稱不是「白飯 160g」");
   await openPicker("dinner");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  await cookPick("archetype");
-  const archName = await js(`document.querySelector('#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]').textContent`);
+  await ncEntry("box");
+  const archName = "餐盒";
   await pickFood("fx_cooked_rice", "白飯");
   check(await js(`document.getElementById('meal-picker-submit').disabled`) && (await js(text("#meal-picker-hint"))).indexOf("只記單品可以再點一次「" + archName + "」取消餐型") !== -1, "9-4 半套餐型＋單品沒有擋下或沒有取消餐型的提示：" + (await js(text("#meal-picker-hint"))));
   await shot("單品-半套餐型", "#meal-picker-hint");
-  await click(`#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]`);
-  check(!(await js(`!!document.querySelector('#meal-picker-panel .compose-option[data-axis=archetype][aria-pressed=true]')`)) && !(await js(`document.getElementById('meal-picker-submit').disabled`)) && !!(await pickedFoodText("fx_cooked_rice")),
+  await click(`#meal-picker-panel [data-nc=entry][aria-pressed=true]`);
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-nc=entry][aria-pressed=true]')`)) && !(await js(`document.getElementById('meal-picker-submit').disabled`)) && !!(await pickedFoodText("fx_cooked_rice")),
     "9-4 再點餐型沒有取消、單品不見了或不能送出");
   // 完整餐型＋單品＋飲料：名稱是 餐型與食材 → 單品 → 飲料
-  await cookPick("archetype");
-  await cookFill(["protein", "staple", "method"]);
+  await ncEntry("box");
+  await ncFillBox();
   await pickFood("fx_whole_milk");
   await stepFoodBtn("fx_whole_milk", 1, 2);
   await click(`#meal-picker-drinks [data-drink="tw_dr05"]`);
@@ -1422,27 +1399,20 @@ async function run() {
   // 11-6 自煮：常吃且能選的蛋白質排第一個（只看設定，點選過程不跳位置）
   await openPicker("dinner");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  // 找一個能選的蛋白質至少 2 個的餐型（再點一次餐型＝取消，decisions #122）
-  const archIds = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=archetype]')].map((b) => b.dataset.id)`);
-  let prots = [], arch11 = null;
-  for (const id of archIds) {
-    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${id}]`);
-    prots = await js(`[...document.querySelectorAll('#meal-picker-panel .compose-option[data-axis=protein]:not([disabled])')].map((b) => b.dataset.id)`);
-    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${id}]`);
-    if (prots.length >= 2) { arch11 = id; break; }
-  }
+  await ncEntry("box");
+  const prots = await js(`[...document.querySelectorAll('#meal-picker-panel [data-nc=p]:not([disabled])')].map((b) => b.dataset.uid)`);
   await closePicker();
   if (prots.length >= 2) {
     const target = prots[prots.length - 1];
     await js(`(async () => { const m = ${DBW}; await m.addFavoriteRef(${JSON.stringify(target)}); })()`);
     await openPicker("dinner");
     await click(`#meal-picker-tabs [data-tab=cook]`);
-    await click(`#meal-picker-panel .compose-option[data-axis=archetype][data-id=${arch11}]`);
-    const first = await js(`document.querySelector('#meal-picker-panel .compose-option[data-axis=protein]').dataset.id`);
+    await ncEntry("box");
+    const first = await js(`document.querySelector('#meal-picker-panel [data-nc=p]').dataset.uid`);
     check(first === target, "11-6 常吃的蛋白質沒有排第一個：" + first + "（應為 " + target + "）");
     await shot("常吃-自煮蛋白質", "#meal-picker-panel .compose-step");
     await closePicker();
-  } else fail("11-6 晚餐沒有能選的蛋白質至少 2 個的餐型（測試前提不成立）");
+  } else fail("11-6 餐盒沒有能選的蛋白質至少 2 個（測試前提不成立）");
 
   // ---------- 12. 我的食材（工作線 D 切片 8b-2，計畫 docs/review/2026-10-02-D8b-實作計畫.md） ----------
   console.log("[12. 我的食材]");
@@ -1797,92 +1767,93 @@ async function run() {
   await js(`(async () => { const m = ${DBW}; const logs = await m.getDailyLogs({ start: ${dayStr(2)}, end: ${dayStr(2)} }); for (const l of logs) await m.undoDailyLog(l.id); })()`);
   await tab("today");
 
-  // ---------- 16. 家庭共餐（自煮，decisions #152，設計草案 docs/review/2026-10-04-家庭共餐-設計草案.md） ----------
-  console.log("[16. 家庭共餐]");
-  const hmLogs = (date) => js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({ start: ${date}, end: ${date} })).map((l) => JSON.stringify({ slot: l.slot, source: l.source, name: l.name, kcal: l.totals.kcal, type: l.meal_type, arch: l.content.archetype_id, imp: l.content.implicit, comps: l.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount) })); })()`);
-  const hmPick = async (nDishes, withSoup) => {
-    const ids = await js(`[...document.querySelectorAll('#meal-picker-panel [data-hm-dish]:not([disabled])')].map((b) => b.getAttribute('data-hm-dish')).slice(0, ${nDishes})`);
-    for (const id of ids) await click(`#meal-picker-panel [data-hm-dish="${id}"]`);
-    if (withSoup) {
-      const sid = await js(`([...document.querySelectorAll('#meal-picker-panel [data-hm-soup]:not([disabled])')].map((b) => b.getAttribute('data-hm-soup')).filter(Boolean))[0]`);
-      await click(`#meal-picker-panel [data-hm-soup="${sid}"]`);
-    }
+  // ---------- 16. 家常餐（新自煮，舊共餐只在帶入舊組合時顯示，decisions #152） ----------
+  console.log("[16. 家常餐]");
+  const hmLogs = (date) => js(`(async () => { const m = ${DBW}; return (await m.getDailyLogs({ start: ${date}, end: ${date} })).map((l) => JSON.stringify({ slot: l.slot, source: l.source, name: l.name, kcal: l.totals.kcal, type: l.meal_type, arch: l.content.archetype_id, imp: l.content.implicit, form: l.content.form && l.content.form.entry, comps: l.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount) })); })()`);
+  // 在目前的角色分頁點前 n 道還能選、還沒選的菜（同一道菜在「最近煮過」會出現兩次，用 uid 去重）
+  const hdPick = async (n) => {
+    const ids = await js(`[...new Set([...document.querySelectorAll('#meal-picker-panel [data-nc=hd]:not([disabled]):not(.selected)')].map((b) => b.dataset.uid))].slice(0, ${n})`);
+    for (const id of ids) await click(`#meal-picker-panel [data-nc=hd][data-uid="${id}"]`);
     return ids;
   };
-  // 16-1 晚餐：自煮 → 開伙 → 「共餐」→ 選 3 道菜加 1 道湯 → 記下
+  // 16-1 晚餐：自煮 → 開伙 → 家常餐 → 選 4 道菜加 1 道湯 → 記下
   await tab("today");
   await openPicker("dinner");
   await click(`#meal-picker-tabs [data-tab=cook]`);
   await click(`#meal-picker-panel [data-tier=cook_full]`);
-  check(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`), "16-1 晚餐開伙的「選餐型」沒有「共餐」");
-  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`)), "16-1 沒按「共餐」前不該顯示菜單");
-  await click(`#meal-picker-panel [data-hm-toggle]`);
-  await until(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`, "16-1 按「共餐」沒有出現家常菜");
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`)), "16-1 不該再有舊的「共餐」按鈕");
+  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-nc=hd]')`)), "16-1 沒選家常餐前不該顯示菜單");
+  await ncEntry("home");
+  await until(`!!document.querySelector('#meal-picker-panel [data-nc=hd]')`, "16-1 按「家常餐」沒有出現家常菜");
   const hmText0 = await js(text("#meal-picker-panel"));
-  check(hmText0.indexOf("素菜") !== -1 && hmText0.indexOf("菜肉") !== -1 && hmText0.indexOf("純肉") !== -1 && hmText0.indexOf("當季") !== -1 && hmText0.indexOf("最多 4 道") !== -1, "16-1 共餐沒有素菜／菜肉／純肉分組或「最多 4 道」：" + hmText0.slice(0, 200));
-  await shot("共餐-預設", "#meal-picker-panel");
-  const picked16 = await hmPick(3, true);
-  await until(`${text("#meal-picker-summary")}.indexOf("kcal") !== -1 && ${text("#meal-picker-summary")}.indexOf("已選 4 件") !== -1`, "16-1 選了 3 道菜加湯後摘要不是已選 4 件");
-  check((await js(text("#meal-picker-panel"))).indexOf("每道菜約") !== -1, "16-1 沒有每道菜的克數");
-  await shot("共餐-已選", "#meal-picker-panel");
+  check(["主菜", "蛋豆菜", "青菜", "小菜", "湯", "整碗", "粥"].every((w) => hmText0.indexOf(w) !== -1) && hmText0.indexOf("1–4 道") !== -1, "16-1 家常餐沒有主食格（整碗、粥）、角色分頁或「1–4 道」：" + hmText0.slice(0, 200));
+  await shot("家常餐-預設", "#meal-picker-panel");
+  await hdPick(3);
+  await ncClick("hrole", "[data-v=湯]");
+  await hdPick(1);
+  await until(`${text("#meal-picker-summary")}.indexOf("已配好") !== -1 && ${text("#meal-picker-summary")}.indexOf("kcal") !== -1`, "16-1 選了 3 道菜加湯後摘要沒有已配好：" + (await js(text("#meal-picker-hint"))));
+  await shot("家常餐-已選", "#meal-picker-panel");
   await send("Emulation.setDeviceMetricsOverride", { width: 360, height: 780, deviceScaleFactor: 2, mobile: true });
-  await shot("共餐-360寬", "#meal-picker-panel");
+  await shot("家常餐-360寬", "#meal-picker-panel");
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-  // 同一道菜不能選第五道：先選滿 4 道再看第 5 個按鈕選不進去
-  const more = await js(`[...document.querySelectorAll('#meal-picker-panel [data-hm-dish]:not([disabled]):not(.selected)')].map((b) => b.getAttribute('data-hm-dish')).slice(0, 3)`);
-  for (const id of more) await click(`#meal-picker-panel [data-hm-dish="${id}"]`);
-  check((await js(`document.querySelectorAll('#meal-picker-panel [data-hm-dish].selected').length`)) === 4, "16-1 共餐的菜要停在 4 道（再點不會超過）");
+  // 菜最多 4 道（湯另外加）：再選第 5 道選不進去並說明
+  await ncClick("hrole", "[data-v=主菜]");
+  await hdPick(1);
+  check((await ncSelectedUids("hd")).length === 5, "16-1 4 道菜加 1 道湯應該共 5 個已選：" + (await ncSelectedUids("hd")).length);
+  await hdPick(1);
+  check((await js(text("#meal-picker-panel"))).indexOf("菜最多 4 道") !== -1 && (await ncSelectedUids("hd")).length === 5, "16-1 第 5 道菜沒有擋下或沒說「菜最多 4 道」");
   await click("#meal-picker-submit");
-  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("共餐：") !== -1`, "16-1 送出後晚餐紀錄沒有「共餐：」");
+  await until(`document.getElementById('meal-picker-overlay').hidden && ${text("#rec-dinner")}.indexOf("家常餐") !== -1`, "16-1 送出後晚餐紀錄沒有「家常餐」");
   const todayStr16 = `(() => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })()`;
   const log16 = JSON.parse((await hmLogs(todayStr16)).filter((x) => /"slot":"dinner"/.test(x))[0] || "{}");
-  check(log16.type === "cook_full" && log16.arch === null && log16.imp && log16.imp.oil_g === 0 && log16.comps.length >= 4 && log16.comps.every((c) => /^food:/.test(c)) && log16.comps.some((c) => /^food:hd_/.test(c)) && log16.name.indexOf("共餐：") === 0 && !/\d+g/.test(log16.name),
-    "16-1 共餐紀錄不是自煮的 hd_ 單品、或名稱帶克數：" + JSON.stringify(log16));
+  check(log16.type === "cook_full" && log16.arch === null && log16.form === "home" && log16.imp && log16.imp.oil_g === 0 && log16.comps.length >= 5 && log16.comps.every((c) => /^food:/.test(c)) && log16.comps.filter((c) => /^food:hd_/.test(c)).length >= 5 && log16.name.indexOf("家常餐＋") === 0 && !/\d+g/.test(log16.name),
+    "16-1 家常餐紀錄不是自煮的 hd_ 單品＋form、或名稱帶克數：" + JSON.stringify(log16));
   await click("#rec-dinner .rec-undo-btn");
   await until(`!!document.querySelector('#rec-dinner .rec-log-btn') || !!document.querySelector('#rec-dinner .rec-pick-btn')`, "16-1 撤銷晚餐沒有完成");
-  // 16-2 早餐沒有「共餐」；午餐開伙有；切到快煮就收起
+  // 16-2 家常餐全時段：早餐也有；快煮時要等的菜灰掉寫原因、要先預約電鍋的菜收進一個群組
   await openPicker("breakfast");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`)), "16-2 早餐不該有「共餐」");
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-nc=entry][data-v=home]')`), "16-2 早餐的自煮沒有「家常餐」");
   await closePicker();
   await openPicker("lunch");
   await click(`#meal-picker-tabs [data-tab=cook]`);
-  await click(`#meal-picker-panel [data-tier=cook_full]`);
-  await click(`#meal-picker-panel [data-hm-toggle]`);
-  await hmPick(1, false);
   await click(`#meal-picker-panel [data-tier=cook_quick]`);
-  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-toggle]')`)) && ((await js(text("#meal-picker-summary"))).indexOf("還沒配好") !== -1 || (await js(text("#meal-picker-summary"))).indexOf("已選 0 件") !== -1), "16-2 切到快煮後共餐沒有收起、或還算進這一餐：" + (await js(text("#meal-picker-summary"))));
-  // 共餐與餐型擇一：點任一餐型就收起共餐
+  await ncEntry("home");
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel [data-nc=hd][disabled]')].some((b) => b.innerText.indexOf("快煮不做") !== -1)`), "16-2 快煮時需要久煮的菜沒有灰掉寫「快煮不做」");
+  await ncClick("hrole", "[data-v=湯]");
+  check(await js(`[...document.querySelectorAll('#meal-picker-panel [data-nc=more]')].some((b) => b.innerText.indexOf("先預約電鍋才快") !== -1)`), "16-2 快煮時湯沒有「先預約電鍋才快」群組");
+  await shot("家常餐-快煮湯", "#meal-picker-panel");
+  await ncClick("more", "[data-k=pas]");
+  await hdPick(1);
   await click(`#meal-picker-panel [data-tier=cook_full]`);
-  await click(`#meal-picker-panel [data-hm-toggle]`);
-  await until(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`, "16-2 再按「共餐」沒有展開");
-  await click(`#meal-picker-panel [data-axis=archetype]`);
-  check(!(await js(`!!document.querySelector('#meal-picker-panel [data-hm-dish]')`)), "16-2 選餐型後共餐沒有收起（擇一）");
+  await click(`#meal-picker-panel [data-tier=cook_quick]`);
+  check((await ncSelectedUids("hd")).length === 1, "16-2 預約電鍋的湯切到快煮不該被拿掉");
   await closePicker();
-  // 16-3 預約明天晚餐：共餐選 2 道 → 排進預約 → 預約只存 ref＋amount → 改（帶入）還原
+  // 16-3 預約明天晚餐：家常餐選 2 道 → 排進預約 → 預約存 form 與 ref → 改（帶入）還原
   await click(`#today-dates [data-day-offset='1']`);
   await until(`!document.getElementById('today-day-summary').hidden`, "16-3 切到明天失敗");
   await click(`#rec-dinner [data-plan-pick=dinner]`);
   await until(`!document.getElementById('meal-picker-overlay').hidden && document.getElementById('meal-picker-panel').innerHTML !== ''`, "16-3 預約的選擇器沒有打開");
   await click(`#meal-picker-tabs [data-tab=cook]`);
   await click(`#meal-picker-panel [data-tier=cook_full]`);
-  await click(`#meal-picker-panel [data-hm-toggle]`);
-  const plan16ids = await hmPick(2, false);
+  await ncEntry("home");
+  await hdPick(2);
   await click("#meal-picker-submit");
-  await until(`${text("#today-day-summary")}.indexOf("已排 1 餐") !== -1`, "16-3 排完共餐沒有頂端合計");
+  await until(`${text("#today-day-summary")}.indexOf("已排 1 餐") !== -1`, "16-3 排完家常餐沒有頂端合計");
   const plan16 = JSON.parse(await js(`(async () => { const m = ${DBW}; const d = new Date(); d.setDate(d.getDate() + 1); const ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-    const p = (await m.getMealPlans({ start: ds, end: ds })).filter((x) => x.slot === 'dinner')[0]; return JSON.stringify(p.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount + (c.snapshot ? '+snapshot' : ''))); })()`));
-  check(plan16.length >= 3 && plan16.every((c) => /^food:/.test(c) && c.indexOf("+snapshot") === -1) && plan16.filter((c) => /^food:hd_/.test(c)).length === 2, "16-3 預約不是只存 ref＋amount 的 hd_ 單品：" + JSON.stringify(plan16));
-  await shot("共餐-預約", "#rec-dinner");
+    const p = (await m.getMealPlans({ start: ds, end: ds })).filter((x) => x.slot === 'dinner')[0]; return JSON.stringify({ form: p.content.form && p.content.form.entry, comps: p.content.components.map((c) => c.kind + ':' + c.ref + '=' + c.amount) }); })()`));
+  check(plan16.form === "home" && plan16.comps.length >= 3 && plan16.comps.every((c) => /^food:/.test(c)) && plan16.comps.filter((c) => /^food:hd_/.test(c)).length === 2, "16-3 預約不是家常餐 form＋hd_ 單品：" + JSON.stringify(plan16));
+  await shot("家常餐-預約", "#rec-dinner");
   await click(`#rec-dinner [data-plan-edit=dinner]`);
-  await until(`!document.getElementById('meal-picker-overlay').hidden && document.querySelectorAll('#meal-picker-panel [data-hm-dish].selected').length === 2`, "16-3 改預約沒有帶回 2 道共餐的菜");
-  check(await js(`!!document.querySelector('#meal-picker-panel [data-hm-staple].selected')`), "16-3 帶回後主食沒有還原");
+  await until(`!document.getElementById('meal-picker-overlay').hidden && document.querySelectorAll('#meal-picker-panel [data-nc=entry][data-v=home].selected').length === 1`, "16-3 改預約沒有帶回家常餐");
+  check((await ncSelectedUids("hd")).length === 2, "16-3 改預約沒有帶回 2 道菜：" + (await ncSelectedUids("hd")).length);
+  check(await js(`!!document.querySelector('#meal-picker-panel [data-nc=hs].selected')`), "16-3 帶回後主食沒有還原");
   await closePicker();
   await click(`#rec-dinner [data-plan-cancel]`);
   await until(`${text("#today-day-summary")}.indexOf("還沒排任何一餐") !== -1`, "16-3 取消預約後明天不是「還沒排」");
   await click(`#today-dates [data-day-offset='0']`);
 
-  // 16-4 含共餐的組合帶入到早餐（不是午晚餐）：共餐照樣顯示、算進去（審核 M-2）；非當季的菜標「非當季」可取消（M-3）；封存組合收尾
+  // 16-4 舊的含共餐組合（舊格式）帶入到早餐：舊共餐畫面照樣顯示、算進去（審核 M-2）；非當季的菜標「非當季」可取消（M-3）；封存組合收尾
   const savedHm = JSON.parse(await js(`(async () => { const m = ${DBW};
     const r = await m.addSavedMeal({ name: '共餐測試組合', content: { meal_type: 'cook_full', archetype_id: null, method_id: null, implicit: null,
       components: [{ kind: 'food', ref: 'fx_cooked_rice', amount: 160 }, { kind: 'food', ref: 'hd_garlic_cabbage', amount: 160 }, { kind: 'food', ref: 'hd_stirfry_luffa', amount: 100 }] } });
