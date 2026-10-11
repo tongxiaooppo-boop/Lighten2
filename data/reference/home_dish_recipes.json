@@ -6029,6 +6029,640 @@
    "mins": 35,
    "in_class_avg": false,
    "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。"
+  },
+  {
+   "id": "hd_wb_friedrice",
+   "name": "蝦仁蛋炒飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 468,
+   "recipe": [
+    {
+     "ref": "fx_cooked_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "egg",
+     "g": 100,
+     "role": "protein"
+    },
+    {
+     "ref": "shrimp",
+     "g": 80,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 50,
+     "role": "veg"
+    },
+    {
+     "ref": "onion",
+     "g": 50,
+     "role": "veg"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 8
+   },
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 豌豆仁衛福部缺飽和脂肪，改用洋蔥。"
+  },
+  {
+   "id": "hd_wb_eggrice",
+   "name": "蛋炒飯",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 318,
+   "recipe": [
+    {
+     "ref": "fx_cooked_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "egg",
+     "g": 100,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 30,
+     "role": "veg"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 8
+   },
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。"
+  },
+  {
+   "id": "hd_wb_beefnoodle",
+   "name": "牛腱湯麵",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 653,
+   "recipe": [
+    {
+     "ref": "fx_cooked_noodles",
+     "g": 200,
+     "role": "other"
+    },
+    {
+     "ref": "beef_shank",
+     "g": 100,
+     "role": "protein"
+    },
+    {
+     "ref": "hs_water",
+     "g": 350,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 90,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 湯底以水加鹽估算，不含熬湯時溶出的成分。"
+  },
+  {
+   "id": "hd_wb_sesamenoodle",
+   "name": "麻醬涼麵",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 380,
+   "recipe": [
+    {
+     "ref": "fx_cooked_noodles",
+     "g": 200,
+     "role": "other"
+    },
+    {
+     "ref": "P1000901",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "chicken_breast",
+     "g": 80,
+     "role": "protein"
+    },
+    {
+     "ref": "cucumber",
+     "g": 80,
+     "role": "veg"
+    }
+   ],
+   "role": "整碗",
+   "method": "拌",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。"
+  },
+  {
+   "id": "hd_wb_dumpling",
+   "name": "水餃（豬肉韭菜）",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 253,
+   "recipe": [
+    {
+     "ref": "R2200301",
+     "g": 250,
+     "role": "other"
+    },
+    {
+     "ref": "hs_sesame_oil",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 以市售冷凍水餃下水煮計。"
+  },
+  {
+   "id": "hd_wb_fishcongee",
+   "name": "魚片粥",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 400,
+   "recipe": [
+    {
+     "ref": "fx_congee",
+     "g": 320,
+     "role": "other"
+    },
+    {
+     "ref": "tilapia_fillet",
+     "g": 80,
+     "role": "protein"
+    }
+   ],
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。"
+  },
+  {
+   "id": "hd_wb_chickenrice",
+   "name": "雞肉香菇炊飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 235,
+   "recipe": [
+    {
+     "ref": "fx_cooked_rice",
+     "g": 170,
+     "role": "other"
+    },
+    {
+     "ref": "chicken_thigh",
+     "g": 35,
+     "role": "protein"
+    },
+    {
+     "ref": "shiitake",
+     "g": 30,
+     "role": "veg"
+    }
+   ],
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 45,
+   "passive": true,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 雞腿肉 50g 帶骨折可食 70%。"
+  },
+  {
+   "id": "hd_wb_chickencurry",
+   "name": "雞肉咖哩飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "autumn",
+    "winter",
+    "spring"
+   ],
+   "cooked_g": 667,
+   "recipe": [
+    {
+     "ref": "fx_cooked_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "chicken_thigh",
+     "g": 125,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_potato",
+     "g": 75,
+     "role": "other"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 37.5,
+     "role": "veg"
+    },
+    {
+     "ref": "onion",
+     "g": 50,
+     "role": "veg"
+    },
+    {
+     "ref": "P0200501",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 175,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 0.3,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 3.75
+   },
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 55,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 咖哩取咖哩配方的四分之一（一人份）加白飯 180g。"
+  },
+  {
+   "id": "hd_wb_porkcurry",
+   "name": "豬肉咖哩飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "autumn",
+    "winter",
+    "spring"
+   ],
+   "cooked_g": 667,
+   "recipe": [
+    {
+     "ref": "fx_cooked_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "fx_pork_collar",
+     "g": 125,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_potato",
+     "g": 75,
+     "role": "other"
+    },
+    {
+     "ref": "fx_carrot",
+     "g": 37.5,
+     "role": "veg"
+    },
+    {
+     "ref": "onion",
+     "g": 50,
+     "role": "veg"
+    },
+    {
+     "ref": "P0200501",
+     "g": 20,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 175,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 0.3,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 3.75
+   },
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 55,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 咖哩取咖哩配方的四分之一（一人份）加白飯 180g。"
+  },
+  {
+   "id": "hd_d12_017",
+   "name": "炒麵",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 177,
+   "recipe": [
+    {
+     "ref": "fx_oil_noodles",
+     "g": 133.3,
+     "role": "other"
+    },
+    {
+     "ref": "fx_pork_loin",
+     "g": 33.3,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_qingjiang",
+     "g": 33.3,
+     "role": "veg"
+    },
+    {
+     "ref": "E2100101",
+     "g": 3.3,
+     "role": "veg"
+    },
+    {
+     "ref": "hs_soy_sauce",
+     "g": 6.7,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 0.7,
+     "role": "other"
+    },
+    {
+     "ref": "P0101101",
+     "g": 0.3,
+     "role": "other"
+    },
+    {
+     "ref": "hs_black_vinegar",
+     "g": 2.7,
+     "role": "other"
+    }
+   ],
+   "oil": {
+    "ref": "cooking_oil",
+    "g": 7.33
+   },
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false,
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 取原配方的三分之一為一人份。"
+  },
+  {
+   "id": "hd_d12_059",
+   "name": "白粥",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 1893,
+   "recipe": [
+    {
+     "ref": "fx_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 1800,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 2,
+     "role": "other"
+    },
+    {
+     "ref": "P0101101",
+     "g": 0.5,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 10,
+     "role": "other"
+    }
+   ],
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false,
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。"
+  },
+  {
+   "id": "hd_d12_060",
+   "name": "皮蛋瘦肉粥",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 2144,
+   "recipe": [
+    {
+     "ref": "fx_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "K0113101",
+     "g": 100,
+     "role": "protein"
+    },
+    {
+     "ref": "fx_pork_ham_lean",
+     "g": 150,
+     "role": "protein"
+    },
+    {
+     "ref": "E1900101",
+     "g": 10,
+     "role": "veg"
+    },
+    {
+     "ref": "hs_water",
+     "g": 1800,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 3,
+     "role": "other"
+    },
+    {
+     "ref": "P0101101",
+     "g": 1,
+     "role": "other"
+    },
+    {
+     "ref": "E23001",
+     "g": 10,
+     "role": "other"
+    },
+    {
+     "ref": "hs_sesame_oil",
+     "g": 3,
+     "role": "other"
+    }
+   ],
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 55,
+   "passive": true,
+   "in_class_avg": false,
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。"
+  },
+  {
+   "id": "hd_d12_061",
+   "name": "地瓜粥",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "cooked_g": 2167,
+   "recipe": [
+    {
+     "ref": "fx_rice",
+     "g": 180,
+     "role": "other"
+    },
+    {
+     "ref": "sweet_potato",
+     "g": 300,
+     "role": "other"
+    },
+    {
+     "ref": "hs_water",
+     "g": 1800,
+     "role": "other"
+    },
+    {
+     "ref": "hs_salt",
+     "g": 1,
+     "role": "other"
+    }
+   ],
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false,
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。"
   }
  ]
 }

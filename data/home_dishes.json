@@ -5497,6 +5497,647 @@
    "mins": 35,
    "pot": true,
    "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_friedrice",
+   "name": "蝦仁蛋炒飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 134,
+    "protein_g": 6.4,
+    "carb_g": 18.1,
+    "fat_g": 3.9,
+    "fiber_g": 0.7,
+    "sat_fat_g": 1,
+    "sodium_mg": 101.1
+   },
+   "veg_share": 0.357,
+   "cooked_g": 468,
+   "components": [
+    "hd_wb_friedrice",
+    "fx_cooked_rice",
+    "egg",
+    "shrimp",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "甲殼類",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 豌豆仁衛福部缺飽和脂肪，改用洋蔥。",
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_eggrice",
+   "name": "蛋炒飯",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 172.1,
+    "protein_g": 5.9,
+    "carb_g": 24.6,
+    "fat_g": 5.5,
+    "fiber_g": 0.6,
+    "sat_fat_g": 1.4,
+    "sodium_mg": 53
+   },
+   "veg_share": 0.231,
+   "cooked_g": 318,
+   "components": [
+    "hd_wb_eggrice",
+    "fx_cooked_rice",
+    "egg",
+    "fx_carrot"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。",
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_beefnoodle",
+   "name": "牛腱湯麵",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 57.1,
+    "protein_g": 4.2,
+    "carb_g": 7.4,
+    "fat_g": 1.1,
+    "fiber_g": 0.2,
+    "sat_fat_g": 0.4,
+    "sodium_mg": 229.8
+   },
+   "veg_share": 0,
+   "cooked_g": 653,
+   "components": [
+    "hd_wb_beefnoodle",
+    "fx_cooked_noodles",
+    "beef_shank"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 湯底以水加鹽估算，不含熬湯時溶出的成分。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 90,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_sesamenoodle",
+   "name": "麻醬涼麵",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 123.4,
+    "protein_g": 8.2,
+    "carb_g": 14.5,
+    "fat_g": 3.5,
+    "fiber_g": 1,
+    "sat_fat_g": 0.7,
+    "sodium_mg": 74.6
+   },
+   "veg_share": 0.5,
+   "cooked_g": 380,
+   "components": [
+    "hd_wb_sesamenoodle",
+    "fx_cooked_noodles",
+    "chicken_breast",
+    "cucumber"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。",
+   "role": "整碗",
+   "method": "拌",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_dumpling",
+   "name": "水餃（豬肉韭菜）",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 236.7,
+    "protein_g": 8.3,
+    "carb_g": 22.7,
+    "fat_g": 12.5,
+    "fiber_g": 1.8,
+    "sat_fat_g": 4.4,
+    "sodium_mg": 433.8
+   },
+   "veg_share": 0,
+   "cooked_g": 253,
+   "components": [
+    "hd_wb_dumpling"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 以市售冷凍水餃下水煮計。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_fishcongee",
+   "name": "魚片粥",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 67.2,
+    "protein_g": 4.5,
+    "carb_g": 10.3,
+    "fat_g": 0.8,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 6.4
+   },
+   "veg_share": 0,
+   "cooked_g": 400,
+   "components": [
+    "hd_wb_fishcongee",
+    "fx_congee",
+    "tilapia_fillet"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_chickenrice",
+   "name": "雞肉香菇炊飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 161.9,
+    "protein_g": 5.6,
+    "carb_g": 30.6,
+    "fat_g": 1.6,
+    "fiber_g": 0.9,
+    "sat_fat_g": 0.4,
+    "sodium_mg": 11.7
+   },
+   "veg_share": 0.462,
+   "cooked_g": 235,
+   "components": [
+    "hd_wb_chickenrice",
+    "fx_cooked_rice",
+    "chicken_thigh",
+    "shiitake"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 雞腿肉 50g 帶骨折可食 70%。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 45,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_chickencurry",
+   "name": "雞肉咖哩飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 113.9,
+    "protein_g": 5.1,
+    "carb_g": 15.3,
+    "fat_g": 3.4,
+    "fiber_g": 0.7,
+    "sat_fat_g": 1.2,
+    "sodium_mg": 161.7
+   },
+   "veg_share": 0.412,
+   "cooked_g": 667,
+   "components": [
+    "hd_wb_chickencurry",
+    "fx_cooked_rice",
+    "chicken_thigh",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 咖哩取咖哩配方的四分之一（一人份）加白飯 180g。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 55,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_wb_porkcurry",
+   "name": "豬肉咖哩飯",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 121.8,
+    "protein_g": 4.9,
+    "carb_g": 15.3,
+    "fat_g": 4.3,
+    "fiber_g": 0.7,
+    "sat_fat_g": 1.8,
+    "sodium_mg": 158.7
+   },
+   "veg_share": 0.412,
+   "cooked_g": 667,
+   "components": [
+    "hd_wb_porkcurry",
+    "fx_cooked_rice",
+    "fx_pork_collar",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 咖哩取咖哩配方的四分之一（一人份）加白飯 180g。",
+   "role": "整碗",
+   "method": "煮",
+   "serv": 1,
+   "tier": "🔴",
+   "mins": 55,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_017",
+   "name": "炒麵",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 208.1,
+    "protein_g": 8.4,
+    "carb_g": 25.1,
+    "fat_g": 8.2,
+    "fiber_g": 0.8,
+    "sat_fat_g": 1.9,
+    "sodium_mg": 447.6
+   },
+   "veg_share": 0.524,
+   "cooked_g": 177,
+   "components": [
+    "hd_d12_017",
+    "fx_oil_noodles",
+    "fx_pork_loin",
+    "fx_qingjiang"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "整碗主食配方（人工估算的一人份，食材克數為可食重量；成品重＝食材總重，湯與滷汁以水估算）；沒有做 NTU 對照。 取原配方的三分之一為一人份。",
+   "role": "整碗",
+   "method": "炒",
+   "serv": 1,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_059",
+   "name": "白粥",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 33.9,
+    "protein_g": 0.7,
+    "carb_g": 7.5,
+    "fat_g": 0.1,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0,
+    "sodium_mg": 41.8
+   },
+   "veg_share": 0,
+   "cooked_g": 1893,
+   "components": [
+    "hd_d12_059",
+    "fx_rice"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。",
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_060",
+   "name": "皮蛋瘦肉粥",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 46.4,
+    "protein_g": 2.7,
+    "carb_g": 6.8,
+    "fat_g": 0.8,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 86.9
+   },
+   "veg_share": 0.038,
+   "cooked_g": 2144,
+   "components": [
+    "hd_d12_060",
+    "fx_rice",
+    "fx_pork_ham_lean"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。",
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 55,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_061",
+   "name": "地瓜粥",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 46.1,
+    "protein_g": 0.8,
+    "carb_g": 10.3,
+    "fat_g": 0.1,
+    "fiber_g": 0.4,
+    "sat_fat_g": 0,
+    "sodium_mg": 25.4
+   },
+   "veg_share": 0,
+   "cooked_g": 2167,
+   "components": [
+    "hd_d12_061",
+    "fx_rice",
+    "sweet_potato"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "白米粥配方（食材為可食重量，成品重含水）；份量以一碗 300g 計；沒有做 NTU 對照。",
+   "role": "粥",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 50,
+   "passive": true,
+   "in_class_avg": false
   }
  ],
  "seasonings": [
