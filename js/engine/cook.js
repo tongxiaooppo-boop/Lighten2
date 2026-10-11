@@ -9,7 +9,7 @@
 import {
   COOK_METHODS, COOK_BOX_PROTEIN_METHODS, COOK_PLATE_PROTEIN_METHODS, COOK_VEG_METHODS, COOK_GOALS, COOK_PAMTS, COOK_CARB_AMTS,
   COOK_PROTEIN_MAX, COOK_VEG_MAX, COOK_EGG_G, COOK_EGG_MAX, COOK_HOME_DISH_MAX, COOK_SOUP_G, COOK_CONGEE_G, COOK_HOME_SIDE_PEOPLE,
-  COOK_POT_AMTS, COOK_MEAL_SERVINGS, COOK_VEG_G, COOK_ITEM_CAP_G, COOK_FAT_HEAVY_PER_100, OIL_HABIT_FACTOR, isQuickTier, COOK_ENTRY_LABELS,
+  COOK_HOME_AMTS, COOK_HOME_DISH_KCAL_MAX, COOK_MEAL_SERVINGS, COOK_VEG_G, COOK_ITEM_CAP_G, COOK_FAT_HEAVY_PER_100, OIL_HABIT_FACTOR, isQuickTier, COOK_ENTRY_LABELS,
 } from "../core/config.js";
 import { passesHardFilters } from "./filters.js";
 
@@ -345,7 +345,7 @@ export function bowlProblem(form, catalog, profile) {
 }
 
 // ---------- 家常餐 ----------
-// form = { entry: "home", staple: uid|"none"（白飯等或整碗／粥的菜 uid）, stapleAmt: 1|0.5, people: null|1–6, dishes: [{ uid, amt }] }
+// form = { entry: "home", staple: uid|"none"（白飯等或整碗／粥的菜 uid）, stapleAmt: 1|0.5, people: null（舊資料才有 1–6，只讀）, dishes: [{ uid, amt: 0.5|1|1.5 }] }
 // 菜庫的菜在 catalog.homeDishes.dishes（含整碗、粥、湯）；主食 uid 是 homeDishes.staples 的 ref 或整碗／粥的 hd_ id
 export function newHomeForm() {
   return { entry: "home", staple: "brown_rice_cooked", stapleAmt: 1, people: null, dishes: [] };
@@ -360,7 +360,7 @@ function stapleRefs(catalog) {
   return Object.keys(st).map(function (k) { return st[k].ref; });
 }
 
-// 這道菜怎麼算份量：soup（一碗 250）、congee（一碗 300）、pot（一鍋菜：配方一人份 × 倍數）、share（整盤 ÷ 人數）、bowl（整碗）
+// 這道菜怎麼算份量：soup（一碗 250）、congee（一碗 300）、pot（一鍋菜：配方一人份 × 倍數）、share（整盤 ÷ 道數 × 倍數）、bowl（整碗）
 export function homeDishKind(d) {
   if (d.kind === "soup") return "soup";
   if (d.role === "粥") return "congee";
@@ -374,14 +374,32 @@ export function homeStapleIsComplete(catalog, staple) {
   return !!d && d.role === "整碗";
 }
 
-// 會被「÷ 人數」的菜：炒煎蒸拌炸烤與現組（湯、粥、一鍋菜、整碗不算）
-export function homeShareCount(form, catalog) {
-  return form.dishes.filter(function (x) { const d = homeDishById(catalog, x.uid); return d && homeDishKind(d) === "share"; }).length;
+// 這餐的道數：非湯的菜都算（炒煎蒸拌與一鍋菜），湯不算；炒煎蒸拌類的份量由它決定（decisions #155）
+export function homeDishCount(form, catalog) {
+  return form.dishes.filter(function (x) { const d = homeDishById(catalog, x.uid); return d && d.kind !== "soup"; }).length;
 }
 
+// 炒煎蒸拌類「一份」是整盤的幾分之一：整碗主食固定 2；舊資料的 people 照舊算（只讀，新表單不寫）；其餘＝道數
 export function homePeople(form, catalog) {
   if (homeStapleIsComplete(catalog, form.staple)) return COOK_HOME_SIDE_PEOPLE;
-  return form.people || Math.max(1, homeShareCount(form, catalog));
+  return form.people || Math.max(1, homeDishCount(form, catalog));
+}
+
+// 整盤熱量（炒煎蒸拌類用來判斷單道菜是不是太大）
+export function homeDishPlateKcal(d) {
+  return (d.per_100g && d.per_100g.kcal || 0) * (d.cooked_g || 0) / 100;
+}
+
+// 加菜、刪菜、換主食之後呼叫：炒煎蒸拌類的份量回到一份（道數變了，原本的倍數不再是同一個意思）；
+// 只剩 1 道炒煎蒸拌類、整盤超過 COOK_HOME_DISH_KCAL_MAX 時預設半份。一鍋菜的份量不看道數，不動。使用者之後自己按的份量不會被改
+export function homeResetShareAmts(form, catalog) {
+  form.dishes.forEach(function (x) {
+    const d = homeDishById(catalog, x.uid);
+    if (d && homeDishKind(d) === "share") x.amt = 1;
+  });
+  if (homeStapleIsComplete(catalog, form.staple) || homeDishCount(form, catalog) !== 1) return;
+  const only = form.dishes.find(function (x) { const d = homeDishById(catalog, x.uid); return d && homeDishKind(d) === "share"; });
+  if (only && homeDishPlateKcal(homeDishById(catalog, only.uid)) > COOK_HOME_DISH_KCAL_MAX) only.amt = 0.5;
 }
 
 export function homeParts(form, catalog) {
@@ -407,10 +425,25 @@ export function homeParts(form, catalog) {
     else if (k === "congee") g = COOK_CONGEE_G;
     else if (k === "pot") g = d.cooked_g / (d.serv || 1) * (x.amt || 1);
     else if (k === "bowl") g = d.cooked_g / (d.serv || 1) * (x.amt || 1);
-    else g = d.cooked_g / n;
+    else g = d.cooked_g / n * (x.amt || 1);
     parts.push({ item: d, amount: Math.max(1, Math.round(g)), role: k === "soup" ? "soup" : "dish" });
   });
   return { parts: parts, oil_g: 0 };
+}
+
+// 這道菜「一份」的克數與熱量（炒煎蒸拌類看目前的道數）；選擇器顯示用
+export function homePortion(form, catalog, uid) {
+  const f = Object.assign({}, form, { dishes: form.dishes.map(function (z) { return z.uid === uid ? { uid: z.uid, amt: 1 } : z; }) });
+  const p = homeParts(f, catalog).parts.filter(function (q) { return q.item.id === uid && q.role === "dish"; })[0];
+  const d = homeDishById(catalog, uid);
+  return p ? { g: p.amount, kcal: Math.round(((d.per_100g && d.per_100g.kcal) || 0) * p.amount / 100) } : { g: 0, kcal: 0 };
+}
+
+// 非湯的菜合計熱量（選擇器顯示用，不含主食與湯）
+export function homeDishesKcal(form, catalog) {
+  let k = 0;
+  homeParts(form, catalog).parts.forEach(function (p) { if (p.role === "dish") k += ((p.item.per_100g && p.item.per_100g.kcal) || 0) * p.amount / 100; });
+  return Math.round(k);
 }
 
 export function homeProblem(form, catalog, profile, tier) {
@@ -439,7 +472,7 @@ export function homeProblem(form, catalog, profile, tier) {
     if (!hf.ok) return "「" + d.name + "」" + hf.reason;
     if (quick && d.tier === "🔴" && !d.passive) return "「" + d.name + "」快煮不做";
     if (d.kind !== "soup") count++;
-    if (x.amt != null && homeDishKind(d) === "pot" && COOK_POT_AMTS.indexOf(x.amt) === -1) return "「" + d.name + "」份量不對";
+    if (x.amt != null && (homeDishKind(d) === "pot" || homeDishKind(d) === "share") && COOK_HOME_AMTS.indexOf(x.amt) === -1) return "「" + d.name + "」份量不對";
   }
   if (count > COOK_HOME_DISH_MAX) return "菜最多 " + COOK_HOME_DISH_MAX + " 道（湯另外加）";
   if (form.people != null && !(Number.isInteger(form.people) && form.people >= 1 && form.people <= 6)) return "人數不對";

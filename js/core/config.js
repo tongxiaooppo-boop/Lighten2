@@ -161,12 +161,15 @@ export const COOK_PROTEIN_MAX = 3;
 export const COOK_VEG_MAX = 3;
 export const COOK_EGG_G = 50;
 export const COOK_EGG_MAX = 3;
-// 家常餐：非湯的菜最多 4 道；湯一碗 250g、粥一碗 300g；選了整碗主食後加的菜取半盤
+// 家常餐：非湯的菜（含一鍋菜）最多 4 道，道數決定每道炒煎蒸拌類的份量；湯一碗 250g、粥一碗 300g；選了整碗主食後加的菜取半盤（固定當 2 人份）
 export const COOK_HOME_DISH_MAX = 4;
 export const COOK_SOUP_G = 250;
 export const COOK_CONGEE_G = 300;
 export const COOK_HOME_SIDE_PEOPLE = 2;
-export const COOK_POT_AMTS = [0.5, 1, 1.5];
+// 家常餐每道菜的份量（2026-10-11）：炒煎蒸拌這類菜一份＝整盤 ÷ 道數，一鍋菜一份＝配方一人份
+export const COOK_HOME_AMTS = [0.5, 1, 1.5];
+// 只選 1 道炒煎蒸拌類的菜、整盤熱量超過這個數時，預設半份（只是預設，使用者可以改回一份）
+export const COOK_HOME_DISH_KCAL_MAX = 700;
 // 組裝類食材的一餐份量規則（由代換表一份換算；高脂肉減半、上限 250g）
 export const COOK_MEAL_SERVINGS = { protein: 4, staple: 3 };
 export const COOK_VEG_G = 100;

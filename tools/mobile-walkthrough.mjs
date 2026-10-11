@@ -1554,7 +1554,7 @@ async function run() {
   await until(`${text("#rec-dinner")}.indexOf("預約 · 約 1200 kcal") !== -1 && !!document.querySelector('#rec-dinner [data-plan-log=dinner]')`, "13-5 今天的預約卡片沒有出現");
   check((await js(text("#today-hero-kcal-value"))) === heroBefore, "13-5 彙總卡主數字被預約扣掉了（應維持目標減已記錄）");
   check((await js(text("#today-hero-planned"))).indexOf("已排：晚餐 約 1200 kcal") !== -1, "13-5 彙總卡沒有「已排」一行");
-  check(!(await js(`!!document.querySelector('#rec-extra-dinner [data-skip-slot]')`)), "13-5 有預約的時段不該有「這餐不吃」");
+  check(!(await js(`!!document.querySelector('#rec-dinner [data-skip-slot]')`)), "13-5 有預約的時段不該有「這餐不吃」");
   await shot("日期切換-今天的預約", "#rec-dinner");
   // 13-6 記下 → 已記錄；撤銷 → 預約還在；取消預約 → 回到推薦
   await click(`#rec-dinner [data-plan-log=dinner]`);
@@ -1566,8 +1566,8 @@ async function run() {
   await click(`#rec-dinner [data-plan-cancel]`);
   await until(`!!document.querySelector('#rec-dinner .rec-pick-btn') && document.getElementById('today-hero-planned').hidden`, "13-6 取消預約後沒有回到推薦，或「已排」沒收起來");
   // 13-7 今天「這餐不吃」→ 這餐沒吃＋撤銷
-  await until(`!!document.querySelector('#rec-extra-lunch [data-skip-slot=lunch]')`, "13-7 午餐沒有「這餐不吃」");
-  await click(`#rec-extra-lunch [data-skip-slot=lunch]`);
+  await until(`!!document.querySelector('#rec-lunch [data-skip-slot=lunch]')`, "13-7 午餐沒有「這餐不吃」");
+  await click(`#rec-lunch [data-skip-slot=lunch]`);
   await until(`${text("#rec-lunch")}.indexOf("這餐沒吃") !== -1 && !!document.querySelector('#rec-lunch .rec-undo-btn')`, "13-7 這餐不吃之後沒有「這餐沒吃」");
   await shot("日期切換-這餐沒吃", "#rec-lunch");
   await click(`#rec-lunch .rec-undo-btn`);

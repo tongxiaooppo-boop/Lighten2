@@ -1101,9 +1101,22 @@ function checkCook(catalog) {
   const hp = (f) => ck.homeParts(f, catalog);
   const dish = (u) => catalog.homeDishes.byId[u];
   const f1 = home({ dishes: [{ uid: "hd_garlic_cabbage" }, { uid: "hd_tomato_egg" }, { uid: "hd_seaweed_egg_soup" }] });
-  check(ck.homePeople(f1, catalog) === 2 && hp(f1).parts.find((p) => p.item.uid === "hd_garlic_cabbage").amount === Math.round(dish("hd_garlic_cabbage").cooked_g / 2) && hp(f1).parts.find((p) => p.role === "soup").amount === 250, "家常餐：預設人數＝炒煎蒸拌這類菜的道數（湯不算）；整盤÷人數；湯一碗 250g");
+  check(ck.homePeople(f1, catalog) === 2 && hp(f1).parts.find((p) => p.item.uid === "hd_garlic_cabbage").amount === Math.round(dish("hd_garlic_cabbage").cooked_g / 2) && hp(f1).parts.find((p) => p.role === "soup").amount === 250, "家常餐：份量＝整盤÷道數（湯不算）；湯一碗 250g");
+  // 2026-10-11：道數＝非湯的菜（一鍋菜也算）；每道炒煎蒸拌類有半／一／一份半；只剩 1 道且整盤 >700 預設半份；沒有人數
+  const fPot = home({ dishes: [{ uid: "hd_tomato_egg" }, { uid: "hd_d12_044" }] });
+  check(ck.homeDishCount(fPot, catalog) === 2 && ck.homePeople(fPot, catalog) === 2 && hp(fPot).parts.find((p) => p.item.uid === "hd_tomato_egg").amount === Math.round(dish("hd_tomato_egg").cooked_g / 2) && hp(fPot).parts.find((p) => p.item.uid === "hd_d12_044").amount === Math.round(dish("hd_d12_044").cooked_g / (dish("hd_d12_044").serv || 1)), "一鍋菜也算道數：炒菜＋滷海帶＝2 道，炒菜半盤、滷海帶仍是一人份");
+  const fAmt = home({ dishes: [{ uid: "hd_tomato_egg", amt: 1.5 }, { uid: "hd_garlic_cabbage", amt: 0.5 }] });
+  check(hp(fAmt).parts.find((p) => p.item.uid === "hd_tomato_egg").amount === Math.round(dish("hd_tomato_egg").cooked_g / 2 * 1.5) && hp(fAmt).parts.find((p) => p.item.uid === "hd_garlic_cabbage").amount === Math.round(dish("hd_garlic_cabbage").cooked_g / 2 * 0.5) && ck.homeProblem(fAmt, catalog, okProfile, "cook_full") === null && /份量不對/.test(ck.homeProblem(home({ dishes: [{ uid: "hd_tomato_egg", amt: 0.25 }] }), catalog, okProfile, "cook_full") || ""), "炒煎蒸拌類每道可以選半／一／一份半，其他份量擋");
+  const fOne = function (uid) { const f = home({ dishes: [{ uid: uid, amt: 1 }] }); ck.homeResetShareAmts(f, catalog); return f; };
+  check(fOne("hd_mapo_tofu").dishes[0].amt === 0.5 && fOne("hd_d12_073").dishes[0].amt === 1 && fOne("hd_tomato_egg").dishes[0].amt === 1, "只選 1 道炒煎蒸拌類：整盤 702（麻婆豆腐）預設半份，697（烤雞腿）與一般的維持一份");
+  const fTwo = home({ dishes: [{ uid: "hd_mapo_tofu", amt: 0.5 }, { uid: "hd_tomato_egg", amt: 1.5 }, { uid: "hd_d12_044", amt: 1.5 }] });
+  ck.homeResetShareAmts(fTwo, catalog);
+  check(fTwo.dishes[0].amt === 1 && fTwo.dishes[1].amt === 1 && fTwo.dishes[2].amt === 1.5, "加到 2 道以上：炒煎蒸拌類回到一份，一鍋菜的份量不動");
+  const fLegacy = home({ people: 3, dishes: [{ uid: "hd_mapo_tofu" }] });
+  check(hp(fLegacy).parts.find((p) => p.item.uid === "hd_mapo_tofu").amount === Math.round(dish("hd_mapo_tofu").cooked_g / 3), "舊資料有 people:3：照舊算（整盤÷3），新表單不寫 people");
+  check(ck.homePeople(home({ staple: "hd_wb_friedrice", dishes: [{ uid: "hd_d12_044" }, { uid: "hd_tomato_egg" }] }), catalog) === 2, "整碗主食：道數不影響，仍固定 2");
   const f2 = home({ dishes: [{ uid: "hd_d12_104" }] });
-  check(ck.homePeople(f2, catalog) === 1 && hp(f2).parts.find((p) => p.role === "dish").amount === Math.round(dish("hd_d12_104").cooked_g / dish("hd_d12_104").serv), "一鍋菜（燉蹄膀）：配方一人份，不看人數");
+  check(ck.homePeople(f2, catalog) === 1 && hp(f2).parts.find((p) => p.role === "dish").amount === Math.round(dish("hd_d12_104").cooked_g / dish("hd_d12_104").serv), "一鍋菜（燉蹄膀）：配方一人份，不看道數");
   const f2b = home({ dishes: [{ uid: "hd_d12_104", amt: 1.5 }] });
   check(hp(f2b).parts.find((p) => p.role === "dish").amount === Math.round(dish("hd_d12_104").cooked_g / dish("hd_d12_104").serv * 1.5), "一鍋菜可選一份半");
   const f3 = home({ staple: "hd_wb_friedrice", dishes: [{ uid: "hd_garlic_cabbage" }] });

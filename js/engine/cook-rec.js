@@ -236,6 +236,7 @@ function bowlCandidates(ctx, pools, out) {
 
 // ---------- 家常餐 ----------
 // 模板：主食（白飯類／麵）＋主菜 1＋青菜 1＋湯 0 或 1；或一份整碗主食（可再加一道青菜或湯，菜取半盤）
+// 道數＝非湯的菜（含一鍋菜），炒煎蒸拌類一份＝整盤 ÷ 道數；主菜與一鍋菜各有半／一／一份半的份量維度（沒有人數）
 function homeCandidates(ctx, pools, out) {
   const cat = ctx.catalog;
   const homeVec = function (staple, stapleAmt, dishes, people) {
@@ -251,24 +252,25 @@ function homeCandidates(ctx, pools, out) {
     const id = "cook|home|" + staple + "|" + idPart(dishUids);
     if (seen[id]) return;
     seen[id] = true;
-    const share = dishUids.filter(function (u) { return kind(u) === "share"; }).length;
-    const people = complete ? 2 : Math.max(1, share);
-    // 份量維度：主食量（整碗固定一份）、第一道一鍋菜的半／一／一份半
-    const potIdx = dishUids.findIndex(function (u) { return kind(u) === "pot"; });
+    // 道數（整碗固定 2）只用來算這份候選的克數；輸出的 form 不寫人數
+    const count = dishUids.filter(function (u) { return kind(u) !== "soup"; }).length;
+    const people = complete ? 2 : Math.max(1, count);
+    // 份量維度：主食量（整碗固定一份）、主菜（沒有主菜時是第一道一鍋菜）的半／一／一份半
+    const mainIdx = complete ? dishUids.findIndex(function (u) { return kind(u) === "pot"; }) : 0;
     const stapleAmts = complete ? [1] : [1, 0.5];
-    const potAmts = potIdx === -1 ? [1] : [1, 0.5, 1.5];
-    // 主食與菜各自單獨算再相加（人數固定後兩邊互不影響）
-    const dishes = function (potAmt) { return dishUids.map(function (u, i) { return { uid: u, amt: i === potIdx ? potAmt : 1 }; }); };
+    const dishAmts = mainIdx === -1 ? [1] : [1, 0.5, 1.5];
+    // 主食與菜各自單獨算再相加（道數固定後兩邊互不影響）
+    const dishes = function (amt) { return dishUids.map(function (u, i) { return { uid: u, amt: i === mainIdx ? amt : 1 }; }); };
     const stapleVec = function (a) { return homeVec(staple, a, [], people); };
     const dishVec = function (list) { return homeVec("none", 1, list, people); };
     const dims = [];
     if (!complete) dims.push({ opts: stapleAmts.map(function (a) { return { key: a, vec: stapleVec(a) }; }) });
     else dims.push({ opts: [{ key: 1, vec: stapleVec(1) }] });
-    dims.push({ opts: potAmts.map(function (a) { return { key: a, vec: dishVec(dishes(a)) }; }) });
+    dims.push({ opts: dishAmts.map(function (a) { return { key: a, vec: dishVec(dishes(a)) }; }) });
     const build = function (key) {
-      return Object.assign(newHomeForm(), { staple: staple, stapleAmt: key[0], people: complete ? null : people, dishes: dishes(key[1]) });
+      return Object.assign(newHomeForm(), { staple: staple, stapleAmt: key[0], people: null, dishes: dishes(key[1]) });
     };
-    const base = build([stapleAmts[0], potAmts[0]]);
+    const base = build([stapleAmts[0], dishAmts[0]]);
     const names = [staple === "none" ? null : homeStapleName(cat, staple)].concat(dishUids.map(function (u) { return homeDishById(cat, u).name; })).filter(Boolean);
     out.push(makeCandidate(ctx, {
       id: id, entry: "home", dims: dims, fixed: [0, 0, 0, 0, 0], build: build, rank: cookFormRank(base, cat),

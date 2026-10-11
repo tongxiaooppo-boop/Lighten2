@@ -1672,6 +1672,21 @@ div.food-row-main {
   padding-bottom: 0.6rem;
   border-bottom: 1px dashed #E0D3BF;
 }
+/* 今日建議卡片的按鈕列：同一排、同高、不換行 */
+.rec-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+.rec-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.3rem 0.1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
 .rec-extra:empty {
   display: none;
 }

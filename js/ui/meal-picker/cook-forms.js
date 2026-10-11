@@ -5,12 +5,12 @@
 import { escapeHtml } from "../../core/html.js";
 import {
   COOK_ENTRIES, COOK_ENTRY_LABELS, COOK_GOALS, COOK_PAMTS, COOK_PROTEIN_MAX, COOK_VEG_MAX, COOK_EGG_MAX, COOK_HOME_DISH_MAX,
-  COOK_VEG_METHODS, COOK_POT_AMTS, COOK_DEFAULTS,
+  COOK_VEG_METHODS, COOK_HOME_AMTS, COOK_DEFAULTS,
 } from "../../core/config.js";
 import { passesHardFilters } from "../../engine/filters.js";
 import {
   cookOptions, cookOptionByUid, cookMethodProblem, cookItemProblem, cookMethodName, boxProteinMethods, boxProteinOptions, boxSplitCount, newBoxForm, newBowlForm, newHomeForm,
-  applyGoal, homeDishById, homeDishKind, homeStapleIsComplete, homeShareCount, homePeople, homeDishProtein,
+  applyGoal, homeDishById, homeDishKind, homeStapleIsComplete, homeDishCount, homePeople, homeResetShareAmts, homeDishProtein, homePortion, homeDishesKcal,
 } from "../../engine/cook.js";
 
 const NEW_METHODS = ["boil", "sous", "raw", "cold"]; // 這一輪新增的做法，名稱後面加＊
@@ -155,10 +155,6 @@ function homeHtml(form, catalog, st) {
   const quick = st.quick, pf = st.pf, nc = st.nc;
   const complete = homeStapleIsComplete(catalog, form.staple);
   let h = "";
-  if (!complete && homeShareCount(form, catalog) > 0) {
-    h += box("幾個人吃", '<span class="compose-options">' + opt("ppl", a("v", -1), "−", false) + "<b>" + homePeople(form, catalog) + " 人</b>" + opt("ppl", a("v", 1), "＋", false) + "</span>",
-      form.people ? "（自己改過）整盤的菜 ÷ 人數，是你吃的那一份。" : "（照炒煎蒸拌這類菜的道數預設，可改；湯、一鍋菜不算）");
-  }
   // 主食格：白飯類、麵；整碗；粥
   const stOpts = Object.keys(h0.staples).map(function (k) { return h0.staples[k]; });
   let sh = optRow(stOpts.map(function (s) { return opt("hs", a("v", s.ref), s.name, form.staple === s.ref, hardWhy(((catalog.foodTree && catalog.foodTree.byId) || {})[s.ref] || s, pf)); }).join("") + opt("hs", a("v", "none"), "不要", form.staple === "none"));
@@ -180,10 +176,16 @@ function homeHtml(form, catalog, st) {
     const d = homeDishById(catalog, x.uid);
     if (!d) return;
     dh += '<div class="meal-picker-note"><b>' + escapeHtml(d.name) + "</b>・" + escapeHtml(d.method || "") + ' <button type="button" class="compose-option" data-nc="hdel" ' + a("i", i) + ">移除</button></div>";
-    if (homeDishKind(d) === "pot") {
-      dh += optRow(COOK_POT_AMTS.map(function (v) { return opt("hamt", a("i", i) + " " + a("v", v), { 0.5: "半份", 1: "一份", 1.5: "一份半" }[v], (x.amt || 1) === v); }).join(""));
+    const kd = homeDishKind(d);
+    if (kd === "pot" || kd === "share") {
+      const one = homePortion(form, catalog, x.uid);
+      const unitTxt = kd === "pot" ? "一份＝配方一人份" : "一份＝整盤 ÷ " + homePeople(form, catalog) + (complete ? "（整碗配菜取半盤）" : " 道");
+      const sizeTxt = "，約 " + one.g + "g・" + one.kcal + " kcal";
+      dh = dh + '<div class="compose-axis-label">' + unitTxt + sizeTxt + "</div>";
+      dh += optRow(COOK_HOME_AMTS.map(function (v) { return opt("hamt", a("i", i) + " " + a("v", v), { 0.5: "半份", 1: "一份", 1.5: "一份半" }[v], (x.amt || 1) === v); }).join(""));
     }
   });
+  if (form.dishes.length) dh = dh + '<p class="meal-picker-note">菜合計約 ' + homeDishesKcal(form, catalog) + " kcal（不含主食與湯）。一份是預設，可以每道各自改半份或一份半。</p>";
   const picked = function (d) { return form.dishes.some(function (x) { return x.uid === d.id; }); };
   const allowed = function (d) { return d.role !== "整碗" && d.role !== "粥" && (!complete || d.role === "青菜" || d.kind === "soup"); };
   const dopt = function (d, free) {
@@ -280,18 +282,17 @@ export function cookFormAction(nc, act, p, ctx) {
       if (k !== -1) form.fruit.splice(k, 1); else if (form.fruit.length < 2) form.fruit.push(p.uid); else nc.msg = "水果最多 2 種";
       break;
     }
-    case "ppl": form.people = Math.min(6, Math.max(1, homePeople(form, ctx.catalog) + Number(v))); break;
-    case "hs": form.staple = v; if (homeStapleIsComplete(ctx.catalog, v)) form.stapleAmt = 1; break;
+    case "hs": form.staple = v; if (homeStapleIsComplete(ctx.catalog, v)) form.stapleAmt = 1; form.people = null; homeResetShareAmts(form, ctx.catalog); break;
     case "hsa": form.stapleAmt = Number(v); break;
     case "hrole": nc.role = v; nc.q = ""; break;
     case "hamt": form.dishes[i].amt = Number(v); break;
-    case "hdel": form.dishes.splice(i, 1); break;
+    case "hdel": form.dishes.splice(i, 1); form.people = null; homeResetShareAmts(form, ctx.catalog); break;
     case "hd": {
       const k = form.dishes.findIndex(function (x) { return x.uid === p.uid; });
       const d = homeDishById(ctx.catalog, p.uid);
-      if (k !== -1) form.dishes.splice(k, 1);
+      if (k !== -1) { form.dishes.splice(k, 1); form.people = null; homeResetShareAmts(form, ctx.catalog); }
       else if (d && d.kind !== "soup" && form.dishes.filter(function (x) { const y = homeDishById(ctx.catalog, x.uid); return y && y.kind !== "soup"; }).length >= COOK_HOME_DISH_MAX) nc.msg = "菜最多 " + COOK_HOME_DISH_MAX + " 道（湯另外加）";
-      else { form.dishes.push({ uid: p.uid, amt: 1 }); nc.recent = [p.uid].concat(nc.recent.filter(function (z) { return z !== p.uid; })).slice(0, 8); }
+      else { form.dishes.push({ uid: p.uid, amt: 1 }); form.people = null; homeResetShareAmts(form, ctx.catalog); nc.recent = [p.uid].concat(nc.recent.filter(function (z) { return z !== p.uid; })).slice(0, 8); }
       break;
     }
     default: return false;

@@ -258,10 +258,15 @@ function renderRecs(recs, profile, logsBySlot, plan, catalog) {
       "</div>" +
       (rec.cook_detail ? '<p class="rec-content-note">' + escapeHtml(rec.cook_detail) + "</p>" : "") +
       dislikeChipsHtml(rec, catalog) +
-      '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
-      '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>' +
+      // 同一排、同高、不換行：紀錄、自選、不吃、換、改（不吃原本在卡片底下的 #rec-extra，有推薦時搬進這一排）
+      '<div class="rec-actions">' +
+      '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">紀錄</button>' +
       pickBtnHtml(slot) +
-      (rec.is_cook_form ? '<button type="button" class="secondary-btn rec-edit-btn" data-slot="' + escapeHtml(slot) + '">改一下</button>' : "");
+      '<button type="button" class="undo-btn rec-skip-btn" data-skip-slot="' + escapeHtml(slot) + '">不吃</button>' +
+      '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">換</button>' +
+      (rec.is_cook_form ? '<button type="button" class="secondary-btn rec-edit-btn" data-slot="' + escapeHtml(slot) + '">改</button>' : "") +
+      "</div>";
+    if (extra) extra.innerHTML = "";
   });
 }
 
@@ -318,7 +323,7 @@ async function renderFutureDay(today, profile) {
 }
 
 function pickBtnHtml(slot) {
-  return '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自己選</button>';
+  return '<button type="button" class="secondary-btn rec-pick-btn" data-slot="' + escapeHtml(slot) + '">自選</button>';
 }
 
 export async function buildRecommendation() {
