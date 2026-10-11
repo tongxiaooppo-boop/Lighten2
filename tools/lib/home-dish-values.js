@@ -12,6 +12,11 @@
 const { round1, FIELDS } = require("./ingredient-values");
 
 const CLASSES = ["veg", "mixed", "meat"];
+// 2026-10-11 新家常餐用的欄位（選填，但填了就要合法）：role＝選菜畫面的角色分頁、method＝烹飪法標籤、serv＝配方人數、
+// pot＝一鍋菜（燉滷紅燒咖哩，份量算「配方一人份」）、tier／mins／passive＝快煮／開伙難度與電鍋可預約、in_class_avg＝要不要算進類別平均
+const DISH_ROLES = ["主菜", "蛋豆菜", "青菜", "小菜", "湯"];
+const DISH_METHODS = ["煎", "炒", "煮", "炸", "滷", "蒸", "燉", "拌", "烤", "紅燒"];
+const DISH_TIERS = ["🟢", "🟡", "🔴"];
 const ROLES = ["veg", "protein", "other"];
 const STAPLES = [
   { key: "white", ref: "fx_cooked_rice", name: "白飯" },
@@ -25,9 +30,15 @@ const DERIVED_SEASONINGS = {
   hs_water: { kcal: 0, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0, sat_fat_g: 0, sodium_mg: 0 },
 };
 // 缺值補 0 的理由（章程 B5.1，只列調料選樣表會用到的）：理由 → { 衛福部食品分類, 可填欄位, 脂肪上限 }
+// check(per_100g)：額外條件，回傳 null＝通過、字串＝不通過的原因（2026-10-11 新增四條，給米酒、冰糖、蜂蜜、米醋、醬油膏、辣油用）
 const ZERO_FILL_REASONS = {
   "調味料": { category: "調味料及香辛料類", fields: ["sat_fat_g"], maxFat: 0.5 },
   "油脂": { category: "油脂類", fields: ["fiber_g", "sodium_mg"], maxFat: null },
+  "酒類": { category: "加工調理食品及其他類", fields: ["fiber_g", "sat_fat_g"], maxFat: null, check: (p) => (p.fat_g === 0 ? null : "脂肪要是 0（有值）") },
+  "糖類": { category: "糖類", fields: ["protein_g", "fat_g", "fiber_g", "sat_fat_g", "sodium_mg"], maxFat: null, check: (p) => (p.carb_g >= 80 ? null : "碳水要 ≥ 80 g/100g") },
+  "調味料（低熱量）": { category: "調味料及香辛料類", fields: ["protein_g", "fat_g", "fiber_g", "sat_fat_g"], maxFat: null,
+    check: (p) => (p.kcal <= 120 && p.kcal - 4 * (p.protein_g || 0) - 4 * (p.carb_g || 0) <= 9 ? null : "熱量要 ≤ 120 kcal，且扣掉蛋白質與碳水的熱量後剩 ≤ 9 kcal（脂肪約 1g 以內）") },
+  "調味油": { category: "調味料及香辛料類", fields: ["fiber_g"], maxFat: null, check: (p) => (p.fat_g >= 90 ? null : "脂肪要 ≥ 90 g/100g（純油類調味料）") },
 };
 const NTU_DEVIATION_LIMIT = 0.25;
 const SEASONS = ["spring", "summer", "autumn", "winter"]; // 春 3–5、夏 6–8、秋 9–11、冬 12–2 月（共餐清單只列當季）
@@ -99,6 +110,8 @@ function seasoningValues(entry, ctx) {
     if (reason.fields.indexOf(k) === -1) problems.push(w + "：理由「" + fill.ref + "」不能補 " + k);
     if (row.category !== reason.category) problems.push(w + "：理由「" + fill.ref + "」要衛福部食品分類是 " + reason.category + "（這筆是 " + row.category + "）");
     if (reason.maxFat != null && !(row.per_100g.fat_g <= reason.maxFat)) problems.push(w + "：理由「" + fill.ref + "」要脂肪 ≤ " + reason.maxFat + " g/100g");
+    const extra = reason.check ? reason.check(row.per_100g) : null;
+    if (extra) problems.push(w + "：理由「" + fill.ref + "」條件不符：" + extra);
     out[k] = 0;
   });
   return { per_100g: out, field_sources: fsrc, problems };
@@ -193,6 +206,15 @@ function buildHomeDishes(ctx) {
     if (typeof d.note !== "string" || d.note === "") problems.push("家常菜 " + d.id + "：note 要寫來源與假設");
     const c = computeDish(d, ctx, sm.map);
     problems.push.apply(problems, c.problems);
+    if (d.role != null && DISH_ROLES.indexOf(d.role) === -1) problems.push("家常菜 " + d.id + "：role 只能是 " + DISH_ROLES.join("、"));
+    if (d.method != null && DISH_METHODS.indexOf(d.method) === -1) problems.push("家常菜 " + d.id + "：method 只能是 " + DISH_METHODS.join("、"));
+    if (d.serv != null && !(Number.isInteger(d.serv) && d.serv >= 1 && d.serv <= 6)) problems.push("家常菜 " + d.id + "：serv 要是 1–6 的整數");
+    if (d.tier != null && DISH_TIERS.indexOf(d.tier) === -1) problems.push("家常菜 " + d.id + "：tier 只能是 🟢🟡🔴");
+    if (d.mins != null && !(Number.isInteger(d.mins) && d.mins > 0)) problems.push("家常菜 " + d.id + "：mins 要是正整數");
+    ["pot", "passive", "in_class_avg"].forEach((k) => { if (d[k] != null && typeof d[k] !== "boolean") problems.push("家常菜 " + d.id + "：" + k + " 要是 true／false"); });
+    if (d.passive && d.tier !== "🔴") problems.push("家常菜 " + d.id + "：passive（電鍋可預約）只給 🔴 的菜");
+    if (d.tier === "🟡" && d.mins > 35) problems.push("家常菜 " + d.id + "：標 🟡（快煮）但 mins 超過 35");
+    if (d.kind === "soup" && d.pot) problems.push("家常菜 " + d.id + "：湯不用 pot（湯固定一碗）");
     // 成品重不能低於食材總重的 40%（含水的湯、滷汁收乾的菜之外，過低通常是抄錯）
     const total = (d.recipe || []).reduce((a, it) => a + (it.g || 0), 0) + (d.oil ? d.oil.g || 0 : 0);
     if (d.cooked_g > 0 && total > 0 && d.cooked_g < total * 0.4) warnings.push("家常菜 " + d.id + "：cooked_g（" + d.cooked_g + "）低於食材總重（" + total + "）的 40%，確認沒抄錯");
@@ -207,6 +229,8 @@ function buildHomeDishes(ctx) {
       components: [d.id].concat((d.recipe || []).map((it) => it.ref).filter((ref, i, a) => a.indexOf(ref) === i && !/^hs_/.test(ref) && (ctx.ingredients[ref] || ctx.tree[ref]))),
       state: "cooked", unit: d.kind === "soup" ? "ml" : "g", allergen_tags: c.allergen_tags, vegan: false, lacto_ovo: false, composite: true,
       source: d.source || { type: "assumption", ref: "配方與成品重為估計（見 note）" }, note: d.note };
+    ["role", "method", "serv", "tier", "mins", "passive", "pot"].forEach((k) => { if (d[k] != null) row[k] = d[k]; });
+    row.in_class_avg = d.in_class_avg !== false;
     if (d.ntu_kcal_100g != null) {
       row.ntu_kcal_100g = d.ntu_kcal_100g;
       const dev = (c.per_100g.kcal - d.ntu_kcal_100g) / d.ntu_kcal_100g;
@@ -220,11 +244,11 @@ function buildHomeDishes(ctx) {
   });
   const classes = {};
   CLASSES.forEach((cl) => {
-    const rows = dishes.filter((x) => x.kind === "dish" && x.class === cl);
+    const rows = dishes.filter((x) => x.kind === "dish" && x.class === cl && x.in_class_avg);
     if (rows.length < 3) problems.push("類別 " + cl + " 至少要 3 道菜（目前 " + rows.length + "）");
     classes[cl] = { n: rows.length, per_100g: rows.length ? average(rows) : null, dishes: rows.map((x) => x.id) };
   });
-  const soups = dishes.filter((x) => x.kind === "soup");
+  const soups = dishes.filter((x) => x.kind === "soup" && x.in_class_avg);
   if (soups.length < 3) problems.push("湯至少要 3 道（目前 " + soups.length + "）");
   // 每個季節都要有菜可選（共餐清單只列當季）：素菜、菜肉各至少 3 道，純肉至少 3 道，湯至少 1 道
   SEASONS.forEach((se) => {

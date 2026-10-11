@@ -724,7 +724,8 @@ export function homeMealFoodCount(homeMeal) {
 export function homeMealChoices(catalog, season, profile, selectedIds) {
   const pf = profile || {};
   const picked = selectedIds || [];
-  const home = (catalog.homeDishes && catalog.homeDishes.dishes) || [];
+  // 新家常餐上線前，舊共餐清單只列原本 36 道（in_class_avg）；新增的菜等新畫面接上再放開（已選的照樣列，才取消得掉）
+  const home = ((catalog.homeDishes && catalog.homeDishes.dishes) || []).filter(function (d) { return d.in_class_avg !== false || picked.indexOf(d.id) !== -1; });
   const entry = function (it) { const f = passesHardFilters(it, pf); return { item: it, reason: f.ok ? null : f.reason, offSeason: (it.seasons || []).indexOf(season) === -1 }; };
   const order = function (rows) { return rows.filter(function (r) { return !r.reason; }).concat(rows.filter(function (r) { return r.reason; })); };
   // 當季的，加上「已選但不當季」的（例如夏天存的組合秋天帶入）：留在清單最後、標非當季，才取消得掉

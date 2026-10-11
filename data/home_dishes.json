@@ -189,6 +189,12 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；NTU 營養表對照 75 kcal/100g。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true,
    "ntu_kcal_100g": 75,
    "ntu_deviation": -0.085
   },
@@ -230,6 +236,12 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；NTU 營養表對照 62 kcal/100g。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true,
    "ntu_kcal_100g": 62,
    "ntu_deviation": -0.06
   },
@@ -272,6 +284,12 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；NTU 營養表對照 70 kcal/100g。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true,
    "ntu_kcal_100g": 70,
    "ntu_deviation": 0.211
   },
@@ -315,7 +333,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；用香油，不另加烹調油。"
+   "note": "配比與成品重為估計；用香油，不另加烹調油。",
+   "role": "青菜",
+   "method": "拌",
+   "serv": 3,
+   "tier": "🟢",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_tomato_egg",
@@ -357,6 +381,12 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；NTU 營養表對照 123 kcal/100g。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true,
    "ntu_kcal_100g": 123,
    "ntu_deviation": -0.093
   },
@@ -402,7 +432,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；太白粉不計。"
+   "note": "配比與成品重為估計；太白粉不計。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_kung_pao_chicken",
@@ -446,7 +482,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；太白粉不計。蔬菜占（蔬菜＋蛋豆魚肉）重量約 30%，在菜肉與純肉的分界上，類別手動標菜肉。"
+   "note": "配比與成品重為估計；太白粉不計。蔬菜占（蔬菜＋蛋豆魚肉）重量約 30%，在菜肉與純肉的分界上，類別手動標菜肉。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "in_class_avg": true
   },
   {
    "id": "hd_oyster_kailan_beef",
@@ -487,7 +529,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）；太白粉不計。"
+   "note": "配比與成品重為估計；牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）；太白粉不計。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_braised_napa",
@@ -533,7 +581,14 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；NTU 的蝦米炒大白菜類比本配方高約一倍（店家用油與蝦米較多），偏差大，本配方照一般家常配比，不往店家校準，保留。"
+   "note": "配比與成品重為估計；NTU 的蝦米炒大白菜類比本配方高約一倍（店家用油與蝦米較多），偏差大，本配方照一般家常配比，不往店家校準，保留。",
+   "role": "蛋豆菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": true
   },
   {
    "id": "hd_mapo_tofu",
@@ -577,6 +632,12 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；太白粉不計；NTU 營養表對照 163 kcal/100g。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true,
    "ntu_kcal_100g": 163,
    "ntu_deviation": -0.102
   },
@@ -620,7 +681,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計；魚重為去頭尾內臟骨刺的可食部分。"
+   "note": "配比與成品重為估計；魚重為去頭尾內臟骨刺的可食部分。",
+   "role": "主菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_braised_dried_tofu_egg",
@@ -665,6 +732,13 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計（滷汁收乾後的成品重）；NTU 營養表對照 154 kcal/100g。",
+   "role": "主菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": true,
    "ntu_kcal_100g": 154,
    "ntu_deviation": -0.02
   },
@@ -708,7 +782,14 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計。"
+   "note": "配比與成品重為估計。",
+   "role": "主菜",
+   "method": "紅燒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "pot": true,
+   "in_class_avg": true
   },
   {
    "id": "hd_braised_chicken_leg",
@@ -751,6 +832,13 @@
     "ref": "配方與成品重為估計（見 note）"
    },
    "note": "配比與成品重為估計；雞腿用去皮的內建食材代表；NTU 營養表對照 205 kcal/100g。假設滷汁全部吃進去，鈉可能偏高。",
+   "role": "主菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": true,
    "ntu_kcal_100g": 205,
    "ntu_deviation": -0.069
   },
@@ -792,7 +880,14 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計。若把帶骨重全算會是約 64 kcal/100g，這道湯的數字取決於這兩個假設。"
+   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計。若把帶骨重全算會是約 64 kcal/100g，這道湯的數字取決於這兩個假設。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 65,
+   "passive": true,
+   "in_class_avg": true
   },
   {
    "id": "hd_napa_chicken_soup",
@@ -833,7 +928,14 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "食材克數來自國健署高齡食譜 #12（官方食譜只寫「加水淹過食材」）；水量 600g、成品重 1150g 是本設計的假設。若不加水（成品重 648g）會是約 64 kcal/100g。"
+   "note": "食材克數來自國健署高齡食譜 #12（官方食譜只寫「加水淹過食材」）；水量 600g、成品重 1150g 是本設計的假設。若不加水（成品重 648g）會是約 64 kcal/100g。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": true
   },
   {
    "id": "hd_seaweed_egg_soup",
@@ -875,7 +977,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計。"
+   "note": "配比與成品重為估計。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_garlic_water_spinach",
@@ -913,7 +1021,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_stirfry_luffa",
@@ -950,7 +1064,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。絲瓜出水多，成品重取約 85%。"
+   "note": "配比與成品重為估計（家常做法）。絲瓜出水多，成品重取約 85%。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_stirfry_bitter_melon",
@@ -989,7 +1109,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_garlic_spinach",
@@ -1027,7 +1153,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_garlic_broccoli",
@@ -1065,7 +1197,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_garlic_crown_daisy",
@@ -1102,7 +1240,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_garlic_asparagus",
@@ -1139,7 +1283,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_stirfry_cauliflower",
@@ -1177,7 +1327,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_chive_egg",
@@ -1218,7 +1374,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": true
   },
   {
    "id": "hd_luffa_egg",
@@ -1258,7 +1420,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_broccoli_shrimp",
@@ -1301,7 +1469,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_water_spinach_beef",
@@ -1342,7 +1516,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表。"
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_eggplant_pork",
@@ -1383,7 +1563,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。茄子吸油，用油量取較高。"
+   "note": "配比與成品重為估計（家常做法）。茄子吸油，用油量取較高。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_spinach_tofu",
@@ -1424,7 +1610,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "蛋豆菜",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_wood_ear_pork",
@@ -1468,7 +1660,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。"
+   "note": "配比與成品重為估計（家常做法）。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": true
   },
   {
    "id": "hd_three_cup_chicken",
@@ -1511,7 +1709,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。雞腿用去皮的內建食材代表；九層塔與米酒不計。"
+   "note": "配比與成品重為估計（家常做法）。雞腿用去皮的內建食材代表；九層塔與米酒不計。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 30,
+   "in_class_avg": true
   },
   {
    "id": "hd_pan_salmon",
@@ -1552,7 +1756,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。煎後水分流失，成品重取約 85%。"
+   "note": "配比與成品重為估計（家常做法）。煎後水分流失，成品重取約 85%。",
+   "role": "主菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_scallion_beef",
@@ -1594,7 +1804,13 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）。"
+   "note": "配比與成品重為估計（家常做法）。牛肉用牛腱代表（店家的牛肉片通常較肥，熱量可能偏低）。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": true
   },
   {
    "id": "hd_winter_melon_rib_soup",
@@ -1633,7 +1849,3654 @@
     "type": "assumption",
     "ref": "配方與成品重為估計（見 note）"
    },
-   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計（同蘿蔔排骨湯的假設）。"
+   "note": "小排帶骨 300g，假設可食部分 65%（195g）；成品重 1500g 與水量為估計（同蘿蔔排骨湯的假設）。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": true
+  },
+  {
+   "id": "hd_d12_001",
+   "name": "煎蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 230.8,
+    "protein_g": 13.6,
+    "carb_g": 1.9,
+    "fat_g": 19.1,
+    "fiber_g": 0.1,
+    "sat_fat_g": 4.9,
+    "sodium_mg": 568.7
+   },
+   "veg_share": 0,
+   "cooked_g": 187,
+   "components": [
+    "hd_d12_001",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_003",
+   "name": "蔥蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 206.9,
+    "protein_g": 12.1,
+    "carb_g": 2.6,
+    "fat_g": 16.8,
+    "fiber_g": 0.4,
+    "sat_fat_g": 4.3,
+    "sodium_mg": 499.4
+   },
+   "veg_share": 0.13,
+   "cooked_g": 213,
+   "components": [
+    "hd_d12_003",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_004",
+   "name": "荷包蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 219.2,
+    "protein_g": 13.8,
+    "carb_g": 1.7,
+    "fat_g": 17.8,
+    "fiber_g": 0,
+    "sat_fat_g": 4.7,
+    "sodium_mg": 363.8
+   },
+   "veg_share": 0,
+   "cooked_g": 184,
+   "components": [
+    "hd_d12_004",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_006",
+   "name": "煎魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 160.3,
+    "protein_g": 21.5,
+    "carb_g": 0.7,
+    "fat_g": 7.2,
+    "fiber_g": 0,
+    "sat_fat_g": 1.8,
+    "sodium_mg": 313.6
+   },
+   "veg_share": 0,
+   "cooked_g": 458,
+   "components": [
+    "hd_d12_006"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_007",
+   "name": "煎豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 145,
+    "protein_g": 10.7,
+    "carb_g": 3.2,
+    "fat_g": 10,
+    "fiber_g": 1.8,
+    "sat_fat_g": 1.7,
+    "sodium_mg": 384.8
+   },
+   "veg_share": 0,
+   "cooked_g": 371,
+   "components": [
+    "hd_d12_007",
+    "firm_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "煎",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_009",
+   "name": "空心菜炒蒜頭",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 81.9,
+    "protein_g": 2.3,
+    "carb_g": 6,
+    "fat_g": 5.7,
+    "fiber_g": 3.4,
+    "sat_fat_g": 1,
+    "sodium_mg": 411.1
+   },
+   "veg_share": 1,
+   "cooked_g": 274,
+   "components": [
+    "hd_d12_009",
+    "fx_water_spinach"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_010",
+   "name": "高麗菜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 100.9,
+    "protein_g": 5.4,
+    "carb_g": 5.3,
+    "fat_g": 6.8,
+    "fiber_g": 1.1,
+    "sat_fat_g": 1.6,
+    "sodium_mg": 307.6
+   },
+   "veg_share": 0.732,
+   "cooked_g": 465,
+   "components": [
+    "hd_d12_010",
+    "cabbage",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_011",
+   "name": "高麗菜炒肉絲",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 126.9,
+    "protein_g": 7.4,
+    "carb_g": 5.6,
+    "fat_g": 8.4,
+    "fiber_g": 1,
+    "sat_fat_g": 2.3,
+    "sodium_mg": 274
+   },
+   "veg_share": 0.732,
+   "cooked_g": 479,
+   "components": [
+    "hd_d12_011",
+    "cabbage",
+    "fx_pork_loin"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_012",
+   "name": "菠菜炒蛋",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 115.3,
+    "protein_g": 7.4,
+    "carb_g": 3.3,
+    "fat_g": 8.5,
+    "fiber_g": 1.6,
+    "sat_fat_g": 2.1,
+    "sodium_mg": 322.7
+   },
+   "veg_share": 0.634,
+   "cooked_g": 342,
+   "components": [
+    "hd_d12_012",
+    "spinach",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_013",
+   "name": "豆干炒芹菜",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 159.7,
+    "protein_g": 11.6,
+    "carb_g": 5,
+    "fat_g": 10.6,
+    "fiber_g": 3,
+    "sat_fat_g": 1.6,
+    "sodium_mg": 455
+   },
+   "veg_share": 0.467,
+   "cooked_g": 290,
+   "components": [
+    "hd_d12_013",
+    "fx_small_dried_tofu",
+    "celery"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_015",
+   "name": "炒青江菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 70.7,
+    "protein_g": 1.7,
+    "carb_g": 3.7,
+    "fat_g": 5.8,
+    "fiber_g": 1.6,
+    "sat_fat_g": 1,
+    "sodium_mg": 359.9
+   },
+   "veg_share": 1,
+   "cooked_g": 263,
+   "components": [
+    "hd_d12_015",
+    "fx_qingjiang"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "青菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_019",
+   "name": "絲瓜蛤蜊湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 9.3,
+    "protein_g": 0.8,
+    "carb_g": 1.6,
+    "fat_g": 0.1,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0,
+    "sodium_mg": 83
+   },
+   "veg_share": 0.845,
+   "cooked_g": 1356,
+   "components": [
+    "hd_d12_019",
+    "luffa",
+    "fx_clam"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "軟體動物",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_020",
+   "name": "味噌湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 17.5,
+    "protein_g": 1.3,
+    "carb_g": 1.6,
+    "fat_g": 0.6,
+    "fiber_g": 0.4,
+    "sat_fat_g": 0.1,
+    "sodium_mg": 174.8
+   },
+   "veg_share": 0.091,
+   "cooked_g": 948,
+   "components": [
+    "hd_d12_020",
+    "fx_soft_tofu"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_021",
+   "name": "蘿蔔湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 36.1,
+    "protein_g": 2.1,
+    "carb_g": 1,
+    "fat_g": 2.6,
+    "fiber_g": 0.2,
+    "sat_fat_g": 1,
+    "sodium_mg": 105.2
+   },
+   "veg_share": 0.652,
+   "cooked_g": 1790,
+   "components": [
+    "hd_d12_021",
+    "daikon",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_022",
+   "name": "排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 44.9,
+    "protein_g": 2.7,
+    "carb_g": 0.3,
+    "fat_g": 3.5,
+    "fiber_g": 0.1,
+    "sat_fat_g": 1.4,
+    "sodium_mg": 114.6
+   },
+   "veg_share": 0.133,
+   "cooked_g": 1524,
+   "components": [
+    "hd_d12_022",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_023",
+   "name": "蛋花湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 19.1,
+    "protein_g": 1.5,
+    "carb_g": 0.3,
+    "fat_g": 1.4,
+    "fiber_g": 0,
+    "sat_fat_g": 0.4,
+    "sodium_mg": 151.4
+   },
+   "veg_share": 0.091,
+   "cooked_g": 871,
+   "components": [
+    "hd_d12_023",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_024",
+   "name": "紫菜湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 17.5,
+    "protein_g": 1.4,
+    "carb_g": 0.5,
+    "fat_g": 1.2,
+    "fiber_g": 0.2,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 123.2
+   },
+   "veg_share": 0.026,
+   "cooked_g": 912,
+   "components": [
+    "hd_d12_024",
+    "egg",
+    "fx_soft_tofu"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "蛋",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_026",
+   "name": "滷白菜",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 48,
+    "protein_g": 3.5,
+    "carb_g": 3.5,
+    "fat_g": 2.5,
+    "fiber_g": 1.2,
+    "sat_fat_g": 0.4,
+    "sodium_mg": 234
+   },
+   "veg_share": 0.981,
+   "cooked_g": 974,
+   "components": [
+    "hd_d12_026",
+    "fx_napa_cabbage"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "甲殼類",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "青菜",
+   "method": "煮",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_033",
+   "name": "炸地瓜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 195.7,
+    "protein_g": 1.5,
+    "carb_g": 33,
+    "fat_g": 6.2,
+    "fiber_g": 3,
+    "sat_fat_g": 1.1,
+    "sodium_mg": 177.5
+   },
+   "veg_share": 0,
+   "cooked_g": 337,
+   "components": [
+    "hd_d12_033",
+    "sweet_potato"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "小菜",
+   "method": "炸",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 35,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_034",
+   "name": "炸豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 170.8,
+    "protein_g": 11.3,
+    "carb_g": 2.4,
+    "fat_g": 13,
+    "fiber_g": 1.9,
+    "sat_fat_g": 2.2,
+    "sodium_mg": 124.1
+   },
+   "veg_share": 0,
+   "cooked_g": 339,
+   "components": [
+    "hd_d12_034",
+    "firm_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "炸",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 30,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_037",
+   "name": "滷肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 168.6,
+    "protein_g": 6.3,
+    "carb_g": 2.9,
+    "fat_g": 14.5,
+    "fiber_g": 0.2,
+    "sat_fat_g": 5.2,
+    "sodium_mg": 322.2
+   },
+   "veg_share": 0.118,
+   "cooked_g": 786,
+   "components": [
+    "hd_d12_037",
+    "fx_pork_belly"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 65,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_039",
+   "name": "滷蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 57.8,
+    "protein_g": 5.1,
+    "carb_g": 2,
+    "fat_g": 3.3,
+    "fiber_g": 0.1,
+    "sat_fat_g": 1.2,
+    "sodium_mg": 311
+   },
+   "veg_share": 0,
+   "cooked_g": 812,
+   "components": [
+    "hd_d12_039",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_040",
+   "name": "滷豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 70.6,
+    "protein_g": 5.6,
+    "carb_g": 2.7,
+    "fat_g": 4.1,
+    "fiber_g": 1,
+    "sat_fat_g": 0.7,
+    "sodium_mg": 219.8
+   },
+   "veg_share": 0,
+   "cooked_g": 733,
+   "components": [
+    "hd_d12_040",
+    "firm_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_042",
+   "name": "滷豬腳",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 65.6,
+    "protein_g": 5.2,
+    "carb_g": 1.3,
+    "fat_g": 4.2,
+    "fiber_g": 0.1,
+    "sat_fat_g": 1.3,
+    "sodium_mg": 208.2
+   },
+   "veg_share": 0,
+   "cooked_g": 1734,
+   "components": [
+    "hd_d12_042",
+    "fx_pork_trotter"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 90,
+   "passive": true,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_043",
+   "name": "滷牛腱",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 56.4,
+    "protein_g": 6.7,
+    "carb_g": 1.6,
+    "fat_g": 2.3,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.9,
+    "sodium_mg": 231.2
+   },
+   "veg_share": 0,
+   "cooked_g": 1542,
+   "components": [
+    "hd_d12_043",
+    "beef_shank"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 90,
+   "passive": true,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_044",
+   "name": "滷海帶",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 16.8,
+    "protein_g": 0.8,
+    "carb_g": 3.3,
+    "fat_g": 0.1,
+    "fiber_g": 0.8,
+    "sat_fat_g": 0,
+    "sodium_mg": 327.3
+   },
+   "veg_share": 1,
+   "cooked_g": 509,
+   "components": [
+    "hd_d12_044"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "小菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_045",
+   "name": "滷筍絲",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 19.9,
+    "protein_g": 0.9,
+    "carb_g": 2.4,
+    "fat_g": 0.9,
+    "fiber_g": 0.6,
+    "sat_fat_g": 0.2,
+    "sodium_mg": 214
+   },
+   "veg_share": 1,
+   "cooked_g": 633,
+   "components": [
+    "hd_d12_045",
+    "bamboo_shoot"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "小菜",
+   "method": "滷",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 40,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_046",
+   "name": "蒸蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 48.3,
+    "protein_g": 4.2,
+    "carb_g": 0.6,
+    "fat_g": 3.3,
+    "fiber_g": 0,
+    "sat_fat_g": 1.1,
+    "sodium_mg": 206.8
+   },
+   "veg_share": 0,
+   "cooked_g": 462,
+   "components": [
+    "hd_d12_046",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "蛋",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_047",
+   "name": "清蒸魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 70.3,
+    "protein_g": 10.2,
+    "carb_g": 1.4,
+    "fat_g": 2.2,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.7,
+    "sodium_mg": 265.3
+   },
+   "veg_share": 0,
+   "cooked_g": 551,
+   "components": [
+    "hd_d12_047"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_048",
+   "name": "蒸肉餅",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 199.8,
+    "protein_g": 16.9,
+    "carb_g": 1.2,
+    "fat_g": 13.6,
+    "fiber_g": 0.1,
+    "sat_fat_g": 4.9,
+    "sodium_mg": 487.5
+   },
+   "veg_share": 0.034,
+   "cooked_g": 317,
+   "components": [
+    "hd_d12_048"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_049",
+   "name": "清蒸豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 61.3,
+    "protein_g": 5,
+    "carb_g": 2.4,
+    "fat_g": 3.5,
+    "fiber_g": 0.9,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 281.2
+   },
+   "veg_share": 0,
+   "cooked_g": 316,
+   "components": [
+    "hd_d12_049",
+    "fx_soft_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_050",
+   "name": "蒸蛤蜊",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 16.1,
+    "protein_g": 1.9,
+    "carb_g": 1.7,
+    "fat_g": 0.1,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 235.4
+   },
+   "veg_share": 0.118,
+   "cooked_g": 310,
+   "components": [
+    "hd_d12_050",
+    "fx_clam"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "軟體動物",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "蒸",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_053",
+   "name": "燉排骨",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 48.1,
+    "protein_g": 2.8,
+    "carb_g": 0.9,
+    "fat_g": 3.6,
+    "fiber_g": 0.2,
+    "sat_fat_g": 1.4,
+    "sodium_mg": 109.5
+   },
+   "veg_share": 0.536,
+   "cooked_g": 1742,
+   "components": [
+    "hd_d12_053",
+    "fx_pork_rib",
+    "daikon"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_054",
+   "name": "燉雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 38.5,
+    "protein_g": 4.5,
+    "carb_g": 0.3,
+    "fat_g": 2,
+    "fiber_g": 0,
+    "sat_fat_g": 0.5,
+    "sodium_mg": 116.2
+   },
+   "veg_share": 0.041,
+   "cooked_g": 1561,
+   "components": [
+    "hd_d12_054",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_055",
+   "name": "苦瓜排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 38.6,
+    "protein_g": 2.3,
+    "carb_g": 1,
+    "fat_g": 2.7,
+    "fiber_g": 0.6,
+    "sat_fat_g": 1.1,
+    "sodium_mg": 102.9
+   },
+   "veg_share": 0.642,
+   "cooked_g": 1683,
+   "components": [
+    "hd_d12_055",
+    "fx_bitter_melon",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_056",
+   "name": "香菇雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 42.4,
+    "protein_g": 4.5,
+    "carb_g": 1.2,
+    "fat_g": 2.1,
+    "fiber_g": 0.6,
+    "sat_fat_g": 0.5,
+    "sodium_mg": 108.4
+   },
+   "veg_share": 0.103,
+   "cooked_g": 1676,
+   "components": [
+    "hd_d12_056",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_057",
+   "name": "燉蘿蔔",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 27.7,
+    "protein_g": 2.8,
+    "carb_g": 1.2,
+    "fat_g": 1.2,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 125
+   },
+   "veg_share": 0.667,
+   "cooked_g": 1137,
+   "components": [
+    "hd_d12_057",
+    "daikon",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_058",
+   "name": "燉白菜",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 61.1,
+    "protein_g": 4.6,
+    "carb_g": 3.5,
+    "fat_g": 3.4,
+    "fiber_g": 1.2,
+    "sat_fat_g": 0.8,
+    "sodium_mg": 196.9
+   },
+   "veg_share": 0.866,
+   "cooked_g": 887,
+   "components": [
+    "hd_d12_058",
+    "fx_napa_cabbage",
+    "fx_pork_loin"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "青菜",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_062",
+   "name": "雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 22.6,
+    "protein_g": 2.6,
+    "carb_g": 0.2,
+    "fat_g": 1.2,
+    "fiber_g": 0,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 90.3
+   },
+   "veg_share": 0.057,
+   "cooked_g": 1933,
+   "components": [
+    "hd_d12_062",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 65,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_063",
+   "name": "魚湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 23.5,
+    "protein_g": 3.4,
+    "carb_g": 0.5,
+    "fat_g": 0.9,
+    "fiber_g": 0,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 96.3
+   },
+   "veg_share": 0.039,
+   "cooked_g": 1307,
+   "components": [
+    "hd_d12_063",
+    "tilapia_fillet"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_064",
+   "name": "筍子湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 28,
+    "protein_g": 1.8,
+    "carb_g": 0.7,
+    "fat_g": 1.9,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0.8,
+    "sodium_mg": 108.4
+   },
+   "veg_share": 0.658,
+   "cooked_g": 1581,
+   "components": [
+    "hd_d12_064",
+    "bamboo_shoot",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 55,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_068",
+   "name": "涼拌豆腐",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 63.3,
+    "protein_g": 5.5,
+    "carb_g": 2.8,
+    "fat_g": 3.3,
+    "fiber_g": 0.8,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 274.4
+   },
+   "veg_share": 0,
+   "cooked_g": 335,
+   "components": [
+    "hd_d12_068",
+    "fx_soft_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "魚",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "拌",
+   "serv": 3,
+   "tier": "🟢",
+   "mins": 5,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_069",
+   "name": "涼拌菠菜",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 33.6,
+    "protein_g": 2.5,
+    "carb_g": 3.6,
+    "fat_g": 1.4,
+    "fiber_g": 1.9,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 271.2
+   },
+   "veg_share": 1,
+   "cooked_g": 274,
+   "components": [
+    "hd_d12_069",
+    "spinach"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "青菜",
+   "method": "拌",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 15,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_070",
+   "name": "涼拌木耳",
+   "kind": "dish",
+   "class": "veg",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 61.9,
+    "protein_g": 1.5,
+    "carb_g": 10.9,
+    "fat_g": 1.7,
+    "fiber_g": 6,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 331.9
+   },
+   "veg_share": 1,
+   "cooked_g": 197,
+   "components": [
+    "hd_d12_070",
+    "wood_ear"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "小菜",
+   "method": "拌",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_072",
+   "name": "沙拉雞絲",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 134.5,
+    "protein_g": 13.3,
+    "carb_g": 3.6,
+    "fat_g": 7.1,
+    "fiber_g": 0.6,
+    "sat_fat_g": 1.2,
+    "sodium_mg": 202.2
+   },
+   "veg_share": 0.394,
+   "cooked_g": 367,
+   "components": [
+    "hd_d12_072",
+    "chicken_breast",
+    "onion",
+    "lettuce_a",
+    "fx_mayonnaise"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "拌",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_073",
+   "name": "烤雞腿",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 156,
+    "protein_g": 16.1,
+    "carb_g": 3.4,
+    "fat_g": 8.1,
+    "fiber_g": 0.2,
+    "sat_fat_g": 2.1,
+    "sodium_mg": 289.3
+   },
+   "veg_share": 0,
+   "cooked_g": 447,
+   "components": [
+    "hd_d12_073",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "烤",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 50,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_074",
+   "name": "烤魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 85.6,
+    "protein_g": 12.7,
+    "carb_g": 1,
+    "fat_g": 2.9,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.8,
+    "sodium_mg": 309.4
+   },
+   "veg_share": 0,
+   "cooked_g": 427,
+   "components": [
+    "hd_d12_074"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "烤",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 40,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_077",
+   "name": "烤鮭魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 225.6,
+    "protein_g": 24.5,
+    "carb_g": 0.8,
+    "fat_g": 13.2,
+    "fiber_g": 0.2,
+    "sat_fat_g": 3.4,
+    "sodium_mg": 355.4
+   },
+   "veg_share": 0,
+   "cooked_g": 255,
+   "components": [
+    "hd_d12_077",
+    "salmon"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "烤",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 25,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_078",
+   "name": "烤肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 330,
+    "protein_g": 18.4,
+    "carb_g": 6.6,
+    "fat_g": 25.1,
+    "fiber_g": 0.2,
+    "sat_fat_g": 9.5,
+    "sodium_mg": 584.6
+   },
+   "veg_share": 0,
+   "cooked_g": 490,
+   "components": [
+    "hd_d12_078",
+    "fx_pork_belly",
+    "fx_pork_collar"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "烤",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 45,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_079",
+   "name": "薑絲炒大腸",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 236.8,
+    "protein_g": 6.4,
+    "carb_g": 5.2,
+    "fat_g": 21.7,
+    "fiber_g": 0.5,
+    "sat_fat_g": 9.7,
+    "sodium_mg": 281.6
+   },
+   "veg_share": 0.143,
+   "cooked_g": 332,
+   "components": [
+    "hd_d12_079",
+    "fx_pork_large_intestine"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 60,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_081",
+   "name": "蒜泥白肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 412.2,
+    "protein_g": 16.7,
+    "carb_g": 4.8,
+    "fat_g": 36.1,
+    "fiber_g": 0.2,
+    "sat_fat_g": 13.8,
+    "sodium_mg": 334.3
+   },
+   "veg_share": 0,
+   "cooked_g": 282,
+   "components": [
+    "hd_d12_081",
+    "fx_pork_belly"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 25,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_082",
+   "name": "麻油雞",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 148.2,
+    "protein_g": 12,
+    "carb_g": 5.2,
+    "fat_g": 7.3,
+    "fiber_g": 0.2,
+    "sat_fat_g": 1.8,
+    "sodium_mg": 131.1
+   },
+   "veg_share": 0.107,
+   "cooked_g": 864,
+   "components": [
+    "hd_d12_082",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 40,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_083",
+   "name": "麻油炒腰花",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 135.4,
+    "protein_g": 16,
+    "carb_g": 3.6,
+    "fat_g": 6.3,
+    "fiber_g": 0.1,
+    "sat_fat_g": 1.4,
+    "sodium_mg": 317.6
+   },
+   "veg_share": 0.063,
+   "cooked_g": 283,
+   "components": [
+    "hd_d12_083",
+    "fx_pork_kidney"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "芝麻",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 35,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_084",
+   "name": "九層塔炒蛋",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 243,
+    "protein_g": 12.9,
+    "carb_g": 2.4,
+    "fat_g": 20.7,
+    "fiber_g": 0.5,
+    "sat_fat_g": 5,
+    "sodium_mg": 654.4
+   },
+   "veg_share": 0.118,
+   "cooked_g": 152,
+   "components": [
+    "hd_d12_084",
+    "egg"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "蛋"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "蛋豆菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 10,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_085",
+   "name": "九層塔炒蛤蜊",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 69.4,
+    "protein_g": 2.6,
+    "carb_g": 3.1,
+    "fat_g": 5.3,
+    "fiber_g": 0.4,
+    "sat_fat_g": 0.9,
+    "sodium_mg": 258.9
+   },
+   "veg_share": 0.272,
+   "cooked_g": 293,
+   "components": [
+    "hd_d12_085",
+    "fx_clam"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "軟體動物",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "炒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_087",
+   "name": "紅燒魚",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 77.9,
+    "protein_g": 7.4,
+    "carb_g": 2.4,
+    "fat_g": 4.3,
+    "fiber_g": 0.1,
+    "sat_fat_g": 1,
+    "sodium_mg": 219.3
+   },
+   "veg_share": 0.123,
+   "cooked_g": 638,
+   "components": [
+    "hd_d12_087",
+    "tilapia_fillet"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "紅燒",
+   "serv": 3,
+   "tier": "🟡",
+   "mins": 30,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_088",
+   "name": "紅燒肉",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 223,
+    "protein_g": 8.9,
+    "carb_g": 2.8,
+    "fat_g": 19.4,
+    "fiber_g": 0.2,
+    "sat_fat_g": 7.4,
+    "sodium_mg": 235.9
+   },
+   "veg_share": 0,
+   "cooked_g": 877,
+   "components": [
+    "hd_d12_088",
+    "fx_pork_belly"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "紅燒",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 70,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_090",
+   "name": "紅燒牛腩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 150.1,
+    "protein_g": 6.1,
+    "carb_g": 2.9,
+    "fat_g": 12.5,
+    "fiber_g": 0.5,
+    "sat_fat_g": 6,
+    "sodium_mg": 151.8
+   },
+   "veg_share": 0.425,
+   "cooked_g": 1308,
+   "components": [
+    "hd_d12_090",
+    "fx_beef_brisket",
+    "onion",
+    "tomato",
+    "fx_carrot"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "紅燒",
+   "serv": 3,
+   "tier": "🔴",
+   "mins": 90,
+   "passive": true,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_092",
+   "name": "剝皮辣椒雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 45.9,
+    "protein_g": 5.1,
+    "carb_g": 1.1,
+    "fat_g": 2.2,
+    "fiber_g": 0.5,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 63.6
+   },
+   "veg_share": 0.254,
+   "cooked_g": 2568,
+   "components": [
+    "hd_d12_092",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 65,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_093",
+   "name": "蒜頭雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 48.3,
+    "protein_g": 5.2,
+    "carb_g": 1.8,
+    "fat_g": 2.2,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 137.5
+   },
+   "veg_share": 0.208,
+   "cooked_g": 2605,
+   "components": [
+    "hd_d12_093",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 65,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_094",
+   "name": "山藥紅棗雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 51.8,
+    "protein_g": 4.7,
+    "carb_g": 3.7,
+    "fat_g": 1.9,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0.5,
+    "sodium_mg": 128.4
+   },
+   "veg_share": 0.04,
+   "cooked_g": 2821,
+   "components": [
+    "hd_d12_094",
+    "chicken_thigh"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 70,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_095",
+   "name": "蓮藕花生排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 77.3,
+    "protein_g": 4.2,
+    "carb_g": 3.2,
+    "fat_g": 5.3,
+    "fiber_g": 0.8,
+    "sat_fat_g": 1.9,
+    "sodium_mg": 117.8
+   },
+   "veg_share": 0.032,
+   "cooked_g": 3028,
+   "components": [
+    "hd_d12_095",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "花生",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 90,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_096",
+   "name": "四神排骨湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 74.3,
+    "protein_g": 3.9,
+    "carb_g": 4.9,
+    "fat_g": 4.2,
+    "fiber_g": 1,
+    "sat_fat_g": 1.7,
+    "sodium_mg": 137.3
+   },
+   "veg_share": 0.071,
+   "cooked_g": 2632,
+   "components": [
+    "hd_d12_096",
+    "fx_pork_rib"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 90,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_098",
+   "name": "苦瓜鳳梨雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 45.1,
+    "protein_g": 4.4,
+    "carb_g": 2.4,
+    "fat_g": 1.9,
+    "fiber_g": 0.6,
+    "sat_fat_g": 0.5,
+    "sodium_mg": 84.5
+   },
+   "veg_share": 0.411,
+   "cooked_g": 2822,
+   "components": [
+    "hd_d12_098",
+    "chicken_thigh",
+    "fx_bitter_melon"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 70,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_102",
+   "name": "花生豬腳湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 69,
+    "protein_g": 4.9,
+    "carb_g": 1.2,
+    "fat_g": 5.1,
+    "fiber_g": 0.4,
+    "sat_fat_g": 1.4,
+    "sodium_mg": 127
+   },
+   "veg_share": 0.043,
+   "cooked_g": 2879,
+   "components": [
+    "hd_d12_102",
+    "fx_pork_trotter"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "花生",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 105,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_103",
+   "name": "瓜仔雞湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 43.5,
+    "protein_g": 5,
+    "carb_g": 0.5,
+    "fat_g": 2.2,
+    "fiber_g": 0.1,
+    "sat_fat_g": 0.6,
+    "sodium_mg": 63.2
+   },
+   "veg_share": 0.197,
+   "cooked_g": 2550,
+   "components": [
+    "hd_d12_103",
+    "chicken_thigh",
+    "cucumber"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 60,
+   "passive": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_104",
+   "name": "燉蹄膀",
+   "kind": "dish",
+   "class": "meat",
+   "seasons": [
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 105.7,
+    "protein_g": 5.1,
+    "carb_g": 2.4,
+    "fat_g": 8.2,
+    "fiber_g": 0.2,
+    "sat_fat_g": 3,
+    "sodium_mg": 260.2
+   },
+   "veg_share": 0.13,
+   "cooked_g": 2193,
+   "components": [
+    "hd_d12_104",
+    "fx_pork_hock"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 120,
+   "passive": true,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_106",
+   "name": "馬鈴薯燉肉",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 96.5,
+    "protein_g": 6.7,
+    "carb_g": 5.6,
+    "fat_g": 5,
+    "fiber_g": 0.6,
+    "sat_fat_g": 1.8,
+    "sodium_mg": 197.5
+   },
+   "veg_share": 0.307,
+   "cooked_g": 2258,
+   "components": [
+    "hd_d12_106",
+    "fx_pork_collar",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "燉",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_107",
+   "name": "冬瓜蛤蜊湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn"
+   ],
+   "per_100g": {
+    "kcal": 6.3,
+    "protein_g": 0.5,
+    "carb_g": 1,
+    "fat_g": 0.1,
+    "fiber_g": 0.3,
+    "sat_fat_g": 0,
+    "sodium_mg": 100.8
+   },
+   "veg_share": 0.836,
+   "cooked_g": 2523,
+   "components": [
+    "hd_d12_107",
+    "fx_clam"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "軟體動物",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🟡",
+   "mins": 25,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_109",
+   "name": "味噌豆腐鮮魚湯",
+   "kind": "soup",
+   "class": null,
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 32.3,
+    "protein_g": 3.6,
+    "carb_g": 2,
+    "fat_g": 1.1,
+    "fiber_g": 0.4,
+    "sat_fat_g": 0.3,
+    "sodium_mg": 150.4
+   },
+   "veg_share": 0.153,
+   "cooked_g": 2062,
+   "components": [
+    "hd_d12_109",
+    "tilapia_fillet",
+    "fx_soft_tofu",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "ml",
+   "allergen_tags": [
+    "未確認",
+    "魚",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "湯",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🟡",
+   "mins": 20,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_110",
+   "name": "雞肉咖哩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 93,
+    "protein_g": 6.2,
+    "carb_g": 6.1,
+    "fat_g": 4.7,
+    "fiber_g": 0.8,
+    "sat_fat_g": 1.7,
+    "sodium_mg": 228.3
+   },
+   "veg_share": 0.412,
+   "cooked_g": 1849,
+   "components": [
+    "hd_d12_110",
+    "chicken_thigh",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_111",
+   "name": "豬肉咖哩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 104.5,
+    "protein_g": 5.9,
+    "carb_g": 6.1,
+    "fat_g": 6.1,
+    "fiber_g": 0.8,
+    "sat_fat_g": 2.5,
+    "sodium_mg": 223.9
+   },
+   "veg_share": 0.412,
+   "cooked_g": 1849,
+   "components": [
+    "hd_d12_111",
+    "fx_pork_collar",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 45,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_112",
+   "name": "牛肉咖哩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 131.2,
+    "protein_g": 4.6,
+    "carb_g": 5.8,
+    "fat_g": 9.9,
+    "fiber_g": 0.7,
+    "sat_fat_g": 4.9,
+    "sodium_mg": 214.6
+   },
+   "veg_share": 0.412,
+   "cooked_g": 1944,
+   "components": [
+    "hd_d12_112",
+    "fx_beef_brisket",
+    "fx_potato",
+    "fx_carrot",
+    "onion"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 70,
+   "passive": true,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_113",
+   "name": "蔬菜咖哩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 70.1,
+    "protein_g": 2.5,
+    "carb_g": 7.8,
+    "fat_g": 3.3,
+    "fiber_g": 1.4,
+    "sat_fat_g": 1.3,
+    "sodium_mg": 236.4
+   },
+   "veg_share": 0.733,
+   "cooked_g": 1659,
+   "components": [
+    "hd_d12_113",
+    "fx_potato",
+    "fx_carrot",
+    "onion",
+    "broccoli",
+    "firm_tofu"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "麩質",
+    "黃豆"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 35,
+   "pot": true,
+   "in_class_avg": false
+  },
+  {
+   "id": "hd_d12_114",
+   "name": "海鮮咖哩",
+   "kind": "dish",
+   "class": "mixed",
+   "seasons": [
+    "spring",
+    "summer",
+    "autumn",
+    "winter"
+   ],
+   "per_100g": {
+    "kcal": 69.4,
+    "protein_g": 4.1,
+    "carb_g": 7,
+    "fat_g": 2.9,
+    "fiber_g": 0.8,
+    "sat_fat_g": 1.3,
+    "sodium_mg": 299.7
+   },
+   "veg_share": 0.429,
+   "cooked_g": 1564,
+   "components": [
+    "hd_d12_114",
+    "shrimp",
+    "fx_cuttlefish",
+    "fx_potato",
+    "onion",
+    "fx_carrot"
+   ],
+   "state": "cooked",
+   "unit": "g",
+   "allergen_tags": [
+    "乳製品",
+    "未確認",
+    "甲殼類",
+    "軟體動物",
+    "麩質"
+   ],
+   "vegan": false,
+   "lacto_ovo": false,
+   "composite": true,
+   "source": {
+    "type": "assumption",
+    "ref": "配方與成品重為估計（見 note）"
+   },
+   "note": "家常菜配方草稿（人工整理自台灣家常做法）：recipe 的 g 已折成可食重量（骨頭、殼不計；蛤蜊 25%、排骨與小排 65%、帶骨雞腿 70%、豬腳 55%），cooked_g 是生料總重乘上烹飪法係數的估計值（含湯的水量）；沒有做 NTU 對照。調料酒、糖、醋、醬油膏、辣油依 B5.1 新增理由補缺值。",
+   "role": "主菜",
+   "method": "煮",
+   "serv": 4,
+   "tier": "🔴",
+   "mins": 35,
+   "pot": true,
+   "in_class_avg": false
   }
  ],
  "seasonings": [
@@ -1831,6 +5694,231 @@
     "sodium_mg": 0
    },
    "field_sources": {},
+   "note": null
+  },
+  {
+   "id": "hs_rice_wine",
+   "name": "米酒",
+   "source": {
+    "type": "tfda",
+    "ref": "R9900201",
+    "note": "陳年紹興酒當米酒用；熱量衛福部有值（含酒精熱量）"
+   },
+   "per_100g": {
+    "kcal": 133.1,
+    "protein_g": 1.8,
+    "carb_g": 19.1,
+    "fat_g": 0,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 2.6
+   },
+   "field_sources": {
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "酒類",
+     "note": "衛福部此欄無資料；酒類脂肪為 0，膳食纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sat_fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "酒類",
+     "note": "衛福部此欄無資料；脂肪為 0，飽和脂肪不可能高於總脂肪，填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
+   "note": null
+  },
+  {
+   "id": "hs_soy_paste",
+   "name": "醬油膏",
+   "source": {
+    "type": "tfda",
+    "ref": "P0700701"
+   },
+   "per_100g": {
+    "kcal": 103.4,
+    "protein_g": 6.8,
+    "carb_g": 19,
+    "fat_g": 0,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 4050
+   },
+   "field_sources": {
+    "fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；熱量扣掉蛋白質與碳水後只剩 0.2 kcal，脂肪約 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；低熱量調味料纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sat_fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；脂肪約 0，飽和脂肪填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
+   "note": null
+  },
+  {
+   "id": "hs_chili_oil",
+   "name": "辣油",
+   "source": {
+    "type": "tfda",
+    "ref": "P0900101",
+    "note": "紅辣椒油"
+   },
+   "per_100g": {
+    "kcal": 898.9,
+    "protein_g": 0,
+    "carb_g": 0.1,
+    "fat_g": 99.8,
+    "fiber_g": 0,
+    "sat_fat_g": 16.1,
+    "sodium_mg": 0.3
+   },
+   "field_sources": {
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味油",
+     "note": "衛福部此欄無資料；純油類調味料纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
+   "note": null
+  },
+  {
+   "id": "hs_rock_sugar",
+   "name": "冰糖",
+   "source": {
+    "type": "tfda",
+    "ref": "N0100201"
+   },
+   "per_100g": {
+    "kcal": 386.6,
+    "protein_g": 0,
+    "carb_g": 99.9,
+    "fat_g": 0,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 0.6
+   },
+   "field_sources": {
+    "protein_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類蛋白質填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類脂肪填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sat_fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類飽和脂肪填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
+   "note": null
+  },
+  {
+   "id": "hs_honey",
+   "name": "蜂蜜",
+   "source": {
+    "type": "tfda",
+    "ref": "N0700101",
+    "note": "冬蜜"
+   },
+   "per_100g": {
+    "kcal": 315.2,
+    "protein_g": 0.1,
+    "carb_g": 81.5,
+    "fat_g": 0.1,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 0
+   },
+   "field_sources": {
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sat_fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類飽和脂肪填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sodium_mg": {
+     "type": "derived",
+     "value": 0,
+     "ref": "糖類",
+     "note": "衛福部此欄無資料；糖類鈉填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
+   "note": null
+  },
+  {
+   "id": "hs_rice_vinegar",
+   "name": "米醋",
+   "source": {
+    "type": "tfda",
+    "ref": "P0600101"
+   },
+   "per_100g": {
+    "kcal": 9.7,
+    "protein_g": 0,
+    "carb_g": 2.4,
+    "fat_g": 0,
+    "fiber_g": 0,
+    "sat_fat_g": 0,
+    "sodium_mg": 8
+   },
+   "field_sources": {
+    "protein_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；低熱量調味料蛋白質填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；熱量扣掉碳水後只剩 0.1 kcal，脂肪約 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "fiber_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；低熱量調味料纖維填 0（章程 B5.1，2026-10-11 新增理由）"
+    },
+    "sat_fat_g": {
+     "type": "derived",
+     "value": 0,
+     "ref": "調味料（低熱量）",
+     "note": "衛福部此欄無資料；脂肪約 0，飽和脂肪填 0（章程 B5.1，2026-10-11 新增理由）"
+    }
+   },
    "note": null
   }
  ]
