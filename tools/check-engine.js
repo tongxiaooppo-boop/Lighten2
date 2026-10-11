@@ -463,8 +463,8 @@ async function main() {
 
     // 新自煮推薦：用油由 cook.js 依做法與用油習慣算，煎蛋白質 5g、炒蔬菜 5g；少油習慣減半；推薦記下來的 MealContent 帶實際採用的克數
     const cands = M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: cookProfile(), favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
-    const c1 = cands.find((c) => c.id === "cook|box|chicken_breast|sweet_potato|broccoli+cabbage");
-    check(!!c1, "測試前提：有候選 cook|box|chicken_breast|sweet_potato|broccoli+cabbage");
+    const c1 = cands.find((c) => c.id === "cook|box|chicken_breast|sweet_potato|broccoli+cabbage+fx_carrot");
+    check(!!c1, "測試前提：有候選 cook|box|chicken_breast|sweet_potato|broccoli+cabbage+fx_carrot");
     const panKey = [[1, "pan"], "half"];
     const fin = (habit) => M.cookRec.cookRecFinalize(Object.assign({}, c1, { cook_variant: panKey, source_pref: "cook_full" }), { catalog: cookCatalog, profile: cookProfile(), oilHabit: habit });
     const fn = fin("normal"), fl = fin("less");

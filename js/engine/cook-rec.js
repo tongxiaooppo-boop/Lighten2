@@ -9,7 +9,7 @@
 // 顯示欄位（鈉、飽和脂肪）不在這裡讀，只在 finalize 時從 contentTotals 原樣帶出（章程 C4.14）。
 
 import {
-  COOK_DEFAULTS, COOK_POOL_MIN, COOK_ENTRY_LABELS, COOK_METHODS, RANK_TO_TIER, isQuickTier,
+  COOK_DEFAULTS, COOK_POOL_MIN, COOK_ENTRY_LABELS, COOK_METHODS, COOK_METHOD_PREFER, RANK_TO_TIER, isQuickTier,
 } from "../core/config.js";
 import { seasonOfDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
@@ -24,7 +24,7 @@ const PROTEIN_METHOD_PREF = ["boil", "steam", "pan"];
 const VEG_METHOD_PREF = ["boil", "stir"];
 const READY_METHOD = "cold";
 // 各入口的候選上限（池子照順序截斷：☆ 在前）
-const CAP = { protein: 9, carb: 8, veg: 11, main: 24, homeVeg: 12, soup: 6, fruit: 8 };
+const CAP = { protein: 9, carb: 8, veg: 9, main: 24, homeVeg: 12, soup: 6, fruit: 8 };
 const ENTRY_SLOTS = { box: ["lunch", "dinner"], plate: ["breakfast"], bowl: ["breakfast", "afternoon_tea", "snack"], home: ["lunch", "dinner"] };
 
 // 候選取最貼近預算的份量時，用到的營養欄位（只有這五個；顯示欄位不在這裡讀）
@@ -85,9 +85,12 @@ function pickMethod(entryOpt, prefs, allowed, asVeg, quick) {
 function proteinMethods(e, entry, quick) {
   const allowed = boxProteinMethods(entry);
   if (e.ready) return allowed.indexOf(READY_METHOD) !== -1 ? [READY_METHOD] : [];
-  const first = pickMethod(e, PROTEIN_METHOD_PREF, allowed, false, quick);
+  const own = COOK_METHOD_PREFER[e.uid];
+  const first = pickMethod(e, own ? [own].concat(PROTEIN_METHOD_PREF) : PROTEIN_METHOD_PREF, allowed, false, quick);
   if (!first) return [];
-  return first !== "pan" && allowed.indexOf("pan") !== -1 && !cookMethodProblem(e, "pan", false, quick) ? [first, "pan"] : [first];
+  // 第二個選項：偏好的是煎時給原本的偏好做法，其餘給煎（份量與熱量有第二種選擇）
+  const second = first === "pan" ? pickMethod(e, PROTEIN_METHOD_PREF.filter(function (m) { return m !== "pan"; }), allowed, false, quick) : (allowed.indexOf("pan") !== -1 && !cookMethodProblem(e, "pan", false, quick) ? "pan" : null);
+  return second ? [first, second] : [first];
 }
 
 // 葉菜（炒青菜）先炒，其餘先燙
@@ -154,7 +157,8 @@ function boxCandidates(ctx, entry, pools, quick, out) {
   const carbs = [null].concat(pools.carb);
   // 早餐盤：蛋可以再配起司片或火腿（吐司夾蛋）；餐盒只有單一蛋白質
   const extras = plate ? pools.protein.filter(function (u) { return u === "fx_cheese_slice" || u === "fx_ham"; }) : [];
-  const vegSets = entry === "plate" ? [[]].concat(vegs.map(function (u) { return [u]; })) : pairs(vegs);
+  // 餐盒 3 種蔬菜（跟自己選的「建議 3 種」一致，decisions #156）；早餐盤 0–1 種
+  const vegSets = entry === "plate" ? [[]].concat(vegs.map(function (u) { return [u]; })) : triples(vegs);
 
   const pv = function (uid, pamt, m) { return memo(ctx.cache, "p|" + entry + "|" + uid + "|" + pamt + "|" + m, function () { return boxVec(ctx, entry, { pamt: pamt, ps: [psOf(uid, m, pamt)] }); }); };
   const cv = function (uid, amt) { return memo(ctx.cache, "c|" + uid + "|" + amt, function () { return boxVec(ctx, entry, { carb: uid, carbAmt: amt }); }); };
@@ -203,9 +207,9 @@ function psOf(uid, m, pamt) {
   return uid === "egg" ? { uid: uid, m: m, n: pamt === 1 ? 2 : 3 } : { uid: uid, m: m, n: 1 };
 }
 
-function pairs(list) {
+function triples(list) {
   const out = [];
-  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) out.push([list[i], list[j]]);
+  for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) for (let k = j + 1; k < list.length; k++) out.push([list[i], list[j], list[k]]);
   return out;
 }
 

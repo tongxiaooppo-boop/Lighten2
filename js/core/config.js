@@ -221,5 +221,10 @@ export const AUTO_LOW_BUDGET_KCAL = 250;
 export const AUTO_LIGHT_SLOTS = ["afternoon_tea", "snack"];
 // 新自煮推薦的零件角色：哪些算「主蛋白質／主菜」（同一天不重複）、近期降權的權重（蛋白質與主菜最重，蔬菜較輕；沒列的角色不降權）
 export const COOK_MAIN_ROLES = ["protein", "dish"];
-export const COOK_PART_RECENCY = { protein: 20, dish: 15, veg: 10 };
+// 少數食材自己的蛋白質做法偏好（餐盒、早餐盤；其餘照全域偏好序 水煮→蒸→煎）
+export const COOK_METHOD_PREFER = { salmon: "pan", shrimp: "boil" };
+// 碳水也降權（2026-10-11）：不然纖維高的玉米粒每天都贏（decisions #156）
+export const COOK_PART_RECENCY = { protein: 20, dish: 15, veg: 10, carb: 10 };
+// 自煮一餐的纖維加分上限＝這一餐配額 × 每千大卡 14g（週缺口是「每天差幾克」，不能拿來當一餐的上限）
+export const FIBER_G_PER_1000KCAL = 14;
 export const COOK_POOL_MIN = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };

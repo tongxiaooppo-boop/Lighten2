@@ -67,7 +67,9 @@ export function cookOptions(catalog) {
     if (BUILTIN_EXCLUDE.indexOf(id) !== -1) return;
     const b = builtin[id], it = byId[id];
     if (!it) return;
-    const e = entryOf(it, { g: b.serving_g || 100, rank: b.prep_tier === "🔴" ? 2 : b.prep_tier === "🟢" ? 0 : 1, rc: b.requires_cooking !== false });
+    // 牛腱、牛腩這類只能滷燉的內建蛋白質，跟代換表分層品項一樣標 only: braise（原本漏了，餐盒可以選牛腱煎）
+    const braiseB = b.axis === "protein" && BRAISE_ONLY.test(it.name);
+    const e = entryOf(it, { g: b.serving_g || 100, rank: braiseB ? 2 : b.prep_tier === "🔴" ? 2 : b.prep_tier === "🟢" ? 0 : 1, rc: b.requires_cooking !== false, only: braiseB ? ["braise"] : null });
     seen[id] = true;
     if (b.axis === "protein") out.protein.push(e);
     else if (b.axis === "staple") { if (!WHOLE_CARB_EXCLUDE.test(it.name)) out.carb.push(e); }

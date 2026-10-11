@@ -12,7 +12,7 @@
 
 import { SLOTS, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
 import {
-  LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G, QUICK_MAX_TIER_RANK, isQuickTier, COOK_MAIN_ROLES, COOK_PART_RECENCY,
+  LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G, QUICK_MAX_TIER_RANK, isQuickTier, COOK_MAIN_ROLES, COOK_PART_RECENCY, FIBER_G_PER_1000KCAL,
   AUTO_TOLERANCE, AUTO_TOLERANCE_LOW_BUDGET, AUTO_LOW_BUDGET_KCAL, AUTO_LIGHT_SLOTS,
 } from "../core/config.js";
 import { round1 } from "../core/num.js";
@@ -102,9 +102,14 @@ function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
   }
   // 蛋白質/纖維未知（null）的組合拿不到這兩項加分，不猜它有多少
   if (constraints.proteinGapToday > 0 && combo.protein_g != null) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
-  if (constraints.fiberGapThisWeek > 0 && combo.fiber_g != null) s += Math.min(combo.fiber_g, constraints.fiberGapThisWeek) * 2;
-  if (budget > 0) {
-    const eff = achievableNutrition(combo, budget, maxScale);
+  const eff = budget > 0 ? achievableNutrition(combo, budget, maxScale) : null;
+  if (constraints.fiberGapThisWeek > 0) {
+    // 自煮：用挑出來的份量的纖維，上限是這一餐配額的份（其他來源照舊）
+    const fiber = combo.is_cook_form && eff ? eff.fiber_g : combo.fiber_g;
+    const cap = combo.is_cook_form && budget > 0 ? Math.min(constraints.fiberGapThisWeek, budget * FIBER_G_PER_1000KCAL / 1000) : constraints.fiberGapThisWeek;
+    if (fiber != null) s += Math.min(fiber, cap) * 2;
+  }
+  if (eff) {
     s -= Math.abs(budget / eff.kcal - 1) * 50; // 用「縮放後貼近預算的實際熱量」評分，不是天然份量的熱量
   }
   return s;
