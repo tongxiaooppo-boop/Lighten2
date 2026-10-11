@@ -91,7 +91,7 @@ function renderFoods() {
 function itemOf(s, uid) {
   const rec = s.records.filter(function (r) { return r.id === uid; })[0];
   const ing = s.ingRecords.filter(function (r) { return r.id === uid; })[0];
-  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || (rec ? fromCustomFood(rec) : null) || (ing ? ingredientItem(ing, s.tfdaLookup) || { name: ing.name } : null);
+  return s.catalog.productsByUid[uid] || s.catalog.foodTree.byId[uid] || (s.catalog.homeDishes && s.catalog.homeDishes.byId[uid]) || (rec ? fromCustomFood(rec) : null) || (ing ? ingredientItem(ing, s.tfdaLookup) || { name: ing.name } : null);
 }
 
 // 重讀期間 #foods-body 標 data-loading（測試等它消失才操作，避免點到重讀前的舊畫面；切片 8b-2）
@@ -111,7 +111,7 @@ async function setDisliked(uid, on, also) {
   const wasFavorite = on && !!foodsFavSet(s)[uid];
   const label = item ? item.name : uid;
   // 分層品項寫 food_tree（比對只看 key，decisions #115）
-  const type = s.catalog.foodTree.byId[uid] && !s.catalog.productsByUid[uid] ? "food_tree" : "item";
+  const type = (s.catalog.foodTree.byId[uid] || (s.catalog.homeDishes && s.catalog.homeDishes.byId[uid])) && !s.catalog.productsByUid[uid] ? "food_tree" : "item";
   let list;
   try {
     list = on ? await addDislikedIngredient({ type: type, key: uid, label: label }) : await removeDislikedIngredient(uid);

@@ -40,8 +40,8 @@ export function favoriteButtonHtml(s, uid) {
     : '<button type="button" class="secondary-btn" data-foods-favorite="' + escapeHtml(uid) + '"' + dis + ">常吃</button>";
 }
 
-export function favoriteNoteHtml() {
-  return '<p class="food-detail-line">' + escapeHtml(favoriteEffectText()) + "</p>";
+export function favoriteNoteHtml(item) {
+  return '<p class="food-detail-line">' + escapeHtml(favoriteEffectText(item)) + "</p>";
 }
 
 // 數字照資料原樣（跟「內建目前的數值」、選擇器一致，不另外進位）
@@ -97,7 +97,8 @@ export function dislikeButtonHtml(s, uid) {
 
 export function dislikeNotesHtml(s, uid) {
   const disliked = dislikedKeys(s).indexOf(uid) !== -1;
-  return favoriteNoteHtml() + (disliked ? "" : '<p class="food-detail-line">「不吃」只擋這一項。</p>') +
+  const item = (s.catalog.foodTree && s.catalog.foodTree.byId && s.catalog.foodTree.byId[uid]) || (s.catalog.homeDishes && s.catalog.homeDishes.byId && s.catalog.homeDishes.byId[uid]) || null;
+  return favoriteNoteHtml(item) + (disliked ? "" : '<p class="food-detail-line">「不吃」只擋這一項。</p>') +
     (s.profile ? "" : '<p class="food-detail-line">' + escapeHtml(NO_PROFILE_NOTE) + "</p>");
 }
 

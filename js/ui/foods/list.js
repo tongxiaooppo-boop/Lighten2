@@ -22,6 +22,7 @@ import {
 import { splitFavorites } from "../../engine/picker.js";
 import { cookSubtabHtml, drinksTreeHtml, treeItemsOf, treeRow, treeDetailHtml, treeSearchEntries, treeFavorites, treeFavoriteEntry } from "./tree.js";
 import { drinksIngredientsHtml, ingredientFavorites, ingredientSearchEntries, ingredientDetailHtml } from "./ingredients.js";
+import { homeDishSearchEntries, homeDishDetailHtml } from "./home-dishes.js";
 
 export const FOODS_SUBTABS = ["convenience", "delivery", "cook", "drinks"];
 export const FOODS_SUBTAB_LABELS = { convenience: "超商", delivery: "外食", cook: "自煮", drinks: "飲品・水果" };
@@ -214,6 +215,9 @@ function searchEntries(s) {
   ingredientSearchEntries(s, FOODS_SUBTAB_LABELS).forEach(function (e) {
     out.push(Object.assign(e, { rank: 3, status: e.archived ? ["已刪除"] : fav[e.uid] ? ["常吃"] : [] }));
   });
+  homeDishSearchEntries(s, FOODS_SUBTAB_LABELS).forEach(function (e) {
+    out.push(Object.assign(e, { rank: 1, status: keys.indexOf(e.uid) !== -1 ? ["你標了不吃"] : fav[e.uid] ? ["常吃"] : [] }));
+  });
   customFoodsNewestFirst(s.records).forEach(function (r) {
     const sub = foodsWhereOf(fromCustomFood(r));
     out.push({ uid: r.id, name: r.name, sub: sub, rank: 2, where: FOODS_SUBTAB_LABELS[sub] + " · 我的品項", status: r.archived === true ? ["已刪除"] : fav[r.id] ? ["常吃"] : [], rec: r });
@@ -231,7 +235,7 @@ export function foodsSearchHtml(s, otherHits) {
   return '<section class="foods-group">' + hits.map(function (e) {
     const meta = [e.where].concat(e.matchedAlias ? ["別名：" + e.matchedAlias] : [], e.status).join(" · ");
     return foodsRowHtml(s, { uid: e.uid, name: e.name, meta: meta, reason: null,
-      detail: function () { return e.rec ? customDetailHtml(s, e.rec) : e.ing ? ingredientDetailHtml(s, e.ing) : e.tree ? treeDetailHtml(s, e.tree) : builtinDetailHtml(s, e.item); } });
+      detail: function () { return e.rec ? customDetailHtml(s, e.rec) : e.ing ? ingredientDetailHtml(s, e.ing) : e.home ? homeDishDetailHtml(s, e.home) : e.tree ? treeDetailHtml(s, e.tree) : builtinDetailHtml(s, e.item); } });
   }).join("") + "</section>";
 }
 

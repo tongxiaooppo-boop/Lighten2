@@ -213,11 +213,31 @@ async function snapPool() {
   pool.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)).forEach((c) => {
     emit("pool", c.id,
       "kcal=" + n(c.kcal) + " P=" + n(c.protein_g) + " C=" + n(c.carb_g) + " F=" + n(c.fat_g) + " Fb=" + n(c.fiber_g) +
-      (c.is_composed ? " primary=" + n(c.primary_kcal) + "/" + n(c.primary_protein_g) + "/" + n(c.primary_carb_g) + "/" + n(c.primary_fat_g) + "/" + n(c.primary_fiber_g) : "") +
-      " tier=" + c.tier + " src=" + (c.is_composed ? "cook" : c.is_convenience ? "conv" : "deliv") +
+      " tier=" + c.tier + " src=" + (c.is_convenience ? "conv" : "deliv") +
       " slots=" + (c.valid_slots || []).join(",") + " allergen=" + (c.allergen_tags || []).join(",") +
       " diet=" + stable(c.diet_tag_sets));
   });
+  // 新自煮候選（cook-rec.js）：每種使用者設定一份摘要——各入口的候選數，與每 150 個取一個 id（資料或規則一改，差異就看得到）
+  const settings = {
+    "預設": { profile: {}, fav: [] },
+    "☆一種蛋白質": { profile: {}, fav: ["salmon"] },
+    "☆四道主菜": { profile: {}, fav: ["hd_tomato_egg", "hd_three_cup_chicken", "hd_pan_salmon", "hd_scallion_beef"] },
+    "蛋奶素": { profile: { diet_restriction: "蛋奶素" }, fav: [] },
+    "全素": { profile: { diet_restriction: "全素" }, fav: [] },
+    "甲殼類過敏": { profile: { allergens: ["甲殼類"] }, fav: [] },
+    "不吃雞胸肉": { profile: { disliked_ingredients: [{ type: "food_tree", key: "chicken_breast", label: "雞胸肉" }] }, fav: [] },
+    "少油": { profile: { oil_habit: "less" }, fav: [] },
+  };
+  for (const name of Object.keys(settings)) {
+    const cands = await A.cookPool(settings[name].profile, settings[name].fav, NOW_DAY);
+    const sorted = cands.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    ["box", "plate", "bowl", "home"].forEach((entry) => {
+      const list = sorted.filter((c) => c.entry === entry);
+      const quickOnly = list.filter((c) => c.quick_pool_only).length;
+      emit("pool", "cook/" + name + "/" + entry, "count=" + list.length + " quickPoolOnly=" + quickOnly + " quickOk=" + list.filter((c) => c.tier_rank <= 1).length +
+        " sample=" + list.filter((c, i) => i % 150 === 0).map((c) => c.id.replace(/^cook|/, "")).join(" ; "));
+    });
+  }
 }
 
 // check-engine 同一組設定矩陣：直接呼叫推薦，每個時段同一個配額
@@ -295,8 +315,8 @@ async function snapToday() {
 
   // 倒讚、喜歡、近期顯示過：目標組合由 base 的結果推導（資料改了就跟著變，差異報告看得到）
   const chosen = SLOTS.map((s) => baseRecs[s]).filter((r) => r && !r.lowBudget).map((r) => r.id);
-  const pool = await A.pool();
-  const altDinner = pool.filter((c) => c.is_composed && c.valid_slots.indexOf("dinner") !== -1 && chosen.indexOf(c.id) === -1)
+  const cookPool = await A.cookPool({ diet_restriction: P.M.diet_restriction, allergens: P.M.allergens, disliked_ingredients: P.M.disliked_ingredients }, [], DAY);
+  const altDinner = cookPool.filter((c) => c.valid_slots.indexOf("dinner") !== -1 && chosen.indexOf(c.id) === -1)
     .map((c) => c.id).sort()[0];
   const fb = {
     dislikeTop: Object.fromEntries(chosen.map((id) => [id, { rating: "dislike", shown_count: 1 }])),
@@ -338,10 +358,12 @@ async function snapToday() {
       emit("recs", "flow/dislike-dinner/excluded", SLOTS.every((s) => !after[s] || after[s].id !== before.dinner.id) ? "ok" : "倒讚的組合又出現了");
     },
     "chip-dinner-protein": async (before) => {
-      const p = before.dinner.protein_id;
-      await A.dislikeChip("protein", p, before.dinner.protein_name);
+      // 「順便不要」的 chip：新自煮推薦的零件（這裡取主蛋白質或主菜），寫進不吃清單後，所有時段都不能再用到它
+      const p = before.dinner.main_protein_ref;
+      const label = (before.dinner.part_refs || []).find((x) => x.ref === p);
+      await A.dislikeChip("food_tree", p, label ? label.ref : p);
       const after = A.currentRecs();
-      emit("recs", "flow/chip-dinner-protein/excluded", SLOTS.every((s) => !after[s] || after[s].protein_id !== p) ? "ok" : "不吃的蛋白質又出現了");
+      emit("recs", "flow/chip-dinner-protein/excluded", SLOTS.every((s) => !after[s] || !(after[s].part_refs || []).some((x) => x.ref === p)) ? "ok" : "不吃的零件又出現了");
     },
     "rebuild-same-day": async () => { await A.todayPage(); },
   };

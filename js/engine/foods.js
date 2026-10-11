@@ -6,6 +6,7 @@ import { quickAddProblem } from "./picker.js";
 import { foodAmount, isEdiblePortionItem, zeroFilledText } from "./meal-content.js";
 import { isMyIngredient } from "./my-ingredients.js";
 import { round1 } from "../core/num.js";
+import { HOME_DISH_PREFIX } from "../core/config.js";
 
 // 不吃的全部清單（PRD 13.2）：依 key 去重（保留第一筆），key 依序查內建品項 uid、內建食材 id、分層品項 id；
 // 查得到用現在的名稱（改名後跟著變），查不到 gone: true（畫面寫「已不提供」，章程 B9）。順序照清單。
@@ -14,12 +15,13 @@ export function dislikedListEntries(disliked, catalog) {
   const ingById = {};
   ((catalog && catalog.ingredients) || []).forEach(function (it) { ingById[it.id] = it; });
   const treeById = (catalog && catalog.foodTree && catalog.foodTree.byId) || {};
+  const homeById = (catalog && catalog.homeDishes && catalog.homeDishes.byId) || {};
   const seen = {};
   const out = [];
   (Array.isArray(disliked) ? disliked : []).forEach(function (d) {
     if (!d || typeof d.key !== "string" || seen[d.key]) return;
     seen[d.key] = true;
-    const hit = byUid[d.key] || ingById[d.key] || treeById[d.key] || null;
+    const hit = byUid[d.key] || ingById[d.key] || treeById[d.key] || homeById[d.key] || null;
     out.push({ key: d.key, label: d.label || d.key, name: hit ? hit.name : null, gone: !hit });
   });
   return out;
@@ -336,15 +338,24 @@ export function dislikedMessage(item, on, wasFavorite) {
 
 // ---------- 常吃（工作線 D 切片 5；PRD 13.6） ----------
 
+// 自煮的食物（分層的食材、家常菜）：常吃（☆）也決定今日建議的自煮從哪些食物裡挑（2026-10-11，取代 #81、#128）；其他品項（超商、外食、我的品項）只影響自己選的排列
+export function isCookFavoriteItem(item) {
+  if (!item) return false;
+  if (typeof item.id === "string" && item.id.indexOf(HOME_DISH_PREFIX) === 0) return true;
+  return isFoodTreeItem(item) && !isMyIngredient(item) && foodsWhereOf(item) === "cook";
+}
+
 // 標常吃／取消的訊息；wasDisliked：標常吃前它是不吃（互斥），補一句
 export function favoriteMessage(item, on, wasDisliked) {
   if (!on) return "已取消常吃「" + item.name + "」。";
-  return "已標常吃「" + item.name + "」，自己選會放在最上面。" + (wasDisliked ? "原本標的不吃已取消。" : "");
+  return "已標常吃「" + item.name + "」，自己選會放在最上面" + (isCookFavoriteItem(item) ? "，今日建議的自煮也會優先從你標的食物裡挑。" : "。") + (wasDisliked ? "原本標的不吃已取消。" : "");
 }
 
-// 明細寫常吃的作用（decisions #127 ⑥）：切片 5 推薦不讀常吃，一律這一句；切片 6 再依品項能不能進推薦分兩種
-export function favoriteEffectText() {
-  return "常吃只影響自己選的排列。";
+// 明細寫常吃的作用（decisions #127 ⑥、2026-10-11 改）：自煮的食物會決定今日建議的池子，其他只影響自己選的排列
+export function favoriteEffectText(item) {
+  return isCookFavoriteItem(item)
+    ? "常吃的自煮食物：今日建議的自煮從你標的挑（不夠的用預設補），自己選也排在最前面。"
+    : "常吃只影響自己選的排列。";
 }
 
 // ---------- 我的食材（工作線 D 切片 8b；PRD 12.4、13.8，decisions #134、#136、#138） ----------

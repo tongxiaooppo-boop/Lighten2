@@ -4,15 +4,16 @@
 import { SLOTS, SLOT_LABELS, isSlotEnabled } from "../core/slots.js";
 import { dateAddDays, mondayOf, shortDate, weekdayLabel } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
-import { $, notIncludedText } from "./dom.js";
+import { $ } from "./dom.js";
 import {
   getProfile, addDislikedIngredient, getDailyLogs, addDailyLog, undoDailyLog,
-  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, addSavedMeal, setLastShownRecs,
+  getAllRecipeFeedback, saveRecipeFeedback, markRecipesShown, getHiddenCatalogUids, addSavedMeal, setLastShownRecs, getFavoriteRefs,
 } from "../data/db.js";
 import { loadCatalog } from "../data/catalog.js";
 import { loadSavedMealCtx } from "./saved-ctx.js";
 import { loadDayPlans, pseudoLogsOf, plannedSummary, logPlanEntry, cancelPlan, skipToday, purgePlans, planDatesInRange, setSkipPlan } from "./today-plans.js";
 import { buildCandidatePool } from "../engine/pool.js";
+import { cookRecCandidates, cookRecFinalize, cookRecParts } from "../engine/cook-rec.js";
 import { planToday } from "../engine/today.js";
 import { recLogParts, lastShownSlots, logsKcal, buildLogEntry, toSavedContent, savedMealDefaultName, savedMealForSave } from "../engine/meal-content.js";
 import { renderYesterday, hideYesterday } from "./today-yesterday.js";
@@ -155,11 +156,12 @@ async function onSaveLogConfirm(logId) {
 
 // 依組合內容列出可以「順便不要」的項目：
 //   自組食譜 → 蛋白質 + 蔬菜兩個 chip；現成品項組合 → 每個成分名稱一個 chip；沒有可拆解成分就不顯示。
-function dislikeChipsHtml(rec) {
+function dislikeChipsHtml(rec, catalog) {
   const entries = [];
-  if (rec.is_composed) {
-    if (rec.protein_id) entries.push({ type: "protein", key: rec.protein_id, label: rec.protein_name });
-    if (rec.vegetable_id) entries.push({ type: "vegetable", key: rec.vegetable_id, label: rec.vegetable_name });
+  if (rec.is_cook_form) {
+    cookRecParts(rec, catalog).forEach(function (p) {
+      if (p.role === "protein" || p.role === "veg" || p.role === "dish") entries.push({ type: "food_tree", key: p.ref, label: p.name });
+    });
   } else if (Array.isArray(rec.component_labels)) {
     rec.component_labels.forEach(function (c) { entries.push({ type: "item", key: c.uid, label: c.label }); });
   }
@@ -195,7 +197,7 @@ function plannedLowText(plannedSlots) {
   return names.length ? names.join("、") + "已經排進來了，這餐照平常吃就好" : null;
 }
 
-function renderRecs(recs, profile, logsBySlot, plan) {
+function renderRecs(recs, profile, logsBySlot, plan, catalog) {
   const plannedSlots = (plan && plan.plannedSlots) || {};
   const lowText = plannedLowText(plannedSlots);
   SLOTS.forEach(function (slot) {
@@ -249,14 +251,17 @@ function renderRecs(recs, profile, logsBySlot, plan) {
       contentNote +
       '<div class="rec-meta">' +
       escapeHtml(rec.tier) + " · 約 " + rec.scaled_kcal + " kcal" +
-      '<span class="rec-base">（基準 ' + rec.kcal + " kcal" + (rec.implicit && rec.implicit.oil_g > 0 ? "，含用油約 " + rec.implicit.oil_g + "g" : "") +
-      (notIncludedText(rec.not_included) ? "，" + escapeHtml(notIncludedText(rec.not_included)) : "") + "）</span>" +
+      (rec.is_cook_form
+        ? (rec.implicit && rec.implicit.oil_g > 0 ? '<span class="rec-base">（含用油約 ' + rec.implicit.oil_g + "g）</span>" : "")
+        : '<span class="rec-base">（基準 ' + rec.kcal + " kcal）</span>") +
       (rec.budget != null ? '<span class="rec-base"> · 配額 ' + Math.round(rec.budget) + " kcal</span>" : "") +
       "</div>" +
-      dislikeChipsHtml(rec) +
+      (rec.cook_detail ? '<p class="rec-content-note">' + escapeHtml(rec.cook_detail) + "</p>" : "") +
+      dislikeChipsHtml(rec, catalog) +
       '<button type="button" class="dislike-btn" data-id="' + escapeHtml(rec.id) + '">倒讚</button>' +
       '<button type="button" class="secondary-btn rec-log-btn" data-slot="' + escapeHtml(slot) + '">記錄這餐</button>' +
-      pickBtnHtml(slot);
+      pickBtnHtml(slot) +
+      (rec.is_cook_form ? '<button type="button" class="secondary-btn rec-edit-btn" data-slot="' + escapeHtml(slot) + '">改一下</button>' : "");
   });
 }
 
@@ -383,10 +388,15 @@ export async function buildRecommendation() {
     planDates = await planDatesInRange(today, dateAddDays(today, DAYS_AHEAD));
   } catch (err) { console.error(err); todayPlans = {}; }
   todayPseudo = pseudoLogsOf(todayPlans);
+  // 我的食物的 ☆ 決定自煮建議的池子（讀不到就當沒有 ☆，用預設）
+  let favoriteRefs = [];
+  try { favoriteRefs = await getFavoriteRefs(); } catch (err) { console.error(err); }
+  const oilHabit = profile.oil_habit || "normal";
+  const cookCandidates = cookRecCandidates({ catalog: catalog, profile: profile, favoriteRefs: favoriteRefs, oilHabit: oilHabit, date: today });
   const plan = planToday({
     profile: profile, targets: targets, todayLogs: todayLogs, weekLogs: weekLogs,
-    feedbackMap: feedbackMap, pool: buildCandidatePool(catalog), hiddenUids: hiddenUids, today: today, nowMs: nowMs(),
-    todayPlans: todayPseudo,
+    feedbackMap: feedbackMap, pool: buildCandidatePool(catalog).concat(cookCandidates), hiddenUids: hiddenUids, today: today, nowMs: nowMs(),
+    todayPlans: todayPseudo, finalize: function (rec) { return cookRecFinalize(rec, { catalog: catalog, profile: profile, oilHabit: oilHabit }); },
   });
   const recs = plan.recs;
   currentRecs = recs;
@@ -407,7 +417,7 @@ export async function buildRecommendation() {
 
   lastLogsBySlot = plan.logsBySlot || {};
   if (saveForm && !findTodayLog(saveForm.logId)) saveForm = null; // 撤銷了就收起來
-  renderRecs(recs, profile, plan.logsBySlot, plan);
+  renderRecs(recs, profile, plan.logsBySlot, plan, catalog);
   // 在畫面實際渲染出卡片的當下記錄「這個組合今天被顯示過」，同一天重複整理不重複累加。
   const shownIds = Object.keys(recs).map(function (slot) { return recs[slot] && recs[slot].id; }).filter(Boolean);
   if (shownIds.length > 0) markRecipesShown(shownIds, today).catch(function (err) { console.error(err); });
@@ -606,6 +616,12 @@ export function initTodayTab() {
         const slot = logBtn.getAttribute("data-slot");
         const rec = currentRecs[slot];
         if (rec) onLogRecClick(slot, rec, logBtn);
+        return;
+      }
+      const editBtn = e.target.closest(".rec-edit-btn");
+      if (editBtn && editBtn.getAttribute("data-slot") && currentRecs[editBtn.getAttribute("data-slot")]) {
+        // 新自煮的建議：把同一份帶進「自己選」改（食材、做法、份量都能換）
+        openMealPicker(editBtn.getAttribute("data-slot"), { onLogged: buildRecommendation, todayPlans: todayPseudo, cookPreset: currentRecs[editBtn.getAttribute("data-slot")] });
         return;
       }
       const pickBtn = e.target.closest(".rec-pick-btn");

@@ -209,4 +209,14 @@ export const COOK_DEFAULTS = {
 };
 // 早餐盤的碳水預設＝早餐碳水（吐司、饅頭、蘿蔔糕、油麵，cook.js 的 PLATE_CARBS）加上上面的 carb
 // 建議池每軸至少幾樣（☆ 不足時用預設補到這個數；推薦用，畫面不用）
+// 來源偏好是「自動」時的順序（2026-10-11，使用者定）：先試自煮（快煮），沒有可用的再試外食，再試超商；
+// 下午茶與宵夜的自煮只有早餐碗，沒有可用時第二順位改成「超商與外食一起比分」，免得下午茶被推去買台式外食。
+// 「可用」＝這個來源最貼近預算的份量，熱量與配額差在容許範圍內（配額低於 AUTO_LOW_BUDGET_KCAL 時放寬）。
+export const AUTO_TOLERANCE = 0.35;
+export const AUTO_TOLERANCE_LOW_BUDGET = 0.5;
+export const AUTO_LOW_BUDGET_KCAL = 250;
+export const AUTO_LIGHT_SLOTS = ["afternoon_tea", "snack"];
+// 新自煮推薦的零件角色：哪些算「主蛋白質／主菜」（同一天不重複）、近期降權的權重（蛋白質與主菜最重，蔬菜較輕；沒列的角色不降權）
+export const COOK_MAIN_ROLES = ["protein", "dish"];
+export const COOK_PART_RECENCY = { protein: 20, dish: 15, veg: 10 };
 export const COOK_POOL_MIN = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };

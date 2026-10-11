@@ -77,14 +77,23 @@ async function main() {
     foods: await imp("js/engine/foods.js"),
     myIng: await imp("js/engine/my-ingredients.js"),
     cook: await imp("js/engine/cook.js"),
+    cookRec: await imp("js/engine/cook-rec.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"),
   });
-  const candidatePool = M.pool.buildCandidatePool(catalog);
+  const candidatePool = M.pool.buildCandidatePool(catalog); // 超商與外食（自煮候選依使用者設定另外產生）
+  // 新自煮推薦用的完整 catalog（要有分層品項與家常菜）；候選依飲食、過敏原、不吃、☆ 產生，所以每種設定各一份
+  const cookCatalog = M.catalog.buildCatalog({
+    ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
+    archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json"),
+  });
+  const cookProfile = (diet, allergens) => ({ diet_restriction: diet || "一般", allergens: allergens || [], disliked_ingredients: [] });
+  const poolFor = (profile, favoriteRefs, date) => candidatePool.concat(M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: profile, favoriteRefs: favoriteRefs || [], oilHabit: profile.oil_habit || "normal", date: date || "2026-10-11" }));
+  const finalizeFor = (profile) => (rec) => M.cookRec.cookRecFinalize(rec, { catalog: cookCatalog, profile: profile, oilHabit: profile.oil_habit || "normal" });
   const recommendFor = (remainingBudget, constraints, prefs, diet, allergens, skip, lowCarb) => M.recommend.getTodayRecommendation({
-    pool: candidatePool, feedbackMap: {}, remainingBudget: remainingBudget, hardConstraints: constraints,
+    pool: poolFor(cookProfile(diet, allergens)), feedbackMap: {}, remainingBudget: remainingBudget, hardConstraints: constraints,
     mealPrefs: prefs, dietRestriction: diet, allergens: allergens, skipSlots: skip, lowCarb: !!lowCarb, nowMs: Date.now(),
   });
 
@@ -114,7 +123,6 @@ async function main() {
     check(!ids[c.id], "候選 id 重複：" + c.id);
     ids[c.id] = true;
     check(Array.isArray(c.valid_slots) && c.valid_slots.length > 0, c.id + " 沒有適用時段");
-    if (c.is_composed) return;
     check(c.components.length <= 3, c.id + " 超過 3 件");
     check(!c.components.some((uid) => itemByUid[uid].is_treat), c.id + " 含不主動推薦的含糖/零食品項");
     check(drinkCount(c) <= 1, c.id + " 一個組合裡有兩杯以上飲料");
@@ -131,12 +139,35 @@ async function main() {
     check(Object.keys(channels).length === 1, c.id + " 混了不同來源的品項");
   });
 
-  // 章程 B7.6：每個骨架的每個 valid_slot 至少產生一筆候選組合（自煮骨架的組合有 archetype_id）
-  readJson("dish_archetypes.json").forEach((a) => {
-    a.valid_slots.forEach((slot) => {
-      check(pool.some((c) => c.archetype_id === a.id && c.valid_slots.indexOf(slot) !== -1), "餐型 " + a.id + " 在 " + slot + " 沒有產生任何候選組合（章程 B7.6）");
+  // 新自煮候選（cook-rec.js）：每個入口的每個時段都有候選；每個候選的所有份量都能送出（用 cook.js 的驗證逐一檢查）
+  {
+    const cands = M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: cookProfile(), favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
+    const entries = ["box", "plate", "bowl", "home"];
+    entries.forEach((e) => check(cands.some((c) => c.entry === e), "新自煮候選：入口 " + e + " 沒有候選"));
+    const entrySlots = { box: ["lunch", "dinner"], plate: ["breakfast"], bowl: ["breakfast", "afternoon_tea", "snack"], home: ["lunch", "dinner"] };
+    entries.forEach((e) => entrySlots[e].forEach((slot) => check(cands.some((c) => c.entry === e && c.valid_slots.indexOf(slot) !== -1), "新自煮候選：" + e + " 在 " + slot + " 沒有候選")));
+    const seenIds = {};
+    let bad = 0, drift = 0, sampled = 0;
+    cands.forEach((c, i) => {
+      check(!seenIds[c.id], "新自煮候選 id 重複：" + c.id); seenIds[c.id] = true;
+      check(/^cook|(box|plate|bowl|home)|/.test(c.id) && !/d+(.d+)?g/.test(c.id), "新自煮候選 id 格式不對（要看得懂、不含份量）：" + c.id);
+      check(c.pre_filtered && !c.is_convenience && !c.is_delivery && c.part_refs.length > 0 && c.components.length === c.part_refs.length, c.id + " 欄位不齊");
+      if (i % 40 !== 0) return; // 取樣：每 40 個完整驗一次（全部驗要幾分鐘）
+      sampled++;
+      [null, 25].forEach((maxCarb) => {
+        const v = c.pickVariant(500, maxCarb);
+        if (!v) return;
+        const r = Object.assign({}, c, { cook_variant: v.key, source_pref: "auto" });
+        const fin = M.cookRec.cookRecFinalize(r, { catalog: cookCatalog, profile: cookProfile(), oilHabit: "normal" });
+        if (!fin) { bad++; if (bad < 4) console.log("  ✗ 候選無法送出：" + c.id + " " + JSON.stringify(v.key)); return; }
+        if (Math.abs(fin.kcal - v.kcal) > 4) { drift++; if (drift < 4) console.log("  ✗ 估算熱量和算準的差太多：" + c.id + " " + v.kcal + " vs " + fin.kcal); }
+        if (maxCarb != null && fin.carb_g != null && fin.carb_g > maxCarb + 1) { bad++; if (bad < 4) console.log("  ✗ 低碳份量碳水超過上限：" + c.id + " " + fin.carb_g); }
+      });
     });
-  });
+    check(bad === 0, "新自煮候選：有 " + bad + " 個取樣的份量無法送出或超過低碳上限（見上）");
+    check(drift === 0, "新自煮候選：" + drift + " 個取樣的估算熱量和算準的差超過 4 kcal");
+    check(sampled > 100 && cands.length > 1000, "新自煮候選數量太少（" + cands.length + "，取樣 " + sampled + "）");
+  }
 
   // ---------- 3. 各種使用者設定下的實際推薦 ----------
   console.log("[實際推薦]");
@@ -173,6 +204,22 @@ async function main() {
             // 依序分配後，時段配額可能低於門檻，回傳 { lowBudget: true } 而非候選組合。
             // 這不是「找不到組合」，是「額度用完」，不做結構斷言。
             if (r.lowBudget) return;
+            if (r.is_cook_form) {
+              // 新自煮：用算準後的內容，獨立再過一次硬性過濾（候選建立時已過濾，這裡是第二道檢查）
+              const prof = cookProfile(diet, allergenInput);
+              const fin = finalizeFor(prof)(r);
+              check(!!fin, tag + " " + slot + " 新自煮推薦無法送出：" + r.name);
+              if (fin) {
+                if (lowCarb) check(fin.carb_g != null && fin.carb_g <= LOW_CARB_MAX + 1e-6, tag + " " + slot + " 開了低碳卻推薦碳水 " + fin.carb_g + "g 的組合：" + fin.name);
+                M.cookRec.cookRecParts(fin, cookCatalog).forEach((p) => {
+                  const it = (M.cook.cookOptionByUid(cookCatalog, p.ref) || {}).item || M.cook.homeDishById(cookCatalog, p.ref) || cookCatalog.foodTree.byId[p.ref];
+                  check(!!it && M.filters.passesHardFilters(it, prof).ok, tag + " " + slot + " 新自煮推薦了被擋的成分 " + p.ref + "：" + fin.name);
+                });
+                const src = prefs[slot];
+                if (src === "cook_quick") check(M.cook.cookFormQuickOk(fin.cook_form, cookCatalog, prof), tag + " " + slot + " 快煮來源卻推薦做不了快煮的：" + fin.name);
+              }
+              return;
+            }
             if (lowCarb) {
               check(r.carb_g != null && r.carb_g <= LOW_CARB_MAX + 1e-6, tag + " " + slot + " 開了低碳卻推薦碳水 " + r.carb_g + "g 的組合：" + r.name);
             }
@@ -183,7 +230,7 @@ async function main() {
               check(r.allergen_tags.indexOf("未確認") === -1, tag + " " + slot + " 設了過敏原卻推薦過敏原未確認的品項：" + r.name);
               userAllergens.forEach((a) => check(r.allergen_tags.indexOf(a) === -1, tag + " " + slot + " 推薦含" + a + "的品項：" + r.name));
             }
-            if (!r.is_composed) {
+            {
               check(drinkCount(r) <= 1, tag + " " + slot + " 兩杯飲料：" + r.name);
               if (MEAL_SLOTS.indexOf(slot) !== -1) check(mainCount(r) === 1, tag + " " + slot + " 純飲料或沒有主餐：" + r.name);
               r.components.forEach((uid) => {
@@ -251,33 +298,27 @@ async function main() {
   // ---------- 4d. 不吃清單以 id 為 key（章程 C2）：食材改名後仍然命中 ----------
   console.log("[不吃清單用 id]");
   {
-    const renamed = readJson("ingredients.json").map((it) => it.axis === "protein" ? Object.assign({}, it, { name: it.name + "（改名）" }) : it);
-    const renamedCatalog = M.catalog.buildCatalog({
-      ingredients: renamed, convenienceItems: convenienceData, taiwanItems: taiwanData,
-      archetypes: readJson("dish_archetypes.json"),
+    const target = "chicken_breast";
+    const gen = (p) => M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: p, favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
+    const using = (list) => list.filter((c) => c.part_refs.some((p) => p.ref === target));
+    const base = gen(cookProfile());
+    check(using(base).length > 0, "測試前提：新自煮候選裡要有用到 " + target + " 的組合");
+    // 只比 key：存的名稱跟現在不同（改名）、存的軸跟目前不同（換軸，decisions #40）都要命中
+    ["protein", "staple", "food_tree"].forEach((type) => {
+      const cs = gen(Object.assign(cookProfile(), { disliked_ingredients: [{ type: type, key: target, label: "改名前的名稱" }] }));
+      check(using(cs).length === 0, "不吃清單用 id「" + target + "」（存成 " + type + "、名稱不同），新自煮候選沒有排除");
+      check(cs.length > 0 && cs.length < base.length && cs.filter((c) => !c.part_refs.some((p) => p.ref === target)).length === cs.length, "不吃清單誤擋了其他食材的候選（" + type + "）");
     });
-    const renamedPool = M.pool.buildCandidatePool(renamedCatalog);
-    const target = renamed.find((it) => renamedPool.some((c) => c.is_composed && c.protein_id === it.id));
-    const disliked = [{ type: "protein", key: target.id, label: "改名前的名稱" }];
-    const hits = renamedPool.filter((c) => c.is_composed && c.protein_id === target.id);
-    check(hits.length > 0, "測試前提：候選池裡要有用到 " + target.id + " 的組合");
-    check(hits.every((c) => !M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok),
-      "不吃清單用 id「" + target.id + "」，食材改名後沒有命中");
-    // 換軸（例：毛豆仁從主食移到蛋白質，decisions #37）後，舊的 {type: 別的軸, key} 仍然命中：只比 key（decisions #40）
-    const otherAxis = [{ type: "staple", key: target.id, label: "換軸前存的" }];
-    check(hits.every((c) => !M.filters.passesHardFilters(c, { disliked_ingredients: otherAxis }).ok),
-      "不吃清單存的軸跟目前不同（換軸），仍然要命中 " + target.id);
-    const others = renamedPool.filter((c) => c.is_composed && c.protein_id !== target.id).slice(0, 50);
-    check(others.every((c) => M.filters.passesHardFilters(c, { disliked_ingredients: disliked }).ok), "不吃清單誤擋了其他蛋白質的組合");
   }
   // decisions #101：雜糧飯（樣品五穀米含麥片）對麩質過敏、全素、蛋奶素都要擋
   {
     const grain = catalog.ingredients.find((it) => it.id === "mixed_grain_rice_cooked");
     check(grain && grain.allergen_tags.indexOf("麩質") !== -1 && grain.diet_tags.length === 0, "雜糧飯要標麩質、不能宣告素食（decisions #101）");
-    const withGrain = M.pool.buildCandidatePool(catalog).filter((c) => c.is_composed && c.staple_id === "mixed_grain_rice_cooked");
-    check(withGrain.length > 0, "測試前提：候選池裡要有用到雜糧飯的組合");
+    const gen = (p) => M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: p, favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
+    const withGrain = (list) => list.filter((c) => c.part_refs.some((p) => p.ref === "mixed_grain_rice_cooked"));
+    check(withGrain(gen(cookProfile())).length > 0, "測試前提：新自煮候選裡要有用到雜糧飯的組合");
     [{ allergens: ["麩質"] }, { diet_restriction: "全素" }, { diet_restriction: "蛋奶素" }].forEach((p) => {
-      check(withGrain.every((c) => !M.filters.passesHardFilters(c, p).ok), "雜糧飯的組合沒被擋：" + JSON.stringify(p));
+      check(withGrain(gen(Object.assign(cookProfile(), p))).length === 0, "雜糧飯的新自煮候選沒被擋：" + JSON.stringify(p));
     });
   }
 
@@ -300,12 +341,6 @@ async function main() {
     const withIt = M.pool.buildCandidatePool(nullCatalog).filter((c) => c.components.indexOf("conv_bx04") !== -1);
     check(withIt.length > 0, "測試前提：候選池要有含 conv_bx04 的組合");
     check(withIt.every((c) => c.protein_g === null && c.fiber_g === null), "現成品項蛋白質/纖維未知，含它的推薦組合要是 null，不能當 0");
-
-    const combo = { is_composed: true, kcal: 500, protein_g: null, carb_g: 50, fat_g: 10, fiber_g: 5,
-      primary_kcal: 200, primary_protein_g: 5, primary_carb_g: 40, primary_fat_g: 1, primary_fiber_g: 2 };
-    const eff = mc.achievableNutrition(combo, 600);
-    check(eff.protein_g === null, "縮放時蛋白質未知要維持 null（實際 " + eff.protein_g + "）");
-    check(eff.carb_g === 50 - 40 + 40 * eff.scale, "縮放時已知欄位照常計算");
 
     const L = (date, slot, p, fb) => ({ log_date: date, slot: slot, totals: { kcal: 500, protein_g: p, carb_g: 50, fat_g: 10, fiber_g: fb } });
     check(mc.sumLogTotals([L("2026-09-22", "lunch", 20, 5), L("2026-09-22", "dinner", null, 5)], "protein_g") === null, "紀錄合計：任一筆蛋白質未知，合計要是 null");
@@ -375,7 +410,7 @@ async function main() {
     profiles.forEach((profile, pi) => {
       const targets = M.nutrition.calculateTargets(profile);
       const fb = {};
-      const plan = (todayLogs) => M.today.planToday({ profile, targets, todayLogs, weekLogs: todayLogs, feedbackMap: JSON.parse(JSON.stringify(fb)), pool: candidatePool, today: TODAY, nowMs });
+      const plan = (todayLogs) => M.today.planToday({ profile, targets, todayLogs, weekLogs: todayLogs, feedbackMap: JSON.parse(JSON.stringify(fb)), pool: poolFor(profile, [], TODAY), finalize: finalizeFor(profile), today: TODAY, nowMs });
       const first = plan([]).recs;
       markShown(fb, first);
       const again = plan([]).recs;
@@ -426,35 +461,21 @@ async function main() {
     const ic = mc.implicitContribution({ oil_g: 10, seasoning: "normal" }, catalog.implicit);
     check(Math.abs(ic.kcal - 88.4) < 0.05 && ic.fat_g === 10 && ic.sodium_mg === 700, "10g 油＋一般調味 ＝ 88.4 kcal、脂肪 10g、鈉 700 mg（實際 " + JSON.stringify(ic) + "）");
 
-    // 候選池：每個自組食譜都帶隱含成分，熱量含用油（C4.11）
-    const composed = candidatePool.filter((c) => c.is_composed);
-    check(composed.every((c) => c.implicit && typeof c.implicit.oil_g === "number" && "seasoning" in c.implicit), "有自組食譜沒有 implicit");
-    const stirCombo = composed.find((c) => c.method_id === "method_stir_fry" && c.vegetable_id);
-    check(stirCombo && stirCombo.implicit.oil_g === 10, "炒＋蔬菜的候選用油要是 10g");
-    // 用油不跟主要槽位縮放
-    const e1 = mc.achievableNutrition(stirCombo, 400), e2 = mc.achievableNutrition(stirCombo, 800);
-    const fixed = (e) => e.kcal - stirCombo.primary_kcal * e.scale;
-    check(Math.abs(fixed(e1) - fixed(e2)) < 0.2, "用油不能跟主要槽位一起縮放（固定部分 " + fixed(e1) + " vs " + fixed(e2) + "）");
-    // 少油習慣：推薦出來的份量用油減半
-    const lessPool = mc.withOilHabit(stirCombo, "less");
-    check(lessPool.implicit.oil_g === 5 && Math.abs((stirCombo.kcal - lessPool.kcal) - 44.2) < 0.1, "少油習慣：用油 10→5g、熱量少 44.2 kcal（實際 " + lessPool.implicit.oil_g + "g、差 " + (stirCombo.kcal - lessPool.kcal) + "）");
-    // 推薦記錄下來的 MealContent 帶實際採用的用油與調味
-    const rc = mc.contentFromRec(Object.assign({}, lessPool, { primary_scale: 1, source_pref: "cook_full" }), catalog.productsByUid);
-    check(rc.implicit && rc.implicit.oil_g === 5 && rc.implicit.seasoning === lessPool.implicit.seasoning, "推薦記錄的 implicit 要是實際採用的克數與程度");
-
-    // 溫沙拉未含沙拉醬：候選池與推薦結果都帶骨架的 not_included，畫面照它註明（decisions #38、章程 B7.5）
-    const salads = composed.filter((c) => c.archetype_id === "warm_salad");
-    check(salads.length > 0 && salads.every((c) => (c.not_included || []).join() === "沙拉醬"), "溫沙拉的候選要帶 not_included: [沙拉醬]");
-    const declaredNot = {};
-    readJson("dish_archetypes.json").forEach((a) => { declaredNot[a.id] = a.not_included || null; });
-    check(composed.every((c) => JSON.stringify(c.not_included || null) === JSON.stringify(declaredNot[c.archetype_id])), "候選的 not_included 要等於骨架宣告的（沒宣告就是 null）");
-    const perSlot = {}, prefs = {};
-    SLOTS.forEach((s) => { perSlot[s] = 500; prefs[s] = "auto"; });
-    const saladRecs = M.recommend.getTodayRecommendation({
-      pool: salads, feedbackMap: {}, remainingBudget: { perSlotSuggestion: perSlot }, hardConstraints: { proteinGapToday: 30, fiberGapThisWeek: 10 },
-      mealPrefs: prefs, dietRestriction: "一般", allergens: [], skipSlots: {}, lowCarb: false, nowMs: Date.now(),
-    });
-    check(saladRecs.lunch && (saladRecs.lunch.not_included || []).join() === "沙拉醬", "推薦結果要保留溫沙拉的 not_included（卡片靠它顯示「未含沙拉醬」）");
+    // 新自煮推薦：用油由 cook.js 依做法與用油習慣算，煎蛋白質 5g、炒蔬菜 5g；少油習慣減半；推薦記下來的 MealContent 帶實際採用的克數
+    const cands = M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: cookProfile(), favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
+    const c1 = cands.find((c) => c.id === "cook|box|chicken_breast|sweet_potato|broccoli+cabbage");
+    check(!!c1, "測試前提：有候選 cook|box|chicken_breast|sweet_potato|broccoli+cabbage");
+    const panKey = [[1, "pan"], "half"];
+    const fin = (habit) => M.cookRec.cookRecFinalize(Object.assign({}, c1, { cook_variant: panKey, source_pref: "cook_full" }), { catalog: cookCatalog, profile: cookProfile(), oilHabit: habit });
+    const fn = fin("normal"), fl = fin("less");
+    check(fn.implicit.oil_g === 10 && fl.implicit.oil_g === 5 && Math.abs((fn.kcal - fl.kcal) - 44.2) < 0.2, "少油習慣：煎雞胸加炒高麗菜 10g→5g、熱量少 44.2 kcal（實際 " + fn.implicit.oil_g + "→" + fl.implicit.oil_g + "、差 " + (fn.kcal - fl.kcal) + "）");
+    const rc = M.mc.contentFromRec(fl, catalog.productsByUid);
+    check(rc.meal_type === "cook_full" && rc.implicit && rc.implicit.oil_g === 5 && rc.form && rc.form.entry === "box" && rc.archetype_id === null && rc.components.every((c) => c.kind === "food" && c.part === "box"), "推薦記錄的 MealContent：型態是時段偏好、帶實際用油、food 元件加 form（與自己選送出同一格式）");
+    check(M.mc.recLogParts(fl, catalog.productsByUid).totals.kcal === fl.kcal, "推薦記錄的熱量等於卡片上的熱量");
+    // 沒預算時照第一個份量；有預算時貼近預算
+    const lo = c1.pickVariant(250, null), hi = c1.pickVariant(900, null);
+    check(lo && hi && lo.kcal < hi.kcal, "新自煮候選：預算低選小份量、預算高選大份量（" + lo.kcal + " vs " + hi.kcal + "）");
+    check(c1.pickVariant(500, 1) === null && c1.pickVariant(500, 100) !== null, "新自煮候選：低碳上限太低就沒有符合的份量");
   }
 
   // ---------- 4i. 我的品項照 PRD 10.1 讀進來、選擇器的品項帶齊 catalog 的營養欄位（章程 C2；Phase 0 計畫 N1） ----------
@@ -564,26 +585,57 @@ async function main() {
     check(lunch.convenience.concat(lunch.delivery).some((it) => /餐盒/.test(it.category || "")), "整份餐盒要列出（不再排除）");
     check(lunch.delivery.some((it) => it.is_taiwan && it.role === "main"), "台式主餐要列出（不再只留飲料）");
 
-    // 3. 快煮一致：推薦 cook_quick 會收 ⇔ 自煮分頁快煮下不灰掉它任何元件與烹調法
-    const composed = candidatePool.filter((c) => c.is_composed);
+    // 舊餐型骨架的組合（推薦已改用新自煮，這些只剩「帶入舊組合、舊預約、舊紀錄」的選擇器路徑在用）：
+    // 測試自己列舉，順序與 id 跟過去的候選池相同，凍結的草稿合計參考值才對得上
+    const composed = [];
+    const idList = (list, allow) => (!allow || allow.length === 0) ? [null] : allow.map((id) => list.find((x) => x.id === id)).filter(Boolean);
+    catalog.archetypes.forEach((a) => {
+      const vegs = a.vegetable && a.vegetable.allow && a.vegetable.allow.length > 0 ? idList(catalog.vegetables, a.vegetable.allow).concat([null]) : [null];
+      const sauces = a.seasoning && a.seasoning.allow && a.seasoning.allow.length > 0 ? idList(catalog.sauces, a.seasoning.allow).concat([null]) : [null];
+      const methods = (a.methods || []).map((id) => catalog.sauces.find((x) => x.id === id)).filter(Boolean);
+      idList(catalog.proteins, a.protein && a.protein.allow).forEach((p) => {
+        if (!p || p.kcal_100g == null) return;
+        idList(catalog.staples, a.staple && a.staple.allow).forEach((st) => {
+          if (st && st.kcal_100g == null) return;
+          vegs.forEach((v) => {
+            if (v && v.kcal_100g == null) return;
+            sauces.forEach((se) => {
+              if (se && se.kcal_100g == null) return;
+              methods.forEach((m) => {
+                if (mc.noCookViolation(m, [p, st, v, se])) return;
+                composed.push({ id: a.id + "_" + p.id + "_" + (st ? st.id : "none") + "_" + (v ? v.id : "none") + "_" + (se ? se.id : "none") + "_" + m.id,
+                  archetype_id: a.id, method_id: m.id, protein_id: p.id, staple_id: st ? st.id : null, vegetable_id: v ? v.id : null, sauce_id: se ? se.id : null,
+                  tier_rank: mc.maxTierRank(m, [p, st, v, se].filter(Boolean)) });
+              });
+            });
+          });
+        });
+      });
+    });
     const draftOf = (c, drink) => ({
       archetype: arch(c.archetype_id), proteins: [ing(c.protein_id)], staple: c.staple_id ? ing(c.staple_id) : null,
       vegetables: c.vegetable_id ? [ing(c.vegetable_id)] : [], seasoning: c.sauce_id ? ing(c.sauce_id) : null,
       method: ing(c.method_id), primaryScale: 1, drink: drink || null,
     });
-    let quickMismatch = 0;
-    composed.forEach((c) => {
-      const d = draftOf(c);
-      const axes = [["protein", d.proteins[0]], ["staple", d.staple], ["vegetable", d.vegetables[0]], ["seasoning", d.seasoning]].filter((a) => a[1]);
-      const clean = axes.every((a) => mc.composeOptionProblem(a[1], a[0], d, { tier: "cook_quick" }) === null) &&
-        mc.composeOptionProblem(d.method, "method", d, { tier: "cook_quick" }) === null;
-      if (clean !== M.config.isQuickTier(c.tier_rank)) quickMismatch++;
-      // 5（部分）：共用的難度與免開火判斷跟候選池一致
-      if (mc.maxTierRank(d.method, mc.draftIngredients(d)) !== c.tier_rank) quickMismatch++;
-      if (mc.noCookViolation(d.method, mc.draftIngredients(d))) quickMismatch++;
-      if (mc.composeProblem(d, { tier: M.config.isQuickTier(c.tier_rank) ? "cook_quick" : "cook_full" }) !== null) quickMismatch++;
+    // 舊骨架每個適用時段、每個餐型都還能組出組合（帶入舊組合時用得到）
+    readJson("dish_archetypes.json").forEach((a) => check(composed.some((c) => c.archetype_id === a.id), "舊餐型 " + a.id + " 組不出任何組合"));
+
+    // 3. 快煮一致：新自煮推薦收進快煮的候選 ⇔ 自己選的規則（cook.js）判定它做得了快煮；難度在每個份量組合下都一致
+    const cookCands = M.cookRec.cookRecCandidates({ catalog: cookCatalog, profile: cookProfile(), favoriteRefs: [], oilHabit: "normal", date: "2026-10-11" });
+    let quickMismatch = 0, sampled3 = 0;
+    cookCands.forEach((c, i) => {
+      if (i % 25 !== 0) return;
+      sampled3++;
+      [250, 600, 1000].forEach((budget) => {
+        const v = c.pickVariant(budget, null);
+        const form = c.buildForm(v.key);
+        const ok = M.cook.cookFormQuickOk(form, cookCatalog, cookProfile());
+        if (ok !== M.config.isQuickTier(c.tier_rank)) quickMismatch++;
+        if (M.cook.cookFormRank(form, cookCatalog) !== c.tier_rank) quickMismatch++;
+        if (M.cook.cookFormProblem(form, cookCatalog, cookProfile(), ok ? "cook_quick" : "cook_full") !== null) quickMismatch++;
+      });
     });
-    check(composed.length > 0 && quickMismatch === 0, "候選池的自組組合：快煮灰階、最高難度、免開火、送出規則要跟推薦一致（不一致 " + quickMismatch + " 處）");
+    check(sampled3 > 100 && quickMismatch === 0, "新自煮候選：快煮判斷、最高難度、送出規則要跟自己選一致（不一致 " + quickMismatch + " 處）");
 
     // 4. composeProblem（假骨架：真實資料的免開火骨架只有燕麥碗，它的蛋白質都不需加熱）
     const fake = (o) => Object.assign({ id: "x", name: "x", prep_tier: "🟢", requires_cooking: false, serving_g: 100,
@@ -650,9 +702,8 @@ async function main() {
     check(mc.composeImplicit(ed({ archetype: arch("bowl_oat"), implicitOverride: { seasoning: "normal" } }), "normal").seasoning === null, "不調味的骨架，調味覆寫不生效");
 
     // 7. meal_type 由呼叫端傳入，不從食材反推
-    const green = composed.find((c) => c.tier_rank === 0);
-    const gd = draftOf(green);
-    check(mc.contentFromCompose(gd, mc.composePrimary(gd), mc.composeImplicit(gd, "normal"), "cook_full").meal_type === "cook_full", "全 🟢 選開伙仍是 cook_full");
+    const gd = ed({});
+    check(mc.contentFromCompose(gd, mc.composePrimary(gd), mc.composeImplicit(gd, "normal"), "cook_full").meal_type === "cook_full", "快煮難度的食材選開伙仍是 cook_full");
     check(mc.deriveCookMealType(0) === "cook_quick" && mc.deriveCookMealType(1) === "cook_quick" && mc.deriveCookMealType(2) === "cook_full", "依難度推導：≤🟡 快煮、🔴 開伙");
     let threw = false;
     try { mc.contentFromCompose(gd, null, { oil_g: 0, seasoning: null }); } catch (e) { threw = true; }
@@ -864,8 +915,143 @@ async function main() {
   checkCook(M.catalog.buildCatalog({ ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
     archetypes: readJson("dish_archetypes.json"), foodTree: readJson("food_tree.json"), homeDishes: readJson("home_dishes.json") }));
 
+  console.log("[今日建議的新自煮]");
+  checkCookRec(cookCatalog, candidatePool);
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+// 今日建議的新自煮（cook-rec.js）：候選池與 ☆、收尾、記錄格式、跨時段不重複、七天輪轉
+function checkCookRec(catalog, productPool) {
+  const ck = M.cook, mc = M.mc, CR = M.cookRec;
+  const baseProfile = { age: 35, gender: "男", height_cm: 175, weight_kg: 80, activity_mode: "輕度", goal_mode: "減脂", enabled_slots: null, diet_restriction: "一般", allergens: [], disliked_ingredients: [], oil_habit: "normal",
+    meal_prefs: { breakfast: "cook_quick", lunch: "cook_full", afternoon_tea: "auto", dinner: "cook_full", snack: "auto" } };
+  const targets = M.nutrition.calculateTargets(baseProfile);
+  const gen = (p, fav, date) => CR.cookRecCandidates({ catalog, profile: p, favoriteRefs: fav || [], oilHabit: p.oil_habit || "normal", date: date || "2026-10-11" });
+  const fin = (p) => (rec) => CR.cookRecFinalize(rec, { catalog, profile: p, oilHabit: p.oil_habit || "normal" });
+  const plan = (p, o) => M.today.planToday(Object.assign({ profile: p, targets, todayLogs: [], weekLogs: [], feedbackMap: {}, pool: productPool.concat(gen(p, o && o.fav, o && o.today)), finalize: fin(p), today: "2026-10-11", nowMs: new Date(2026, 9, 11, 10, 0).getTime() }, o || {}));
+
+  // 1. 開伙的午晚餐推薦的是新自煮：名稱「餐盒（…）」「家常餐（…）」、有零件明細、記錄格式跟自己選送出的一樣、通過寫入驗證
+  const p1 = plan(baseProfile).recs;
+  ["lunch", "dinner"].forEach((slot) => {
+    const r = p1[slot];
+    check(r && r.is_cook_form && /^(餐盒|家常餐)（.+）$/.test(r.name) && r.cook_detail && r.cook_content && r.cook_form, slot + "：開伙的建議不是新自煮或欄位不齊：" + JSON.stringify(r && r.name));
+    if (!r || !r.cook_content) return;
+    const content = mc.contentFromRec(r, catalog.productsByUid);
+    check(content === r.cook_content && content.form && content.components.every((c) => c.part === content.form.entry) && content.meal_type === "cook_full", slot + "：推薦記錄的內容要是新自煮格式（food 元件＋form，型態＝時段偏好）");
+    const parts = mc.recLogParts(r, catalog.productsByUid);
+    let err = null;
+    try { M.db.validateDailyLog(Object.assign({ id: "z" }, mc.buildLogEntry({ date: "2026-10-11", slot: slot, source: "rec_accepted", name: parts.name, content: parts.content, totals: parts.totals, createdAt: "2026-10-11T04:00:00.000Z" }))); } catch (e) { err = e; }
+    check(err === null, slot + "：推薦記下來要通過 daily_log 驗證" + (err ? "：" + err.message : ""));
+    check(Math.abs(parts.totals.kcal - mc.contentTotals(parts.content, catalog).kcal) < 0.01, slot + "：卡片熱量等於記錄內容算出來的熱量");
+    check(ck.cookFormProblem(r.cook_form, catalog, baseProfile, "cook_full") === null && r.scaled_kcal === r.kcal, slot + "：這份 form 現在要能送出、卡片與基準熱量一致");
+  });
+  check(p1.breakfast && p1.breakfast.is_cook_form && ck.cookFormQuickOk(p1.breakfast.cook_form, catalog, baseProfile) && p1.breakfast.cook_content.meal_type === "cook_quick", "快煮的早餐：新自煮、做得了快煮、型態 cook_quick");
+
+  // 2. 跨時段不重複：午餐已記下的主蛋白質（或主菜），晚餐不再推（今天已記錄的新格式餐也要佔名額，過去漏掉過）
+  const lunchRec = p1.lunch;
+  const lunchLog = { log_date: "2026-10-11", slot: "lunch", meal_type: lunchRec.cook_content.meal_type, source: "rec_accepted", name: lunchRec.name, content: lunchRec.cook_content,
+    totals: { kcal: lunchRec.scaled_kcal, protein_g: lunchRec.protein_g, carb_g: lunchRec.carb_g, fat_g: lunchRec.fat_g, fiber_g: lunchRec.fiber_g } };
+  const p2 = plan(baseProfile, { todayLogs: [lunchLog], weekLogs: [lunchLog] }).recs;
+  const lunchMainRefs = lunchRec.cook_content.components.filter((c) => c.role === "protein" || c.role === "dish").map((c) => c.ref);
+  check(p2.dinner && p2.dinner.is_cook_form && lunchMainRefs.indexOf(p2.dinner.main_protein_ref) === -1, "午餐已記下 " + lunchMainRefs.join("、") + "，晚餐不該再推同一個主蛋白質／主菜（晚餐 " + (p2.dinner && p2.dinner.main_protein_ref) + "）");
+  check(p2.lunch === null, "已記錄的午餐不再推薦");
+
+  // 3. 七天輪轉：連續七天照推薦記下，晚餐的主蛋白質不連兩天一樣、七天內至少三種（近期降權跟著零件走）
+  {
+    const fb = {};
+    const mains = [];
+    for (let day = 1; day <= 7; day++) {
+      const today = "2026-10-0" + day;
+      const rr = M.today.planToday({ profile: baseProfile, targets, todayLogs: [], weekLogs: [], feedbackMap: JSON.parse(JSON.stringify(fb)), pool: productPool.concat(gen(baseProfile, [], today)), finalize: fin(baseProfile), today, nowMs: new Date(2026, 9, day, 10, 0).getTime() }).recs;
+      Object.keys(rr).forEach((slot) => { const r = rr[slot]; if (r && !r.lowBudget && r.id) fb[r.id] = { shown_count: ((fb[r.id] || {}).shown_count || 0) + 1, last_shown_date: today }; });
+      mains.push(rr.dinner && rr.dinner.main_protein_ref);
+    }
+    check(mains.every((m, i) => m && (i === 0 || m !== mains[i - 1])), "七天的晚餐主蛋白質不能連兩天一樣：" + mains.join(" → "));
+    check(new Set(mains).size >= 3, "七天的晚餐至少要有三種主蛋白質：" + mains.join(" → "));
+  }
+
+  // 4. ☆ 決定池子：☆ 夠多就只用 ☆；不夠補預設到至少 3 種；被過敏原擋的 ☆ 不算；不在這個軸的 ☆ 忽略；沒有 ☆ 用預設
+  {
+    const D = M.config.COOK_DEFAULTS;
+    const proteinsOf = (list) => [...new Set(list.filter((c) => c.entry === "box" && !c.quick_pool_only).map((c) => c.main_protein_ref))]; // 開伙的池子（快煮池子另外測）
+    const eq = (a, b) => JSON.stringify(a.slice().sort()) === JSON.stringify(b.slice().sort());
+    const boxOpts = ck.boxProteinOptions(catalog, "box").map((e) => e.uid);
+    check(eq(proteinsOf(gen(baseProfile)), D.box_protein.filter((u) => boxOpts.indexOf(u) !== -1)), "沒有 ☆：餐盒的蛋白質池＝預設");
+    check(eq(proteinsOf(gen(baseProfile, ["salmon", "tilapia_fillet", "egg"])), ["salmon", "tilapia_fillet", "egg"]), "☆ 三種蛋白質：池子只有這三種");
+    check(eq(proteinsOf(gen(baseProfile, ["salmon"])), ["salmon"].concat(D.box_protein.filter((u) => u !== "salmon").slice(0, 2))), "只 ☆ 一種：補預設到 3 種（依預設順序）");
+    check(eq(proteinsOf(gen(baseProfile, ["conv_bx04", "no_such", "hd_tomato_egg"])), proteinsOf(gen(baseProfile))), "☆ 不是蛋白質（超商品項、家常菜、不存在）：忽略，用預設");
+    const shell = Object.assign({}, baseProfile, { allergens: ["甲殼類"] });
+    check(proteinsOf(gen(shell, ["shrimp", "salmon", "egg"])).indexOf("shrimp") === -1 && proteinsOf(gen(shell, ["shrimp", "salmon", "egg"])).length >= 3, "☆ 的蝦對甲殼類過敏：不進池子，其餘照樣補到 3 種");
+    const hd = (u) => ck.homeDishById(catalog, u);
+    const mainDishes = (list) => [...new Set(list.filter((c) => c.entry === "home").flatMap((c) => c.part_refs.filter((p) => p.role === "dish" && hd(p.ref).role === "主菜").map((p) => p.ref)))];
+    const favDish = D.home_main.filter((u) => hd(u).role === "主菜" && hd(u).tier !== "🔴" && (hd(u).seasons || []).indexOf("autumn") !== -1).slice(0, 4);
+    check(favDish.length === 4 && eq(mainDishes(gen(baseProfile, favDish)), favDish), "☆ 四道家常主菜：家常餐的主菜池只有這四道（" + mainDishes(gen(baseProfile, favDish)).length + "）");
+    // 家常菜依季節；全素、過敏原未確認的人家常菜全擋
+    ["spring", "summer", "autumn", "winter"].forEach((season) => {
+      const date = { spring: "2026-04-10", summer: "2026-07-10", autumn: "2026-10-10", winter: "2026-01-10" }[season];
+      const dishes = gen(baseProfile, [], date).filter((c) => c.entry === "home").flatMap((c) => c.part_refs.filter((p) => p.role === "dish").map((p) => hd(p.ref)));
+      check(dishes.length > 0 && dishes.every((d) => (d.seasons || []).indexOf(season) !== -1), season + "：家常餐只用當季的菜");
+    });
+    check(gen(Object.assign({}, baseProfile, { diet_restriction: "全素" })).every((c) => c.entry !== "home"), "全素：家常菜全擋，候選只剩餐盒、早餐盤、早餐碗");
+  }
+
+  // 5. 倒讚：以組合 id 排除；id 看得懂、不含份量
+  {
+    const r = p1.dinner;
+    const p3 = plan(baseProfile, { feedbackMap: { [r.id]: { rating: "dislike", shown_count: 1, last_shown_date: "2026-10-01" } } }).recs;
+    check(p3.dinner && p3.dinner.id !== r.id, "倒讚的新自煮組合永遠排除");
+    check(CR.isCookRecId(r.id) && /^cook\|(box|plate|bowl|home)\|/.test(r.id), "推薦 id 格式：cook|入口|零件");
+  }
+
+  // 6. 來源「自動」：先試自煮（快煮），熱量貼得上配額就用自煮；貼不上才換外食、超商；下午茶宵夜的第二順位是超商與外食一起
+  {
+    const recsAuto = (budget, slots, p, poolOverride) => {
+      const prefs = {}, perSlot = {};
+      SLOTS.forEach((sl) => { prefs[sl] = "auto"; perSlot[sl] = budget; });
+      return M.recommend.getTodayRecommendation({ pool: poolOverride || productPool.concat(gen(p || baseProfile)), feedbackMap: {}, remainingBudget: { perSlotSuggestion: perSlot }, hardConstraints: { proteinGapToday: 30, fiberGapThisWeek: 10 },
+        mealPrefs: prefs, dietRestriction: (p || baseProfile).diet_restriction, allergens: (p || baseProfile).allergens, skipSlots: {}, lowCarb: false, nowMs: new Date(2026, 9, 11, 10, 0).getTime() });
+    };
+    const normal = recsAuto(600);
+    ["breakfast", "lunch", "dinner"].forEach((slot) => check(normal[slot] && normal[slot].is_cook_form && M.config.isQuickTier(normal[slot].tier_rank), "自動、配額 600：" + slot + " 先推自煮快煮（實際 " + (normal[slot] && normal[slot].name) + "）"));
+    // 自煮貼不上配額就換外食或超商：只留早餐碗（約 120–490 kcal）當自煮，配額 900 貼不上（±35%）、配額 450 貼得上
+    const bowlOnly = productPool.concat(gen(baseProfile).filter((c) => c.entry === "bowl"));
+    const far = recsAuto(900, null, null, bowlOnly), near = recsAuto(450, null, null, bowlOnly);
+    check(far.breakfast && !far.breakfast.is_cook_form, "自動、早餐配額 900、自煮只有早餐碗：貼不上配額，換外食或超商（實際 " + (far.breakfast && far.breakfast.name) + "）");
+    check(near.breakfast && near.breakfast.is_cook_form, "自動、早餐配額 450、自煮有早餐碗：貼得上配額，用自煮（實際 " + (near.breakfast && near.breakfast.name) + "）");
+    const light = recsAuto(300);
+    check(light.afternoon_tea && !light.afternoon_tea.lowBudget, "自動、配額 300：下午茶有推薦（早餐碗或超商外食）");
+    // 快煮的來源與開伙的來源互不混：☆ 只有慢的食材時，開伙看得到、快煮看不到（快煮用預設補出來的候選，開伙的池子不收）
+    const slow = ["salmon", "chicken_thigh", "beef_shank"];
+    const cands = gen(baseProfile, slow);
+    check(cands.some((c) => c.quick_pool_only) && cands.filter((c) => c.quick_pool_only).every((c) => M.config.isQuickTier(c.tier_rank)), "☆ 都是慢的食材：快煮的池子用預設補，這些候選都做得了快煮");
+    const fullPrefs = {}, quickPrefs = {}, perSlot = {};
+    SLOTS.forEach((sl) => { fullPrefs[sl] = "cook_full"; quickPrefs[sl] = "cook_quick"; perSlot[sl] = 600; });
+    const boxOnly = cands.filter((c) => c.entry === "box");
+    const run = (prefs) => M.recommend.getTodayRecommendation({ pool: boxOnly, feedbackMap: {}, remainingBudget: { perSlotSuggestion: perSlot }, hardConstraints: { proteinGapToday: 30, fiberGapThisWeek: 10 },
+      mealPrefs: prefs, dietRestriction: "一般", allergens: [], skipSlots: {}, lowCarb: false, nowMs: new Date(2026, 9, 11, 10, 0).getTime() });
+    const full = run(fullPrefs), quick = run(quickPrefs);
+    check(full.dinner && !full.dinner.quick_pool_only && full.dinner.main_protein_ref && slow.indexOf(full.dinner.main_protein_ref) !== -1, "☆ 都是慢的食材、開伙：推的是 ☆ 裡的（實際 " + (full.dinner && full.dinner.name) + "）");
+    check(quick.dinner && M.config.isQuickTier(quick.dinner.tier_rank), "☆ 都是慢的食材、快煮：照樣有推薦且做得了快煮（實際 " + (quick.dinner && quick.dinner.name) + "）");
+  }
+
+  // 7. 自己選的「建議自煮」：這個時段、貼近配額、主蛋白質各不相同、同一天一樣、隔天換；快煮只給做得了快煮的
+  {
+    const cands = gen(baseProfile);
+    const sug = (date, quick, slot, budget) => CR.cookRecSuggest({ candidates: cands, slot: slot || "dinner", budget: budget || 650, quick: quick, date: date, n: 3 });
+    const a = sug("2026-10-11", false), b = sug("2026-10-11", false), c = sug("2026-10-12", false), d = sug("2026-10-13", false);
+    const ids = (r) => r.map((x) => x.cand.id).join(",");
+    check(a.length === 3 && new Set(a.map((x) => x.cand.main_protein_ref)).size === 3, "建議自煮：三個、主蛋白質各不相同（" + a.map((x) => x.cand.main_protein_ref).join("、") + "）");
+    check(ids(a) === ids(b), "建議自煮：同一天打開幾次都一樣");
+    check(ids(a) !== ids(c) || ids(c) !== ids(d), "建議自煮：隔天會換（" + ids(a) + " / " + ids(c) + " / " + ids(d) + "）");
+    check(a.every((x) => x.cand.valid_slots.indexOf("dinner") !== -1 && Math.abs(650 / x.kcal - 1) <= 0.35 && !x.cand.quick_pool_only), "建議自煮：適用這個時段、熱量貼近配額、開伙的不收快煮專用池");
+    const q = sug("2026-10-11", true);
+    check(q.length === 3 && q.every((x) => M.config.isQuickTier(x.cand.tier_rank)), "建議自煮（快煮）：都做得了快煮");
+    const fins = a.map((x) => CR.cookRecFinalize(Object.assign({}, x.cand, { cook_variant: x.key, source_pref: "cook_full" }), { catalog, profile: baseProfile, oilHabit: "normal" }));
+    check(fins.every((x) => x && x.cook_form && x.name && ck.cookFormProblem(x.cook_form, catalog, baseProfile, "cook_full") === null), "建議自煮：每一個都能帶進表單（form 通過驗證）");
+    check(sug("2026-10-11", false, "breakfast", 400).every((x) => x.cand.entry === "plate" || x.cand.entry === "bowl"), "建議自煮：早餐只有早餐盤、早餐碗");
+  }
 }
 
 function checkCook(catalog) {
@@ -1200,8 +1386,12 @@ async function checkFavorites(catalog) {
 
   // 6. 訊息與明細文字（decisions #127 ⑥）
   const b = catalog.foodTree.byId;
-  check(fd.favoriteMessage(b.fx_rice, true, false) === "已標常吃「白米」，自己選會放在最上面。" && /原本標的不吃已取消/.test(fd.favoriteMessage(b.fx_rice, true, true)), "標常吃的訊息");
-  check(fd.favoriteMessage(b.fx_rice, false) === "已取消常吃「白米」。" && fd.favoriteEffectText() === "常吃只影響自己選的排列。", "取消常吃與作用文字");
+  const conv1 = catalog.products.find((p) => !p.is_taiwan && p.role !== "drink");
+  check(fd.favoriteMessage(conv1, true, false) === "已標常吃「" + conv1.name + "」，自己選會放在最上面。" && /原本標的不吃已取消/.test(fd.favoriteMessage(conv1, true, true)), "標常吃的訊息（超商、外食：只影響自己選）");
+  check(/今日建議的自煮也會優先從你標的食物裡挑/.test(fd.favoriteMessage(b.fx_rice, true, false)) && /今日建議的自煮也會優先/.test(fd.favoriteMessage(catalog.homeDishes.dishes[0], true, false)), "標常吃的訊息（自煮的食材、家常菜：也決定今日建議）");
+  check(fd.favoriteMessage(b.fx_rice, false) === "已取消常吃「白米」。" && fd.favoriteEffectText(conv1) === "常吃只影響自己選的排列." .replace(".", "。") && fd.favoriteEffectText() === "常吃只影響自己選的排列。" &&
+    /今日建議的自煮從你標的挑/.test(fd.favoriteEffectText(b.fx_rice)) && /今日建議的自煮從你標的挑/.test(fd.favoriteEffectText(catalog.homeDishes.dishes[0])) && fd.isCookFavoriteItem(b.fx_rice) && !fd.isCookFavoriteItem(conv1) && !fd.isCookFavoriteItem(b.fx_whole_milk),
+    "取消常吃與作用文字：自煮食物與家常菜寫會決定今日建議，其他只影響自己選；飲品、水果不算");
   check(/原本標的常吃已取消/.test(fd.dislikedMessage(b.fx_rice, true, true)) && !/常吃/.test(fd.dislikedMessage(b.fx_rice, true, false)), "標不吃時原本是常吃要補一句");
 
   // 7. 備份 v4：v3 升上來沒有這個 key 也合法；重複擋下；兩邊都有照樣還原、engine 以不吃為準（審核 S8）

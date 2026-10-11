@@ -222,7 +222,7 @@ async function run() {
   if (chip) {
     await click(`#rec-dinner .dislike-chip[data-key="${chip.key}"]`);
     await until(`!document.querySelector('#rec-dinner .dislike-chip[data-key="${chip.key}"]')`, "2-5 按「順便不要」後 " + chip.label + " 還在晚餐推薦裡");
-    check((await js(text("#today-status"))).indexOf("可以在「我的食物」取消") !== -1, "2-5 按「順便不要」後沒有提示去「我的食物」取消");
+    await until(`${text("#today-status")}.indexOf("可以在「我的食物」取消") !== -1`, "2-5 按「順便不要」後沒有提示去「我的食物」取消"); // 提示在整個重算完才出現，卡片先換掉
     await shot("今日建議-順便不要之後", "#rec-dinner");
     // 接著在基本資料按「計算」：不能把剛加的不吃項目蓋掉
     await tab("profile");
@@ -534,6 +534,7 @@ async function run() {
   await tab("profile");
   await js(`(() => { const f = document.getElementById('weight-form'); f.elements.weight_kg.value = 78.8; f.requestSubmit(); })()`);
   await until(`${text("#weight-log-status")}.indexOf("78.8") !== -1`, "5-2 體重沒有記錄");
+  await new Promise((r) => setTimeout(r, 1500)); // 記體重後今日建議會在背景重算並寫「今天顯示過」，等寫完再抓資料快照（重算比以前久）
   const changed = await js(`(async () => { const m = ${DB}; return JSON.stringify((await m.exportAllData()).sections); })()`);
   check(changed !== JSON.stringify(backup.sections), "5-2 改資料後內容跟備份一樣（測試前提不成立）");
 
@@ -1867,6 +1868,46 @@ async function run() {
   await shot("共餐-早餐帶入", "#meal-picker-panel");
   await closePicker();
   await js(`(async () => { const m = ${DBW}; await m.updateSavedMeal(${JSON.stringify(savedHm.id)}, { archived: true }); })()`);
+
+  // ---------- 16b. 今日建議的自煮（新引擎：餐盒、早餐盤、早餐碗、家常餐，☆ 與預設決定池子） ----------
+  console.log("[16b. 今日建議的自煮]");
+  await tab("today");
+  await until(`!!document.querySelector('#rec-dinner .rec-name')`, "16b 晚餐沒有推薦卡片");
+  const dinnerName = await js(text("#rec-dinner .rec-name"));
+  check(/^(餐盒|家常餐)（.+）$/.test(dinnerName), "16b-1 開伙的晚餐建議不是新自煮的名稱格式「餐盒（…）」「家常餐（…）」：" + dinnerName);
+  check(/[0-9]+g/.test(await js(text("#rec-dinner .rec-content-note"))), "16b-1 建議卡片沒有零件明細（食材、克數、做法）");
+  check(!!(await js(`!!document.querySelector('#rec-dinner .rec-edit-btn')`)) && !!(await js(`!!document.querySelector('#rec-dinner .dislike-chip')`)), "16b-1 建議卡片沒有「改一下」或「順便不要」");
+  await shot("今日建議-新自煮卡片", "#rec-dinner");
+  // 16b-2 「改一下」：把同一份帶進自己選，型態與食材都在、可以直接送出
+  await click("#rec-dinner .rec-edit-btn");
+  await until(`!document.getElementById('meal-picker-overlay').hidden && !!document.querySelector('#meal-picker-panel [data-nc=entry].selected')`, "16b-2 按「改一下」沒有帶進自己選");
+  check((await currentTab()) === "cook" && (await js(`document.querySelector('#meal-picker-panel [data-nc=entry].selected').innerText`)).indexOf(dinnerName.slice(0, dinnerName.indexOf("（"))) !== -1, "16b-2 帶進自己選的入口跟建議不同");
+  check((await js(text("#meal-picker-summary"))).indexOf("已配好") !== -1 && !(await js(`document.getElementById('meal-picker-submit').disabled`)), "16b-2 帶進來的建議摘要不是已配好或不能送出：" + (await js(text("#meal-picker-hint"))));
+  await shot("今日建議-改一下", "#meal-picker-panel");
+  await closePicker();
+  // 16b-3 自己選的自煮分頁：沒選入口時列「建議自煮」三個，點了帶進表單
+  await openPicker("dinner");
+  await click(`#meal-picker-tabs [data-tab=cook]`);
+  check((await js(`document.querySelectorAll('#meal-picker-panel [data-nc=sug]').length`)) === 3, "16b-3 自己選的自煮分頁沒有三個「建議自煮」");
+  await shot("自己選-建議自煮", "#meal-picker-panel");
+  await click(`#meal-picker-panel [data-nc=sug][data-i="0"]`);
+  await until(`!!document.querySelector('#meal-picker-panel [data-nc=entry].selected')`, "16b-3 點「建議自煮」沒有帶進表單");
+  check((await js(text("#meal-picker-summary"))).indexOf("已配好") !== -1 && (await js(`document.querySelectorAll('#meal-picker-panel [data-nc=sug]').length`)) === 0, "16b-3 帶進建議後摘要不是已配好、或建議列沒有收起");
+  await closePicker();
+  // 16b-4 「我的食物」自煮：家常菜在裡面，可以標常吃（今日建議的自煮從標的挑）、取消
+  await tab("foods");
+  await foodsSub("cook");
+  await openSection("cook:home");
+  await openSection("cook:home:青菜");
+  await inFoodRow("蒜炒高麗菜", ".food-row-main");
+  check((await js(`document.querySelector('#foods-body .food-detail').innerText`)).indexOf("今日建議的自煮從你標的挑") !== -1, "16b-4 家常菜的明細沒有寫常吃會決定今日建議");
+  await inFoodRow("蒜炒高麗菜", "[data-foods-favorite]");
+  await until(`${text("#foods-status")}.indexOf("今日建議的自煮也會優先從你標的食物裡挑") !== -1`, "16b-4 標常吃後沒有說明會影響今日建議");
+  check(!!(await js(`!!document.querySelector('#foods-body .foods-favorites [data-foods-unfavorite=hd_garlic_cabbage]')`)), "16b-4 標了常吃的家常菜沒有出現在常吃組");
+  await shot("我的食物-家常菜常吃", "#foods-body .foods-favorites");
+  await inFoodRow("蒜炒高麗菜", "[data-foods-unfavorite]");
+  await until(`!document.querySelector('#foods-body .foods-favorites [data-foods-unfavorite=hd_garlic_cabbage]')`, "16b-4 取消常吃後這道菜還在常吃組");
+  await tab("today");
 
   // ---------- 17. 使用說明入口（基本資料分頁，在 App 裡打開說明書） ----------
   console.log("[17. 使用說明入口]");

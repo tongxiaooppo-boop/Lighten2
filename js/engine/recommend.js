@@ -11,11 +11,14 @@
 //   - 依序處理時段，前面時段挑到的真實熱量跟配額的差額帶到下一個時段
 
 import { SLOTS, MEAL_SOURCE_OPTIONS, DEFAULT_MEAL_PREFS } from "../core/slots.js";
-import { LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G, QUICK_MAX_TIER_RANK, isQuickTier } from "../core/config.js";
+import {
+  LOW_BUDGET_THRESHOLD_KCAL, LOW_CARB_MEAL_MAX_G, QUICK_MAX_TIER_RANK, isQuickTier, COOK_MAIN_ROLES, COOK_PART_RECENCY,
+  AUTO_TOLERANCE, AUTO_TOLERANCE_LOW_BUDGET, AUTO_LOW_BUDGET_KCAL, AUTO_LIGHT_SLOTS,
+} from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { diffDays, fmtDate } from "../core/dates.js";
 import { passesHardFilters } from "./filters.js";
-import { achievableNutrition, lowCarbMaxScale, displayFields, withOilHabit } from "./meal-content.js";
+import { achievableNutrition, lowCarbMaxScale, displayFields } from "./meal-content.js";
 import { slotShare } from "./budget.js";
 
 const PROTEIN_SATISFICE_G = 25; // 約一個手掌心蛋白質的量，達到這個量之後多蛋白質不再加分
@@ -36,8 +39,27 @@ function filterBySource(candidates, sourcePref) {
   if (sourcePref === "convenience") return candidates.filter(function (c) { return c.is_convenience; });
   if (sourcePref === "delivery") return candidates.filter(function (c) { return !!c.is_delivery; });
   if (sourcePref === "cook_quick") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery && isQuickTier(c.tier_rank); });
-  if (sourcePref === "cook_full") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery; });
+  if (sourcePref === "cook_full") return candidates.filter(function (c) { return !c.is_convenience && !c.is_delivery && !c.quick_pool_only; });
   return candidates;
+}
+
+// 來源偏好「自動」：依序試 自煮（快煮）→ 外食 → 超商，第一個「可用」的來源就是候選（下午茶、宵夜：自煮 → 超商與外食一起）。
+// 可用＝這個來源有候選，最貼近預算的份量熱量與配額差在容許範圍內。都不可用回傳 null（呼叫端用全部候選）。
+function autoTierCandidates(list, slot, budget, carbCap) {
+  const quickCook = function (c) { return c.is_cook_form && isQuickTier(c.tier_rank); };
+  const tiers = AUTO_LIGHT_SLOTS.indexOf(slot) !== -1
+    ? [quickCook, function (c) { return c.is_convenience || c.is_delivery; }]
+    : [quickCook, function (c) { return !!c.is_delivery; }, function (c) { return !!c.is_convenience; }];
+  const tol = budget < AUTO_LOW_BUDGET_KCAL ? AUTO_TOLERANCE_LOW_BUDGET : AUTO_TOLERANCE;
+  for (let i = 0; i < tiers.length; i++) {
+    const tier = list.filter(tiers[i]);
+    const usable = tier.some(function (c) {
+      const eff = achievableNutrition(c, budget, carbCap ? carbCap[c.id] : null);
+      return eff.kcal > 0 && Math.abs(eff.kcal / budget - 1) <= tol;
+    });
+    if (usable) return tier;
+  }
+  return null;
 }
 
 // 顯示紀錄的日期（本地 "YYYY-MM-DD"）距離今天幾天：兩邊都用本地日期算。
@@ -66,15 +88,17 @@ export function feedbackScore(fb, nowMs) {
   return s;
 }
 
+// 新自煮候選的零件角色 → 近期降權的權重在 config（COOK_PART_RECENCY）；蔬菜的 key 加 "veg:" 前綴，跟蛋白質分開
+function recencyKey(p) { return p.role === "veg" ? "veg:" + p.ref : p.ref; }
+
 function score(combo, fb, constraints, budget, recencyMap, nowMs, maxScale) {
   let s = feedbackScore(fb, nowMs);
-  if (combo.is_composed && combo.protein_id && recencyMap && recencyMap[combo.protein_id]) {
-    const days = recencyMap[combo.protein_id].days;
-    if (days < 3) s -= (3 - days) * 20; // 這個蛋白質來源（不管配什麼菜/主食）近期出現過 → 降權
-  }
-  if (combo.is_composed && combo.vegetable_id && recencyMap && recencyMap["veg:" + combo.vegetable_id]) {
-    const days = recencyMap["veg:" + combo.vegetable_id].days;
-    if (days < 3) s -= (3 - days) * 10; // 蔬菜也做一樣的降權，權重比蛋白質輕
+  if (recencyMap && combo.part_refs) {
+    combo.part_refs.forEach(function (p) {
+      const w = COOK_PART_RECENCY[p.role];
+      const hit = w && recencyMap[recencyKey(p)];
+      if (hit && hit.days < 3) s -= (3 - hit.days) * w; // 這個零件（不管配什麼）近期出現過 → 降權；蛋白質與主菜最重，蔬菜較輕
+    });
   }
   // 蛋白質/纖維未知（null）的組合拿不到這兩項加分，不猜它有多少
   if (constraints.proteinGapToday > 0 && combo.protein_g != null) s += Math.min(combo.protein_g, PROTEIN_SATISFICE_G) * 0.5;
@@ -95,12 +119,11 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
     if (!cur || days < cur.days) recency[key] = { days: days };
   }
   combos.forEach(function (c) {
-    if (!c.is_composed) return;
+    if (!c.part_refs) return;
     const fb = feedbackMap[c.id];
     if (!fb || shownToday(fb, nowMs)) return; // 先略過今天的顯示再取最小值，今天剛顯示的不會蓋掉昨天的紀錄
     const days = daysSince(fb.last_shown_date, nowMs);
-    if (c.protein_id) record(c.protein_id, days);
-    if (c.vegetable_id) record("veg:" + c.vegetable_id, days);
+    if (c.part_refs) c.part_refs.forEach(function (p) { if (COOK_PART_RECENCY[p.role]) record(recencyKey(p), days); });
   });
   return recency;
 }
@@ -114,14 +137,11 @@ function buildRecencyMap(combos, feedbackMap, nowMs) {
 //   dietRestriction / allergens / dislikedIngredients: profile 的硬性過濾設定
 //   skipSlots: { slot: true } 不需要推薦的時段（已記錄／已關閉），回傳 null 不佔剩餘熱量池
 //   lowCarb: 基本資料的低碳開關（只影響推薦）：一餐碳水 ≤ LOW_CARB_MEAL_MAX_G，自組食譜用它限制主要槽位縮放
-//   oilHabit: 基本資料「家裡用油習慣」（normal | less），自組食譜的用油依它換算
 //   loggedContents: 今天已記錄的每一餐 MealContent；吃過的蛋白質、餐型、品項佔住跨時段不重複的名額（decisions #39）
 //   nowMs: 現在時間（毫秒）
 // }
 export function getTodayRecommendation(o) {
-  const combos = o.oilHabit && o.oilHabit !== "normal"
-    ? o.pool.map(function (c) { return withOilHabit(c, o.oilHabit); })
-    : o.pool;
+  const combos = o.pool;
   const feedbackMap = o.feedbackMap || {};
   const constraints = o.hardConstraints || { proteinGapToday: 0, fiberGapThisWeek: 0 };
   const skip = o.skipSlots || {};
@@ -133,13 +153,12 @@ export function getTodayRecommendation(o) {
 
   // 同一天的各時段之間不重複：自組食譜不重複主蛋白質、同一餐型最多一次；現成品項任何成分只出現在一個時段
   const usedProteinIds = {};
-  const usedArchetypeIds = {};
   const usedItemIds = {};
   (o.loggedContents || []).forEach(function (content) {
     if (!content) return;
-    if (content.archetype_id) usedArchetypeIds[content.archetype_id] = true;
     (content.components || []).forEach(function (c) {
       if (c.kind === "ingredient" && c.axis === "protein") usedProteinIds[c.ref] = true;
+      else if (c.part && COOK_MAIN_ROLES.indexOf(c.role) !== -1) usedProteinIds[c.ref] = true;
       else if (c.kind === "product") usedItemIds[c.ref] = true;
     });
   });
@@ -174,19 +193,18 @@ export function getTodayRecommendation(o) {
       if (c.tier_rank > maxRank) return false;
       if (c.valid_slots && c.valid_slots.indexOf(slot) === -1) return false;
       if (o.lowCarb && carbCap[c.id] === null) return false;
-      if (!passesHardFilters(c, filterProfile).ok) return false;
+      if (!c.pre_filtered && !passesHardFilters(c, filterProfile).ok) return false; // 新自煮候選在 cook-rec.js 建立時已過濾
       const fb = feedbackMap[c.id];
       if (fb && fb.rating === "dislike") return false; // 倒讚永久排除
-      if (c.is_composed) {
-        if (c.protein_id && usedProteinIds[c.protein_id]) return false;
-        if (c.archetype_id && usedArchetypeIds[c.archetype_id]) return false;
+      if (c.is_cook_form) {
+        if (c.main_protein_ref && usedProteinIds[c.main_protein_ref]) return false;
       } else if (c.components.some(function (id) { return usedItemIds[id]; })) {
         return false;
       }
       return true;
     });
 
-    let candidates = filterBySource(baseCandidates, sourcePref);
+    let candidates = sourcePref === "auto" ? (autoTierCandidates(baseCandidates, slot, budget, o.lowCarb ? carbCap : null) || baseCandidates) : filterBySource(baseCandidates, sourcePref);
     let usedFallback = false;
     if (candidates.length === 0 && baseCandidates.length > 0) {
       usedFallback = true;
@@ -214,9 +232,8 @@ export function getTodayRecommendation(o) {
 
     const top = scored[0].c;
     const eff = achievableNutrition(top, budget, o.lowCarb ? carbCap[top.id] : null);
-    if (top.is_composed) {
-      if (top.protein_id) usedProteinIds[top.protein_id] = true;
-      if (top.archetype_id) usedArchetypeIds[top.archetype_id] = true;
+    if (top.is_cook_form) {
+      if (top.main_protein_ref) usedProteinIds[top.main_protein_ref] = true;
     } else {
       top.components.forEach(function (id) { usedItemIds[id] = true; });
     }
@@ -224,6 +241,7 @@ export function getTodayRecommendation(o) {
       budget: round1(budget),
       scale: round1(eff.scale),
       primary_scale: eff.scale, // 未取整的倍數：營養值是用它算的，記錄時存這個
+      cook_variant: eff.variant || null, // 新自煮：選中的份量組合（cookRecFinalize 用它重算）
       scaled_kcal: eff.kcal,
       protein_g: eff.protein_g,
       carb_g: eff.carb_g,

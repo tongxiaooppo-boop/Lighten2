@@ -13,6 +13,7 @@ import {
   foodsFavSet, favoritesGroupHtml, favoriteButtonHtml,
 } from "./rows.js";
 import { dislikedAllHtml } from "./disliked.js";
+import { homeDishesGroupHtml, homeDishFavorites, homeDishFavoriteEntry, homeDishesDisliked, homeDishRow } from "./home-dishes.js";
 import {
   myIngredientSections, mineInMajorHtml, otherIngredientsHtml, archivedIngredientsHtml, ingredientFavorites, addButtonHtml, addPanelHtml,
   ingFormHtml, lookupNoteHtml,
@@ -112,16 +113,18 @@ export function cookSubtabHtml(s) {
   const all = treeItemsOf(s, "cook");
   const disliked = all.filter(function (it) { return codeOf(s, it) === "disliked"; });
   const blocked = all.filter(function (it) { const c = codeOf(s, it); return c && c !== "disliked"; }).length;
-  const favs = treeFavorites(s, "cook").map(function (it) { return treeFavoriteEntry(s, it); }).concat(ingredientFavorites(s, "cook"));
+  const homeDisliked = homeDishesDisliked(s);
+  const favs = treeFavorites(s, "cook").map(function (it) { return treeFavoriteEntry(s, it); }).concat(ingredientFavorites(s, "cook"), homeDishFavorites(s).map(function (d) { return homeDishFavoriteEntry(s, d); }));
   const mine = myIngredientSections(s);
   const top = addButtonHtml(s) + addPanelHtml(s) + (s.ingForm && s.ingForm.mode === "add" ? ingFormHtml(s) : "") + (s.addIng ? "" : lookupNoteHtml(s));
   return '<div class="foods-ing-top">' + top + "</div>" + blockedNote(blocked) +
     favoritesGroupHtml(favs, function (e) { return foodsBlockLabel(e.tree, s.profile || {}); }) +
     foodTreeSections(s.catalog.foodTree, "cook").map(function (g) { return majorHtml(s, "cook", g, mine.cook[g.code]); }).join("") +
+    homeDishesGroupHtml(s) +
     otherIngredientsHtml(s) +
-    detailsGroup(s, "cook:disliked", "你標了不吃", disliked.length, function () {
-      return disliked.map(function (it) { return treeRow(s, it, "你標了不吃"); }).join("");
-    }, disliked.some(function (it) { return it.uid === s.openUid; })) +
+    detailsGroup(s, "cook:disliked", "你標了不吃", disliked.length + homeDisliked.length, function () {
+      return disliked.map(function (it) { return treeRow(s, it, "你標了不吃"); }).join("") + homeDisliked.map(function (d) { return homeDishRow(s, d, "你標了不吃"); }).join("");
+    }, disliked.some(function (it) { return it.uid === s.openUid; }) || homeDisliked.some(function (d) { return d.id === s.openUid; })) +
     archivedIngredientsHtml(s) +
     dislikedAllHtml(s);
 }

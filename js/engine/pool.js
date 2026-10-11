@@ -1,27 +1,17 @@
-// 輕盈計畫 — 推薦候選池：由 catalog 產生所有合法的一餐組合（跟預算、偏好、回饋都無關，同一份 catalog 只建一次）。
-//   1. 自組食譜：data/dish_archetypes.json 定義的「餐型骨架」，組合只在餐型內部展開（is_composed=true）
-//   2. 超商即食品項：channel=convenience（is_convenience=true）
-//   3. 外食／外賣：台式外食＋連鎖健康餐盒/宅配（is_delivery=true）
-//   2、3 共用同一個「統一成分模型」生成器：品項在資料裡標 role/valid_slots，依一張規則表組合。
+// 輕盈計畫 — 推薦候選池：由 catalog 產生所有合法的現成品項一餐組合（跟預算、偏好、回饋都無關，同一份 catalog 只建一次）。
+//   1. 超商即食品項：channel=convenience（is_convenience=true）
+//   2. 外食／外賣：台式外食＋連鎖健康餐盒/宅配（is_delivery=true）
+//   兩者共用同一個「統一成分模型」生成器：品項在資料裡標 role/valid_slots，依一張規則表組合。
+//   自煮的候選不在這裡：由 cook-rec.js 依使用者設定與 ☆ 另外產生（2026-10-11 取代舊的餐型骨架窮舉），今日建議把兩邊合併成一個池。
 
 import { SLOTS } from "../core/slots.js";
 import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
-import {
-  sumProducts, ingredientContribution, addContributions, displayFields, defaultImplicit, implicitContribution, ZERO_CONTRIBUTION,
-  noCookViolation, maxTierRank, contentNote,
-} from "./meal-content.js";
+import { sumProducts, displayFields, contentNote } from "./meal-content.js";
 
 function r1(v) {
   return v == null ? null : round1(v);
-}
-
-function byId(list, id) {
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].id === id) return list[i];
-  }
-  return null;
 }
 
 // 沒有代表值、且 high/low ≥ 1.5 倍的品項熱量太不精準，不進推薦池（手動選照樣可用）
@@ -29,106 +19,6 @@ function isTooWideRange(p) {
   if (p.kcal_rep != null) return false;
   if (p.kcal_low == null || p.kcal_high == null || p.kcal_low <= 0) return true;
   return p.kcal_high / p.kcal_low >= WIDE_RANGE_RATIO;
-}
-
-// ---------- 1. 自組食譜（餐型骨架） ----------
-// 組合只在每個「餐型」內部展開，槽位不對稱（例如早餐碗沒有蔬菜/醬料槽）。
-// 每個食材用自己的 serving_g 算天然一份的營養值；用「主要槽位」（有主食槽的用主食、沒有主食槽的用蛋白質）
-// 在 PRIMARY_SLOT_SCALE_RANGE 內縮放去對熱量預算，其他槽位維持天然份量不縮放。
-function composedCombos(catalog) {
-  const combos = [];
-
-  function pickList(axesList, allowIds) {
-    if (!allowIds || allowIds.length === 0) return [null];
-    return allowIds.map(function (id) { return byId(axesList, id); }).filter(Boolean);
-  }
-
-  catalog.archetypes.forEach(function (arche) {
-    const proteinList = pickList(catalog.proteins, arche.protein && arche.protein.allow);
-    const stapleList = pickList(catalog.staples, arche.staple && arche.staple.allow);
-    // 蔬菜/醬料即使餐型有白名單，也一律附加一個「不加」的選項（null），因為它們本來就是加分項不是必要項
-    const vegetableList = (arche.vegetable && arche.vegetable.allow && arche.vegetable.allow.length > 0)
-      ? pickList(catalog.vegetables, arche.vegetable.allow).concat([null])
-      : [null];
-    const seasoningList = (arche.seasoning && arche.seasoning.allow && arche.seasoning.allow.length > 0)
-      ? pickList(catalog.sauces, arche.seasoning.allow).concat([null])
-      : [null];
-    const methodList = (arche.methods || []).map(function (id) { return byId(catalog.sauces, id); }).filter(Boolean);
-    const hasStapleSlot = !!(arche.staple && arche.staple.allow && arche.staple.allow.length > 0);
-
-    proteinList.forEach(function (p) {
-      if (!p || p.kcal_100g == null) return;
-      stapleList.forEach(function (s) {
-        if (s && s.kcal_100g == null) return;
-        vegetableList.forEach(function (v) {
-          if (v && v.kcal_100g == null) return;
-          seasoningList.forEach(function (season) {
-            if (season && season.kcal_100g == null) return;
-            methodList.forEach(function (m) {
-              // 食安：免開火只能配不需要煮熟的食材，適用於這個組合裡出現的每一個槽位（章程 C4.3）。
-              if (noCookViolation(m, [p, s, v, season])) return;
-
-              const primaryItem = hasStapleSlot ? s : p;
-              const primaryContribution = primaryItem ? ingredientContribution(primaryItem) : ZERO_CONTRIBUTION;
-
-              // 隱含成分以「一般」用油習慣建立，少油習慣在推薦時換算（meal-content withOilHabit）；不跟主要槽位縮放
-              const implicit = defaultImplicit(m, arche, !!v, !!season, "normal");
-              const total = addContributions([
-                ingredientContribution(p),
-                s ? ingredientContribution(s) : null,
-                v ? ingredientContribution(v) : null,
-                season ? ingredientContribution(season) : null,
-                implicitContribution(implicit, catalog.implicit),
-              ].filter(Boolean));
-
-              const items = [p, s, v, season].filter(Boolean);
-              const rank = maxTierRank(m, items);
-              const nameParts = [p.name, s && s.name, v && v.name, season && season.name].filter(Boolean);
-
-              combos.push(Object.assign({
-                id: arche.id + "_" + p.id + "_" + (s ? s.id : "none") + "_" + (v ? v.id : "none") + "_" + (season ? season.id : "none") + "_" + m.id,
-                archetype_id: arche.id,
-                method_id: m.id,
-                protein_id: p.id,
-                staple_id: s ? s.id : null,
-                vegetable_id: v ? v.id : null,
-                sauce_id: season ? season.id : null,
-                primary_axis: hasStapleSlot ? "staple" : "protein",
-                valid_slots: arche.valid_slots || null, // 餐型自己標適用時段
-                not_included: arche.not_included || null, // 骨架算不到的東西，畫面註明「未含 X」（章程 B7.5）
-                name: nameParts.join(" + "),
-                protein_name: p.name,
-                staple_name: s ? s.name : null,
-                vegetable_name: v ? v.name : null,
-                sauce_name: season ? season.name : m.name,
-                kcal: round1(total.kcal),
-                protein_g: r1(total.protein_g),
-                carb_g: r1(total.carb_g),
-                fat_g: r1(total.fat_g),
-                fiber_g: r1(total.fiber_g),
-                primary_kcal: primaryContribution.kcal,
-                primary_protein_g: primaryContribution.protein_g,
-                primary_carb_g: primaryContribution.carb_g,
-                primary_fat_g: primaryContribution.fat_g,
-                primary_fiber_g: primaryContribution.fiber_g,
-                implicit: implicit,
-                implicit_items: catalog.implicit,
-                is_composed: true,
-                tier: RANK_TO_TIER[rank],
-                tier_rank: rank,
-                components: items.map(function (it) { return it.id; }),
-                diet_tag_sets: items.map(function (it) { return it.diet_tags || []; }), // 烹調法不是食物，不參與飲食限制判斷
-                allergen_tags: unionTags.apply(null, items.map(function (it) { return it.allergen_tags; }).concat([m.allergen_tags])),
-                is_convenience: false,
-                is_delivery: false,
-              }, displayFields(total, primaryContribution)));
-            });
-          });
-        });
-      });
-    });
-  });
-  return combos;
 }
 
 // ---------- 2. 現成品項（超商／外食外賣）：統一成分模型、單一生成器 ----------
@@ -217,7 +107,7 @@ const _pools = new WeakMap();
 
 export function buildCandidatePool(catalog) {
   if (_pools.has(catalog)) return _pools.get(catalog);
-  const combos = composedCombos(catalog);
+  const combos = [];
 
   const convenience = catalog.products
     .filter(function (p) { return !p.is_taiwan && p.kcal != null; })
@@ -242,13 +132,13 @@ export function buildCandidatePool(catalog) {
   return combos;
 }
 
-// 拿掉含隱藏內建品項的現成組合（PRD 10.2：隱藏是使用者主動操作，推薦也要濾掉）。自組食譜不受影響（隱藏只針對內建超商／外食品項）。
+// 拿掉含隱藏內建品項的現成組合（PRD 10.2：隱藏是使用者主動操作，推薦也要濾掉）。新自煮候選不受影響（隱藏只針對內建超商／外食品項）。
 // 隱藏清單裡查不到的 uid 自然不會命中（章程 B9）。空清單回傳同一個陣列（推薦快照不變）。
 export function withoutHidden(pool, hiddenUids) {
   if (!Array.isArray(hiddenUids) || hiddenUids.length === 0) return pool;
   const hidden = {};
   hiddenUids.forEach(function (u) { hidden[u] = true; });
   return pool.filter(function (c) {
-    return c.is_composed || !(c.components || []).some(function (uid) { return hidden[uid]; });
+    return c.is_cook_form || !(c.components || []).some(function (uid) { return hidden[uid]; });
   });
 }

@@ -37,6 +37,7 @@ import { valuesFromRecord, recordFromValues, customFoodNotes, customFoodFormHtml
 import { cookTabHtml, archetypeOptions, optionReason } from "./cook-tab.js";
 import { newCookState, cookFormAction } from "./cook-forms.js";
 import { cookPruneForQuick, cleanCookForm } from "../../engine/cook.js";
+import { cookRecCandidates, cookRecSuggest, cookRecFinalize } from "../../engine/cook-rec.js";
 import { seasonOfDate } from "../../core/dates.js";
 import { estimateCardHtml, emptyHomeEst, normalizeHomeCfg } from "./estimate-card.js";
 import { emptyQuickAdd, quickAddRecord, quickAddNotes, quickAddFormHtml, readQuickAddInputs } from "./quick-add.js";
@@ -221,6 +222,7 @@ export async function openMealPicker(slotArg, opts) {
   });
   m.tabs.delivery.estimates = [];
   const homeShare = slot ? slotNutrientShare(targets, mode === "log" ? todayLogs : [], profile.enabled_slots, slot).kcalShare : 0; // 預約、補記看整天的時段份額（那天的紀錄不在 todayLogs）
+  m.slotShare = homeShare; // 這個時段的配額（kcal）；自煮的「建議」用它挑份量
   m.homeEst = emptyHomeEst(homeEstimateDefaults(targets, homeShare, catalog.homeDishes)); // 「主食＋家常菜」估算表單（decisions #151），關掉選擇器再開回到預設
   m.drinks = { items: parts.drinks, reasons: reasonsFor(parts.drinks, profile), codes: codesFor(parts.drinks, profile) };
   m.drinkUid = null;
@@ -250,6 +252,14 @@ export async function openMealPicker(slotArg, opts) {
   m.season = seasonOfDate(day); // 共餐清單只列這一餐那天的當季菜
 
   computeSavedCards();
+  // 從今日建議的「改一下」打開：把同一份新自煮帶進表單（型態、食材、做法、份量都是建議當下的）
+  if (!editing && o.cookPreset && o.cookPreset.cook_form) {
+    const pre = o.cookPreset;
+    m.tab = "cook";
+    m.cook.tier = pre.cook_content.meal_type;
+    m.cook.nc.entry = pre.cook_form.entry;
+    m.cook.nc.forms[pre.cook_form.entry] = cleanCookForm(pre.cook_form);
+  }
   if (editing) applySaved(editing);
   else if ((mode === "plan" || mode === "backfill") && o.planPreset) applySaved(o.planPreset);
   // 標題與送出鈕只在打開時寫（render 路徑不寫，快照的 domNN 才不會位移，審核第 4 節）
@@ -470,12 +480,33 @@ function renderTabs() {
   }).join("");
 }
 
+// 自己選的自煮分頁上方的「建議自煮」：跟今日建議同一批候選（☆ 與預設決定池子），依這個時段的配額挑，每天換（cook-rec.js 的 cookRecSuggest）；
+// 打開選擇器之後同一個設定只算一次（候選本身有記憶，今日建議已經建好）
+function cookSuggestions() {
+  const m = mealPicker;
+  if (!m.slot || m.editing || !m.slotShare) return [];
+  const key = [m.slot, m.cook.tier, m.date, m.favorites.join(","), JSON.stringify(m.profile.disliked_ingredients || [])].join("|");
+  if (m.cook.sugKey === key) return m.cook.sugList;
+  const oilHabit = m.profile.oil_habit || "normal";
+  const cands = cookRecCandidates({ catalog: m.catalog, profile: m.profile, favoriteRefs: m.favorites, oilHabit: oilHabit, date: m.date });
+  const rows = cookRecSuggest({ candidates: cands, slot: m.slot, budget: m.slotShare, quick: m.cook.tier === "cook_quick", date: m.date, n: 3 });
+  const list = rows.map(function (r) {
+    const rec = Object.assign({}, r.cand, { cook_variant: r.key, source_pref: m.cook.tier });
+    const fin = cookRecFinalize(rec, { catalog: m.catalog, profile: m.profile, oilHabit: oilHabit });
+    return fin ? { name: fin.name, kcal: Math.round(fin.kcal), form: fin.cook_form } : null;
+  }).filter(Boolean);
+  m.cook.sugKey = key;
+  m.cook.sugList = list;
+  return list;
+}
+
 function renderPanel() {
   const panel = $("#meal-picker-panel");
   if (!panel) return;
   const m = mealPicker;
   const top = m.editing ? (m.savedNotice ? '<p class="meal-picker-note">' + escapeHtml(m.savedNotice) + "</p>" : "") : savedRowHtml(m.savedCards, m.savedNotice);
   if (m.tab === "cook") {
+    m.cook.sugList = m.cook.nc.entry || m.cook.draft.archetype || (m.cook.home && m.cook.home.open) ? [] : cookSuggestions();
     const r = cookTabHtml(m.catalog, m.slot, m.cook, m.profile, pickerFavSet(), homeMealAllowed() ? { season: m.season } : null);
     m.cookSteps = r.steps;
     panel.innerHTML = top + r.html;
@@ -1038,6 +1069,19 @@ function onNewCookClick(e) {
   const p = {};
   ["uid", "i", "v", "m", "k"].forEach(function (k) { if (el.hasAttribute("data-" + k)) p[k] = el.getAttribute("data-" + k); });
   const act = el.getAttribute("data-nc");
+  if (act === "sug") { // 帶入一個建議：表單照它填好，之後可以再改
+    const sg = (m.cook.sugList || [])[Number(p.i)];
+    if (!sg) return true;
+    m.cook.draft = emptyCookDraft();
+    m.cook.home.open = false;
+    m.cook.nc.msg = "";
+    m.cook.nc.entry = sg.form.entry;
+    m.cook.nc.forms[sg.form.entry] = cleanCookForm(sg.form);
+    renderPanel();
+    renderDrinks();
+    updateSummary();
+    return true;
+  }
   if (act === "entry") { // 選新入口：舊餐型與舊共餐讓位
     m.cook.draft = emptyCookDraft();
     m.cook.home.open = false;

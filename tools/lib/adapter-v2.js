@@ -35,6 +35,7 @@ module.exports = async function createV2Adapter(ROOT) {
   const fdb = await import(fakeDb);
   const catalogMod = await imp("js/data/catalog.js");
   const pool = await imp("js/engine/pool.js");
+  const cookRec = await imp("js/engine/cook-rec.js");
   const recommend = await imp("js/engine/recommend.js");
   const nutrition = await imp("js/engine/nutrition.js");
   const budget = await imp("js/engine/budget.js");
@@ -118,10 +119,16 @@ module.exports = async function createV2Adapter(ROOT) {
     dailyLogsFor: (date) => clone(globalThis.__fakeDbState.dailyLogs.filter((l) => l.log_date === date)),
 
     // ---------- engine 層 ----------
-    pool: async () => pool.buildCandidatePool(await catalogMod.loadCatalog()),
+    pool: async () => pool.buildCandidatePool(await catalogMod.loadCatalog()), // 超商與外食；自煮候選見 cookPool
+    // 新自煮候選（依飲食、過敏原、不吃、☆、日期產生）：profile 只要這幾個欄位
+    async cookPool(profile, favoriteRefs, date) {
+      return cookRec.cookRecCandidates({ catalog: await catalogMod.loadCatalog(), profile: profile || {}, favoriteRefs: favoriteRefs || [], oilHabit: (profile && profile.oil_habit) || "normal", date: date || clock.todayStr() });
+    },
     async recommendRaw(remainingBudget, constraints, prefs, diet, allergens, skip, disliked, lowCarb) {
+      const catalog = await catalogMod.loadCatalog();
+      const cookCands = cookRec.cookRecCandidates({ catalog: catalog, profile: { diet_restriction: diet, allergens: allergens, disliked_ingredients: disliked || [] }, favoriteRefs: [], oilHabit: "normal", date: clock.todayStr() });
       return recommend.getTodayRecommendation({
-        pool: pool.buildCandidatePool(await catalogMod.loadCatalog()),
+        pool: pool.buildCandidatePool(catalog).concat(cookCands),
         feedbackMap: clone(globalThis.__fakeDbState.feedback),
         remainingBudget: remainingBudget, hardConstraints: constraints, mealPrefs: prefs,
         dietRestriction: diet, allergens: allergens, skipSlots: skip, dislikedIngredients: disliked, lowCarb: !!lowCarb,

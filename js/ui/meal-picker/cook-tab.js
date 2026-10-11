@@ -82,6 +82,13 @@ export function cookTabHtml(catalog, slot, st, profile, favSet, homeCtx) {
   const showHome = !!homeCtx && !!st.home && st.home.open;
   if (showHome) html += homeMealToggleHtml(true);
   html += "</div></div>";
+  const sug = st.sugList || [];
+  if (!nc.entry && sug.length > 0 && !d.archetype && !showHome) {
+    html += '<div class="compose-step"><div class="compose-axis-label">建議自煮（每天換，點了帶進下面改）</div><div class="compose-options">' +
+      sug.map(function (x, i) {
+        return '<button type="button" class="compose-option" data-nc="sug" data-i="' + i + '">' + escapeHtml(x.name) + '<span class="item-card-kcal">約 ' + x.kcal + " kcal</span></button>";
+      }).join("") + "</div></div>";
+  }
   if (nc.entry) {
     html += cookFormsHtml(catalog, { nc: nc, tier: st.tier, pf: profile, fav: favSet }, n + 1 + ". " + (nc.entry === "home" ? "選主食與菜" : "填格子"));
     return { html: html, steps: n + 1 };

@@ -45,11 +45,15 @@ const LAST_SHOWN_FILES = [/^js\/ui\/today-plans\.js$/, /^js\/ui\/tab-today\.js$/
 
 // picker_last_meal_type 只允許出現在 db.js 與「自己選」選擇器（C4.15）
 const PICKER_LAST_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//];
-// C4.17 ②：常吃清單。字串 favorite_refs 只准 db.js（掃原始碼含字串）；getFavoriteRefs 只准這些檔案 import（料理編輯器到切片 9 再加）；
-// engine 的參數名 favoriteRefs 只准 picker.js（推薦不讀常吃，decisions #128 取消切片 6）
+// C4.17 ②（2026-10-11 改寫，推翻 #81、#128）：☆（favorite_refs）也決定自煮建議的池子。字串 favorite_refs 只准 db.js（掃原始碼含字串）；
+// getFavoriteRefs 只准這些檔案 import（今日建議 tab-today.js 讀了傳給 cook-rec.js，料理編輯器到切片 9 再加）；
+// engine 的參數名 favoriteRefs 只准 picker.js（排序分組）與 cook-rec.js（自煮建議池）；推薦主流程（recommend.js、today.js、pool.js、matcher.js）仍然看不到 ☆
 const FAVORITE_KEY_FILES = [/^js\/data\/db\.js$/];
-const FAVORITE_READER_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//, /^js\/ui\/tab-foods\.js$/];
-const FAVORITE_PARAM_ENGINE_FILES = [/^js\/engine\/picker\.js$/];
+const FAVORITE_READER_FILES = [/^js\/data\/db\.js$/, /^js\/ui\/meal-picker\//, /^js\/ui\/tab-foods\.js$/, /^js\/ui\/tab-today\.js$/];
+const FAVORITE_PARAM_ENGINE_FILES = [/^js\/engine\/picker\.js$/, /^js\/engine\/cook-rec\.js$/];
+// 新自煮推薦（2026-10-11）：cook.js、cook-rec.js 只准 meal-content.js、cook-rec.js、選擇器、今日建議、我的食物 import；推薦主流程不得 import，
+// 才不會間接讀到 ☆、分層資料與家常菜資料（C4.17 ③ 的 grep 只掃單一檔案，擋不住 import 繞過去）
+const COOK_IMPORT_FILES = [/^js\/engine\/meal-content\.js$/, /^js\/engine\/cook(-rec)?\.js$/, /^js\/ui\/meal-picker\//, /^js\/ui\/tab-today\.js$/, /^js\/ui\/foods\//];
 
 // ui/ 禁用字（C4.13 不評判）
 const BANNED_WORDS = ["遵循率", "偏離計畫", "未完成", "連續達成", "達成天數", "照計畫天數", "外食比較多", "多自己煮", "吃太多", "爆卡", "罪惡",
@@ -361,6 +365,18 @@ for (const f of files.filter((x) => x.layer === "engine" && !FAVORITE_PARAM_ENGI
   nameHits(f.code, ["favoriteRefs"]).forEach((h) => fail(f.rel + ":" + lineOf(f.code, h.index) + " 出現 favoriteRefs（engine 只准 picker.js 排序分組，推薦不讀常吃，C4.17 ②）"));
 }
 
+console.log("[新自煮推薦的匯入範圍與純度 C4.17]");
+for (const f of files.filter((x) => /\/cook(-rec)?\.js$/.test(x.rel) === false)) {
+  if (COOK_IMPORT_FILES.some((re) => re.test(f.rel))) continue;
+  checks++;
+  const m = /from\s+["'][^"']*\/cook(-rec)?\.js["']|from\s+["']\.\/cook(-rec)?\.js["']/.exec(f.src);
+  if (m) fail(f.rel + " import 了 " + m[0].replace(/^from\s+/, "") + "（cook.js、cook-rec.js 只准 meal-content.js、選擇器、今日建議、我的食物 import，C4.17）");
+}
+for (const f of files.filter((x) => x.layer === "engine")) {
+  checks++;
+  if (/Math\.random/.test(f.code)) fail(f.rel + " 用了 Math.random（engine 要可重現，章程 C1.1）");
+}
+
 console.log("[推薦不讀單品、料理與分層資料 C4.17 ③]");
 for (const r of RECOMMEND_FILES) {
   const f = files.find((x) => x.rel === r);
@@ -370,10 +386,11 @@ for (const r of RECOMMEND_FILES) {
 
 console.log("[工具自我檢查]");
 // C4.17 ②：白名單與名稱比對要擋得住、也不能誤報
-check(!FAVORITE_READER_FILES.some((re) => re.test("js/ui/tab-today.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/ui/today-hero.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/engine/recommend.js")) &&
+check(FAVORITE_READER_FILES.some((re) => re.test("js/ui/tab-today.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/ui/today-hero.js")) && !FAVORITE_READER_FILES.some((re) => re.test("js/engine/recommend.js")) &&
   FAVORITE_READER_FILES.some((re) => re.test("js/ui/meal-picker/index.js")) && FAVORITE_READER_FILES.some((re) => re.test("js/ui/tab-foods.js")) &&
   !FAVORITE_READER_FILES.some((re) => re.test("js/ui/foods/list.js")), "C4.17 ② getFavoriteRefs 白名單不對");
-check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/recommend.js")) && !FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/today.js")) && FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/picker.js")), "C4.17 ② favoriteRefs 檔案清單不對");
+check(!FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/recommend.js")) && !FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/today.js")) && FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/picker.js")) && FAVORITE_PARAM_ENGINE_FILES.some((re) => re.test("js/engine/cook-rec.js")), "C4.17 ② favoriteRefs 檔案清單不對");
+check(!COOK_IMPORT_FILES.some((re) => re.test("js/engine/recommend.js")) && !COOK_IMPORT_FILES.some((re) => re.test("js/engine/today.js")) && !COOK_IMPORT_FILES.some((re) => re.test("js/engine/pool.js")) && COOK_IMPORT_FILES.some((re) => re.test("js/ui/tab-today.js")), "C4.17 cook 匯入白名單不對");
 [["f(favoriteRefs)", 1], ["const { favoriteRefs } = o;", 1], ["const favoriteRefsX = 1; myfavoriteRefs();", 0]].forEach(([src, n]) => {
   check(nameHits(stripCommentsAndStrings(src), ["favoriteRefs"]).length === n, "C4.17 ② favoriteRefs 對「" + src + "」應找到 " + n + " 處");
 });

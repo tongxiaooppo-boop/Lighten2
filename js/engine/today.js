@@ -16,7 +16,7 @@ export function effectiveTodayLogs(todayLogs, todayPlans) {
 }
 
 // o = { profile, targets, todayLogs, weekLogs（本週一到今天）, feedbackMap, pool, today, nowMs, todayPlans? }
-// todayPlans 沒給（或空）時跟日期切換之前逐字相同
+// todayPlans 沒給（或空）時跟日期切換之前逐字相同；finalize（選填）：新自煮推薦被選中後的收尾函式 rec → rec｜null
 export function planToday(o) {
   const profile = o.profile;
   const plans = effectiveTodayLogs(o.todayLogs, o.todayPlans).slice((o.todayLogs || []).length);
@@ -48,10 +48,14 @@ export function planToday(o) {
     skipSlots: skipSlots,
     dislikedIngredients: profile.disliked_ingredients,
     lowCarb: !!profile.low_carb,
-    oilHabit: profile.oil_habit || "normal",
     loggedContents: effLogs.map(function (l) { return l.content; }),
     nowMs: o.nowMs,
   });
+
+  // 新自煮的推薦在這裡把「選中的份量」重新算準（呼叫端給的 finalize 用 cook-rec.js；today.js 不碰 ☆ 與食材資料）；算不出來的那張卡不顯示
+  if (typeof o.finalize === "function") {
+    Object.keys(recs).forEach(function (slot) { const r = recs[slot]; if (r && r.is_cook_form) recs[slot] = o.finalize(r); });
+  }
 
   const out = { remainingBudget: remainingBudget, hardConstraints: hardConstraints, skipSlots: skipSlots, logsBySlot: logsBySlot, recs: recs };
   if (plans.length > 0) {

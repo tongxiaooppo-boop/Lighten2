@@ -116,63 +116,25 @@ export function implicitContribution(implicit, implicitItems) {
   return total;
 }
 
-// 候選池以「一般」用油習慣建立；少油習慣時把自組食譜的用油換成實際克數（熱量、脂肪等跟著調整，主要槽位不動）。
-export function withOilHabit(c, oilHabit) {
-  const factor = OIL_HABIT_FACTOR[oilHabit] || 1;
-  if (!c.is_composed || !c.implicit || factor === 1 || !(c.implicit.oil_g > 0)) return c;
-  const oilItem = c.implicit_items[COOKING_OIL_ID];
-  const newOil = round1(c.implicit.oil_g * factor);
-  const delta = ingredientContribution(oilItem, newOil - c.implicit.oil_g);
-  const out = Object.assign({}, c, { implicit: Object.assign({}, c.implicit, { oil_g: newOil }) });
-  CONTRIB_FIELDS.concat(DISPLAY_FIELDS).forEach(function (k) {
-    if (out[k] != null && delta[k] != null) out[k] = round1(out[k] + delta[k]);
-  });
-  return out;
-}
-
-// 自組食譜可以靠「主要槽位」（有主食槽用主食，沒有的用蛋白質）在 PRIMARY_SLOT_SCALE_RANGE
-// 內縮放去貼近熱量預算；超商/台式外送是真實商品，不能縮放，固定用天然份量的熱量。
+// 推薦候選取「最貼近預算」的份量（超商、外食是真實商品，固定用天然份量；新自煮候選自己有幾種份量，cook-rec.js）。
 // 回傳值同時給評分判斷貼近度、也給最終結果組裝實際要顯示的份量。
-// maxScale（選填）：低碳時「碳水 ≤ 上限」容許的最大倍數，縮放取兩者較小者（呼叫端保證 ≥ 最小倍數）。
+// maxScale（選填）：新自煮低碳時是「碳水上限 g」（見 lowCarbMaxScale），其他候選忽略。
 export function achievableNutrition(c, budget, maxScale) {
-  if (!c.is_composed || !(budget > 0) || !(c.primary_kcal > 0)) {
-    return Object.assign({ scale: 1, kcal: c.kcal, protein_g: c.protein_g, carb_g: c.carb_g, fat_g: c.fat_g, fiber_g: c.fiber_g },
-      scaledDisplay(c, 1));
+  if (c.is_cook_form) {
+    const v = c.pickVariant(budget, maxScale != null ? maxScale : null);
+    const x = v || c;
+    return { scale: 1, kcal: x.kcal, protein_g: x.protein_g, carb_g: x.carb_g, fat_g: x.fat_g, fiber_g: x.fiber_g, variant: v ? v.key : null };
   }
-  const fixedKcal = c.kcal - c.primary_kcal;
-  let scale = (budget - fixedKcal) / c.primary_kcal;
-  scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, Math.min(PRIMARY_SLOT_SCALE_RANGE.max, scale));
-  if (maxScale != null && scale > maxScale) scale = Math.max(PRIMARY_SLOT_SCALE_RANGE.min, maxScale);
-  // 主要槽位是合計的一部分：合計已知時主要槽位一定已知；合計未知就維持 null
-  const scaled = function (total, primary) {
-    return total == null || primary == null ? null : round1((total - primary) + primary * scale);
-  };
-  return Object.assign({
-    scale: scale,
-    kcal: round1(fixedKcal + c.primary_kcal * scale),
-    protein_g: scaled(c.protein_g, c.primary_protein_g),
-    carb_g: scaled(c.carb_g, c.primary_carb_g),
-    fat_g: scaled(c.fat_g, c.primary_fat_g),
-    fiber_g: scaled(c.fiber_g, c.primary_fiber_g),
-  }, scaledDisplay(c, scale));
+  return Object.assign({ scale: 1, kcal: c.kcal, protein_g: c.protein_g, carb_g: c.carb_g, fat_g: c.fat_g, fiber_g: c.fiber_g }, displayFields(c));
 }
 
-// 顯示用欄位縮放：主要槽位只縮放它有資料的部分（沒資料的部分本來就不在合計裡）
-function scaledDisplay(c, scale) {
-  const out = {};
-  DISPLAY_FIELDS.forEach(function (k) {
-    out[k] = c[k] == null ? null : round1(c[k] + (c["primary_" + k] || 0) * (scale - 1));
-  });
-  return out;
-}
-
-// 低碳（章程 B6.6）：這個候選在碳水 ≤ maxCarbG 的前提下，主要槽位最多能放大幾倍。
-// 回傳 null＝不算低碳（碳水未知，或縮到最小倍數仍超過）；Infinity＝不受限制（現成品項本來就不縮放）。
+// 低碳（章程 B6.6）：這個候選能不能做到碳水 ≤ maxCarbG。
+// 回傳 null＝不算低碳（碳水未知，或最小的份量仍超過）；否則回傳 maxCarbG（新自煮：achievableNutrition 的 maxScale＝碳水上限）。
+// 現成品項本來就不縮放，碳水 ≤ 上限就是 Infinity（不受限制）。
 export function lowCarbMaxScale(c, maxCarbG) {
+  if (c.is_cook_form) return c.pickVariant(0, maxCarbG) ? maxCarbG : null;
   if (c.carb_g == null) return null;
-  if (!c.is_composed || !(c.primary_carb_g > 0)) return c.carb_g <= maxCarbG ? Infinity : null;
-  const m = (maxCarbG - (c.carb_g - c.primary_carb_g)) / c.primary_carb_g;
-  return m >= PRIMARY_SLOT_SCALE_RANGE.min ? m : null;
+  return c.carb_g <= maxCarbG ? Infinity : null;
 }
 
 // ---------- 現成品項多選（自己選） ----------
@@ -490,24 +452,9 @@ export function contentNote(note) {
 }
 
 // 推薦組合 → MealContent。productsByUid：catalog 的現成品項查表（快照用）。
-// 型態：時段偏好是快煮/開伙、而且沒有退回一般推薦時，就是那個偏好；否則（auto 或退回）才依難度推導（PRD 第 3 節）。
+// 新自煮：型態由 cook-rec.js 的 cookRecMealType 決定（時段偏好是快煮/開伙、而且沒有退回一般推薦時就是那個偏好，否則依做不做得了快煮，PRD 第 3 節）。
 export function contentFromRec(rec, productsByUid) {
-  if (rec.is_composed) {
-    const comps = [];
-    [["protein", rec.protein_id], ["staple", rec.staple_id], ["vegetable", rec.vegetable_id], ["seasoning", rec.sauce_id]].forEach(function (a) {
-      if (!a[1]) return;
-      const c = { kind: "ingredient", axis: a[0], ref: a[1] };
-      if (a[0] === rec.primary_axis) { c.is_primary = true; c.scale = rec.primary_scale != null ? rec.primary_scale : rec.scale; }
-      comps.push(c);
-    });
-    const pref = rec.source_pref;
-    const fromPref = !rec.fallback_to_auto && (pref === "cook_quick" || pref === "cook_full");
-    return {
-      meal_type: fromPref ? pref : deriveCookMealType(rec.tier_rank),
-      archetype_id: rec.archetype_id, method_id: rec.method_id,
-      components: comps, implicit: rec.implicit ? { oil_g: rec.implicit.oil_g, seasoning: rec.implicit.seasoning } : null,
-    };
-  }
+  if (rec.cook_content) return rec.cook_content; // 新自煮：cookRecFinalize 已經用跟「自己選」同一套函式組好（food 元件＋form＋implicit）
   return {
     meal_type: rec.is_convenience ? "convenience" : "delivery",
     archetype_id: null, method_id: null,
