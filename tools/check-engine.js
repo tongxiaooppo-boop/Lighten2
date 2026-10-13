@@ -972,22 +972,34 @@ function checkCookRec(catalog, productPool) {
     check(new Set(mains).size >= 3, "七天的晚餐至少要有三種主蛋白質：" + mains.join(" → "));
   }
 
-  // 4. ☆ 決定池子：☆ 夠多就只用 ☆；不夠補預設到至少 3 種；被過敏原擋的 ☆ 不算；不在這個軸的 ☆ 忽略；沒有 ☆ 用預設
+  // 4. 常吃（☆）決定池子（decisions #159）：常吃排前面，不夠用預設依序補到「最少數量＝預設數量」（標幾個預設就少幾個）；常吃夠多就只用常吃；被過敏原擋的 ☆ 不算；不在這個軸的 ☆ 忽略；沒有 ☆ 用預設
   {
     const D = M.config.COOK_DEFAULTS;
     const proteinsOf = (list) => [...new Set(list.filter((c) => c.entry === "box" && !c.quick_pool_only).map((c) => c.main_protein_ref))]; // 開伙的池子（快煮池子另外測）
     const eq = (a, b) => JSON.stringify(a.slice().sort()) === JSON.stringify(b.slice().sort());
     const boxOpts = ck.boxProteinOptions(catalog, "box").map((e) => e.uid);
     check(eq(proteinsOf(gen(baseProfile)), D.box_protein.filter((u) => boxOpts.indexOf(u) !== -1)), "沒有 ☆：餐盒的蛋白質池＝預設");
-    check(eq(proteinsOf(gen(baseProfile, ["salmon", "tilapia_fillet", "egg"])), ["salmon", "tilapia_fillet", "egg"]), "☆ 三種蛋白質：池子只有這三種");
-    check(eq(proteinsOf(gen(baseProfile, ["salmon"])), ["salmon"].concat(D.box_protein.filter((u) => u !== "salmon").slice(0, 2))), "只 ☆ 一種：補預設到 3 種（依預設順序）");
+    const POOL = M.config.COOK_POOL_MIN.protein;
+    const fillTo = (favs) => favs.concat(D.box_protein.filter((u) => favs.indexOf(u) === -1)).slice(0, POOL);
+    const notDefault = boxOpts.filter((u) => D.box_protein.indexOf(u) === -1);
+    check(POOL === 9 && eq(proteinsOf(gen(baseProfile, ["salmon", "tilapia_fillet", "egg"])), fillTo(["salmon", "tilapia_fillet", "egg"])), "☆ 三種蛋白質（都在預設裡）：池子大小不變，仍是預設那 " + POOL + " 種");
+    check(eq(proteinsOf(gen(baseProfile, ["salmon"])), fillTo(["salmon"])), "只 ☆ 一種：預設補到 " + POOL + " 種，池子沒有縮小");
+    check(notDefault.length >= 2 && eq(proteinsOf(gen(baseProfile, [notDefault[0], "salmon"])), fillTo([notDefault[0], "salmon"])) && proteinsOf(gen(baseProfile, [notDefault[0], "salmon"])).length === POOL && proteinsOf(gen(baseProfile, [notDefault[0]])).indexOf(D.box_protein[POOL - 1]) === -1,
+      "☆ 一個預設以外的蛋白質：進池子，擠掉預設最後一種，池子大小不變");
+    const manyFavs = boxOpts.slice(0, POOL + 1);
+    check(manyFavs.length === POOL + 1 && eq(proteinsOf(gen(baseProfile, manyFavs)), manyFavs.slice(0, POOL)), "☆ 多於池子上限：只用 ☆（截在上限）");
     check(eq(proteinsOf(gen(baseProfile, ["conv_bx04", "no_such", "hd_tomato_egg"])), proteinsOf(gen(baseProfile))), "☆ 不是蛋白質（超商品項、家常菜、不存在）：忽略，用預設");
     const shell = Object.assign({}, baseProfile, { allergens: ["甲殼類"] });
     check(proteinsOf(gen(shell, ["shrimp", "salmon", "egg"])).indexOf("shrimp") === -1 && proteinsOf(gen(shell, ["shrimp", "salmon", "egg"])).length >= 3, "☆ 的蝦對甲殼類過敏：不進池子，其餘照樣補到 3 種");
     const hd = (u) => ck.homeDishById(catalog, u);
     const mainDishes = (list) => [...new Set(list.filter((c) => c.entry === "home").flatMap((c) => c.part_refs.filter((p) => p.role === "dish" && hd(p.ref).role === "主菜").map((p) => p.ref)))];
     const favDish = D.home_main.filter((u) => hd(u).role === "主菜" && hd(u).tier !== "🔴" && (hd(u).seasons || []).indexOf("autumn") !== -1).slice(0, 4);
-    check(favDish.length === 4 && eq(mainDishes(gen(baseProfile, favDish)), favDish), "☆ 四道家常主菜：家常餐的主菜池只有這四道（" + mainDishes(gen(baseProfile, favDish)).length + "）");
+    // 主菜池＝家常餐裡出現的主菜與蛋豆菜（池子的單位，不只數「主菜」角色）
+    const poolMains = (list) => [...new Set(list.filter((c) => c.entry === "home").flatMap((c) => c.part_refs.filter((p) => p.role === "dish" && ["主菜", "蛋豆菜"].indexOf(hd(p.ref).role) !== -1).map((p) => p.ref)))];
+    const baseMains = poolMains(gen(baseProfile));
+    check(favDish.length === 4 && favDish.every((u) => poolMains(gen(baseProfile, favDish)).indexOf(u) !== -1) && poolMains(gen(baseProfile, favDish)).length === baseMains.length, "☆ 四道家常主菜：都進池子，主菜池大小不變（" + baseMains.length + "）");
+    const lateDish = D.home_main.slice(M.config.COOK_POOL_MIN.home_main).filter((u) => hd(u).role === "主菜" && baseMains.indexOf(u) === -1 && (hd(u).seasons || []).indexOf("autumn") !== -1)[0];
+    check(!!lateDish && poolMains(gen(baseProfile, [lateDish])).indexOf(lateDish) !== -1 && poolMains(gen(baseProfile, [lateDish])).length === baseMains.length, "☆ 預設排在池子上限之外的家常主菜：進池子，擠掉預設最後一道，池子大小不變");
     // 家常菜依季節；全素、過敏原未確認的人家常菜全擋
     ["spring", "summer", "autumn", "winter"].forEach((season) => {
       const date = { spring: "2026-04-10", summer: "2026-07-10", autumn: "2026-10-10", winter: "2026-01-10" }[season];
@@ -1162,7 +1174,7 @@ function checkCook(catalog) {
   check(t4 === null, "daily_log 驗證接受家常餐內容" + (t4 ? "：" + t4.message : ""));
 
   // ---------- 預設清單（COOK_DEFAULTS，唯一來源）、難度與快煮判斷、餐盒蛋白質選項 ----------
-  const D = M.config.COOK_DEFAULTS, MIN = M.config.COOK_POOL_MIN;
+  const D = M.config.COOK_DEFAULTS, MIN = M.config.COOK_POOL_COVER, POOL_MIN = M.config.COOK_POOL_MIN;
   const hdById = (u) => ck.homeDishById(catalog, u);
   const stapleRefs = Object.values(catalog.homeDishes.staples).map((x) => x.ref);
   const dup = (a) => new Set(a).size !== a.length;
@@ -1182,6 +1194,10 @@ function checkCook(catalog) {
   [["home_main", (d) => (d.role === "主菜" || d.role === "蛋豆菜") && d.kind !== "soup"], ["home_veg", (d) => (d.role === "青菜" || d.role === "小菜") && d.kind !== "soup"], ["home_soup", (d) => d.kind === "soup"]].forEach((x) => {
     check(D[x[0]].every((u) => hdById(u) && x[1](hdById(u))), "預設 " + x[0] + " 的菜都存在、角色對");
   });
+  // 建議池的最少數量（decisions #159）：不能超過預設清單的數量（補不滿就失去意義），也不能超過池子上限；碗的四軸一併檢查
+  const POOL_CAP = { protein: 9, carb: 8, veg: 9, home_main: 24, home_veg: 12, home_soup: 6, bowl_base: 4, bowl_grain: 2, bowl_fruit: 8, bowl_nut: 4 };
+  const POOL_DEF = { protein: D.box_protein, carb: D.carb, veg: D.veg, home_main: D.home_main, home_veg: D.home_veg, home_soup: D.home_soup, bowl_base: D.bowl_base, bowl_grain: D.bowl_grain, bowl_fruit: D.bowl_fruit, bowl_nut: D.bowl_nut };
+  Object.keys(POOL_MIN).forEach((k) => check(POOL_MIN[k] === Math.min(POOL_DEF[k].length, POOL_CAP[k]), "建議池最少數量 " + k + "＝預設數量與池子上限較小的那個（" + POOL_MIN[k] + "）"));
   // 涵蓋度：每軸夠多、快煮與素食都有、家常菜每季都有
   const passesHard = (item, prof) => M.filters.passesHardFilters(item, prof).ok;
   const quickProtein = D.box_protein.filter((u) => ck.cookItemProblem(opt(u), true) === null);

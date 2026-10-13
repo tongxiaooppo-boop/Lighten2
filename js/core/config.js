@@ -211,7 +211,6 @@ export const COOK_DEFAULTS = {
   ],
 };
 // 早餐盤的碳水預設＝早餐碳水（吐司、饅頭、蘿蔔糕、油麵，cook.js 的 PLATE_CARBS）加上上面的 carb
-// 建議池每軸至少幾樣（☆ 不足時用預設補到這個數；推薦用，畫面不用）
 // 來源偏好是「自動」時的順序（2026-10-11，使用者定）：先試自煮（快煮），沒有可用的再試外食，再試超商；
 // 下午茶與宵夜的自煮只有早餐碗，沒有可用時第二順位改成「超商與外食一起比分」，免得下午茶被推去買台式外食。
 // 「可用」＝這個來源最貼近預算的份量，熱量與配額差在容許範圍內（配額低於 AUTO_LOW_BUDGET_KCAL 時放寬）。
@@ -227,4 +226,8 @@ export const COOK_METHOD_PREFER = { salmon: "pan", shrimp: "boil" };
 export const COOK_PART_RECENCY = { protein: 20, dish: 15, veg: 10, carb: 10 };
 // 自煮一餐的纖維加分上限＝這一餐配額 × 每千大卡 14g（週缺口是「每天差幾克」，不能拿來當一餐的上限）
 export const FIBER_G_PER_1000KCAL = 14;
-export const COOK_POOL_MIN = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };
+// 建議池每軸至少幾樣（2026-10-13，decisions #159）：常吃不足時用預設依序補到這個數，常吃達到或超過就只用常吃。
+// 數字＝預設清單的數量與池子上限（cook-rec.js 的 CAP）較小的那個：標幾個常吃，預設就少幾個，池子大小不變（不會因為標了一個就縮成 3 個）。
+export const COOK_POOL_MIN = { protein: 9, carb: 8, veg: 9, home_main: 24, home_veg: 12, home_soup: 6, bowl_base: 3, bowl_grain: 2, bowl_fruit: 8, bowl_nut: 4 };
+// 預設清單的涵蓋度下限（check-engine 用）：快煮、素食、每一季下預設至少還剩幾樣可用（原本的 COOK_POOL_MIN）
+export const COOK_POOL_COVER = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };

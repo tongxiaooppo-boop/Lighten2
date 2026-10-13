@@ -629,9 +629,8 @@ body {
   min-height: 44px;
   margin-left: 0.3rem;
   padding: 0;
-  border: 1px solid #EFE3D2;
-  border-radius: 50%;
-  background-color: #FFFBF4;
+  border: 0;
+  background: transparent;
   color: #8A5A2B;
   font-size: 1rem;
   font-weight: 700;

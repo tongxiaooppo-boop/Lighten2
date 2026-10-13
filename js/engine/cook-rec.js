@@ -2,7 +2,7 @@
 // 純函式：資料（catalog）、設定（profile）、☆（favoriteRefs）、日期都由呼叫端傳入，沒有亂數、不讀時鐘（章程 C1.1）。
 //
 // 做法：每個入口一個固定模板（比「自己選」窄，出來的組合才像人會煮的），在小池子裡窮舉；
-//   池子＝使用者 ☆ 過且能用的項目，☆ 不足 COOK_POOL_MIN 時用 COOK_DEFAULTS 依序補到夠，沒有 ☆ 就用預設。
+//   池子＝使用者 ☆ 過且能用的項目，常吃不足 COOK_POOL_MIN（＝預設的數量）時用 COOK_DEFAULTS 依序補到夠，常吃夠多就只用常吃，沒標就用預設。
 //   份量不連續縮放，是離散的幾種（碳水半份／一份、蛋白質一份／一份半、一鍋菜半／一／一份半…），每個候選自己選最貼近預算的那一種。
 //   營養：每個零件先用 cook.js＋meal-content.js 算好一次（cookDraftPart＋contentTotals），候選只做加法；
 //   真正被選中的那一餐由 cookRecFinalize 重新用同一套函式算準，卡片、記錄、存下來的數字都是準的。
@@ -341,8 +341,8 @@ export function cookRecCandidates(o) {
     boxCandidates(ctx, "box", { protein: prot("box"), carb: carb, veg: veg }, quick, out);
     boxCandidates(ctx, "plate", { protein: prot("plate"), carb: plateCarb, veg: veg }, quick, out);
     bowlCandidates(ctx, {
-      base: mk(COOK_DEFAULTS.bowl_base, opts.bowlBase, 2, 4), grain: mk(COOK_DEFAULTS.bowl_grain, opts.bowlGrain, 1, 2),
-      fruit: mk(COOK_DEFAULTS.bowl_fruit, opts.bowlFruit, 3, CAP.fruit), nut: mk(COOK_DEFAULTS.bowl_nut, opts.bowlNut, 2, 4),
+      base: mk(COOK_DEFAULTS.bowl_base, opts.bowlBase, COOK_POOL_MIN.bowl_base, 4), grain: mk(COOK_DEFAULTS.bowl_grain, opts.bowlGrain, COOK_POOL_MIN.bowl_grain, 2),
+      fruit: mk(COOK_DEFAULTS.bowl_fruit, opts.bowlFruit, COOK_POOL_MIN.bowl_fruit, CAP.fruit), nut: mk(COOK_DEFAULTS.bowl_nut, opts.bowlNut, COOK_POOL_MIN.bowl_nut, 4),
     }, out);
 
     const okDish = function (role) {
