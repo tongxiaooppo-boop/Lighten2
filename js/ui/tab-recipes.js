@@ -11,7 +11,7 @@ let guide = null;
 let loading = false;
 let section = "dish";
 let query = "";
-let roleFilter = "";
+const openRoles = new Set();
 
 async function load() {
   if (guide || loading) return;
@@ -48,25 +48,25 @@ function stepsList(steps) {
 }
 
 function dishCard(d) {
-  return '<details class="recipe-card"><summary><strong>' + escapeHtml(d.name) + "</strong>" +
-    '<span class="recipe-meta">' + escapeHtml(d.role + "・" + d.method + "・" + d.mins + " 分・" + d.serv + " 份") + "</span></summary>" +
-    '<p class="recipe-nut">每份' + escapeHtml(nutLine(d.per_serving)) + "</p>" +
+  return '<details class="recipe-card food-row"><summary class="food-row-main"><span class="food-name">' + escapeHtml(d.name) + "</span>" +
+    '<span class="food-meta">' + escapeHtml(d.method + "・" + d.mins + " 分・" + d.serv + " 份") + "</span></summary>" +
+    '<div class="food-detail"><p class="recipe-nut">每份' + escapeHtml(nutLine(d.per_serving)) + "</p>" +
     "<h4>食材（可食生重，總量 " + d.serv + " 份）</h4>" + ingList(d.ing) +
     (d.oil_g ? '<p class="recipe-note">另加下鍋油約 ' + d.oil_g + " g</p>" : "") +
     (d.buy ? '<p class="recipe-note">採買：' + escapeHtml(d.buy) + "</p>" : "") +
     "<h4>作法</h4>" + stepsList(d.steps) +
-    (d.tip ? '<p class="recipe-tip">小撇步：' + escapeHtml(d.tip) + "</p>" : "") + "</details>";
+    (d.tip ? '<p class="recipe-tip">小撇步：' + escapeHtml(d.tip) + "</p>" : "") + "</div></details>";
 }
 
 function setCard(s) {
-  return '<details class="recipe-card"><summary><strong>' + escapeHtml(s.name) + "</strong>" +
-    '<span class="recipe-meta">' + escapeHtml(s.type + "・" + s.prep_min + " 分・" + Math.round(s.nutrition.kcal) + " kcal") + "</span></summary>" +
-    '<p class="recipe-why">' + escapeHtml(s.why) + "</p>" +
+  return '<details class="recipe-card food-row"><summary class="food-row-main"><span class="food-name">' + escapeHtml(s.name) + "</span>" +
+    '<span class="food-meta">' + escapeHtml(s.type + "・" + s.prep_min + " 分・" + Math.round(s.nutrition.kcal) + " kcal") + "</span></summary>" +
+    '<div class="food-detail"><p class="recipe-why">' + escapeHtml(s.why) + "</p>" +
     '<p class="recipe-nut">' + escapeHtml(nutLine(s.nutrition)) + "</p>" +
     "<h4>食材與份量</h4>" + ingList(s.items) +
     "<h4>作法</h4>" + stepsList(s.steps) +
     (s.keep ? '<p class="recipe-note">保存：' + escapeHtml(s.keep) + "</p>" : "") +
-    (s.tip ? '<p class="recipe-tip">小撇步：' + escapeHtml(s.tip) + "</p>" : "") + "</details>";
+    (s.tip ? '<p class="recipe-tip">小撇步：' + escapeHtml(s.tip) + "</p>" : "") + "</div></details>";
 }
 
 function render() {
@@ -77,11 +77,17 @@ function render() {
   const tools = $("#recipes-tools");
   if (!guide) { body.innerHTML = ""; return; }
   if (section === "dish") {
-    const roles = Array.from(new Set(guide.dishes.map((d) => d.role)));
     tools.hidden = false;
-    $("#recipes-role").innerHTML = '<option value="">全部類別</option>' + roles.map((r) => '<option value="' + escapeHtml(r) + '"' + (r === roleFilter ? " selected" : "") + ">" + escapeHtml(r) + "</option>").join("");
-    const list = guide.dishes.filter((d) => (!query || d.name.indexOf(query) !== -1) && (!roleFilter || d.role === roleFilter));
-    body.innerHTML = list.length ? list.map(dishCard).join("") : '<p class="rec-empty">找不到符合的菜</p>';
+    const groups = {};
+    guide.dishes.forEach((d) => {
+      if (query && d.name.indexOf(query) === -1) return;
+      (groups[d.role] = groups[d.role] || []).push(d);
+    });
+    const roles = Object.keys(groups);
+    body.innerHTML = roles.length ? roles.map((r) =>
+      '<details class="foods-group foods-folded recipe-group" data-role="' + escapeHtml(r) + '"' + (query || openRoles.has(r) ? " open" : "") + "><summary>" +
+      escapeHtml(r) + "（" + groups[r].length + "）</summary>" + groups[r].map(dishCard).join("") + "</details>").join("")
+      : '<p class="rec-empty">找不到符合的菜</p>';
   } else {
     tools.hidden = true;
     const list = guide.sets.filter((s) => s.entry === section);
@@ -98,7 +104,12 @@ export function initRecipesTab() {
     render();
   });
   $("#recipes-search").addEventListener("input", function (e) { query = e.target.value.trim(); render(); });
-  $("#recipes-role").addEventListener("change", function (e) { roleFilter = e.target.value; render(); });
+  $("#recipes-body").addEventListener("toggle", function (e) {
+    const g = e.target;
+    if (!g.classList || !g.classList.contains("recipe-group")) return;
+    const r = g.getAttribute("data-role");
+    if (g.open) openRoles.add(r); else openRoles.delete(r);
+  }, true);
   document.addEventListener("tab:activated", function (e) { if (e.detail === "recipes") load(); });
   render();
 }

@@ -1764,15 +1764,13 @@ div.food-row-main {
   border-radius: 8px;
 }
 
-/* 分頁六：食譜 */
+/* 分頁六：食譜（沿用「我的食物」的列與收合組樣式） */
 .recipes-tools { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
-.recipes-tools select { padding: 0.4rem; border: 1px solid #EFE3D2; border-radius: 8px; background: #fff; }
-.recipe-card { border: 1px solid #EFE3D2; border-radius: 12px; background: #fff; padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; }
-.recipe-card summary { cursor: pointer; display: flex; flex-direction: column; gap: 0.15rem; }
-.recipe-meta { font-size: 0.85rem; color: #8A7A63; }
+.recipes-tools[hidden] { display: none; }
+.recipe-card > summary { list-style: none; }
+.recipe-card > summary::-webkit-details-marker { display: none; }
 .recipe-card h4 { margin: 0.6rem 0 0.2rem; font-size: 0.95rem; }
 .recipe-ing, .recipe-steps { margin: 0; padding-left: 1.3rem; }
 .recipe-steps li { margin-bottom: 0.25rem; }
 .recipe-nut, .recipe-why, .recipe-note, .recipe-tip { margin: 0.4rem 0 0; font-size: 0.9rem; }
 .recipe-tip { color: #C1652F; }
-.recipes-tools[hidden] { display: none; }
