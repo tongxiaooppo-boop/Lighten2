@@ -7,10 +7,12 @@ import { initTodayTab } from "./tab-today.js";
 import { initExerciseTab } from "./tab-exercise.js";
 import { initWeekTab } from "./tab-week.js";
 import { initFoodsTab } from "./tab-foods.js";
+import { initRecipesTab } from "./tab-recipes.js";
 
 initProfileTab();
 initTodayTab();
 initFoodsTab();
 initExerciseTab();
 initWeekTab();
+initRecipesTab();
 initTabs();
