@@ -231,3 +231,8 @@ export const FIBER_G_PER_1000KCAL = 14;
 export const COOK_POOL_MIN = { protein: 9, carb: 8, veg: 9, home_main: 24, home_veg: 12, home_soup: 6, bowl_base: 3, bowl_grain: 2, bowl_fruit: 8, bowl_nut: 4 };
 // 預設清單的涵蓋度下限（check-engine 用）：快煮、素食、每一季下預設至少還剩幾樣可用（原本的 COOK_POOL_MIN）
 export const COOK_POOL_COVER = { protein: 3, carb: 2, veg: 4, home_main: 4, home_veg: 3, home_soup: 2 };
+
+// 本週達標格與飯糰角色（decisions #160）：記完的一天，合計熱量落在目標 × [LOW, HIGH] 之間算達標；
+// 低於 LOW 算「吃太少」不算達標（減重不鼓勵餓肚子），高於 HIGH 算超標。HIGH 沿用本週總覽「±5% 在目標範圍內」。
+export const WEEK_HIT_LOW_RATIO = 0.85;
+export const WEEK_HIT_HIGH_RATIO = 1.05;
