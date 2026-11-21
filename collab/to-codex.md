@@ -1,14 +1,14 @@
 # 任務書：外觀風格切換（運動活力／療癒粉彩／經典暖色）（v2026-11-21）
 
-給：Codex（VS Code 面板）。依據 decisions #160。框架（函式名稱、參數、回傳格式、常數）已由 Opus commit，**不准改**；覺得框架有問題就停下，照文末「提問格式」寫進回報。
+給：Codex（VS Code 面板）。依據 decisions #160（中性版：不顯示達標、不評論吃多吃少）。框架（函式名稱、參數、回傳格式、常數）已由 Opus commit，**不准改**；覺得框架有問題就停下，照文末「提問格式」寫進回報。
 
 ## 要讀的檔案（只准讀這些，大檔照範圍）
 
 1. `docs/decisions.md` 最後一列（#160）
-2. `collab/skins/mockup.html`：只看 `/* 2 運動活力 */` 與 `/* 5 療癒粉彩 */` 兩段 CSS、`phone()` 產生的 HTML 結構
+2. `collab/skins/mockup.html`：只看註解「2 運動活力」與「5 療癒粉彩」底下兩段 CSS（`.streak` 那段的達標顏色不照做，以本任務書第 3 步為準）、`phone()` 產生的 HTML 結構
 3. `css/style.css`（全檔，第 1 步要改）
 4. `index.html` 第 1–30 行、第 170–190 行（基本資料表單結尾）、第 244–306 行（今日建議）、第 440–515 行（import map）
-5. `js/engine/hero-deco.js`、`js/ui/skin.js`、`js/core/config.js` 最後 6 行（框架，照註解填）
+5. `js/engine/hero-deco.js`、`js/ui/skin.js`（框架，照註解填）；章程 C4.13（`docs/CHARTER.md` 第 321 行）：不評判
 6. `js/ui/today-hero.js`（全檔）
 7. `js/ui/tab-today.js` 第 1–40 行、第 60–75 行、第 235–275 行、第 375–430 行
 8. `js/ui/tab-profile.js`（只找 init 函式）、`js/ui/app.js`
@@ -93,7 +93,7 @@
 ## 第 3 步：頂部卡三個新元件 → commit
 
 1. **`js/engine/hero-deco.js`**：照註解填三個函式。
-2. **`tools/check-engine.js`** 加測試（名稱照寫，預期值不准改）。紀錄照現有 `isCompleteLogDay` 測試的寫法造；enabledSlots 用「只開早餐、午餐、晚餐」；目標 1800（達標範圍 1530～1890）；today＝`2026-11-19`（週四）。
+2. **`tools/check-engine.js`** 加測試（名稱照寫，預期值不准改）。紀錄照現有 `isCompleteLogDay` 測試的寫法造；目標 1800；today＝`2026-11-19`（週四，週一是 11/16）。
 
    | 測試名稱 | 輸入 | 預期 |
    |---|---|---|
@@ -101,17 +101,14 @@
    | `eatenPct 零` | (0, 1778) | 0 |
    | `eatenPct 超過` | (2000, 1778) | 112 |
    | `eatenPct 目標無效` | (500, 0) | null |
-   | `weekTargetDays 七天狀態` | 一 11/16 三餐 1700；二 11/17 三餐 1900；三 11/18 只記早午；四（今天）只記早餐 | states＝`["hit","over","incomplete","today","future","future","future"]`，hits＝1 |
-   | `weekTargetDays 吃太少` | 一 三餐 1400，其他沒記 | days[0].state＝`"low"`，hits＝0 |
-   | `weekTargetDays 邊界` | 一 三餐 1530；二 三餐 1890 | 兩天都 `"hit"`，hits＝2 |
-   | `weekTargetDays 今天記完` | 四（今天）三餐 1800 | days[3].state＝`"hit"` |
-   | `weekTargetDays 目標無效` | 一 三餐 1700，目標 0 | days[0].state＝`"incomplete"`，hits＝0 |
-   | `heroMessage 還沒記` | loggedCount 0, remaining 1366.4 | `{ text: "今天還能吃 1366 大卡，慢慢來", mood: "hi" }` |
-   | `heroMessage 進行中` | loggedCount 1, remaining 954 | `{ text: "還能吃 954 大卡喔", mood: "ok" }` |
-   | `heroMessage 份額用完` | loggedCount 2, allLogged false, remaining -50 | mood `"cheer"`，text「今天的份額用完了，下一餐清淡一點」 |
-   | `heroMessage 記完達標` | allLogged, eaten 1750, target 1800 | mood `"happy"` |
-   | `heroMessage 記完超標` | allLogged, eaten 1950, target 1800 | mood `"cheer"`，text「多一點點沒關係，明天再調整」 |
-   | `heroMessage 記完太少` | allLogged, eaten 1300, target 1800 | mood `"ok"`，text「今天吃得有點少，記得吃飽喔」 |
+   | `weekKcalBars 七天` | 一 11/16 兩筆共 1800；二 11/17 一筆 2340；三 11/18 沒記；四（今天）一筆 450 | 7 筆；date 依序 11/16～11/22；kcal＝`[1800,2340,null,450,null,null,null]`；ratio＝`[1,1.3,null,0.25,null,null,null]`；isToday 只有 [3]；isFuture 只有 [4][5][6] |
+   | `weekKcalBars 目標無效` | 一 一筆 1700，目標 0 | days[0].kcal＝1700、ratio＝null |
+   | `weekKcalBars 週一當天` | today＝`2026-11-16`，一 一筆 600 | days[0].isToday、kcal 600；[1]～[6] 都 isFuture |
+   | `heroMessage 還沒記` | loggedCount 0, allLogged false, remaining 1366.4 | `{ text: "今天還能吃 1366 大卡，慢慢來", mood: "hi" }` |
+   | `heroMessage 進行中` | loggedCount 1, allLogged false, remaining 954 | `{ text: "還能吃 954 大卡喔", mood: "cheer" }` |
+   | `heroMessage 份額用完` | loggedCount 2, allLogged false, remaining -50 | `{ text: "今天的份額已經用完了", mood: "ok" }` |
+   | `heroMessage 都記好了` | loggedCount 3, allLogged true, remaining 200 | `{ text: "今天的餐都記好了", mood: "happy" }` |
+   | `heroMessage 都記好了且超過` | loggedCount 3, allLogged true, remaining -300 | `{ text: "今天的餐都記好了", mood: "happy" }`（不評論吃多吃少，章程 C4.13） |
 
 3. **`index.html` 今日建議**：
    - `#today-hero` 裡最前面加：
@@ -123,10 +120,10 @@
    - `#today-hero` 這個 section 結束後、`.today-toolbar` 之前加 `<div id="today-streak" class="today-streak" hidden></div>`。
 4. **`js/ui/today-hero.js`**：`renderHero` 加第 10 個參數 `weekLogs`（`tab-today.js` 第 425 行把已經讀好的 `weekLogs` 傳進去）。在現有算完主數字之後：
    - 圓環：`eatenPct(logsKcal(todayLogs), targets.targetKcal)`；`#today-hero-ring` 設 `style.setProperty("--pct", Math.min(pct, 100))`，文字 `pct + "%"`；null 時文字 `—`、`--pct` 0。
-   - 對話：`heroMessage({ loggedCount: 今天有記錄的時段數, allLogged, remainingKcal: remainingBudget.remainingKcal, eatenKcal: logsKcal(todayLogs), targetKcal: targets.targetKcal })` → `#today-hero-bubble` 的文字、`#today-hero-mascot` 的 src＝`mascotImage(mood)`、alt 空字串。
-   - 達標格：`weekTargetDays(weekLogs, targets.targetKcal, profile.enabled_slots, today)` → `#today-streak` 的 innerHTML：`<span class="streak-label">本週達標</span>`＋7 個 `<i class="streak-day is-<state>" title="週一 達標"></i>`（state 中文：hit 達標、low 吃太少、over 超標、incomplete 沒記完、today 今天、future 還沒到）＋`<b class="streak-count">N/7</b>`。跟 `hero.hidden` 一起顯示與隱藏（含 `setHeroSuppressed` 的情況）。
+   - 對話：`heroMessage({ loggedCount: 今天有記錄的時段數（用現有的 loggedSlots 算）, allLogged, remainingKcal: remainingBudget.remainingKcal })` → `#today-hero-bubble` 的文字、`#today-hero-mascot` 的 src＝`mascotImage(mood)`、alt 空字串。
+   - 本週熱量長條：`weekKcalBars(weekLogs, targets.targetKcal, today)` → `#today-streak` 的 innerHTML：`<span class="streak-label">本週熱量</span>`＋7 個 `<span class="streak-day[ is-today][ is-future]" title="週一 1800 kcal"><i style="--h:<高度>"></i><small>一</small></span>`。高度＝`Math.min(ratio, 1.3) / 1.3`，ratio 為 null 時 0；title 在 kcal 為 null 時只寫星期。**不寫任何天數統計（例如 4/7），不依數值換顏色**（章程 C4.13）。跟 `hero.hidden` 一起顯示與隱藏（含 `setHeroSuppressed` 的情況）。
 5. **顯示規則（CSS）**：`style.css` 預設 `.hero-bubble, .hero-mascot, .hero-ring, .today-streak { display: none }`；
-   - 運動：顯示 `.hero-ring`（mockup 的 `.ring`，用 `conic-gradient(var(--c-accent) calc(var(--pct) * 1%), …)`）與 `.today-streak:not([hidden])`（mockup 的 `.streak`；hit 螢光綠、over 珊瑚、low `#F2C94C`、incomplete／future 半透明白、today 螢光綠外框）。
+   - 運動：顯示 `.hero-ring`（mockup 的 `.ring`，用 `conic-gradient(var(--c-accent) calc(var(--pct) * 1%), …)`）與 `.today-streak:not([hidden])`（放在 mockup `.streak` 那條深藍底裡：7 根長條**全部同一個螢光綠**，高度照 `--h`，最高約 28px，底下一個星期字；今天那根加白色外框；未來的日子只留空槽）。
    - 粉彩：顯示 `.hero-bubble`（黃色對話框，放在頂部卡最上面，右側讓出角色的位置）與 `.hero-mascot`（右上角約 76px）。
    - 經典：三個都不顯示。
 6. **`tools/mobile-walkthrough.mjs`**：
@@ -136,7 +133,7 @@
 
 ## 不准做的事
 
-- 不改 `hero-deco.js`、`skin.js` 的函式名稱、參數、回傳格式，不改 `config.js` 的兩個常數。
+- 不改 `hero-deco.js`、`skin.js` 的函式名稱、參數、回傳格式。
 - 不新增 IndexedDB 設定、不把風格寫進備份。
 - 不新增函式庫；字型只加上面列的三個。
 - 不動 `images/`（產圖是另一個任務）。
