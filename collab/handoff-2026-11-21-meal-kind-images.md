@@ -7,9 +7,7 @@
 - Opus 逐張看圖：中西式一眼分得出、未見文字／品牌／人臉；pastel 每張都有飯糰角色。
 
 ## 待辦
-1. **sport/kind-cook-plate.jpg 要重做 1 張**：背景淺灰＋窗戶木桌，跟其他 sport 圖（深藍滿版＋斜線）不同系列。不影響功能，換檔即可。
-   - 使用者在 Codex 面板：「讀 collab/to-codex-kind-images-fix.md 照做，完成寫 collab/from-codex-kind-images-fix.md」。
-   - 驗收：跑任務書 PROOF_CMD、Opus 看圖、`node tools/stamp-version.js`（讓 sw 抓新圖）、commit＋push。
+1. ~~sport/kind-cook-plate.jpg 重做~~：已完成（Codex 重產，深藍滿版＋斜線，960x536 47KB，Opus 看過圖），回報 `collab/from-codex-kind-images-fix.md`。
 2. PWA 手機實裝回報（全螢幕、圖示）仍待使用者。
 
 ## 相關檔案
