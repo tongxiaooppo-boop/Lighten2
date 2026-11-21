@@ -1,0 +1,111 @@
+/* 輕盈計畫 — 外觀風格：療癒粉彩（decisions #160）。先覆寫 style.css 的變數，再加裝飾。 */
+
+html[data-skin="pastel"] {
+  --c-bg: #FFF5EF;
+  --c-surface: #FFFFFF;
+  --c-surface-warm: #FFFAF6;
+  --c-ink: #4A3F5C;
+  --c-ink-2: #6E6283;
+  --c-muted: #7D7090;
+  --c-line: #F2DCD3;
+  --c-line-soft: #F6E8E2;
+  --c-line-strong: #E6CFC6;
+  --c-accent: #FFB59E;
+  --c-accent-strong: #E0765A;
+  --c-accent-soft: #FFE3D6;
+  --c-accent-tint: #FFF1EA;
+  --c-accent-line: #FFB59E;
+  --c-accent-ink: #7A4A3A;
+  --c-on-accent: #4A2E25;
+  --c-shadow: rgba(240, 138, 108, 0.14);
+  --c-shadow-strong: rgba(74, 63, 92, 0.25);
+  --c-overlay: rgba(74, 63, 92, 0.45);
+  --font-body: Huninn, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
+  --font-display: Huninn, "Noto Sans TC", sans-serif;
+  --radius-card: 26px;
+  --sk-lilac: #CBB8F2;
+  --sk-mint: #9FDCC2;
+}
+
+html[data-skin="pastel"] body {
+  background-image:
+    radial-gradient(circle at 92% 6%, #FFE3D6 0 70px, transparent 71px),
+    radial-gradient(circle at 4% 34%, #E7F6EE 0 60px, transparent 61px),
+    radial-gradient(circle at 96% 70%, #EDE5FB 0 70px, transparent 71px);
+  background-attachment: fixed;
+}
+
+/* 頁首：置中，標題下方三色小彩條 */
+html[data-skin="pastel"] .app-header {
+  text-align: center;
+}
+html[data-skin="pastel"] .app-header h1::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 6px;
+  margin: 4px auto 0;
+  border-radius: 3px;
+  background: repeating-linear-gradient(90deg, #FFB59E 0 10px, #9FDCC2 10px 20px, #CBB8F2 20px 30px);
+}
+
+/* 分頁：圓胖按鈕，選中是薰衣草色 */
+html[data-skin="pastel"] .tab-btn {
+  border-color: transparent;
+  box-shadow: 0 2px 0 #EAD9E9;
+  color: #8A7C9C;
+}
+html[data-skin="pastel"] .tab-btn.is-active {
+  background-color: var(--sk-lilac);
+  border-color: transparent;
+  color: #3D2F55;
+  box-shadow: 0 2px 0 #A995D8;
+}
+
+/* 卡片與頂部卡 */
+html[data-skin="pastel"] .rec-card,
+html[data-skin="pastel"] .today-hero {
+  border-color: transparent;
+  border-radius: 26px;
+  box-shadow: 0 4px 0 #F2DCD3;
+}
+html[data-skin="pastel"] #today-hero-kcal-value {
+  color: #F08A6C;
+  font-size: 2.8rem;
+}
+html[data-skin="pastel"] .rec-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+html[data-skin="pastel"] .rec-card h3::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50% 50% 50% 20%;
+  background: #FFB59E;
+}
+
+/* 按鈕：Q 彈、有按壓感 */
+html[data-skin="pastel"] .primary-btn,
+html[data-skin="pastel"] .secondary-btn,
+html[data-skin="pastel"] .undo-btn,
+html[data-skin="pastel"] .dislike-btn {
+  border-radius: 14px;
+  box-shadow: 0 3px 0 rgba(74, 63, 92, 0.14);
+}
+html[data-skin="pastel"] .primary-btn {
+  background-color: #FFB59E;
+  color: #4A2E25;
+}
+html[data-skin="pastel"] .secondary-btn {
+  color: var(--c-ink-2);
+  border-color: #FFB59E;
+}
+html[data-skin="pastel"] .undo-btn,
+html[data-skin="pastel"] .dislike-btn {
+  background-color: #F1ECF8;
+  border-color: transparent;
+  color: #6E6283;
+}

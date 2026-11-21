@@ -14,13 +14,19 @@ export const SKIN_STORAGE_KEY = "lighten2.skin";
 
 // 目前的風格 id：讀 document.documentElement.dataset.skin，不在 SKINS 裡就回傳 DEFAULT_SKIN。
 export function currentSkin() {
-  throw new Error("TODO currentSkin");
+  // 測試用的假 DOM 沒有 documentElement，當成預設風格
+  const root = document.documentElement;
+  const id = root && root.dataset ? root.dataset.skin : undefined;
+  return SKINS.some(function (s) { return s.id === id; }) ? id : DEFAULT_SKIN;
 }
 
 // 換風格：id 不在 SKINS 裡就丟錯；設定 dataset.skin、寫 localStorage（try/catch，寫不進去不影響畫面），
 // 然後 document.dispatchEvent(new CustomEvent("skin:changed", { detail: id }))。
 export function setSkin(id) {
-  throw new Error("TODO setSkin");
+  if (!SKINS.some(function (s) { return s.id === id; })) throw new Error("未知的風格：" + id);
+  document.documentElement.dataset.skin = id;
+  try { localStorage.setItem(SKIN_STORAGE_KEY, id); } catch (err) { /* 寫不進去不影響畫面 */ }
+  document.dispatchEvent(new CustomEvent("skin:changed", { detail: id }));
 }
 
 // 時段插畫路徑（取代 tab-today.js 的 MEAL_DEFAULT_IMAGE）：
@@ -28,17 +34,27 @@ export function setSkin(id) {
 //   其他    → "images/skins/<skin>/meal-<file>.jpg"
 // <file>：breakfast、lunch、afternoon-tea、dinner、snack（afternoon_tea 的底線換成連字號）。
 export function slotImage(slot, skin) {
-  throw new Error("TODO slotImage");
+  const file = String(slot).replace(/_/g, "-");
+  return skin === "classic"
+    ? "images/gemini/meal-default-" + file + ".jpg"
+    : "images/skins/" + skin + "/meal-" + file + ".jpg";
 }
 
 // 飯糰角色圖：mood 是 hero-deco.js heroMessage 回傳的 "hi" | "ok" | "happy" | "cheer"。
 // → "images/skins/pastel/mascot-<mood>.png"
 export function mascotImage(mood) {
-  throw new Error("TODO mascotImage");
+  return "images/skins/pastel/mascot-" + mood + ".png";
 }
 
 // 基本資料分頁的「外觀風格」選單（#skin-picker 底下 name="skin" 的 radio）：
 // 依 currentSkin() 勾好目前那個；change 時呼叫 setSkin，立刻生效，不用按「計算」。
 export function initSkinPicker() {
-  throw new Error("TODO initSkinPicker");
+  const box = document.getElementById("skin-picker");
+  if (!box) return;
+  box.querySelectorAll('input[name="skin"]').forEach(function (r) {
+    r.checked = r.value === currentSkin();
+    r.addEventListener("change", function () {
+      if (r.checked) setSkin(r.value);
+    });
+  });
 }

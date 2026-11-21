@@ -1773,3 +1773,24 @@ div.food-row-main {
 .recipe-steps li { margin-bottom: 0.25rem; }
 .recipe-nut, .recipe-why, .recipe-note, .recipe-tip { margin: 0.4rem 0 0; font-size: 0.9rem; }
 .recipe-tip { color: var(--c-accent); }
+
+/* 外觀風格選單（基本資料分頁）：每個選項觸控區至少 44px */
+.skin-picker {
+  margin-top: 1.5rem;
+}
+.skin-picker label {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  cursor: pointer;
+}
+.skin-picker input[type="radio"] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.skin-picker-note {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  color: var(--c-muted);
+}

@@ -42,7 +42,7 @@ async function shot(name, scrollTo) {
     return { scrollW: document.documentElement.scrollWidth, W: W, overflow: overflow, imgs: imgs, small: [...new Set(small)], smallInPicker: [...new Set(smallInPicker)] };
   })()`);
   check(layout.scrollW <= layout.W + 1, label + "：畫面左右溢出（寬 " + layout.scrollW + " > " + layout.W + "）" + layout.overflow.join(", "));
-  const badImgs = layout.imgs.filter((s) => !/^images\/gemini\/meal-default-[a-z_-]+\.jpg$/.test(s || ""));
+  const badImgs = layout.imgs.filter((s) => !/^images\/gemini\/meal-default-[a-z_-]+\.jpg$/.test(s || "") && !/^images\/skins\/(sport|pastel)\/meal-[a-z-]+\.jpg$/.test(s || "") && !/^images\/skins\/pastel\/mascot-(hi|ok|happy|cheer)\.png$/.test(s || ""));
   check(badImgs.length === 0, label + "：出現時段插畫以外的圖（decisions #8）：" + badImgs.join(", "));
   if (layout.small.length) warnings.push(label + "：按鈕高度不到 44px " + layout.small.join(" "));
   check(layout.smallInPicker.length === 0, label + "：選擇器裡的按鈕高度不到 44px（Phase 0 起算失敗）" + layout.smallInPicker.join(" "));
@@ -124,7 +124,7 @@ async function run() {
   console.log("[0. 開啟]");
   await send("Page.navigate", { url: H.url });
   await until(`${text("#today-status")}.indexOf("基本資料") !== -1`, "0-1 沒有基本資料時，今日建議沒有提示先填基本資料");
-  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.innerText.trim().replace(/\s+/g, '')).join('/')`)) === "基本資料/今日建議/我的食物/本週總覽/運動紀錄",
+  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.innerText.trim().replace(/\s+/g, '')).join('/')`)) === "基本資料/今日建議/我的食物/本週總覽/運動紀錄/食譜",
     "0-1 上方分頁不是 基本資料／今日建議／我的食物／本週總覽／運動紀錄（decisions #96）");
   check(await navFits(), "0-1 分頁列在 390 寬要橫向捲動");
   await shot("開啟");

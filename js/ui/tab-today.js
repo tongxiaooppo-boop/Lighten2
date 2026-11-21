@@ -21,15 +21,9 @@ import { getCalibratedTargets } from "./calibration.js";
 import { renderHero, setHeroSuppressed } from "./today-hero.js";
 import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
+import { slotImage, currentSkin } from "./skin.js";
 
-// 時段 → 插畫（decisions #8：推薦卡片只用這 5 張，不逐品項配圖）。5 張同一套手繪風格，只有時段場景不同。
-const MEAL_DEFAULT_IMAGE = {
-  breakfast: "images/gemini/meal-default-breakfast.jpg",
-  lunch: "images/gemini/meal-default-lunch.jpg",
-  afternoon_tea: "images/gemini/meal-default-afternoon-tea.jpg",
-  dinner: "images/gemini/meal-default-dinner.jpg",
-  snack: "images/gemini/meal-default-snack.jpg",
-};
+// 時段插畫由目前的外觀風格決定（decisions #8、#160）：skin.js 的 slotImage。
 
 // 最近一次的推薦結果，供「記錄這餐」按鈕找到對應 slot 的組合
 let currentRecs = {};
@@ -66,7 +60,7 @@ function setStatus(msg) {
 // 撤銷按鈕跟著卡片一起渲染（用 daily_log 的 id），所以任何重新整理都不會把它吃掉。
 // 「存成組合」：含估算的那一餐不提供（PRD 11.2 入口 2）；只在今天的卡片（decisions #124）
 function loggedHtml(logs, slot) {
-  const imgSrc = MEAL_DEFAULT_IMAGE[slot];
+  const imgSrc = slotImage(slot, currentSkin());
   const img = imgSrc ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(SLOT_LABELS[slot] || "") + '" loading="lazy">' : "";
   if (logs.length === 1 && logs[0].source === "skipped") {
     return img + '<p class="rec-logged-note">這餐沒吃</p><button type="button" class="undo-btn rec-undo-btn" data-log-id="' + escapeHtml(logs[0].id) + '">撤銷</button>';
@@ -239,7 +233,7 @@ function renderRecs(recs, profile, logsBySlot, plan, catalog) {
       body.innerHTML = invalidHtml + '<p class="rec-empty">' + escapeHtml(lowText || "這個時段的配額已經不多了") + "</p>" + pickBtnHtml(slot);
       return;
     }
-    const imgSrc = MEAL_DEFAULT_IMAGE[slot];
+    const imgSrc = slotImage(slot, currentSkin());
     const imgHtml = imgSrc
       ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(SLOT_LABELS[slot] || "") + '" loading="lazy">'
       : "";
@@ -659,6 +653,9 @@ export function initTodayTab() {
       if (e.target.id === "rec-save-name" && saveForm) saveForm.name = e.target.value;
     });
   }
+
+  // 換外觀風格：時段插畫跟著風格走，重畫今日建議
+  document.addEventListener("skin:changed", function () { buildRecommendation(); });
 
   initMealPicker();
   purgePlans(todayStr());

@@ -1,0 +1,140 @@
+/* 輕盈計畫 — 外觀風格：運動活力（decisions #160）。先覆寫 style.css 的變數，再加裝飾。 */
+
+html[data-skin="sport"] {
+  --c-bg: #EEF1EC;
+  --c-surface: #FFFFFF;
+  --c-surface-warm: #F6F8F4;
+  --c-ink: #10202B;
+  --c-ink-2: #45535E;
+  --c-muted: #5A6873;
+  --c-line: #E4E9E1;
+  --c-line-soft: #EDF0EA;
+  --c-line-strong: #CBD3C8;
+  --c-accent: #12263A;
+  --c-accent-strong: #0A1826;
+  --c-accent-soft: #E4E9E1;
+  --c-accent-tint: #F1F5EE;
+  --c-accent-line: #A9B7A0;
+  --c-accent-ink: #12263A;
+  --c-on-accent: #FFFFFF;
+  --c-shadow: rgba(16, 32, 43, 0.08);
+  --c-shadow-strong: rgba(16, 32, 43, 0.28);
+  --c-overlay: rgba(16, 32, 43, 0.5);
+  --font-body: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
+  --font-display: Oswald, "Noto Sans TC", sans-serif;
+  --radius-card: 14px;
+  --sk-neon: #C8F23A;
+  --sk-hot: #FF5B3A;
+}
+
+html[data-skin="sport"] body {
+  font-weight: 500;
+}
+
+/* 頁首：斜切深藍底、螢光綠斜紋 */
+html[data-skin="sport"] .app-header {
+  background-color: #12263A;
+  background-image: repeating-linear-gradient(115deg, transparent 0 22px, rgba(200, 242, 58, 0.09) 22px 27px);
+  color: #FFFFFF;
+  text-align: left;
+  padding: 1.2rem 1rem 2.1rem;
+  clip-path: polygon(0 0, 100% 0, 100% 74%, 0 100%);
+}
+html[data-skin="sport"] .app-header h1 {
+  font-family: "Noto Sans TC", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+/* 分頁：斜體按鈕，選中是螢光綠 */
+html[data-skin="sport"] .tab-nav {
+  margin-top: -0.75rem;
+  position: relative;
+  border-bottom: none;
+}
+html[data-skin="sport"] .tab-btn {
+  transform: skewX(-12deg);
+  border-radius: 3px;
+  border-color: transparent;
+  font-weight: 700;
+  color: #5A6873;
+}
+html[data-skin="sport"] .tab-btn.is-active {
+  background-color: var(--sk-neon);
+  border-color: var(--sk-neon);
+  color: #10202B;
+}
+
+/* 卡片與頂部卡 */
+html[data-skin="sport"] .rec-card,
+html[data-skin="sport"] .today-hero {
+  border-color: transparent;
+  border-radius: 14px;
+}
+html[data-skin="sport"] .today-hero-label {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+html[data-skin="sport"] #today-hero-kcal-value {
+  font-family: Oswald, "Noto Sans TC", sans-serif;
+  font-weight: 700;
+  font-size: 3.4rem;
+  color: #12263A;
+}
+html[data-skin="sport"] .today-hero-kcal-unit {
+  font-family: Oswald, "Noto Sans TC", sans-serif;
+  font-weight: 500;
+  color: var(--c-muted);
+}
+html[data-skin="sport"] .today-hero-stat-label {
+  font-weight: 700;
+}
+html[data-skin="sport"] .today-hero-stat-value {
+  font-family: Oswald, "Noto Sans TC", sans-serif;
+}
+
+/* 餐別標籤：深藍斜塊加英文小字 */
+html[data-skin="sport"] .rec-card h3 {
+  display: inline-block;
+  background: #12263A;
+  color: #FFFFFF;
+  padding: 0.1rem 0.7rem;
+  transform: skewX(-12deg);
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
+}
+html[data-skin="sport"] .rec-card h3::after {
+  content: attr(data-en);
+  font-family: Oswald, "Noto Sans TC", sans-serif;
+  color: var(--sk-neon);
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+}
+
+/* 按鈕 */
+html[data-skin="sport"] .primary-btn,
+html[data-skin="sport"] .secondary-btn {
+  border-radius: 999px;
+  font-weight: 700;
+}
+html[data-skin="sport"] .primary-btn {
+  background-color: #12263A;
+  color: #FFFFFF;
+}
+html[data-skin="sport"] .undo-btn,
+html[data-skin="sport"] .dislike-btn {
+  background-color: #EEF1EC;
+  border-color: transparent;
+  color: #45535E;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+html[data-skin="sport"] .skin-picker label {
+  font-weight: 700;
+}
