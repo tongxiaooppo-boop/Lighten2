@@ -416,7 +416,7 @@ export async function buildRecommendation() {
   }
   // 彙總卡：主數字不扣預約；有預約時多一行「已排」（只在有預約或剛撤掉時才碰這個元素，快照守則）
   const planned = plan.plannedKcal != null ? { kcal: plan.plannedKcal, slots: plan.plannedSlots } : null;
-  renderHero(plan.loggedBudget || plan.remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, heroPlannedShown).catch(function (err) { console.error(err); });
+  renderHero(plan.loggedBudget || plan.remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, heroPlannedShown, weekLogs).catch(function (err) { console.error(err); });
   heroPlannedShown = !!planned;
 
   lastLogsBySlot = plan.logsBySlot || {};

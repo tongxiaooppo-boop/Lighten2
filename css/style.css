@@ -1,5 +1,37 @@
 /* 輕盈計畫 (Lighten Plan) — 全域樣式 */
 
+:root {
+  --c-bg: #FBF5ED;
+  --c-surface: #FFFFFF;
+  --c-surface-warm: #FFFBF5;
+  --c-ink: #3A2E22;
+  --c-ink-2: #5A4C3A;
+  --c-muted: #8A7A63;
+  --c-line: #EFE3D2;
+  --c-line-soft: #F3EADF;
+  --c-line-strong: #E0D3BF;
+  --c-accent: #C1652F;
+  --c-accent-strong: #9E4F24;
+  --c-accent-soft: #F3E4D0;
+  --c-accent-tint: #FBF0E6;
+  --c-accent-line: #E0B98C;
+  --c-accent-ink: #8A5A2B;
+  --c-on-accent: #FFFFFF;
+  --c-warn-ink: #9A5B00;
+  --c-danger: #AA3333;
+  --c-danger-line: #D0A0A0;
+  --c-danger-tint: #FBF0F0;
+  --c-shadow: rgba(120, 85, 40, 0.08);
+  --c-shadow-strong: rgba(60, 40, 20, 0.25);
+  --c-overlay: rgba(58, 46, 34, 0.45);
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Microsoft JhengHei", sans-serif;
+  --font-display: "Noto Serif TC", serif;
+  --radius-card: 14px;
+  --radius-btn: 999px;
+}
+
+
 * {
   box-sizing: border-box;
 }
@@ -1793,4 +1825,19 @@ div.food-row-main {
   margin: 0.3rem 0 0;
   font-size: 0.85rem;
   color: var(--c-muted);
+}
+
+/* 今日建議頂部卡的新元件（decisions #160）：預設都不顯示，由各風格決定顯示哪幾個。
+   章程 C4.13：長條與圓環不依數值換顏色、不寫天數統計。 */
+.hero-bubble,
+.hero-mascot,
+.hero-ring,
+.today-streak {
+  display: none;
+}
+.today-hero {
+  position: relative;
+}
+#today-hero[hidden] + .today-streak {
+  display: none !important;
 }

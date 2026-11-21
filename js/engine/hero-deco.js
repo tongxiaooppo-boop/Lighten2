@@ -10,7 +10,8 @@ import { logsKcal } from "./meal-content.js";
 // 已吃熱量占目標的百分比（四捨五入成整數，可以超過 100）。目標不是正數時回傳 null。
 // eatenPct(412, 1778) → 23
 export function eatenPct(eatenKcal, targetKcal) {
-  throw new Error("TODO eatenPct");
+  if (!(targetKcal > 0)) return null;
+  return Math.round((eatenKcal / targetKcal) * 100);
 }
 
 // 本週（週一到週日）每天記下的熱量，給長條圖用。
@@ -20,7 +21,17 @@ export function eatenPct(eatenKcal, targetKcal) {
 //   ratio：kcal ÷ targetKcal，四捨五入到小數 2 位；kcal 為 null 或目標不是正數時 null（不封頂，畫面自己封頂）
 //   isToday：date === today；isFuture：date > today
 export function weekKcalBars(weekLogs, targetKcal, today) {
-  throw new Error("TODO weekKcalBars");
+  const monday = mondayOf(today);
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const date = dateAddDays(monday, i);
+    const isFuture = date > today;
+    const dayLogs = isFuture ? [] : (weekLogs || []).filter(function (l) { return l.log_date === date; });
+    const kcal = dayLogs.length > 0 ? logsKcal(dayLogs) : null;
+    const ratio = kcal != null && targetKcal > 0 ? Math.round((kcal / targetKcal) * 100) / 100 : null;
+    days.push({ date: date, kcal: kcal, ratio: ratio, isToday: date === today, isFuture: isFuture });
+  }
+  return days;
 }
 
 // 飯糰角色的一句話與表情。依序判斷，第一個符合的就回傳：
@@ -31,7 +42,11 @@ export function weekKcalBars(weekLogs, targetKcal, today) {
 //   4. 其餘                → { text: "還能吃 N 大卡喔", mood: "cheer" }
 // mood 只會是 "hi" | "ok" | "happy" | "cheer"（對應 images/skins/pastel/mascot-<mood>.png）。
 export function heroMessage(input) {
-  throw new Error("TODO heroMessage");
+  const n = Math.round(input.remainingKcal);
+  if (input.allLogged) return { text: "今天的餐都記好了", mood: "happy" };
+  if (input.loggedCount === 0) return { text: "今天還能吃 " + n + " 大卡，慢慢來", mood: "hi" };
+  if (input.remainingKcal <= 0) return { text: "今天的份額已經用完了", mood: "ok" };
+  return { text: "還能吃 " + n + " 大卡喔", mood: "cheer" };
 }
 
 // 給實作者：用得到的現成函式已經 import 好（dateAddDays、mondayOf、logsKcal）。

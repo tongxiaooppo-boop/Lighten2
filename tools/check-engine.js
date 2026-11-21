@@ -78,6 +78,7 @@ async function main() {
     myIng: await imp("js/engine/my-ingredients.js"),
     cook: await imp("js/engine/cook.js"),
     cookRec: await imp("js/engine/cook-rec.js"),
+    heroDeco: await imp("js/engine/hero-deco.js"),
   };
   const catalog = M.catalog.buildCatalog({
     ingredients: readJson("ingredients.json"), convenienceItems: convenienceData, taiwanItems: taiwanData,
@@ -918,8 +919,39 @@ async function main() {
   console.log("[今日建議的新自煮]");
   checkCookRec(cookCatalog, candidatePool);
 
+  console.log("[今日建議頂部卡裝飾]");
+  checkHeroDeco();
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+// 今日建議頂部卡的裝飾資料（hero-deco.js；decisions #160、章程 C4.13 不評判）
+function checkHeroDeco() {
+  const H = M.heroDeco;
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const L = (date, kcal) => ({ log_date: date, slot: "lunch", totals: { kcal: kcal, protein_g: 0, carb_g: 0, fat_g: 0, fiber_g: 0 } });
+  check(H.eatenPct(412, 1778) === 23, "eatenPct 一般");
+  check(H.eatenPct(0, 1778) === 0, "eatenPct 零");
+  check(H.eatenPct(2000, 1778) === 112, "eatenPct 超過");
+  check(H.eatenPct(500, 0) === null, "eatenPct 目標無效");
+
+  const wk = H.weekKcalBars([L("2026-11-16", 900), L("2026-11-16", 900), L("2026-11-17", 2340), L("2026-11-19", 450)], 1800, "2026-11-19");
+  check(wk.length === 7 && eq(wk.map((d) => d.date), ["2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21", "2026-11-22"]) &&
+    eq(wk.map((d) => d.kcal), [1800, 2340, null, 450, null, null, null]) &&
+    eq(wk.map((d) => d.ratio), [1, 1.3, null, 0.25, null, null, null]) &&
+    eq(wk.map((d) => d.isToday), [false, false, false, true, false, false, false]) &&
+    eq(wk.map((d) => d.isFuture), [false, false, false, false, true, true, true]), "weekKcalBars 七天");
+  const wk0 = H.weekKcalBars([L("2026-11-16", 1700)], 0, "2026-11-19");
+  check(wk0[0].kcal === 1700 && wk0[0].ratio === null, "weekKcalBars 目標無效");
+  const wkMon = H.weekKcalBars([L("2026-11-16", 600)], 1800, "2026-11-16");
+  check(wkMon[0].isToday && wkMon[0].kcal === 600 && wkMon.slice(1).every((d) => d.isFuture), "weekKcalBars 週一當天");
+
+  check(eq(H.heroMessage({ loggedCount: 0, allLogged: false, remainingKcal: 1366.4 }), { text: "今天還能吃 1366 大卡，慢慢來", mood: "hi" }), "heroMessage 還沒記");
+  check(eq(H.heroMessage({ loggedCount: 1, allLogged: false, remainingKcal: 954 }), { text: "還能吃 954 大卡喔", mood: "cheer" }), "heroMessage 進行中");
+  check(eq(H.heroMessage({ loggedCount: 2, allLogged: false, remainingKcal: -50 }), { text: "今天的份額已經用完了", mood: "ok" }), "heroMessage 份額用完");
+  check(eq(H.heroMessage({ loggedCount: 3, allLogged: true, remainingKcal: 200 }), { text: "今天的餐都記好了", mood: "happy" }), "heroMessage 都記好了");
+  check(eq(H.heroMessage({ loggedCount: 3, allLogged: true, remainingKcal: -300 }), { text: "今天的餐都記好了", mood: "happy" }), "heroMessage 都記好了且超過（不評論吃多吃少，章程 C4.13）");
 }
 
 // 今日建議的新自煮（cook-rec.js）：候選池與 ☆、收尾、記錄格式、跨時段不重複、七天輪轉

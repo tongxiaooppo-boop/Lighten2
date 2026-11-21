@@ -1983,6 +1983,14 @@ async function run() {
   await closePicker();
   await tab("today");
 
+  // 外觀風格（decisions #160）：預設是運動活力（前面都在這個風格下截圖），再各截粉彩與經典的今日建議
+  for (const skin of ["pastel", "classic"]) {
+    await js(`(() => { document.documentElement.dataset.skin = ${JSON.stringify(skin)}; localStorage.setItem("lighten2.skin", ${JSON.stringify(skin)}); document.dispatchEvent(new CustomEvent("skin:changed", { detail: ${JSON.stringify(skin)} })); })()`);
+    await tab("today");
+    await new Promise((r) => setTimeout(r, 600));
+    await shot("外觀風格-" + skin + "-今日建議", "#tab-today");
+  }
+
   H.consoleErrors().forEach((e) => fail("console 錯誤：" + JSON.stringify(e.params).slice(0, 300)));
   H.countCheck();
 }

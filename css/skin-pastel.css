@@ -109,3 +109,40 @@ html[data-skin="pastel"] .dislike-btn {
   border-color: transparent;
   color: #6E6283;
 }
+
+/* 飯糰角色與對話框（頂部卡） */
+html[data-skin="pastel"] .today-hero {
+  padding-right: 6.4rem;
+}
+html[data-skin="pastel"] .hero-bubble {
+  display: block;
+  position: absolute;
+  right: 14px;
+  top: -12px;
+  margin: 0;
+  max-width: calc(100% - 28px);
+  background: #FFE39A;
+  color: #5A4520;
+  font-size: 0.75rem;
+  padding: 2px 9px;
+  border-radius: 12px 12px 2px 12px;
+}
+html[data-skin="pastel"] .hero-bubble:empty {
+  display: none;
+}
+html[data-skin="pastel"] .hero-mascot {
+  display: block;
+  position: absolute;
+  right: 10px;
+  top: 22px;
+  width: 76px;
+  height: auto;
+}
+
+/* 粉彩的主色太淺，不能當文字色：用到主色當文字的地方改深一點 */
+html[data-skin="pastel"] .status-text,
+html[data-skin="pastel"] .today-hero-nutrition summary,
+html[data-skin="pastel"] .streak-text,
+html[data-skin="pastel"] .link-btn {
+  color: var(--c-accent-ink);
+}

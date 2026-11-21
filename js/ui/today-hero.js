@@ -5,7 +5,9 @@ import { shortDate } from "../core/dates.js";
 import { escapeHtml } from "../core/html.js";
 import { $, sodiumText, satFatText } from "./dom.js";
 import { computeRecentAvgVsTarget } from "../engine/budget.js";
-import { todayIntake, recsKcalTotal, sumDisplayLogTotals } from "../engine/meal-content.js";
+import { todayIntake, recsKcalTotal, sumDisplayLogTotals, logsKcal } from "../engine/meal-content.js";
+import { eatenPct, weekKcalBars, heroMessage } from "../engine/hero-deco.js";
+import { mascotImage } from "./skin.js";
 import { loadTdeeState, getCalibratedTargets } from "./calibration.js";
 import { activateTab } from "./tabs.js";
 
@@ -17,7 +19,37 @@ export function setHeroSuppressed(v) {
   suppressed = !!v;
 }
 
-export async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, plannedShown) {
+// 頂部卡的三個裝飾元件（decisions #160）：已吃比例圓環、飯糰角色的一句話、本週每天熱量長條。
+// 章程 C4.13：不寫天數統計、不依數值換顏色。各風格顯示哪幾個由 CSS 決定。
+const WEEKDAY_CHARS = ["一", "二", "三", "四", "五", "六", "日"];
+function renderHeroDeco(remainingBudget, targets, todayLogs, loggedSlots, allLogged, today, weekLogs) {
+  const ring = $("#today-hero-ring");
+  if (ring) {
+    const pct = eatenPct(logsKcal(todayLogs), targets.targetKcal);
+    ring.style.setProperty("--pct", pct == null ? 0 : Math.min(pct, 100));
+    $("#today-hero-ring-pct").textContent = pct == null ? "—" : pct + "%";
+  }
+  const bubble = $("#today-hero-bubble");
+  if (bubble) {
+    const msg = heroMessage({ loggedCount: Object.keys(loggedSlots).length, allLogged: allLogged, remainingKcal: remainingBudget.remainingKcal });
+    bubble.textContent = msg.text;
+    const mascot = $("#today-hero-mascot");
+    if (mascot) { mascot.src = mascotImage(msg.mood); mascot.alt = ""; }
+  }
+  const streak = $("#today-streak");
+  if (streak) {
+    const bars = weekKcalBars(weekLogs || [], targets.targetKcal, today);
+    streak.innerHTML = '<span class="streak-label">本週熱量</span>' + bars.map(function (d, i) {
+      const h = d.ratio == null ? 0 : Math.min(d.ratio, 1.3) / 1.3;
+      const kcalText = d.kcal == null ? "" : " " + Math.round(d.kcal) + " kcal";
+      const title = "週" + WEEKDAY_CHARS[i] + kcalText;
+      return '<span class="streak-day' + (d.isToday ? " is-today" : "") + (d.isFuture ? " is-future" : "") + '" title="' + title + '"><i style="--h:' + h + '"></i><small>' + WEEKDAY_CHARS[i] + "</small></span>";
+    }).join("");
+    streak.hidden = suppressed;
+  }
+}
+
+export async function renderHero(remainingBudget, targets, todayLogs, recentLogs, profile, recs, today, planned, plannedShown, weekLogs) {
   const hero = $("#today-hero");
   if (!hero) return;
   const eaten = todayIntake(todayLogs);
@@ -33,6 +65,8 @@ export async function renderHero(remainingBudget, targets, todayLogs, recentLogs
   $("#today-hero-kcal-value").textContent = Math.round(remainingBudget.remainingKcal);
   $("#today-hero-protein").textContent = Math.round(eaten.protein_g) + " / " + Math.round(targets.protein_g) + "g";
   $("#today-hero-fiber").textContent = Math.round(eaten.fiber_g) + " / " + Math.round(targets.fiber_g) + "g";
+
+  renderHeroDeco(remainingBudget, targets, todayLogs, loggedSlots, allLogged, today, weekLogs);
 
   // 次要行「目前這幾餐建議合計」，跟主數字有落差時顯示差額。
   const subEl = $("#today-hero-kcal-sub");

@@ -65,6 +65,7 @@ function createFakeDocument() {
       hidden: false,
       disabled: false,
       value: "",
+      style: { setProperty: function () {} }, // 頂部卡圓環設 --pct（不進快照）
       querySelector: function () { return null; },
       querySelectorAll: function () { return []; },
       addEventListener: function () {},
