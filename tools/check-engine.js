@@ -138,7 +138,12 @@ async function main() {
     const channels = {};
     c.components.forEach((uid) => { channels[uid.indexOf("tw_") === 0 ? "tw" : (itemByUid[uid].channel || "convenience")] = true; });
     check(Object.keys(channels).length === 1, c.id + " 混了不同來源的品項");
+    const cats = c.components.map((uid) => itemByUid[uid].category);
+    check(!(cats.indexOf("早餐店") !== -1 && cats.some((k) => ["西式速食", "西式", "日式"].indexOf(k) !== -1)), c.id + " 中西混搭：早餐店飲料配西式／日式主餐");
   });
+  check(pool.some((c) => c.id === "tw_fw03"), "炸雞＋薯條單點仍在池子裡");
+  check(!pool.some((c) => c.id === "tw_fw03+tw_dr11"), "炸雞＋薯條＋清漿不該出現");
+  check(pool.some((c) => c.id === "tw_ln02+tw_dr11"), "雞腿便當＋清漿照樣可以組");
 
   // 新自煮候選（cook-rec.js）：每個入口的每個時段都有候選；每個候選的所有份量都能送出（用 cook.js 的驗證逐一檢查）
   {

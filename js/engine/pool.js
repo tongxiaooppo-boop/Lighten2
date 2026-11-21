@@ -27,12 +27,20 @@ function isTooWideRange(p) {
 //     + ≤1 snack，總數 ≤3 件。飲料不會單獨成為一餐，一餐也不會出現兩杯飲料。
 //   - 下午茶：不需要 main，snack、drink 各 ≤1，至少 1 件。
 // 每個成分都要在該時段的 valid_slots 裡才會被拿來組合；不同來源（超商／外食）不互相混搭。
+//   - 外食同來源內也不中西混搭：早餐店的飲料（豆漿、清漿）不搭西式速食／西式／日式主餐
+//     （2026-11-21 使用者回報午餐出現「炸雞＋薯條＋清漿」，外面買不會這樣配）。
+
+const DRINK_MAIN_CLASH = { "早餐店": ["西式速食", "西式", "日式"] };
+function clashes(main, other) {
+  const banned = other && DRINK_MAIN_CLASH[other.category];
+  return !!banned && banned.indexOf(main.category) !== -1;
+}
 
 // 候選池裡的成分：營養值未知就是 null，組合時 null 傳染（章程 C4.5）；熱量一定有值（沒有熱量的品項不進池）
 function toMember(p) {
   return Object.assign({
     uid: p.uid, source_id: p.source_id, name: p.name, role: p.role, valid_slots: p.valid_slots,
-    contains_drink: p.contains_drink, channel: p.channel,
+    contains_drink: p.contains_drink, channel: p.channel, category: p.category,
     kcal: p.kcal, protein_g: p.protein_g, carb_g: p.carb_g, fat_g: p.fat_g, fiber_g: p.fiber_g,
     tier_rank: p.is_taiwan ? 0 : tierRank(p.tier), diet_tags: p.diet_tags,
     allergen_tags: p.allergen_tags,
@@ -89,7 +97,7 @@ function generateItemCombos(items) {
       return;
     }
     mains.forEach(function (main) {
-      const drinkOpts = main.contains_drink ? [null] : [null].concat(drinks);
+      const drinkOpts = main.contains_drink ? [null] : [null].concat(drinks.filter(function (dr) { return !clashes(main, dr); }));
       [null].concat(sides).forEach(function (side) {
         drinkOpts.forEach(function (drink) {
           [null].concat(snacks).forEach(function (snack) {
