@@ -54,6 +54,14 @@ html[data-skin="sport"] .tab-nav {
   margin-top: -0.75rem;
   position: relative;
   border-bottom: none;
+  /* 六個分頁排成 3×2，不要剩一個「食譜」單獨掉到第二行 */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+html[data-skin="sport"] .tab-btn {
+  padding-left: 0.3rem;
+  padding-right: 0.3rem;
+  white-space: nowrap;
 }
 html[data-skin="sport"] .tab-btn {
   transform: skewX(-12deg);

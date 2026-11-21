@@ -950,6 +950,7 @@ function checkHeroDeco() {
   check(eq(H.heroMessage({ loggedCount: 0, allLogged: false, remainingKcal: 1366.4 }), { text: "今天還能吃 1366 大卡，慢慢來", mood: "hi" }), "heroMessage 還沒記");
   check(eq(H.heroMessage({ loggedCount: 1, allLogged: false, remainingKcal: 954 }), { text: "還能吃 954 大卡喔", mood: "cheer" }), "heroMessage 進行中");
   check(eq(H.heroMessage({ loggedCount: 2, allLogged: false, remainingKcal: -50 }), { text: "今天的份額已經用完了", mood: "ok" }), "heroMessage 份額用完");
+  check(eq(H.heroMessage({ loggedCount: 0, allLogged: false, remainingKcal: -50 }), { text: "今天的份額已經用完了", mood: "ok" }), "heroMessage 還沒記但份額已是負的");
   check(eq(H.heroMessage({ loggedCount: 3, allLogged: true, remainingKcal: 200 }), { text: "今天的餐都記好了", mood: "happy" }), "heroMessage 都記好了");
   check(eq(H.heroMessage({ loggedCount: 3, allLogged: true, remainingKcal: -300 }), { text: "今天的餐都記好了", mood: "happy" }), "heroMessage 都記好了且超過（不評論吃多吃少，章程 C4.13）");
 }

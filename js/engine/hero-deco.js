@@ -37,15 +37,15 @@ export function weekKcalBars(weekLogs, targetKcal, today) {
 // 飯糰角色的一句話與表情。依序判斷，第一個符合的就回傳：
 // input：{ loggedCount, allLogged, remainingKcal }；N＝Math.round(remainingKcal)
 //   1. allLogged           → { text: "今天的餐都記好了", mood: "happy" }
-//   2. loggedCount === 0   → { text: "今天還能吃 N 大卡，慢慢來", mood: "hi" }
-//   3. remainingKcal <= 0  → { text: "今天的份額已經用完了", mood: "ok" }
+//   2. remainingKcal <= 0  → { text: "今天的份額已經用完了", mood: "ok" }（排在 3 前面：還沒記但份額已是負的，不會出現「還能吃 -50 大卡」）
+//   3. loggedCount === 0   → { text: "今天還能吃 N 大卡，慢慢來", mood: "hi" }
 //   4. 其餘                → { text: "還能吃 N 大卡喔", mood: "cheer" }
 // mood 只會是 "hi" | "ok" | "happy" | "cheer"（對應 images/skins/pastel/mascot-<mood>.png）。
 export function heroMessage(input) {
   const n = Math.round(input.remainingKcal);
   if (input.allLogged) return { text: "今天的餐都記好了", mood: "happy" };
-  if (input.loggedCount === 0) return { text: "今天還能吃 " + n + " 大卡，慢慢來", mood: "hi" };
   if (input.remainingKcal <= 0) return { text: "今天的份額已經用完了", mood: "ok" };
+  if (input.loggedCount === 0) return { text: "今天還能吃 " + n + " 大卡，慢慢來", mood: "hi" };
   return { text: "還能吃 " + n + " 大卡喔", mood: "cheer" };
 }
 
