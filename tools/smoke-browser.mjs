@@ -33,8 +33,8 @@ async function run() {
   // 升級測試留下的體重刪掉，後面的檢查照舊
   await js(`new Promise((res) => { const r = indexedDB.open('lighten2'); r.onsuccess = () => { const db = r.result; const tx = db.transaction('weight_log', 'readwrite');
     tx.objectStore('weight_log').delete('2000-01-05'); tx.oncomplete = () => { db.close(); res(true); }; }; })`);
-  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,foods,week,exercise",
-    "分頁不是 基本資料/今日建議/我的食物/本週/運動（decisions #96）");
+  check((await js(`[...document.querySelectorAll('.tab-btn')].map(b => b.dataset.tab).join(',')`)) === "profile,today,foods,week,exercise,recipes",
+    "分頁不是 基本資料/今日建議/我的食物/本週/運動/食譜（decisions #96；食譜 2026-10-15 加入）");
   // 還沒有基本資料：不吃的專用函式丟「還沒有基本資料」（PRD 13.5）
   check(/還沒有基本資料/.test(await js(`(async () => { const m = await import('./js/data/db.js');
     try { await m.addDislikedIngredient({ type: 'item', key: 'conv_bx04', label: 'x' }); return 'ok'; } catch (e) { return String(e.message); } })()`)),

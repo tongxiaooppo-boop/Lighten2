@@ -18,7 +18,9 @@ function html(size, round, glyph) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
     `<rect width="${size}" height="${size}" rx="${rx}" fill="#12263A"/>` +
     `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" font-family="sans-serif" font-weight="900" font-size="${fs}" fill="#FFFFFF">輕</text></svg>`;
-  return `<!DOCTYPE html><html><body style="margin:0;background:transparent">${svg}</body></html>`;
+  // svg 要 display:block、html/body 關捲軸：行內 svg 底下會多出幾像素，冒出捲軸被截進圖裡
+  return `<!DOCTYPE html><html style="overflow:hidden"><body style="margin:0;overflow:hidden;background:transparent">` +
+    svg.replace("<svg ", '<svg style="display:block" ') + `</body></html>`;
 }
 
 mkdirSync(OUT, { recursive: true });
