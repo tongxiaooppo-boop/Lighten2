@@ -9,6 +9,7 @@ import { WIDE_RANGE_RATIO, RANK_TO_TIER, tierRank } from "../core/config.js";
 import { round1 } from "../core/num.js";
 import { unionTags } from "./filters.js";
 import { sumProducts, displayFields, contentNote } from "./meal-content.js";
+import { WESTERN_CATEGORIES } from "./meal-kind.js";
 
 function r1(v) {
   return v == null ? null : round1(v);
@@ -47,6 +48,15 @@ function toMember(p) {
   }, displayFields(p));
 }
 
+// 外食組合的菜系（只給推薦卡片挑插圖用，meal-kind.js）：主餐分類在 WESTERN_CATEGORIES 就是西式，其他（含日式）是中式；
+// 沒有主餐（下午茶）或超商組合回傳 null。
+function cuisineOf(members) {
+  if (members[0].channel !== "delivery") return null;
+  const main = members.filter(function (m) { return m.role === "main"; })[0];
+  if (!main) return null;
+  return WESTERN_CATEGORIES.indexOf(main.category) !== -1 ? "western" : "chinese";
+}
+
 function toItemCombo(members) {
   const maxTierRank = members.reduce(function (r, m) { return Math.max(r, m.tier_rank); }, 0);
   const notes = members.map(function (m) { return m.note; }).filter(Boolean);
@@ -71,6 +81,7 @@ function toItemCombo(members) {
     allergen_tags: unionTags.apply(null, members.map(function (m) { return m.allergen_tags; })),
     is_convenience: members[0].channel === "convenience",
     is_delivery: members[0].channel === "delivery",
+    cuisine: cuisineOf(members),
     valid_slots: [],
   }, displayFields(totals));
 }
