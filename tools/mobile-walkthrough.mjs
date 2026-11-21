@@ -1,7 +1,7 @@
 // 輕盈計畫 — 手機實機腳本的自動版：無頭 Edge/Chrome 模擬手機（390×844、觸控），照 docs/手機實機腳本.md 逐步操作、檢查、截圖。
 // 用法：node tools/mobile-walkthrough.mjs              （全部通過 exit 0；截圖路徑印在最後）
 //       WALKTHROUGH_OUT=某資料夾 node tools/mobile-walkthrough.mjs
-// 每一步另外自動檢查版面：不能左右溢出、不能出現時段插畫以外的圖；按鈕高度不到 44px 的列成警告。
+// 每一步另外自動檢查版面：不能左右溢出、不能出現時段插畫、餐點種類插圖（decisions #161）以外的圖；按鈕高度不到 44px 的列成警告。
 // 截圖給實作者逐張看過再交給使用者；使用者的手機測試只剩自動測不到的部分（真的手機快取、手感、看不看得懂），
 // 見 docs/手機實機腳本.md 開頭。約 1 分鐘，Phase 驗收與改到畫面流程時跑。
 
@@ -42,8 +42,8 @@ async function shot(name, scrollTo) {
     return { scrollW: document.documentElement.scrollWidth, W: W, overflow: overflow, imgs: imgs, small: [...new Set(small)], smallInPicker: [...new Set(smallInPicker)] };
   })()`);
   check(layout.scrollW <= layout.W + 1, label + "：畫面左右溢出（寬 " + layout.scrollW + " > " + layout.W + "）" + layout.overflow.join(", "));
-  const badImgs = layout.imgs.filter((s) => !/^images\/gemini\/meal-default-[a-z_-]+\.jpg$/.test(s || "") && !/^images\/skins\/(sport|pastel)\/meal-[a-z-]+\.jpg$/.test(s || "") && !/^images\/skins\/pastel\/mascot-(hi|ok|happy|cheer)\.png$/.test(s || ""));
-  check(badImgs.length === 0, label + "：出現時段插畫以外的圖（decisions #8）：" + badImgs.join(", "));
+  const badImgs = layout.imgs.filter((s) => !/^images\/gemini\/meal-default-[a-z_-]+\.jpg$/.test(s || "") && !/^images\/skins\/(sport|pastel)\/meal-[a-z-]+\.jpg$/.test(s || "") && !/^images\/skins\/(sport|pastel|classic)\/kind-[a-z-]+\.jpg$/.test(s || "") && !/^images\/skins\/pastel\/mascot-(hi|ok|happy|cheer)\.png$/.test(s || ""));
+  check(badImgs.length === 0, label + "：出現時段插畫、餐點種類插圖以外的圖（decisions #8、#160、#161）：" + badImgs.join(", "));
   if (layout.small.length) warnings.push(label + "：按鈕高度不到 44px " + layout.small.join(" "));
   check(layout.smallInPicker.length === 0, label + "：選擇器裡的按鈕高度不到 44px（Phase 0 起算失敗）" + layout.smallInPicker.join(" "));
   await H.screenshot(OUT, label);

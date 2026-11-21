@@ -928,8 +928,39 @@ async function main() {
   console.log("[今日建議頂部卡裝飾]");
   checkHeroDeco();
 
+  await checkMealKinds(candidatePool);
+
   console.log("\n" + (failures === 0 ? "全部通過" : failures + " 項失敗") + "（共 " + checks + " 項檢查）");
   process.exit(failures === 0 ? 0 : 1);
+}
+
+// 推薦卡片插圖的餐點種類（meal-kind.js）
+async function checkMealKinds(candidatePool) {
+  // ---- 推薦插圖種類（meal-kind.js、skin.js） ----
+  console.log("[推薦插圖種類]");
+  const mk = await imp("js/engine/meal-kind.js");
+  const kindOf = (id, slot) => { const c = candidatePool.find((x) => x.id === id); return c ? mk.mealImageKey(c, slot) : "（找不到組合 " + id + "）"; };
+  check(kindOf("tw_fw03", "lunch") === "western", "插圖種類：tw_fw03 午餐 → western：" + kindOf("tw_fw03", "lunch"));
+  check(kindOf("tw_ln02", "lunch") === "chinese", "插圖種類：tw_ln02 午餐 → chinese：" + kindOf("tw_ln02", "lunch"));
+  check(kindOf("tw_dn05", "dinner") === "chinese", "插圖種類：tw_dn05 晚餐（日式歸中式）→ chinese：" + kindOf("tw_dn05", "dinner"));
+  check(kindOf("tw_bf12", "breakfast") === "bf-western", "插圖種類：tw_bf12 早餐 → bf-western：" + kindOf("tw_bf12", "breakfast"));
+  check(kindOf("tw_bf01", "breakfast") === "bf-chinese", "插圖種類：tw_bf01 早餐 → bf-chinese：" + kindOf("tw_bf01", "breakfast"));
+  const convLunch = candidatePool.find((c) => c.is_convenience && c.valid_slots.indexOf("lunch") !== -1);
+  check(!!convLunch && mk.mealImageKey(convLunch, "lunch") === "convenience", "插圖種類：超商組合午餐 → convenience");
+  check(candidatePool.every((c) => mk.mealImageKey(c, "afternoon_tea") === null && mk.mealImageKey(c, "snack") === null), "插圖種類：任何組合在下午茶、宵夜 → null（用時段圖）");
+  const deliveryMain = candidatePool.filter((c) => c.is_delivery && !c.is_composed && c.components.some((uid) => itemByUid[uid] && itemByUid[uid].role === "main"));
+  check(deliveryMain.length > 0 && deliveryMain.every((c) => c.cuisine === "western" || c.cuisine === "chinese"), "插圖種類：外食含主餐的組合 cuisine 都是 western／chinese");
+  check(candidatePool.filter((c) => c.is_convenience).every((c) => c.cuisine === null), "插圖種類：超商組合 cuisine 都是 null");
+  const ck = (entry, slot) => mk.mealImageKey({ is_cook_form: true, entry: entry }, slot);
+  check(ck("home", "lunch") === "cook-home" && ck("box", "dinner") === "cook-box" && ck("plate", "breakfast") === "cook-plate" && ck("bowl", "breakfast") === "cook-bowl" &&
+    ck("bowl", "afternoon_tea") === null && ck("home", "breakfast") === null,
+    "插圖種類：自煮 home／box／plate／bowl 依時段對到 cook-*，不合的時段 → null");
+  const missingImgs = [];
+  ["sport", "pastel", "classic"].forEach((skin) => mk.MEAL_IMAGE_KEYS.forEach((k) => {
+    const rel = "images/skins/" + skin + "/kind-" + k + ".jpg";
+    if (!fs.existsSync(path.join(ROOT, rel))) missingImgs.push(rel);
+  }));
+  check(missingImgs.length === 0, "插圖種類：圖檔齊全（3 風格 × " + mk.MEAL_IMAGE_KEYS.length + " 種）缺 " + missingImgs.length + " 個：" + missingImgs.join("、"));
 }
 
 // 今日建議頂部卡的裝飾資料（hero-deco.js；decisions #160、章程 C4.13 不評判）

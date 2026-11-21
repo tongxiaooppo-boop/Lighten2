@@ -21,7 +21,7 @@ import { getCalibratedTargets } from "./calibration.js";
 import { renderHero, setHeroSuppressed } from "./today-hero.js";
 import { openMealPicker, initMealPicker } from "./meal-picker/index.js";
 import { todayStr, nowMs, nowIso } from "./clock.js";
-import { slotImage, currentSkin } from "./skin.js";
+import { slotImage, mealImage, currentSkin } from "./skin.js";
 
 // 時段插畫由目前的外觀風格決定（decisions #8、#160）：skin.js 的 slotImage。
 
@@ -233,7 +233,7 @@ function renderRecs(recs, profile, logsBySlot, plan, catalog) {
       body.innerHTML = invalidHtml + '<p class="rec-empty">' + escapeHtml(lowText || "這個時段的配額已經不多了") + "</p>" + pickBtnHtml(slot);
       return;
     }
-    const imgSrc = slotImage(slot, currentSkin());
+    const imgSrc = mealImage(rec, slot, currentSkin());
     const imgHtml = imgSrc
       ? '<img class="rec-card-img" src="' + imgSrc + '" alt="' + escapeHtml(SLOT_LABELS[slot] || "") + '" loading="lazy">'
       : "";

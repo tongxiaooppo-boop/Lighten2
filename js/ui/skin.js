@@ -4,6 +4,8 @@
 //
 // 框架由 Opus 定（2026-11-21），實作者只填函式內容，不改名稱、參數、回傳格式；覺得要改就停下回報。
 
+import { mealImageKey } from "../engine/meal-kind.js";
+
 export const SKINS = [
   { id: "sport", label: "運動活力" },
   { id: "pastel", label: "療癒粉彩" },
@@ -38,6 +40,13 @@ export function slotImage(slot, skin) {
   return skin === "classic"
     ? "images/gemini/meal-default-" + file + ".jpg"
     : "images/skins/" + skin + "/meal-" + file + ".jpg";
+}
+
+// 推薦卡片插圖：依餐點種類（meal-kind.js）換圖，圖檔 images/skins/<skin>/kind-<key>.jpg（classic 也走這個路徑）；
+// 不分種類（下午茶、宵夜、沒有種類）就用時段圖。
+export function mealImage(rec, slot, skin) {
+  const key = mealImageKey(rec, slot);
+  return key ? "images/skins/" + skin + "/kind-" + key + ".jpg" : slotImage(slot, skin);
 }
 
 // 飯糰角色圖：mood 是 hero-deco.js heroMessage 回傳的 "hi" | "ok" | "happy" | "cheer"。
