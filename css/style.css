@@ -24,8 +24,8 @@
   --c-shadow: rgba(120, 85, 40, 0.08);
   --c-shadow-strong: rgba(60, 40, 20, 0.25);
   --c-overlay: rgba(58, 46, 34, 0.45);
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
-    "Microsoft JhengHei", sans-serif;
+  /* 經典（預設）介面用宋體；運動風、粉彩風在各自 skin 檔覆蓋成黑體／圓體 */
+  --font-body: "Noto Serif TC", "Songti TC", "PMingLiU", "MingLiU", serif;
   --font-display: "Noto Serif TC", serif;
   --radius-card: 14px;
   --radius-btn: 999px;
