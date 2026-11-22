@@ -1122,10 +1122,10 @@ body {
 
 /* ===== 響應式：小螢幕（手機） ===== */
 @media (max-width: 600px) {
-  /* 分頁按鈕列：固定 5 個、等寬不橫捲（decisions #96）；字放不下時兩行置中 */
+  /* 分頁按鈕列：六個排成 3×2、等寬不橫捲（decisions #96）；四字名稱一律單行，不拆成 3+1 */
   .tab-nav {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     padding: 0.5rem;
     gap: 0.3rem;
   }
@@ -1137,6 +1137,7 @@ body {
     font-size: 0.85rem;
     line-height: 1.2;
     text-align: center;
+    white-space: nowrap;
     border-radius: 10px;
   }
 
